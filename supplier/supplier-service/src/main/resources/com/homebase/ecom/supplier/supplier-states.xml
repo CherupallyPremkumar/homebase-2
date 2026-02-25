@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <flow id='supplier-flow' default='true'>
+    <security-strategy componentName="supplierSecurityStrategy"/>
+    <entry-action componentName="supplierFlowEntryAction" />
+
+    <manual-state id='ACTIVE' initialState='true' meta-mainPath="true">
+      <entry-action componentName="supplierActiveAction" />
+      <on eventId='suspendSupplier' 
+          componentName='supplierSuspendSupplierAction'
+          newStateId='SUSPENDED'
+          meta-acls="ADMIN"/>
+      <on eventId='pauseSupplier' 
+          componentName='supplierPauseSupplierAction'
+          newStateId='INACTIVE'
+          meta-acls="SUPPLIER,ADMIN"/>
+      <on eventId='blacklistSupplier' 
+          componentName='supplierBlacklistSupplierAction'
+          newStateId='BLACKLISTED'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='INACTIVE'>
+      <entry-action componentName="supplierInactiveAction" />
+      <on eventId='reactivateSupplier' 
+          componentName='supplierReactivateSupplierAction'
+          newStateId='ACTIVE'
+          meta-mainPath="true"
+          meta-acls="SUPPLIER,ADMIN"/>
+      <on eventId='blacklistSupplier' 
+          componentName='supplierBlacklistSupplierAction'
+          newStateId='BLACKLISTED'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='SUSPENDED'>
+      <entry-action componentName="supplierSuspendedAction" />
+      <on eventId='reactivateSupplier' 
+          componentName='supplierReactivateSupplierAction'
+          newStateId='ACTIVE'
+          meta-mainPath="true"
+          meta-acls="ADMIN"/>
+      <on eventId='blacklistSupplier' 
+          componentName='supplierBlacklistSupplierAction'
+          newStateId='BLACKLISTED'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='BLACKLISTED'>
+      <entry-action componentName="supplierBlacklistedAction" />
+      <exit-action componentName="supplierDisableAllProductsAction" />
+    </manual-state>
+  </flow>
+</states>

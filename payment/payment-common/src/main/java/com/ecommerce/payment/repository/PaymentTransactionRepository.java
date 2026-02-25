@@ -1,0 +1,32 @@
+package com.ecommerce.payment.repository;
+
+import com.ecommerce.payment.domain.PaymentTransaction;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, String> {
+
+    List<PaymentTransaction> findByOrderId(String orderId);
+
+    Optional<PaymentTransaction> findByGatewayChargeId(String gatewayChargeId);
+
+    Optional<PaymentTransaction> findByGatewayTransactionId(String gatewayTransactionId);
+
+    @Query("SELECT pt FROM PaymentTransaction pt WHERE pt.status = 'SUCCEEDED' " +
+            "AND pt.createdAt >= :start AND pt.createdAt <= :end")
+    List<PaymentTransaction> findSucceededInRange(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end);
+
+    List<PaymentTransaction> findByStatus(String status);
+
+    org.springframework.data.domain.Page<PaymentTransaction> findByStatus(String status,
+            org.springframework.data.domain.Pageable pageable);
+}

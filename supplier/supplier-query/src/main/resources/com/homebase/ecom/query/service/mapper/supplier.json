@@ -1,0 +1,45 @@
+[
+	{
+		"id": "Supplier.getAll",
+		"name": "suppliers",
+		"workflowName": "supplier",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"name": {
+				"name": "name",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"email": {
+				"name": "email",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"status": {
+				"name": "status",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdAt": {
+				"name": "created_at",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	}
+]

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <flow id='settlement-flow' default='true'>
+    <entry-action componentName="settlementEntryAction" />
+
+    <manual-state id='PENDING' initialState='true' meta-mainPath="true">
+      <entry-action componentName="settlementPendingAction" />
+      <on eventId='monthEnd' 
+          componentName='monthEndAction'
+          newStateId='PROCESSING' 
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='PROCESSING' meta-mainPath="true">
+      <entry-action componentName="settlementProcessingAction" />
+      <on eventId='calculateSettlement' 
+          componentName='calculateSettlementAction'
+          newStateId='READY_FOR_PAYMENT' 
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <if id='READY_FOR_PAYMENT' 
+        condition='hasValidBankAccount'
+        then='transferFunds' 
+        else='holdForReview'>
+      <on eventId='transferFunds' 
+          componentName='transferFundsAction'
+          newStateId='SETTLED' 
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+      <on eventId='holdForReview' 
+          newStateId='MANUAL_REVIEW'/>
+    </if>
+
+    <manual-state id='SETTLED' meta-mainPath="true">
+      <entry-action componentName="settledNotificationAction" />
+      <exit-action componentName="settlementCompleteAction" />
+    </manual-state>
+
+    <manual-state id='MANUAL_REVIEW'>
+      <entry-action componentName="manualReviewInitiatedAction" />
+      <on eventId='manualApprove' 
+          componentName='manualApproveAction'
+          newStateId='SETTLED' 
+          meta-acls="FINANCE_ADMIN"/>
+      <on eventId='rejectSettlement' 
+          componentName='rejectSettlementAction'
+          newStateId='FAILED' 
+          meta-acls="FINANCE_ADMIN"/>
+    </manual-state>
+
+    <manual-state id='FAILED'>
+      <entry-action componentName="settlementFailedAction" />
+      <on eventId='retrySettlement' 
+          componentName='retrySettlementAction'
+          newStateId='PROCESSING' 
+          meta-acls="FINANCE_ADMIN"/>
+    </manual-state>
+  </flow>
+</states>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{admin/layout/base :: layout(~{::title}, ~{::#content}, ~{::#head}, ~{::#scripts})}">
+
+<head>
+    <title>Low Stock Alerts</title>
+    <th:block id="head"></th:block>
+</head>
+
+<body>
+    <div id="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Low Stock Alerts <span class="badge bg-warning text-dark" th:text="${#lists.size(items)}">0</span></h2>
+            <a href="/admin/inventory" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Back to Inventory
+            </a>
+        </div>
+
+        <div class="alert alert-info" th:if="${threshold != null}">
+            <i class="fas fa-info-circle me-1"></i>
+            Products below <strong th:text="${threshold}">10</strong> units are flagged as low stock.
+        </div>
+
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Available Qty</th>
+                            <th>Reserved</th>
+                            <th>Threshold</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${items}">
+                            <td>
+                                <a th:href="@{/admin/products/{id}/edit(id=${item.productId})}"
+                                    class="text-decoration-none fw-medium">
+                                    <span th:text="${item.productName}">Product</span>
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark" th:text="${item.productCategory}">Cat</span>
+                            </td>
+                            <td>
+                                <span th:if="${item.productPrice != null}">
+                                    ₹<span th:text="${#numbers.formatDecimal(item.productPrice, 1, 2)}">0.00</span>
+                                </span>
+                                <span th:if="${item.productPrice == null}" class="text-muted">—</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-warning text-dark" th:text="${item.availableQuantity}">5</span>
+                            </td>
+                            <td th:text="${item.reserved}">0</td>
+                            <td th:text="${item.lowStockThreshold}">10</td>
+                            <td><span class="badge bg-danger">Low Stock</span></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(items)}">
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-check-circle text-success fa-2x mb-2"></i><br>
+                                All products are well stocked!
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <th:block id="scripts"></th:block>
+</body>
+
+</html>

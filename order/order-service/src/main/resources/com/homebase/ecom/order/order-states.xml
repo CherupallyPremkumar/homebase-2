@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <flow id='order-flow' default='true'>
+    <security-strategy componentName="orderSecurityStrategy"/>
+    <entry-action componentName="orderEntryAction" />
+    <exit-action componentName="orderExitAction" />
+
+    <manual-state id='CREATED' initialState='true' meta-mainPath="true">
+      <entry-action componentName="orderCreatedNotificationAction" />
+      <on eventId='processPayment' 
+          componentName='processPaymentCommand'
+          newStateId='PAYMENT_CONFIRMED' 
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+      <on eventId='cancelOrder' 
+          componentName='cancelOrderCommand'
+          newStateId='CANCELLED'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <manual-state id='PAYMENT_CONFIRMED' meta-mainPath="true">
+      <entry-action componentName="paymentConfirmedAction" />
+      <on eventId='startProcessing' 
+          componentName='startProcessingCommand'
+          newStateId='PROCESSING' 
+          meta-mainPath="true"
+          meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='PROCESSING' meta-mainPath="true">
+      <entry-action componentName="processingStartedAction" />
+      <on eventId='itemsPicked' 
+          componentName='itemsPickedCommand'
+          newStateId='PICKED' 
+          meta-mainPath="true"
+          meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='PICKED' meta-mainPath="true">
+      <entry-action componentName="itemsPackedAction" />
+      <on eventId='courierPickup' 
+          componentName='courierPickupCommand'
+          newStateId='SHIPPED' 
+          meta-mainPath="true"
+          meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='SHIPPED' meta-mainPath="true">
+      <entry-action componentName="shippedNotificationAction" />
+      <on eventId='deliverOrder' 
+          componentName='deliverOrderCommand'
+          newStateId='DELIVERED' 
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+      <on eventId='returnRequested' 
+          componentName='returnRequestedCommand'
+          newStateId='RETURN_INITIATED'/>
+    </manual-state>
+
+    <manual-state id='DELIVERED' meta-mainPath="true">
+      <entry-action componentName="deliveredNotificationAction" />
+      <on eventId='confirmDelivery' 
+          componentName='confirmDeliveryCommand'
+          newStateId='COMPLETED' 
+          meta-mainPath="true"
+          meta-acls="CUSTOMER"/>
+      <on eventId='initiateReturn' 
+          componentName='initiateReturnCommand'
+          newStateId='RETURN_INITIATED'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <manual-state id='COMPLETED'>
+      <entry-action componentName="orderCompletedAction" />
+      <exit-action componentName="triggerSettlementAction" />
+    </manual-state>
+
+    <manual-state id='RETURN_INITIATED'>
+      <entry-action componentName="returnInitiatedAction" />
+      <on eventId='approveReturn' 
+          componentName='approveReturnCommand'
+          newStateId='REFUND_INITIATED' 
+          meta-acls="ADMIN"/>
+      <on eventId='rejectReturn' 
+          componentName='rejectReturnCommand'
+          newStateId='COMPLETED' 
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='REFUND_INITIATED'>
+      <entry-action componentName="refundProcessingAction" />
+      <on eventId='refundComplete' 
+          componentName='refundCompleteCommand'
+          newStateId='REFUNDED' 
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='REFUNDED'>
+      <exit-action componentName="adjustSettlementAction" />
+    </manual-state>
+
+    <manual-state id='CANCELLED'>
+      <entry-action componentName="cancelledNotificationAction" />
+    </manual-state>
+  </flow>
+</states>

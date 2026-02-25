@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{admin/layout/base :: layout(~{::title}, ~{::#content}, ~{::#head}, ~{::#scripts})}">
+
+<head>
+    <title>Customer Analytics</title>
+    <th:block id="head"></th:block>
+</head>
+
+<body>
+    <div id="content">
+        <h2 class="mb-4">Customer Analytics</h2>
+
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card-stat">
+                    <div class="stat-label">New Customers (30d)</div>
+                    <div class="stat-value" th:text="${newCustomers}">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-stat">
+                    <div class="stat-label">Returning Customers</div>
+                    <div class="stat-value" th:text="${returningCustomers}">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-stat">
+                    <div class="stat-label">Avg Order Value</div>
+                    <div class="stat-value">₹<span
+                            th:text="${#numbers.formatDecimal(averageOrderValue, 1, 2)}">0.00</span></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-stat">
+                    <div class="stat-label">Customer LTV</div>
+                    <div class="stat-value">₹<span
+                            th:text="${#numbers.formatDecimal(customerLifetimeValue, 1, 2)}">0.00</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <th:block id="scripts"></th:block>
+</body>
+
+</html>

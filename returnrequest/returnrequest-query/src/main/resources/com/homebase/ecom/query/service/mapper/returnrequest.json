@@ -1,0 +1,43 @@
+[
+	{
+		"id": "Returnrequest.getAll",
+		"name": "returnrequests",
+		"workflowName": "returnrequest",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"orderId": {
+				"name": "order_id",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"amount": {
+				"name": "amount",
+				"columnType": "Numeric",
+				"filterable": true
+			},
+			"status": {
+				"name": "status",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdAt": {
+				"name": "created_at",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	}
+]

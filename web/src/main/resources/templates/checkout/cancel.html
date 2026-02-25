@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/header :: head('Payment Cancelled - HomeMade')"></head>
+
+<body>
+    <div th:replace="fragments/header :: navbar"></div>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-6 offset-md-3 text-center">
+                <div class="alert alert-warning py-4">
+                    <i class="fas fa-times-circle fa-3x mb-3"></i>
+                    <h3>Payment Cancelled</h3>
+                    <p>Your payment was cancelled. No charges have been made.</p>
+                </div>
+
+                <div class="d-flex gap-3 justify-content-center">
+                    <a href="/cart" class="btn btn-primary"><i class="fas fa-shopping-cart me-1"></i>Return to Cart</a>
+                    <a href="/products" class="btn btn-outline-secondary"><i
+                            class="fas fa-shopping-bag me-1"></i>Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{admin/layout/base :: layout(~{::title}, ~{::#content}, ~{::#head}, ~{::#scripts})}">
+
+<head>
+    <title>Dashboard</title>
+    <th:block id="head"></th:block>
+</head>
+
+<body>
+    <div id="content">
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card-stat">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value">₹<span
+                            th:text="${#numbers.formatDecimal(stats.totalRevenue, 1, 2)}">0.00</span></div>
+                    <small class="text-success">
+                        <i class="fas fa-arrow-up"></i>
+                        <span th:text="${stats.revenueGrowth}">+12%</span> from last month
+                    </small>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card-stat">
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-value" th:text="${stats.totalOrders}">0</div>
+                    <small class="text-success">
+                        <i class="fas fa-arrow-up"></i>
+                        <span th:text="${stats.orderGrowth}">+8%</span> from last month
+                    </small>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card-stat">
+                    <div class="stat-label">Avg Order Value</div>
+                    <div class="stat-value">₹<span
+                            th:text="${#numbers.formatDecimal(stats.avgOrderValue, 1, 2)}">0.00</span></div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card-stat" style="border-left-color: #e74c3c;">
+                    <div class="stat-label">Pending Orders</div>
+                    <div class="stat-value text-danger" th:text="${stats.pendingOrders}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Revenue Trend (Last 7 Days)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Top Products</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li th:each="product : ${topProducts}" class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <strong th:text="${product.name}">Product Name</strong>
+                                    <span class="badge bg-primary" th:text="${product.sales}">0</span>
+                                </div>
+                                <div class="progress mt-1">
+                                    <div class="progress-bar" th:style="'width: ' + ${product.percentage} + '%'">
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Recent Orders</h5>
+                <a href="/admin/orders" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="order : ${recentOrders}">
+                            <td><a th:href="@{/admin/orders/{id}(id=${order.id})}" th:text="${order.id}">ORD-123</a>
+                            </td>
+                            <td th:text="${order.customerId}">Customer</td>
+                            <td>₹<span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)}">0.00</span></td>
+                            <td th:text="${#temporals.format(order.createdAt, 'MMM dd, yyyy')}">Jan 01, 2024</td>
+                            <td>
+                                <span class="badge"
+                                    th:classappend="${order.status == 'PAID' ? 'bg-success' : order.status == 'PENDING_PAYMENT' ? 'bg-warning' : 'bg-secondary'}"
+                                    th:text="${order.status}">Status</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/orders/{id}(id=${order.id})}"
+                                    class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <th:block id="scripts">
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            // Revenue Chart
+            var revenueTrendList = /*[[${revenueTrend}]]*/[];
+            var labelsData = revenueTrendList.map(function (d) { return d.date; });
+            var amountData = revenueTrendList.map(function (d) { return d.amount; });
+
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labelsData,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: amountData,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+            /*]]>*/
+        </script>
+    </th:block>
+</body>
+
+</html>

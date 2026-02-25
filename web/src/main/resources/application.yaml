@@ -1,0 +1,152 @@
+spring:
+  application:
+    name: ecommerce-app
+
+  # Database Configuration
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+  # Redis (Caching & Sessions)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+
+  # Thymeleaf
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+    mode: HTML
+    encoding: UTF-8
+
+  # Mail Configuration (SendGrid)
+  mail:
+    host: smtp.sendgrid.net
+    port: 587
+    username: apikey
+    password: ${SENDGRID_API_KEY:default}
+
+  # Session Management
+  session:
+    store-type: redis
+    timeout: 1800
+
+  # Flyway
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+# Stripe Configuration
+stripe:
+  api-key: ${STRIPE_SECRET_KEY:sk_test_default}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_default}
+  publishable-key: ${STRIPE_PUBLISHABLE_KEY:pk_test_default}
+
+# Razorpay Configuration
+razorpay:
+  key:
+    id: ${RAZORPAY_KEY_ID:rzp_test_default}
+    secret: ${RAZORPAY_KEY_SECRET:rzp_test_default_secret}
+  webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:whsec_test_default}
+
+# Cloudinary Configuration
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:default}
+  api-key: ${CLOUDINARY_API_KEY:default}
+  api-secret: ${CLOUDINARY_API_SECRET:default}
+
+# Frontend URLs
+app:
+  frontend:
+    success-url: ${FRONTEND_SUCCESS_URL:http://localhost:8080/checkout/success}
+    cancel-url: ${FRONTEND_CANCEL_URL:http://localhost:8080/checkout/cancel}
+  features:
+    admin:
+      analytics: ${ADMIN_FEATURE_ANALYTICS:true}
+      payments: ${ADMIN_FEATURE_PAYMENTS:true}
+      refunds: ${ADMIN_FEATURE_REFUNDS:true}
+      audit: ${ADMIN_FEATURE_AUDIT:true}
+      notifications: ${ADMIN_FEATURE_NOTIFICATIONS:true}
+    web:
+      refunds: ${WEB_FEATURE_REFUNDS:true}
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.ecommerce: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/ecommerce.log
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+    include-stacktrace: on-param
+  compression:
+    enabled: true
+    min-response-size: 1024
+
+# Kafka Configuration
+spring.kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  properties:
+    security.protocol: SSL
+  ssl:
+    key-store-location: ${KAFKA_SSL_KEY_STORE_LOCATION:file:/app/certs/client.keystore.p12}
+    key-store-password: ${KAFKA_KEY_PASSWORD:changeit}
+    key-store-type: PKCS12
+    trust-store-location: ${KAFKA_SSL_TRUST_STORE_LOCATION:file:/app/certs/client.truststore.jks}
+    trust-store-password: ${KAFKA_KEY_PASSWORD:changeit}
+    trust-store-type: JKS
+  consumer:
+    auto-offset-reset: earliest
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    properties:
+      spring.json.trusted.packages: com.ecommerce.shared.event
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+# GST Invoice Seller Details
+invoice:
+  seller:
+    name: "Dhanalakshmi Sarees"
+    gstin: "36AABCD1234F1ZK"
+    pan: "AABCD1234F"
+    address: "Road No 2, RK Puram, Kothapet, Hyderabad, Telangana - 500035"
+    state: "Telangana"
+    state-code: "36"

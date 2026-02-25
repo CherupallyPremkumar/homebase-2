@@ -1,0 +1,25 @@
+<!-- Dashboard Stats Fragment (AJAX) -->
+<div th:fragment="stats">
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card-stat">
+                <div class="stat-label">Total Revenue</div>
+                <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(stats.totalRevenue, 1, 2)}">0.00</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-stat">
+                <div class="stat-label">Total Orders</div>
+                <div class="stat-value" th:text="${stats.totalOrders}">0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-stat">
+                <div class="stat-label">Avg Order Value</div>
+                <div class="stat-value">₹<span
+                        th:text="${#numbers.formatDecimal(stats.avgOrderValue, 1, 2)}">0.00</span></div>
+            </div>
+        </div>
+    </div>
+</div>

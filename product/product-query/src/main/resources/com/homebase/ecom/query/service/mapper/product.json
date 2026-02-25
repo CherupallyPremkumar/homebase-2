@@ -1,0 +1,40 @@
+[
+	{
+		"id": "Product.getAll",
+		"name": "products",
+		"workflowName": "product",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"name": {
+				"name": "name",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"category": {
+				"name": "category",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"status": {
+				"name": "status",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	}
+]

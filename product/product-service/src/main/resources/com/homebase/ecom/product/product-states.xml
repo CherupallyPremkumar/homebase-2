@@ -1,0 +1,113 @@
+<states xmlns="http://www.chenile.org/state-machine">
+
+  <flow id="product-flow" default="true">
+
+    <!-- ===================================================== -->
+    <!-- FLOW LEVEL ACTIONS                                    -->
+    <!-- ===================================================== -->
+
+    <entry-action componentName="productEntryAction"/>
+    <exit-action componentName="productExitAction"/>
+
+    <security-strategy componentName="productSecurityStrategy"/>
+
+
+    <!-- ===================================================== -->
+    <!-- DRAFT                                                 -->
+    <!-- ===================================================== -->
+
+    <manual-state id="DRAFT" initialState="true">
+
+      <on eventId="submitForReview"
+          componentName="com.homebase.ecom.product.service.cmds.SubmitForReviewAction"
+          newStateId="UNDER_REVIEW"/>
+
+      <on eventId="deleteProduct"
+          componentName="com.homebase.ecom.product.service.cmds.DeleteProductAction"
+          newStateId="DISCONTINUED"/>
+
+    </manual-state>
+
+
+    <!-- ===================================================== -->
+    <!-- UNDER REVIEW                                          -->
+    <!-- ===================================================== -->
+
+    <manual-state id="UNDER_REVIEW">
+
+      <on eventId="approveProduct"
+          componentName="com.homebase.ecom.product.service.cmds.ApproveProductAction"
+          newStateId="PUBLISHED"/>
+
+      <on eventId="rejectProduct"
+          componentName="com.homebase.ecom.product.service.cmds.RejectProductAction"
+          newStateId="DRAFT"/>
+
+    </manual-state>
+
+
+    <!-- ===================================================== -->
+    <!-- PUBLISHED                                             -->
+    <!-- ===================================================== -->
+
+    <manual-state id="PUBLISHED">
+
+      <on eventId="markOutOfStock"
+          componentName="com.homebase.ecom.product.service.cmds.MarkOutOfStockAction"
+          newStateId="OUT_OF_STOCK"/>
+
+      <on eventId="disableProduct"
+          componentName="com.homebase.ecom.product.service.cmds.DisableProductAction"
+          newStateId="DISABLED"/>
+
+      <on eventId="discontinueProduct"
+          componentName="com.homebase.ecom.product.service.cmds.DiscontinueProductAction"
+          newStateId="DISCONTINUED"/>
+
+    </manual-state>
+
+
+    <!-- ===================================================== -->
+    <!-- OUT OF STOCK                                          -->
+    <!-- ===================================================== -->
+
+    <manual-state id="OUT_OF_STOCK">
+
+      <on eventId="restockProduct"
+          componentName="com.homebase.ecom.product.service.cmds.RestockProductAction"
+          newStateId="PUBLISHED"/>
+
+      <on eventId="discontinueProduct"
+          componentName="com.homebase.ecom.product.service.cmds.DiscontinueProductAction"
+          newStateId="DISCONTINUED"/>
+
+    </manual-state>
+
+
+    <!-- ===================================================== -->
+    <!-- DISABLED                                              -->
+    <!-- ===================================================== -->
+
+    <manual-state id="DISABLED">
+
+      <on eventId="enableProduct"
+          componentName="com.homebase.ecom.product.service.cmds.EnableProductAction"
+          newStateId="PUBLISHED"/>
+
+      <on eventId="discontinueProduct"
+          componentName="com.homebase.ecom.product.service.cmds.DiscontinueProductAction"
+          newStateId="DISCONTINUED"/>
+
+    </manual-state>
+
+
+    <!-- ===================================================== -->
+    <!-- TERMINAL STATE                                        -->
+    <!-- ===================================================== -->
+
+    <manual-state id="DISCONTINUED">
+    </manual-state>
+
+  </flow>
+
+</states>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+ <flow id='inventory-flow' default='true'>
+    <security-strategy componentName="com.sareemart.stm.InventorySecurityStrategy"/>
+    <entry-action componentName="InventoryFlowEntryAction" />
+    <exit-action componentName="InventoryFlowExitAction" />
+
+    <!-- STOCK_PENDING State: Product delivered, waiting for stock inspection -->
+    <manual-state id='STOCK_PENDING' initialState='true' meta-mainPath="true">
+      <entry-action componentName="StockPendingAction" />
+      <on eventId='inspectStock' 
+          componentName='InspectStockCommand'
+          newStateId='STOCK_INSPECTION' 
+          meta-mainPath="true"
+          meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <!-- STOCK_INSPECTION State: Dad checking quality & quantity at warehouse -->
+    <manual-state id='STOCK_INSPECTION' meta-mainPath="true">
+      <entry-action componentName="StockInspectionAction" />
+      <on eventId='approveStock' 
+          componentName='ApproveStockCommand'
+          newStateId='STOCK_APPROVED' 
+          meta-mainPath="true"
+          meta-acls="WAREHOUSE"/>
+      <on eventId='rejectStock' 
+          componentName='RejectStockCommand'
+          newStateId='STOCK_REJECTED'
+          meta-acls="WAREHOUSE"/>
+      <on eventId='damageFound' 
+          componentName='DamageFoundCommand'
+          newStateId='PARTIAL_DAMAGE'
+          meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <!-- STOCK_APPROVED State: Stock quality good, ready for sales -->
+    <manual-state id='STOCK_APPROVED' meta-mainPath="true">
+      <entry-action componentName="StockApprovedAction" />
+      <on eventId='allocateToWarehouse' 
+          componentName='AllocateToWarehouseCommand'
+          newStateId='IN_WAREHOUSE' 
+          meta-mainPath="true"
+          meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <!-- IN_WAREHOUSE State: Stock stored in warehouse, available for orders -->
+    <manual-state id='IN_WAREHOUSE' meta-mainPath="true">
+      <entry-action componentName="InWarehouseAction" />
+      <on eventId='reserveStock' 
+          componentName='ReserveStockCommand'
+          newStateId='PARTIALLY_RESERVED'
+          meta-acls="SYSTEM"/>
+      <on eventId='sellAllStock' 
+          componentName='SellAllStockCommand'
+          newStateId='OUT_OF_STOCK'
+          meta-acls="SYSTEM"/>
+      <on eventId='returnDamaged' 
+          componentName='ReturnDamagedCommand'
+          newStateId='DAMAGED_AT_WAREHOUSE'
+          meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <!-- PARTIALLY_RESERVED State: Some stock sold, rest available -->
+    <manual-state id='PARTIALLY_RESERVED' meta-mainPath="true">
+      <entry-action componentName="PartiallyReservedAction" />
+      <on eventId='reserveMoreStock' 
+          componentName='ReserveMoreStockCommand'
+          newStateId='PARTIALLY_RESERVED'
+          meta-acls="SYSTEM"/>
+      <on eventId='releaseReservedStock' 
+          componentName='ReleaseReservedStockCommand'
+          newStateId='IN_WAREHOUSE'
+          meta-acls="SYSTEM"/>
+      <on eventId='soldAllReserved' 
+          componentName='SoldAllReservedCommand'
+          newStateId='OUT_OF_STOCK'
+          meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!-- OUT_OF_STOCK State: All inventory sold, no stock left -->
+    <manual-state id='OUT_OF_STOCK'>
+      <entry-action componentName="OutOfStockAction" />
+      <on eventId='restockArrive' 
+          componentName='RestockArriveCommand'
+          newStateId='STOCK_PENDING' 
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!-- PARTIAL_DAMAGE State: Some items damaged during delivery -->
+    <manual-state id='PARTIAL_DAMAGE'>
+      <entry-action componentName="PartialDamageAction" />
+      <on eventId='repairDamageds' 
+          componentName='RepairDamagedsCommand'
+          newStateId='STOCK_APPROVED'
+          meta-acls="WAREHOUSE"/>
+      <on eventId='discardDamaged' 
+          componentName='DiscardDamagedCommand'
+          newStateId='IN_WAREHOUSE'
+          meta-acls="WAREHOUSE"/>
+      <on eventId='returnToSupplier' 
+          componentName='ReturnToSupplierCommand'
+          newStateId='RETURN_TO_SUPPLIER'
+          meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <!-- DAMAGED_AT_WAREHOUSE State: Items damaged while stored -->
+    <manual-state id='DAMAGED_AT_WAREHOUSE'>
+      <entry-action componentName="DamagedAtWarehouseAction" />
+      <on eventId='repairDamaged' 
+          componentName='RepairDamagedCommand'
+          newStateId='IN_WAREHOUSE'
+          meta-acls="WAREHOUSE"/>
+      <on eventId='discardDamaged' 
+          componentName='DiscardDamagedCommand'
+          newStateId='DISCARDED'
+          meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <!-- RETURN_TO_SUPPLIER State: Stock being returned to supplier -->
+    <manual-state id='RETURN_TO_SUPPLIER'>
+      <entry-action componentName="ReturnToSupplierAction" />
+      <on eventId='returnCompleted' 
+          componentName='ReturnCompletedCommand'
+          newStateId='RETURNED_TO_SUPPLIER'
+          meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <!-- RETURNED_TO_SUPPLIER State: Stock successfully returned -->
+    <manual-state id='RETURNED_TO_SUPPLIER'>
+      <entry-action componentName="ReturnedToSupplierAction" />
+      <exit-action componentName="AdjustSupplierPaymentAction" />
+    </manual-state>
+
+    <!-- STOCK_REJECTED State: Stock quality issues, rejected -->
+    <manual-state id='STOCK_REJECTED'>
+      <entry-action componentName="StockRejectedAction" />
+      <on eventId='returnRejectedStock' 
+          componentName='ReturnRejectedStockCommand'
+          newStateId='RETURN_TO_SUPPLIER'
+          meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <!-- DISCARDED State: Damaged stock discarded -->
+    <manual-state id='DISCARDED'>
+      <entry-action componentName="DiscardedAction" />
+      <exit-action componentName="InventoryDiscardedCleanupAction" />
+    </manual-state>
+  </flow>
+</states>

@@ -1,0 +1,57 @@
+spring:
+  datasource:
+    # These will be injected via AWS SSM environment variables
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate # NEVER update schema automatically in prod
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  data:
+      url: ${REDIS_URL}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+
+  kafka:
+    # Overrides application.yaml defaults strictly with ENV variables
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    properties:
+      security.protocol: SSL
+      ssl.endpoint.identification.algorithm: https
+    ssl:
+      key-password: ${KAFKA_KEY_PASSWORD}
+      key-store-password: ${KAFKA_KEY_PASSWORD}
+      trust-store-password: ${KAFKA_KEY_PASSWORD}
+      key-store-location: ${KAFKA_SSL_KEY_STORE_LOCATION}
+      trust-store-location: ${KAFKA_SSL_TRUST_STORE_LOCATION}
+
+server:
+  port: 8080
+
+app:
+  frontend:
+    success-url: ${FRONTEND_SUCCESS_URL}
+    cancel-url: ${FRONTEND_CANCEL_URL}
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY}
+  publishable-key: ${STRIPE_PUBLISHABLE_KEY}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}

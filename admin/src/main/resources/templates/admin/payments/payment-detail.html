@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{admin/layout/base :: layout(~{::title}, ~{::#content}, ~{::#head}, ~{::#scripts})}">
+
+<head>
+    <title>Payment Detail - Admin</title>
+    <div id="head"></div>
+</head>
+
+<body>
+    <div id="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2><i class="fas fa-receipt me-2"></i>Payment Details</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/admin/payments/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/admin/payments/transactions">Transactions</a></li>
+                        <li class="breadcrumb-item active" th:text="${payment.paymentId}">PAY-001</li>
+                    </ol>
+                </nav>
+            </div>
+            <span class="badge fs-6"
+                th:classappend="${payment.status == 'SUCCEEDED' ? 'bg-success' : (payment.status == 'FAILED' ? 'bg-danger' : 'bg-warning')}"
+                th:text="${payment.status}">SUCCEEDED</span>
+        </div>
+
+        <!-- ── Section 1: Basic Info (YOUR Database) ──────────────── -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Basic Info
+                    <small class="text-muted fw-normal">— from your database</small>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless mb-0">
+                            <tr>
+                                <th class="text-muted" style="width: 40%;">Payment ID</th>
+                                <td class="font-monospace" th:text="${payment.paymentId}">PAY-001</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Order ID</th>
+                                <td>
+                                    <a th:href="@{/admin/orders/{id}(id=${payment.orderId})}"
+                                        th:text="${payment.orderId}" class="fw-bold">ORD-789</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Amount</th>
+                                <td class="fw-bold">
+                                    <span th:text="${payment.currency}">INR</span>
+                                    <span th:text="${#numbers.formatDecimal(payment.amount, 1, 2)}">100.00</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless mb-0">
+                            <tr>
+                                <th class="text-muted" style="width: 40%;">Status</th>
+                                <td>
+                                    <span class="badge"
+                                        th:classappend="${payment.status == 'SUCCEEDED' ? 'bg-success' : (payment.status == 'FAILED' ? 'bg-danger' : 'bg-warning')}"
+                                        th:text="${payment.status}">SUCCEEDED</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Created</th>
+                                <td th:text="${#temporals.format(payment.createdAt, 'MMM dd, yyyy HH:mm:ss')}">Jan 15,
+                                    2024</td>
+                            </tr>
+                            <tr th:if="${payment.updatedAt != null}">
+                                <th class="text-muted">Updated</th>
+                                <td th:text="${#temporals.format(payment.updatedAt, 'MMM dd, yyyy HH:mm:ss')}">Jan 15,
+                                    2024</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Section 2: Gateway Info (From Webhook) ─────────────── -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plug me-2"></i>Gateway Info
+                    <small class="text-muted fw-normal">— received from webhook</small>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <table class="table table-borderless mb-0">
+                            <tr>
+                                <th class="text-muted" style="width: 30%;">Gateway Used</th>
+                                <td>
+                                    <span class="badge text-capitalize"
+                                        th:classappend="${payment.gatewayType == 'stripe' ? 'bg-primary' : 'bg-info'}"
+                                        th:text="${payment.gatewayType}">Stripe</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Gateway TX ID</th>
+                                <td class="font-monospace"
+                                    th:text="${payment.gatewayTransactionId != null ? payment.gatewayTransactionId : 'N/A'}">
+                                    pi_123</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div th:if="${payment.gatewayType == 'stripe' and payment.gatewayTransactionId != null}">
+                            <a th:href="'https://dashboard.stripe.com/payments/' + ${payment.gatewayTransactionId}"
+                                target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-external-link-alt me-1"></i>View in Stripe
+                            </a>
+                        </div>
+                        <div th:if="${payment.gatewayType == 'razorpay' and payment.gatewayTransactionId != null}">
+                            <a th:href="'https://dashboard.razorpay.com/payments/' + ${payment.gatewayTransactionId}"
+                                target="_blank" rel="noopener noreferrer" class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-external-link-alt me-1"></i>View in Razorpay
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-light border small mt-3 mb-0">
+                    <i class="fas fa-info-circle me-1 text-info"></i>
+                    This is what the gateway reported via webhook. For raw processing details, fees, and payout info,
+                    check the gateway dashboard above.
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Section 3: Payout Linkage (YOUR DB) ────────────────── -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-university me-2"></i>Payout Linkage
+                    <small class="text-muted fw-normal">— where this payment landed</small>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div th:if="${payment.payoutLinks != null and !payment.payoutLinks.isEmpty()}">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Provider Payout</th>
+                                    <th>Status</th>
+                                    <th>Payout Date</th>
+                                    <th>Line Type</th>
+                                    <th>Provider Balance TXN</th>
+                                    <th class="text-end">Gross</th>
+                                    <th class="text-end">Fees</th>
+                                    <th class="text-end">Net</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="pl : ${payment.payoutLinks}">
+                                    <td class="font-monospace small" th:text="${pl.providerPayoutId ?: pl.payoutId}">po_123</td>
+                                    <td>
+                                        <span class="badge"
+                                            th:classappend="${pl.payoutStatus == 'paid' or pl.payoutStatus == 'PAID' ? 'bg-success' : 'bg-secondary'}"
+                                            th:text="${pl.payoutStatus ?: '—'}">PAID</span>
+                                    </td>
+                                    <td class="small text-muted"
+                                        th:text="${pl.payoutAt != null ? #temporals.format(pl.payoutAt, 'dd-MMM-yyyy HH:mm') : '—'}">—</td>
+                                    <td><span class="badge bg-secondary" th:text="${pl.payoutLineType}">charge</span></td>
+                                    <td class="font-monospace small" th:text="${pl.providerBalanceTxnId ?: '—'}">—</td>
+                                    <td class="text-end fw-bold">
+                                        <span th:text="${pl.currency}">INR</span>
+                                        <span th:text="${#numbers.formatDecimal(pl.grossAmount, 1, 2)}">0.00</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span th:text="${pl.currency}">INR</span>
+                                        <span th:text="${#numbers.formatDecimal(pl.feeAmount, 1, 2)}">0.00</span>
+                                    </td>
+                                    <td class="text-end fw-bold">
+                                        <span th:text="${pl.currency}">INR</span>
+                                        <span th:text="${#numbers.formatDecimal(pl.netAmount, 1, 2)}">0.00</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a th:href="@{/admin/payments/payouts/{id}(id=${pl.payoutId})}"
+                                            class="btn btn-sm btn-outline-primary">View payout</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div th:if="${payment.payoutLinks == null or payment.payoutLinks.isEmpty()}" class="p-4 text-center text-muted">
+                    <i class="fas fa-info-circle me-1"></i>Not linked to a payout yet.
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Section 4: Ledger Entries (YOUR Accounting) ────────── -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-book me-2"></i>Ledger Entries
+                    <small class="text-muted fw-normal">— your internal accounting</small>
+                </h5>
+                <span class="badge"
+                    th:classappend="${payment.reconciliationStatus == 'MATCHED' ? 'bg-success' : 'bg-warning'}"
+                    th:text="${'Reconciliation: ' + payment.reconciliationStatus}">MATCHED</span>
+            </div>
+            <div class="card-body p-0">
+                <div th:if="${payment.ledgerEntries != null and !payment.ledgerEntries.isEmpty()}">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Account</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="entry : ${payment.ledgerEntries}">
+                                <td class="font-monospace small" th:text="${entry.accountName}">Sales_Revenue</td>
+                                <td>
+                                    <span class="badge"
+                                        th:classappend="${entry.type == 'DEBIT' ? 'bg-danger' : 'bg-success'}"
+                                        th:text="${entry.type}">CREDIT</span>
+                                </td>
+                                <td class="fw-bold" th:text="${'₹' + #numbers.formatDecimal(entry.amount, 1, 2)}">
+                                    ₹100.00</td>
+                                <td class="small text-muted"
+                                    th:text="${#temporals.format(entry.timestamp, 'MMM dd HH:mm:ss')}">Jan 15</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:if="${payment.ledgerEntries == null or payment.ledgerEntries.isEmpty()}"
+                    class="text-center py-4 text-muted">
+                    <i class="fas fa-clock fa-2x mb-2 d-block opacity-25"></i>
+                    No ledger entries recorded yet.
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Section 4: Refund Section (YOUR Database) ──────────── -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-undo me-2"></i>Refund Actions
+                    <small class="text-muted fw-normal">— managed in your system</small>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1"><strong>Refundable Amount:</strong>
+                            <span th:text="${payment.currency}">INR</span>
+                            <span th:text="${#numbers.formatDecimal(payment.amount, 1, 2)}">100.00</span>
+                        </p>
+                    </div>
+                    <div th:if="${payment.status == 'SUCCEEDED'}">
+                        <a th:href="@{/admin/refunds/create(paymentId=${payment.paymentId})}"
+                            class="btn btn-outline-danger">
+                            <i class="fas fa-undo me-1"></i>Create Refund
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Section 5: External Reference ──────────────────────── -->
+        <div class="card border-info shadow-sm mb-4">
+            <div class="card-header bg-info bg-opacity-10">
+                <h5 class="mb-0"><i class="fas fa-external-link-alt me-2 text-info"></i>External Reference</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-2">Need to check this payment in the gateway console? You'll find:</p>
+                <ul class="small text-muted mb-3">
+                    <li>Raw transaction details &amp; processing timeline</li>
+                    <li>Processing fees charged by the gateway</li>
+                    <li>Payout information for this transaction</li>
+                    <li>Any disputes or chargebacks (if any)</li>
+                </ul>
+                <div th:if="${payment.gatewayType == 'stripe'}">
+                    <a th:href="${payment.gatewayTransactionId != null ? 'https://dashboard.stripe.com/payments/' + payment.gatewayTransactionId : 'https://dashboard.stripe.com/payments'}"
+                        target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                        <i class="fab fa-stripe me-1"></i>View in Stripe Dashboard
+                    </a>
+                    <a href="https://status.stripe.com/" target="_blank" rel="noopener noreferrer"
+                        class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-signal me-1"></i>Stripe Status Page
+                    </a>
+                </div>
+                <div th:if="${payment.gatewayType == 'razorpay'}">
+                    <a th:href="${payment.gatewayTransactionId != null ? 'https://dashboard.razorpay.com/payments/' + payment.gatewayTransactionId : 'https://dashboard.razorpay.com/payments'}"
+                        target="_blank" rel="noopener noreferrer" class="btn btn-info text-white">
+                        <i class="fas fa-rocket me-1"></i>View in Razorpay Dashboard
+                    </a>
+                    <a href="https://status.razorpay.com/" target="_blank" rel="noopener noreferrer"
+                        class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-signal me-1"></i>Razorpay Status Page
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Back Nav ───────────────────────────────────────────── -->
+        <a href="/admin/payments/transactions" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Transactions
+        </a>
+    </div>
+
+    <div id="scripts"></div>
+</body>
+
+</html>

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+<flow id='user-flow' default='true'>
+    <security-strategy componentName="UserSecurityStrategy"/>
+    <entry-action componentName="UserEntryAction" />
+    <exit-action componentName="UserExitAction" />
+
+    <!-- REGISTERED State: User just signed up -->
+    <manual-state id='REGISTERED' initialState='true' meta-mainPath="true">
+      <entry-action componentName="UserRegisteredAction" />
+      <on eventId='sendVerificationEmail' 
+          componentName='SendVerificationEmailCommand'
+          newStateId='EMAIL_VERIFICATION_PENDING' 
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+      <on eventId='cancelSignup' 
+          componentName='CancelSignupCommand'
+          newStateId='CANCELLED'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <!-- EMAIL_VERIFICATION_PENDING State: Waiting for email confirmation -->
+    <manual-state id='EMAIL_VERIFICATION_PENDING' meta-mainPath="true">
+      <entry-action componentName="EmailVerificationPendingAction" />
+      <on eventId='verifyEmail' 
+          componentName='VerifyEmailCommand'
+          newStateId='EMAIL_VERIFIED' 
+          meta-mainPath="true"
+          meta-acls="CUSTOMER"/>
+      <on eventId='verificationExpired' 
+          componentName='VerificationExpiredCommand'
+          newStateId='VERIFICATION_EXPIRED'
+          meta-acls="SYSTEM"/>
+      <on eventId='resendVerificationEmail' 
+          componentName='ResendVerificationEmailCommand'
+          newStateId='EMAIL_VERIFICATION_PENDING'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <!-- EMAIL_VERIFIED State: Email confirmed, proceed to profile -->
+    <manual-state id='EMAIL_VERIFIED' meta-mainPath="true">
+      <entry-action componentName="EmailVerifiedAction" />
+      <on eventId='completeProfile' 
+          componentName='CompleteProfileCommand'
+          newStateId='PROFILE_COMPLETE' 
+          meta-mainPath="true"
+          meta-acls="CUSTOMER"/>
+      <on eventId='skipProfile' 
+          componentName='SkipProfileCommand'
+          newStateId='PROFILE_INCOMPLETE'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <!-- PROFILE_INCOMPLETE State: Email verified, profile optional -->
+    <manual-state id='PROFILE_INCOMPLETE'>
+      <entry-action componentName="ProfileIncompleteAction" />
+      <on eventId='completeProfile' 
+          componentName='CompleteProfileCommand'
+          newStateId='PROFILE_COMPLETE' 
+          meta-mainPath="true"
+          meta-acls="CUSTOMER"/>
+      <on eventId='activateAccount' 
+          componentName='ActivateAccountCommand'
+          newStateId='ACTIVE'
+          meta-acls="SYSTEM"/>
+      <on eventId='upgradeToSupplier' 
+          componentName='UpgradeToSupplierCommand'
+          newStateId='SUPPLIER_APPROVAL_PENDING'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <!-- PROFILE_COMPLETE State: Profile information filled -->
+    <manual-state id='PROFILE_COMPLETE' meta-mainPath="true">
+      <entry-action componentName="ProfileCompleteAction" />
+      <on eventId='activateAccount' 
+          componentName='ActivateAccountCommand'
+          newStateId='ACTIVE' 
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+      <on eventId='upgradeToSupplier' 
+          componentName='UpgradeToSupplierCommand'
+          newStateId='SUPPLIER_APPROVAL_PENDING'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <!-- ACTIVE State: Account fully operational -->
+    <manual-state id='ACTIVE' meta-mainPath="true">
+      <entry-action componentName="AccountActivatedAction" />
+      <on eventId='deactivateAccount' 
+          componentName='DeactivateAccountCommand'
+          newStateId='INACTIVE'
+          meta-acls="CUSTOMER"/>
+      <on eventId='suspendAccount' 
+          componentName='SuspendAccountCommand'
+          newStateId='SUSPENDED'
+          meta-acls="ADMIN"/>
+      <on eventId='banAccount' 
+          componentName='BanAccountCommand'
+          newStateId='BANNED'
+          meta-acls="ADMIN"/>
+      <on eventId='upgradeToSupplier' 
+          componentName='UpgradeToSupplierCommand'
+          newStateId='SUPPLIER_APPROVAL_PENDING'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <!-- INACTIVE State: User paused account -->
+    <manual-state id='INACTIVE'>
+      <entry-action componentName="AccountDeactivatedAction" />
+      <on eventId='reactivateAccount' 
+          componentName='ReactivateAccountCommand'
+          newStateId='ACTIVE'
+          meta-mainPath="true"
+          meta-acls="CUSTOMER"/>
+      <on eventId='deleteAccount' 
+          componentName='DeleteAccountCommand'
+          newStateId='DELETED'
+          meta-acls="CUSTOMER,ADMIN"/>
+    </manual-state>
+
+    <!-- SUSPENDED State: Admin suspended account -->
+    <manual-state id='SUSPENDED'>
+      <entry-action componentName="AccountSuspendedAction" />
+      <on eventId='unsuspendAccount' 
+          componentName='UnsuspendAccountCommand'
+          newStateId='ACTIVE'
+          meta-acls="ADMIN"/>
+      <on eventId='banAccount' 
+          componentName='BanAccountCommand'
+          newStateId='BANNED'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- BANNED State: Account permanently banned -->
+    <manual-state id='BANNED'>
+      <entry-action componentName="AccountBannedAction" />
+      <exit-action componentName="AccountBannedCleanupAction" />
+    </manual-state>
+
+    <!-- VERIFICATION_EXPIRED State: Email token expired -->
+    <manual-state id='VERIFICATION_EXPIRED'>
+      <entry-action componentName="VerificationExpiredAction" />
+      <on eventId='restartVerification' 
+          componentName='RestartVerificationCommand'
+          newStateId='REGISTERED'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <!-- CANCELLED State: User cancelled signup -->
+    <manual-state id='CANCELLED'>
+      <entry-action componentName="SignupCancelledAction" />
+    </manual-state>
+
+    <!-- SUPPLIER_APPROVAL_PENDING State: Waiting for admin approval -->
+    <manual-state id='SUPPLIER_APPROVAL_PENDING'>
+      <entry-action componentName="SupplierApprovalPendingAction" />
+      <on eventId='approveSupplier' 
+          componentName='ApproveSupplierCommand'
+          newStateId='SUPPLIER_APPROVED' 
+          meta-mainPath="true"
+          meta-acls="ADMIN"/>
+      <on eventId='rejectSupplier' 
+          componentName='RejectSupplierCommand'
+          newStateId='ACTIVE'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- SUPPLIER_APPROVED State: Supplier account activated -->
+    <manual-state id='SUPPLIER_APPROVED'>
+      <entry-action componentName="SupplierApprovedAction" />
+      <on eventId='suspendSupplier' 
+          componentName='SuspendSupplierCommand'
+          newStateId='SUSPENDED'
+          meta-acls="ADMIN"/>
+      <on eventId='deactivateSupplier' 
+          componentName='DeactivateSupplierCommand'
+          newStateId='INACTIVE'
+          meta-acls="SUPPLIER,ADMIN"/>
+    </manual-state>
+
+    <!-- DELETED State: Account permanently deleted -->
+    <manual-state id='DELETED'>
+      <entry-action componentName="AccountDeletedAction" />
+      <exit-action componentName="AccountDeletedCleanupAction" />
+    </manual-state>
+  </flow>
+</states>

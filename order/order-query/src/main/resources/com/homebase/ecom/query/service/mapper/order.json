@@ -1,0 +1,43 @@
+[
+	{
+		"id": "Order.getAll",
+		"name": "orders",
+		"workflowName": "order",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"userId": {
+				"name": "user_id",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"status": {
+				"name": "status",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"totalAmount": {
+				"name": "total_amount",
+				"filterable": true,
+				"columnType": "Numeric"
+			},
+			"createdAt": {
+				"name": "created_at",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	}
+]

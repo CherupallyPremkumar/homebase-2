@@ -1,0 +1,191 @@
+package com.ecommerce.payment.service.impl;
+
+import com.ecommerce.payment.domain.PaymentTransaction;
+import com.ecommerce.payment.dto.CheckoutSessionRequest;
+import com.ecommerce.payment.dto.CheckoutSessionResponse;
+import com.ecommerce.payment.gateway.PaymentGatewayFactory;
+import com.ecommerce.payment.repository.PaymentTransactionRepository;
+import com.ecommerce.payment.repository.RefundRequestRepository;
+import com.ecommerce.payment.service.LedgerService;
+import com.ecommerce.shared.event.EventEnvelope;
+import com.ecommerce.shared.money.Money;
+import com.ecommerce.shared.event.KafkaTopics;
+import com.ecommerce.shared.event.PaymentFailedEvent;
+import com.ecommerce.shared.event.PaymentRefundedEvent;
+import com.ecommerce.shared.event.PaymentSucceededEvent;
+import com.ecommerce.shared.event.PaymentSessionExpiredEvent;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class PaymentServiceImpl {
+
+    private final PaymentGatewayFactory gatewayFactory;
+    private final DynamicGatewayResolver gatewayResolver;
+    private final PaymentTransactionRepository paymentTransactionRepository;
+    private final RefundRequestRepository refundRequestRepository;
+    private final LedgerService ledgerService;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Transactional
+    public CheckoutSessionResponse initiateCheckout(CheckoutSessionRequest request) {
+        String activeGatewayType = gatewayResolver.getActiveGatewayType();
+        log.info("Initiating checkout for order: {} using gateway: {}",
+                request.getOrderId(), activeGatewayType);
+
+        CheckoutSessionResponse response = gatewayFactory.getGatewayByType(activeGatewayType)
+                .createCheckoutSession(request);
+
+        // Note: Order module will link session ID via OrderService
+        // Payment module should not directly modify Order entity
+        log.info("Checkout session created: {} for order: {}", 
+                response.getSessionId(), request.getOrderId());
+
+        return response;
+    }
+
+    @Transactional
+    public void processRefund(String orderId, String gatewayTransactionId, BigDecimal amount, String reason) {
+        log.info("Processing refund for order: {} (Amount: {})", orderId, amount);
+
+        if (gatewayTransactionId == null || gatewayTransactionId.isEmpty()) {
+            throw new RuntimeException("Cannot refund order without gateway transaction: " + orderId);
+        }
+
+        // Get payment transaction to determine which gateway to use
+        PaymentTransaction tx = paymentTransactionRepository
+                .findByGatewayTransactionId(gatewayTransactionId)
+                .orElseThrow(() -> new RuntimeException("Payment transaction not found: " + gatewayTransactionId));
+
+        // Use the gateway that processed the original payment
+        String gatewayType = tx.getGatewayType() != null ? tx.getGatewayType() : gatewayResolver.getActiveGatewayType();
+        gatewayFactory.getGatewayByType(gatewayType).processRefund(gatewayTransactionId, amount, reason);
+
+        log.info("Refund request sent to {} gateway for order: {}", gatewayType, orderId);
+        // Note: Order status will be updated via PaymentRefundedEvent → OrderSaga
+    }
+
+    @Transactional
+    public void handlePaymentSuccess(String orderId, String gatewayTransactionId, String gatewayEventId,
+            BigDecimal amount) {
+        log.info("Handling payment success for order: {} (TX: {})", orderId, gatewayTransactionId);
+
+        // Check if payment transaction already exists (idempotency)
+        PaymentTransaction existingTx = paymentTransactionRepository
+                .findByGatewayTransactionId(gatewayTransactionId)
+                .orElse(null);
+
+        if (existingTx != null && "SUCCEEDED".equals(existingTx.getStatus())) {
+            log.info("Payment transaction {} already processed as SUCCEEDED. Skipping.", gatewayTransactionId);
+            return;
+        }
+
+        // Save payment transaction record
+        PaymentTransaction tx = existingTx != null ? existingTx : new PaymentTransaction();
+        tx.setOrderId(orderId);
+        tx.setGatewayType(gatewayResolver.getActiveGatewayType());
+        tx.setGatewayTransactionId(gatewayTransactionId);
+        tx.setGatewayEventId(gatewayEventId);
+        tx.setStatus("SUCCEEDED");
+        tx.setAmount(amount);
+        tx.setCurrency("INR");
+        paymentTransactionRepository.save(tx);
+
+        // Ledger integration (idempotent by transactionId)
+        if (amount != null) {
+            ledgerService.recordChargeSuccess(gatewayTransactionId, amount, BigDecimal.ZERO);
+        }
+
+        // Publish event - OrderSaga will update order status (after DB commit)
+        PaymentSucceededEvent event = new PaymentSucceededEvent(orderId, gatewayTransactionId, LocalDateTime.now());
+        if (amount != null) {
+            event.setAmount(Money.ofRupees(amount, "INR"));
+        }
+        sendAfterCommit(KafkaTopics.PAYMENT_EVENTS, orderId,
+                EventEnvelope.of(PaymentSucceededEvent.EVENT_TYPE, 1, event));
+
+        log.info("Payment success event scheduled for publish (after commit) for order: {}.", orderId);
+    }
+
+    @Transactional
+    public void handlePaymentExpired(String orderId, String gatewaySessionId) {
+        log.info("Handling payment expiry for order: {} (session: {})", orderId, gatewaySessionId);
+        PaymentSessionExpiredEvent event = new PaymentSessionExpiredEvent(orderId, LocalDateTime.now());
+        sendAfterCommit(KafkaTopics.PAYMENT_EVENTS, orderId,
+                EventEnvelope.of(PaymentSessionExpiredEvent.EVENT_TYPE, 1, event));
+    }
+
+    @Transactional
+    public void handlePaymentFailed(String orderId, String gatewayTransactionId, String reason) {
+        log.info("Handling payment failure for order: {} (tx: {})", orderId, gatewayTransactionId);
+        PaymentFailedEvent event = new PaymentFailedEvent(orderId, gatewayTransactionId, reason, LocalDateTime.now());
+        sendAfterCommit(KafkaTopics.PAYMENT_EVENTS, orderId,
+                EventEnvelope.of(PaymentFailedEvent.EVENT_TYPE, 1, event));
+    }
+
+    @Transactional
+    public void handleRefundSuccess(String gatewayTransactionId, BigDecimal refundedAmount, String refundReason) {
+        log.info("Handling refund success for tx: {}", gatewayTransactionId);
+
+        PaymentTransaction tx = paymentTransactionRepository
+                .findByGatewayTransactionId(gatewayTransactionId)
+                .orElseThrow(() -> new RuntimeException("Payment transaction not found: " + gatewayTransactionId));
+
+        tx.setStatus("REFUNDED");
+        paymentTransactionRepository.save(tx);
+
+        // Mark any local refund requests as completed (best-effort)
+        try {
+            var requests = refundRequestRepository.findByOrderId(tx.getOrderId());
+            for (var req : requests) {
+                if ("INITIATED".equalsIgnoreCase(req.getStatus()) || "APPROVED".equalsIgnoreCase(req.getStatus())) {
+                    req.setStatus("PROCESSED");
+                }
+            }
+            refundRequestRepository.saveAll(requests);
+        } catch (Exception e) {
+            log.warn("Failed to update refund request status for order {}: {}", tx.getOrderId(), e.getMessage());
+        }
+
+        // Ledger integration (idempotent by transactionId)
+        if (refundedAmount != null) {
+            ledgerService.recordRefund(gatewayTransactionId, refundedAmount);
+        }
+
+        PaymentRefundedEvent event = new PaymentRefundedEvent(
+                tx.getOrderId(),
+                gatewayTransactionId,
+                refundedAmount,
+                refundReason,
+                LocalDateTime.now());
+        if (refundedAmount != null) {
+            event.setRefundedMoney(Money.ofRupees(refundedAmount, "INR"));
+        }
+
+        sendAfterCommit(KafkaTopics.PAYMENT_EVENTS, tx.getOrderId(),
+                EventEnvelope.of(PaymentRefundedEvent.EVENT_TYPE, 1, event));
+    }
+
+    private void sendAfterCommit(String topic, String key, Object payload) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    kafkaTemplate.send(topic, key, payload);
+                }
+            });
+        } else {
+            kafkaTemplate.send(topic, key, payload);
+        }
+    }
+}

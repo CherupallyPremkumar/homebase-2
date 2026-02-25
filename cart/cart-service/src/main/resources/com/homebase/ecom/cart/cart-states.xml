@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <flow id='cart-flow' default='true'>
+    <security-strategy componentName="CartSecurityStrategy"/>
+    <entry-action componentName="CartEntryAction" />
+
+    <manual-state id='CREATED' initialState='true' meta-mainPath="true">
+      <entry-action componentName="cartCreatedAction" />
+      <on eventId='addItem' 
+          componentName='cartAddItemAction'
+          newStateId='ACTIVE'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <manual-state id='ACTIVE' meta-mainPath="true">
+      <on eventId='removeItem' 
+          componentName='cartRemoveItemAction'
+          newStateId='ACTIVE'
+          meta-acls="CUSTOMER"/>
+      <on eventId='updateQuantity' 
+          componentName='cartUpdateQuantityAction'
+          newStateId='ACTIVE'
+          meta-acls="CUSTOMER"/>
+      <on eventId='initiateCheckout' 
+          componentName='cartInitiateCheckoutAction'
+          newStateId='CHECKOUT_INITIATED' 
+          meta-mainPath="true"
+          meta-acls="CUSTOMER"/>
+      <on eventId='abandonCart' 
+          componentName='cartAbandonCartAction'
+          newStateId='ABANDONED'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <manual-state id='CHECKOUT_INITIATED' meta-mainPath="true">
+      <entry-action componentName="cartCheckoutInitiatedAction" />
+      <on eventId='completePayment' 
+          componentName='cartCompletePaymentAction'
+          newStateId='ORDER_CREATED' 
+          meta-mainPath="true"
+          meta-acls="CUSTOMER"/>
+      <on eventId='abandonCheckout' 
+          componentName='cartAbandonCheckoutAction'
+          newStateId='ACTIVE'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <manual-state id='ORDER_CREATED'>
+      <entry-action componentName="cartOrderCreatedFromCartAction" />
+      <exit-action componentName="cartClearCartAction" />
+    </manual-state>
+
+    <manual-state id='ABANDONED'>
+      <entry-action componentName="CartAbandonedAction" />
+    </manual-state>
+
+    <manual-state id='EXPIRED'>
+      <entry-action componentName="CartExpiredAction" />
+    </manual-state>
+  </flow>
+</states>
