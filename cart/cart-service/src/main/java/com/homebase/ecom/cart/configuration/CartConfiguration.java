@@ -1,5 +1,11 @@
 package com.homebase.ecom.cart.configuration;
 
+import com.homebase.ecom.cart.service.validator.CartPolicyValidator;
+import com.homebase.ecom.shared.CurrencyResolver;
+import org.chenile.cconfig.sdk.CconfigClient;
+import org.chenile.proxy.builder.ProxyBuilder;
+import org.chenile.service.registry.service.ServiceRegistryService;
+import org.chenile.service.registry.service.impl.ServiceRegistryServiceImpl;
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.impl.*;
@@ -9,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
@@ -16,7 +23,7 @@ import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.cart.model.Cart;
 import com.homebase.ecom.cart.service.cmds.*;
 import com.homebase.ecom.cart.service.healthcheck.CartHealthChecker;
-import com.homebase.ecom.cart.service.store.CartEntityStore;
+import com.homebase.ecom.cart.infrastructure.persistence.ChenileCartEntityStore;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.stm.State;
 import org.chenile.workflow.service.activities.ActivityChecker;
@@ -28,6 +35,9 @@ import com.homebase.ecom.cart.service.postSaveHooks.*;
  */
 @Configuration
 public class CartConfiguration {
+
+    @Autowired
+    private ProxyBuilder proxyBuilder;
     private static final String FLOW_DEFINITION_FILE = "com/homebase/ecom/cart/cart-states.xml";
     public static final String PREFIX_FOR_PROPERTIES = "Cart";
     public static final String PREFIX_FOR_RESOLVER = "cart";
@@ -61,7 +71,7 @@ public class CartConfiguration {
 
     @Bean
     EntityStore<Cart> cartEntityStore() {
-        return new CartEntityStore();
+        return new ChenileCartEntityStore();
     }
 
     @Bean
@@ -179,6 +189,11 @@ public class CartConfiguration {
     }
 
     @Bean
+    CartPolicyValidator cartPolicyValidator(CconfigClient cconfigClient, CurrencyResolver currencyResolver) {
+        return new CartPolicyValidator(cconfigClient, currencyResolver);
+    }
+
+    @Bean
     RemoveItemCartAction cartRemoveItemAction() {
         return new RemoveItemCartAction();
     }
@@ -204,6 +219,31 @@ public class CartConfiguration {
     }
 
     @Bean
+    AddDeliveryAddressAction cartAddDeliveryAddressAction() {
+        return new AddDeliveryAddressAction();
+    }
+
+    @Bean
+    CreatePaymentSessionAction cartCreatePaymentSessionAction() {
+        return new CreatePaymentSessionAction();
+    }
+
+    @Bean
+    PaymentSuccessCartAction cartPaymentSuccessAction() {
+        return new PaymentSuccessCartAction();
+    }
+
+    @Bean
+    PaymentFailedCartAction cartPaymentFailedAction() {
+        return new PaymentFailedCartAction();
+    }
+
+    @Bean
+    RevertToActiveCartAction cartRevertToActiveAction() {
+        return new RevertToActiveCartAction();
+    }
+
+    @Bean
     AbandonCartCartAction cartAbandonCartAction() {
         return new AbandonCartCartAction();
     }
@@ -216,6 +256,71 @@ public class CartConfiguration {
     @Bean
     ClearCartAction cartClearCartAction() {
         return new ClearCartAction();
+    }
+
+    @Bean
+    MergeCartAction cartMergeCartAction() {
+        return new MergeCartAction();
+    }
+
+    @Bean
+    ReconciliationPendingCartAction cartReconciliationPendingAction() {
+        return new ReconciliationPendingCartAction();
+    }
+
+    @Bean
+    ExpiredCartAction cartExpiredAction() {
+        return new ExpiredCartAction();
+    }
+
+    @Bean
+    ApplyPromoCodeAction cartApplyPromoCodeAction() {
+        return new ApplyPromoCodeAction();
+    }
+
+    @Bean
+    MoveToWishlistAction cartMoveToWishlistAction() {
+        return new MoveToWishlistAction();
+    }
+
+    @Bean
+    SessionTimeoutAction cartSessionTimeoutAction() {
+        return new SessionTimeoutAction();
+    }
+
+    @Bean
+    MoveToCartAction cartMoveToCartAction() {
+        return new MoveToCartAction();
+    }
+
+    @Bean
+    LockTimeoutAction cartLockTimeoutAction() {
+        return new LockTimeoutAction();
+    }
+
+    @Bean
+    InventoryReservationFailedAction cartInventoryReservationFailedAction() {
+        return new InventoryReservationFailedAction();
+    }
+
+    @Bean
+    ReserveTimeoutAction cartReserveTimeoutAction() {
+        return new ReserveTimeoutAction();
+    }
+
+    @Bean
+    RecoverCartAction cartRecoverCartAction() {
+        return new RecoverCartAction();
+    }
+
+    @Bean
+    InventoryReserveAction inventoryReserveAction() {
+        return new InventoryReserveAction();
+    }
+
+    @Bean
+    CartInventoryReleaseAction cartInventoryReleaseAction() {
+        return new CartInventoryReleaseAction();
     }
 
     @Bean
@@ -234,8 +339,8 @@ public class CartConfiguration {
     }
 
     @Bean
-    CHECKOUT_INITIATEDCartPostSaveHook cartCHECKOUT_INITIATEDPostSaveHook() {
-        return new CHECKOUT_INITIATEDCartPostSaveHook();
+    CHECKOUT_IN_PROGRESSCartPostSaveHook cartCHECKOUT_IN_PROGRESSPostSaveHook() {
+        return new CHECKOUT_IN_PROGRESSCartPostSaveHook();
     }
 
     @Bean

@@ -4,9 +4,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
 	<modules>
+		<module>supplier-domain</module>
 		<module>supplier-api</module>
+		<module>supplier-infrastructure</module>
+		<module>supplier-query-api</module>
 		<module>supplier-service</module>
 		<module>supplier-query</module>
+		<module>supplier-app</module>
 	</modules>
 	<parent>
 		<groupId>com.homebase.ecom</groupId>
@@ -17,11 +21,9 @@
 
 	<properties>
 		<supplier.version>${revision}</supplier.version>
-		<revision>1.0.0</revision>
 	</properties>
 	
 	<groupId>com.homebase.ecom.supplier</groupId>
-	<version>${revision}</version>
 	<artifactId>supplier-parent</artifactId>
 	<name>All Modules that belong to the Supplier </name>
 	<description>Modules execution project and Parent Pom</description>
@@ -37,6 +39,16 @@
 			<groupId>com.homebase.ecom.supplier</groupId>
 			<version>${revision}</version>
 			<artifactId>supplier-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.supplier</groupId>
+			<version>${revision}</version>
+			<artifactId>supplier-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.supplier</groupId>
+			<version>${revision}</version>
+			<artifactId>supplier-infrastructure</artifactId>
 		</dependency>
 	</dependencies>
 	</dependencyManagement>

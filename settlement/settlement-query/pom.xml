@@ -13,15 +13,31 @@
 	
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>settlement-query-service</artifactId>
-	<version>${revision}</version>
 	<name>Query Service Test Cases for settlement </name>
 	<description>Query Service Test Cases for settlement </description>
 
 	<properties>
-		<revision>1.0.0</revision>
 	</properties>
 
 	<dependencies>	
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>query-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.settlement</groupId>
+			<artifactId>settlement-query-api</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-http</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -56,7 +72,12 @@
 		<dependency>
 			<groupId>com.homebase.ecom.build</groupId>
 			<artifactId>core</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${revision}</version>
+			<scope>test</scope>
+		</dependency>
+			<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>cucumber-sec-utils</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

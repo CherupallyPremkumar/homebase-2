@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Common tables first (V1, V2, V12, V14, V18, V30, V31, V36, V37) -->
+    <include file="db/changelog/common/db.changelog-common.xml"/>
+
+    <!-- Offer (V3, V6) -->
+    <include file="db/changelog/offer/db.changelog-offer.xml"/>
+
+    <!-- Order (V4, V19, V33, V35) -->
+    <include file="db/changelog/order/db.changelog-order.xml"/>
+
+    <!-- Product (V5) -->
+    <include file="db/changelog/product/db.changelog-product.xml"/>
+
+    <!-- User (V7, V34) -->
+    <include file="db/changelog/user/db.changelog-user.xml"/>
+
+    <!-- Payment (V8, V9, V10, V11, V13, V15, V16, V20, V21, V23, V24, V25, V26, V27, V28, V29) -->
+    <include file="db/changelog/payment/db.changelog-payment.xml"/>
+
+    <!-- Shipping (V17) -->
+    <include file="db/changelog/shipping/db.changelog-shipping.xml"/>
+
+    <!-- Inventory (V22) -->
+    <include file="db/changelog/inventory/db.changelog-inventory.xml"/>
+
+    <!-- Settlement (V32) -->
+    <include file="db/changelog/settlement/db.changelog-settlement.xml"/>
+
+    <!-- Review (V38) -->
+    <include file="db/changelog/review/db.changelog-review.xml"/>
+
+    <!-- Notification (V39) -->
+    <include file="db/changelog/notification/db.changelog-notification.xml"/>
+
+    <!-- Tax (V40) -->
+    <include file="db/changelog/tax/db.changelog-tax.xml"/>
+
+    <!-- Pricing (V41) -->
+    <include file="db/changelog/pricing/db.changelog-pricing.xml"/>
+
+    <!-- Onboarding (V42) -->
+    <include file="db/changelog/onboarding/db.changelog-onboarding.xml"/>
+
+    <!-- Support (V43) -->
+    <include file="db/changelog/support/db.changelog-support.xml"/>
+
+    <!-- CMS (V44) -->
+    <include file="db/changelog/cms/db.changelog-cms.xml"/>
+
+    <!-- Analytics (V45) -->
+    <include file="db/changelog/analytics/db.changelog-analytics.xml"/>
+
+</databaseChangeLog>

@@ -8,22 +8,37 @@ import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.shipping.model.Shipping;
 import com.homebase.ecom.shipping.dto.OutForDeliveryShippingPayload;
 
+import java.util.Calendar;
+import java.util.Date;
+
 /**
- Contains customized logic for the transition. Common logic resides at {@link DefaultSTMTransitionAction}
- <p>Use this class if you want to augment the common logic for this specific transition</p>
- <p>Use a customized payload if required instead of MinimalPayload</p>
-*/
+ * Handles the outForDelivery transition: IN_TRANSIT -> OUT_FOR_DELIVERY.
+ * Final mile delivery has started. Updates location to local hub.
+ */
 public class OutForDeliveryShippingAction extends AbstractSTMTransitionAction<Shipping,
+        OutForDeliveryShippingPayload> {
 
-    OutForDeliveryShippingPayload>{
-
-
-	@Override
-	public void transitionTo(Shipping shipping,
+    @Override
+    public void transitionTo(Shipping shipping,
             OutForDeliveryShippingPayload payload,
             State startState, String eventId,
-			State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-            shipping.transientMap.previousPayload = payload;
-	}
+            State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
+        shipping.getTransientMap().previousPayload = payload;
+
+        // Update location to local hub or delivery area
+        String localHub = payload.getLocalHub();
+        if (localHub != null && !localHub.isEmpty()) {
+            shipping.setCurrentLocation("Out for delivery from " + localHub);
+        } else {
+            shipping.setCurrentLocation("Out for delivery - local hub");
+        }
+
+        // Estimated delivery is today
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        shipping.setEstimatedDelivery(cal.getTime());
+    }
 }

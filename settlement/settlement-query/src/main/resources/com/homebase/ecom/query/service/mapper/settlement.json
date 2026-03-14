@@ -18,12 +18,12 @@
 			"periodMonth": {
 				"name": "period_month",
 				"filterable": true,
-				"columnType": "Numeric"
+				"columnType": "Number"
 			},
 			"periodYear": {
 				"name": "period_year",
 				"filterable": true,
-				"columnType": "Numeric"
+				"columnType": "Number"
 			},
 			"status": {
 				"name": "status",
@@ -38,7 +38,7 @@
 			"netPayoutAmount": {
 				"name": "net_payout_amount",
 				"filterable": true,
-				"columnType": "Numeric"
+				"columnType": "Number"
 			}
 		},
 		"flexiblePropnames": false,

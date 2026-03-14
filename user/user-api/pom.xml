@@ -1,32 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>com.homebase.ecom.user</groupId>
-		<artifactId>user-parent</artifactId>
-		<version>${revision}</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+    <parent>
+        <groupId>com.homebase.ecom.user</groupId>
+        <artifactId>user-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<artifactId>user-api</artifactId>
-	<packaging>jar</packaging>
+    <artifactId>user-api</artifactId>
+    <packaging>jar</packaging>
+    <name>User API — DTOs, Service Interfaces, Exceptions</name>
 
-	<name>User API Model and Interfaces</name>
-
-	<dependencies>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>shared-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>workflow-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>jpa-utils</artifactId>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <!-- Shared: Money, Email value objects -->
+        <dependency>
+            <groupId>com.homebase.ecom.shared</groupId>
+            <artifactId>shared-api</artifactId>
+        </dependency>
+        <!-- Chenile workflow-api: for DTOs that reference WorkflowResponse etc. -->
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>workflow-api</artifactId>
+        </dependency>
+    </dependencies>
 </project>

@@ -1,0 +1,88 @@
+# Production configuration — secrets from environment variables (AWS SSM)
+logging:
+  level:
+    ROOT: WARN
+    com.homebase.ecom: INFO
+    org.chenile: INFO
+
+spring:
+  application:
+    name: homebase-service
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  h2:
+    console:
+      enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: com.homebase.ecom.*
+    ssl:
+      key-store-location: ${KAFKA_KEYSTORE_LOCATION:}
+      key-store-password: ${KAFKA_KEYSTORE_PASSWORD:}
+      trust-store-location: ${KAFKA_TRUSTSTORE_LOCATION:}
+      trust-store-password: ${KAFKA_TRUSTSTORE_PASSWORD:}
+  thymeleaf:
+    cache: true
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  tomcat:
+    max-threads: 200
+    accept-count: 100
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+
+query:
+  defaultTenantId: homebase
+  datasource's:
+    homebase:
+      maximumPoolSize: '30'
+      type: com.zaxxer.hikari.HikariDataSource
+      username: ${DB_USERNAME}
+      password: ${DB_PASSWORD}
+      minimumIdle: '10'
+      idleTimeout: '300000'
+      jdbcUrl: ${DB_URL}
+      driverClassName: org.postgresql.Driver
+  mapperFiles: classpath*:com/homebase/ecom/query/service/mapper/*.xml
+  definitionFiles: classpath*:com/homebase/ecom/query/service/mapper/*.json

@@ -36,5 +36,25 @@
 		"flexiblePropnames": false,
 		"paginated": true,
 		"sortable": true
+	},
+	{
+		"id": "Product.getById",
+		"name": "product",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"name": {
+				"name": "name",
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateId",
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
 	}
 ]

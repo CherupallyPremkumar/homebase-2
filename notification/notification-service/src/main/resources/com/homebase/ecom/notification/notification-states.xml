@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <default-transition-action componentName="notificationBaseTransitionAction"/>
+
+  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
+
+  <flow id='notification-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="notificationEntryAction" />
+    <exit-action componentName="notificationExitAction" />
+
+    <!-- ========== INITIAL STATE ========== -->
+    <status id='CREATED' initialState='true' meta-mainPath="true" description="Notification created, ready to be sent">
+      <on eventId='send'
+          componentName='notificationSendAction'
+          newStateId='SENT'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+      <on eventId='fail'
+          componentName='notificationFailAction'
+          newStateId='FAILED'
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== SENT ========== -->
+    <status id='SENT' meta-mainPath="true" description="Notification successfully delivered to recipient">
+      <on eventId='markRead'
+          componentName='notificationMarkReadAction'
+          newStateId='READ'
+          meta-mainPath="true"
+          meta-acls="CUSTOMER"/>
+    </status>
+
+    <!-- ========== FAILED ========== -->
+    <status id='FAILED' description="Notification delivery failed">
+      <on eventId='retry'
+          componentName='notificationRetryAction'
+          newStateId='CREATED'
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== READ (TERMINAL) ========== -->
+    <status id='READ' description="Notification read by recipient">
+      <!-- Terminal state -->
+    </status>
+  </flow>
+</states>

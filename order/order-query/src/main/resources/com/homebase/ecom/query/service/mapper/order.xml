@@ -1,44 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="Order">
 
-<resultMap id="result" type="map">
-   <result property="id" column="id"/>
-   <result property="userId" column="user_id"/>
-   <result property="status" column="status"/>
-   <result property="stateId" column="stateId"/>
-   <result property="totalAmount" column="total_amount"/>
-   <result property="createdAt" column="created_at"/>
-</resultMap>
+    <select id="getAll" resultType="com.homebase.ecom.dto.OrderDto">
+        SELECT 
+            o.id as id, 
+            o.user_id as userId, 
+            u.email as customerEmail, 
+            o.status as status, 
+            o.state_id as stateId, 
+            o.total_amount as totalAmount, 
+            o.created_at as createdAt
+        FROM orders o
+        LEFT JOIN users u ON o.user_id = u.id
+        <where>
+            <if test="id != null">AND o.id = #{id}</if>
+            <if test="userId != null">AND o.user_id = #{userId}</if>
+            <if test="customerEmail != null">AND u.email LIKE CONCAT('%', #{customerEmail}, '%')</if>
+            <if test="status != null">AND o.status = #{status}</if>
+            <if test="stateId != null">AND o.state_id = #{stateId}</if>
+            <if test="startDate != null">AND o.created_at &gt;= #{startDate}</if>
+            <if test="endDate != null">AND o.created_at &lt;= #{endDate}</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
 
-<select id='getAll-count' resultType="int">
-	select count(*) from orders
-    <where>
-        <if test="userId != null">
-            user_id = #{userId}
-        </if>
-        <if test="status != null">
-            AND status = #{status}
-        </if>
-        <if test="stateId != null">
-            AND "stateId" = #{stateId}
-        </if>
-    </where>
-</select>
+    <select id="getAll-count" resultType="int">
+        SELECT count(*)
+        FROM orders o
+        LEFT JOIN users u ON o.user_id = u.id
+        <where>
+            <if test="id != null">AND o.id = #{id}</if>
+            <if test="userId != null">AND o.user_id = #{userId}</if>
+            <if test="customerEmail != null">AND u.email LIKE CONCAT('%', #{customerEmail}, '%')</if>
+            <if test="status != null">AND o.status = #{status}</if>
+            <if test="stateId != null">AND o.state_id = #{stateId}</if>
+            <if test="startDate != null">AND o.created_at &gt;= #{startDate}</if>
+            <if test="endDate != null">AND o.created_at &lt;= #{endDate}</if>
+        </where>
+    </select>
 
-<select id="getAll" resultMap="result">	
-    SELECT id, user_id, status, "stateId", total_amount, created_at FROM orders
-    <where>
-        <if test="userId != null">
-            user_id = #{userId}
-        </if>
-        <if test="status != null">
-            AND status = #{status}
-        </if>
-        <if test="stateId != null">
-            AND "stateId" = #{stateId}
-        </if>
-    </where>
-    ${orderby} ${pagination}
-</select>
+    <select id="getById" resultType="com.homebase.ecom.dto.OrderDto">
+        SELECT 
+            o.id as id, 
+            o.user_id as userId, 
+            u.email as customerEmail, 
+            o.status as status, 
+            o.state_id as stateId, 
+            o.total_amount as totalAmount, 
+            o.created_at as createdAt
+        FROM orders o
+        LEFT JOIN users u ON o.user_id = u.id
+        WHERE o.id = #{id}
+    </select>
+
+    <select id="getDeliveredOrderItemsForSupplier" resultType="com.homebase.ecom.dto.DeliveredItemDto">
+        SELECT 
+            oi.order_id as "orderId",
+            oi.id as "orderItemId",
+            oi.product_id as "productId",
+            oi.product_name as "productName",
+            oi.quantity as "quantity",
+            oi.unit_price as "unitPrice",
+            oi.total_price as "itemSalesAmount",
+            o.created_at as "orderDate"
+        FROM order_items oi
+        JOIN orders o ON oi.order_id = o.id
+        WHERE oi.supplier_id = #{supplierId}
+          AND oi.status = 'DELIVERED'
+          AND (oi.settlement_status = 'PENDING' OR oi.settlement_status IS NULL)
+          AND EXTRACT(MONTH FROM o.created_at) = #{month}
+          AND EXTRACT(YEAR FROM o.created_at) = #{year}
+    </select>
+
+    <select id="getHeldFundsReport" resultType="com.homebase.ecom.dto.HeldFundsDto">
+        SELECT 
+            oi.supplier_id as "supplierId",
+            SUM(oi.total_price) as "heldAmount",
+            COUNT(oi.id) as "itemCount"
+        FROM order_items oi
+        WHERE oi.status = 'DELIVERED'
+          AND (oi.settlement_status = 'PENDING' OR oi.settlement_status IS NULL)
+        GROUP BY oi.supplier_id
+    </select>
 
 </mapper>

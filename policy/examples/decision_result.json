@@ -1,0 +1,16 @@
+{
+  "id": "dec-88293-abc",
+  "policyId": "pol-saree-visibility-001",
+  "subjectId": "saree-kanchi-99",
+  "resource": "collection:premium-silks",
+  "action": "LIST_ON_STOREFRONT",
+  "effect": "ALLOW",
+  "reasons": "Matched 'High-End Kanchipuram Filter' - All criteria (Price, Material, Weaver) passed.",
+  "timestamp": "2026-03-10T18:15:00Z",
+  "metadata": {
+    "badge": "MASTER_WEAVER",
+    "deliveryEstimate": "3-5 Days",
+    "sortPriority": "1",
+    "cacheDuration": "3600"
+  }
+}

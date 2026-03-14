@@ -5,25 +5,33 @@ import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
 
 import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
-import com.homebase.ecom.product.model.Product;
+import com.homebase.ecom.product.domain.model.Product;
 import com.homebase.ecom.product.dto.DiscontinueProductProductPayload;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- Contains customized logic for the transition. Common logic resides at {@link DefaultSTMTransitionAction}
- <p>Use this class if you want to augment the common logic for this specific transition</p>
- <p>Use a customized payload if required instead of MinimalPayload</p>
-*/
-public class DiscontinueProductProductAction extends AbstractSTMTransitionAction<Product,
+ * STM action: Admin or supplier permanently discontinues a product.
+ * Removes the product from the catalog permanently.
+ * Marks the product for a ProductDiscontinuedEvent in the PostSaveHook.
+ */
+public class DiscontinueProductProductAction extends AbstractSTMTransitionAction<Product, DiscontinueProductProductPayload> {
 
-    DiscontinueProductProductPayload>{
+    private static final Logger log = LoggerFactory.getLogger(DiscontinueProductProductAction.class);
 
-
-	@Override
-	public void transitionTo(Product product,
+    @Override
+    public void transitionTo(Product product,
             DiscontinueProductProductPayload payload,
             State startState, String eventId,
-			State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-            product.transientMap.previousPayload = payload;
-	}
+            State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
+        log.info("Discontinuing product '{}' (id={})", product.getName(), product.getId());
+
+        product.getTransientMap().put("previousPayload", payload);
+        // Store the discontinue reason for the PostSaveHook event
+        String reason = payload.getComment() != null ? payload.getComment() : "Product end-of-life";
+        product.getTransientMap().put("discontinueReason", reason);
+
+        log.info("Product '{}' discontinued permanently. Reason: {}", product.getName(), reason);
+    }
 }

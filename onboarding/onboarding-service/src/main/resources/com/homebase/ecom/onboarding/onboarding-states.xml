@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <default-transition-action componentName="onboardingBaseTransitionAction"/>
+
+  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
+
+  <flow id='onboarding-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="onboardingEntryAction" />
+    <exit-action componentName="onboardingExitAction" />
+
+    <!-- ========== INITIAL STATE ========== -->
+    <status id='APPLICATION_SUBMITTED' initialState='true' meta-mainPath="true" description="New supplier application submitted">
+      <on eventId='validateDocuments'
+          componentName='onboardingValidateDocumentsAction'
+          newStateId='DOCUMENTS_VERIFIED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+      <on eventId='rejectApplication'
+          componentName='onboardingRejectApplicationAction'
+          newStateId='REJECTED'
+          meta-acls="ADMIN"/>
+    </status>
+
+    <!-- ========== DOCUMENTS VERIFIED ========== -->
+    <status id='DOCUMENTS_VERIFIED' meta-mainPath="true" description="All required documents have been verified">
+      <on eventId='submitForReview'
+          componentName='onboardingSubmitForReviewAction'
+          newStateId='UNDER_REVIEW'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== UNDER REVIEW ========== -->
+    <status id='UNDER_REVIEW' meta-mainPath="true" description="Application under admin review">
+      <on eventId='approve'
+          componentName='onboardingApproveAction'
+          newStateId='APPROVED'
+          meta-mainPath="true"
+          meta-acls="ADMIN"/>
+      <on eventId='reject'
+          componentName='onboardingRejectAction'
+          newStateId='REJECTED'
+          meta-acls="ADMIN"/>
+      <on eventId='requestMoreInfo'
+          componentName='onboardingRequestMoreInfoAction'
+          newStateId='PENDING_DOCUMENTS'
+          meta-acls="ADMIN"/>
+    </status>
+
+    <!-- ========== PENDING DOCUMENTS ========== -->
+    <status id='PENDING_DOCUMENTS' description="Waiting for supplier to submit additional documents">
+      <on eventId='submitDocuments'
+          componentName='onboardingSubmitDocumentsAction'
+          newStateId='DOCUMENTS_VERIFIED'
+          meta-acls="SUPPLIER"/>
+    </status>
+
+    <!-- ========== APPROVED ========== -->
+    <status id='APPROVED' meta-mainPath="true" description="Application approved, creating supplier record">
+      <on eventId='createSupplier'
+          componentName='onboardingCreateSupplierAction'
+          newStateId='SUPPLIER_CREATED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== SUPPLIER CREATED ========== -->
+    <status id='SUPPLIER_CREATED' meta-mainPath="true" description="Supplier record created in the system">
+      <on eventId='notifySupplier'
+          componentName='onboardingNotifySupplierAction'
+          newStateId='ACTIVE'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== ACTIVE (TERMINAL SUCCESS) ========== -->
+    <status id='ACTIVE' description="Supplier is fully onboarded and active">
+      <!-- Terminal state -->
+    </status>
+
+    <!-- ========== REJECTED ========== -->
+    <status id='REJECTED' description="Application was rejected">
+      <on eventId='resubmit'
+          componentName='onboardingResubmitAction'
+          newStateId='APPLICATION_SUBMITTED'
+          meta-acls="SUPPLIER"/>
+    </status>
+  </flow>
+</states>

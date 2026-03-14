@@ -3,27 +3,61 @@ package com.homebase.ecom.order.service.cmds;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
-
 import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.order.model.Order;
+import com.homebase.ecom.order.model.OrderItem;
+import com.homebase.ecom.order.model.OrderItemStatus;
 import com.homebase.ecom.order.dto.InitiateReturnOrderPayload;
+import com.homebase.ecom.order.service.validator.OrderPolicyValidator;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
- Contains customized logic for the transition. Common logic resides at {@link DefaultSTMTransitionAction}
- <p>Use this class if you want to augment the common logic for this specific transition</p>
- <p>Use a customized payload if required instead of MinimalPayload</p>
-*/
-public class InitiateReturnOrderAction extends AbstractSTMTransitionAction<Order,
+ * STM Action: Initiate a return for a delivered order.
+ * Transitions the order from DELIVERED to RETURN_INITIATED.
+ * Validates the return window using OrderPolicyValidator and marks items for return.
+ */
+public class InitiateReturnOrderAction extends AbstractSTMTransitionAction<Order, InitiateReturnOrderPayload> {
 
-    InitiateReturnOrderPayload>{
+    @Autowired
+    private OrderPolicyValidator policyValidator;
 
-
-	@Override
-	public void transitionTo(Order order,
+    @Override
+    public void transitionTo(Order order,
             InitiateReturnOrderPayload payload,
             State startState, String eventId,
-			State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-            order.transientMap.previousPayload = payload;
-	}
+            State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
+        // 1. Validate return window using delivery date
+        if (order.getDeliveryDate() != null) {
+            policyValidator.validateReturnWindow(order.getDeliveryDate());
+        }
+
+        // 2. Store return reason in transientMap
+        if (payload.getReason() != null) {
+            order.getTransientMap().put("returnReason", payload.getReason());
+        }
+
+        // 3. Mark relevant items as RETURN_REQUESTED
+        List<String> itemIds = payload.getItemIds();
+        if (itemIds != null && !itemIds.isEmpty()) {
+            for (String itemId : itemIds) {
+                OrderItem item = order.getItems().stream()
+                        .filter(i -> i.getId().equals(itemId))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("OrderItem not found: " + itemId));
+                item.setStatus(OrderItemStatus.RETURN_REQUESTED);
+            }
+        } else {
+            // If no specific items, mark all PLACED items as return requested
+            order.getItems().stream()
+                    .filter(item -> item.getStatus() == OrderItemStatus.PLACED)
+                    .forEach(item -> item.setStatus(OrderItemStatus.RETURN_REQUESTED));
+        }
+
+        order.getTransientMap().put("returnInitiatedAt", LocalDateTime.now().toString());
+        order.getTransientMap().previousPayload = payload;
+    }
 }

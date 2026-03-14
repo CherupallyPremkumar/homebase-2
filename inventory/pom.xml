@@ -5,7 +5,13 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>inventory-api</module>
+		<module>inventory-domain</module>
+		<module>inventory-infrastructure</module>
+		<module>inventory-query-api</module>
 		<module>inventory-service</module>
+		<module>inventory-query</module>
+		<module>inventory-app</module>
+		<module>inventory-client</module>
 	</modules>
 	<parent>
 		<groupId>com.homebase.ecom</groupId>
@@ -16,11 +22,9 @@
 
 	<properties>
 		<inventory.version>${revision}</inventory.version>
-		<revision>1.0.0</revision>
 	</properties>
 	
 	<groupId>com.homebase.ecom.inventory</groupId>
-	<version>${revision}</version>
 	<artifactId>inventory-parent</artifactId>
 	<name>All Modules that belong to the Inventory </name>
 	<description>Modules execution project and Parent Pom</description>
@@ -30,12 +34,27 @@
 		<dependency>
 			<groupId>com.homebase.ecom.inventory</groupId>
 			<version>${revision}</version>
+			<artifactId>inventory-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.inventory</groupId>
+			<version>${revision}</version>
+			<artifactId>inventory-infrastructure</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.inventory</groupId>
+			<version>${revision}</version>
 			<artifactId>inventory-service</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.homebase.ecom.inventory</groupId>
 			<version>${revision}</version>
 			<artifactId>inventory-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.inventory</groupId>
+			<version>${revision}</version>
+			<artifactId>inventory-query-api</artifactId>
 		</dependency>
 	</dependencies>
 	</dependencyManagement>

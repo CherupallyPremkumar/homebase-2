@@ -8,7 +8,8 @@ And that "initialState" equals "STOCK_PENDING"
 When I POST a REST request to URL "/inventory" with payload
 """json
 {
-    "description": "Description"
+    "description": "Description",
+    "quantity": 100
 }
 """
 Then the REST response contains key "mutatedEntity"

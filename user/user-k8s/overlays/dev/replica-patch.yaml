@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: user
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+        - name: app
+          image: homebase/user-app:dev
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "dev"

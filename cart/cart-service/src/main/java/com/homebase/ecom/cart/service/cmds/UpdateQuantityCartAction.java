@@ -1,28 +1,18 @@
 package com.homebase.ecom.cart.service.cmds;
 
+import com.homebase.ecom.cart.dto.UpdateQuantityCartPayload;
+import com.homebase.ecom.cart.model.Cart;
+import com.homebase.ecom.cart.model.CartItem;
+import com.homebase.ecom.dto.OfferDto;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
 
-import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
-import com.homebase.ecom.cart.model.Cart;
-import com.homebase.ecom.cart.model.CartItem;
-import com.homebase.ecom.cart.dto.UpdateQuantityCartPayload;
-
 /**
  * Contains customized logic for the transition. Common logic resides at
  * {@link DefaultSTMTransitionAction}
- * <p>
- * Use this class if you want to augment the common logic for this specific
- * transition
- * </p>
- * <p>
- * Use a customized payload if required instead of MinimalPayload
- * </p>
  */
-public class UpdateQuantityCartAction extends AbstractSTMTransitionAction<Cart,
-
-        UpdateQuantityCartPayload> {
+public class UpdateQuantityCartAction extends AbstractCartAction<UpdateQuantityCartPayload> {
 
     @Override
     public void transitionTo(Cart cart,
@@ -30,12 +20,24 @@ public class UpdateQuantityCartAction extends AbstractSTMTransitionAction<Cart,
             State startState, String eventId,
             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
+        // Consistent validation for update quantity
+        OfferDto offer = validateAndGetOffer(payload.productId, payload.quantity);
+
         cart.getItems().stream()
                 .filter(item -> item.getProductId().equals(payload.productId))
                 .findFirst()
-                .ifPresent(item -> item.setQuantity(payload.quantity));
+                .ifPresent(item -> {
+                    CartItem checkItem = new CartItem();
+                    checkItem.setProductId(payload.productId);
+                    checkItem.setQuantity(payload.quantity);
 
-        cart.transientMap.previousPayload = payload;
+                    cartPolicyValidator.validate(cart, checkItem, offer);
+
+                    item.setQuantity(payload.quantity);
+                    item.setPrice(offer.getPrice());
+                    item.setSellerId(offer.getSellerId());
+                });
+
+        cart.getTransientMap().previousPayload = payload;
     }
-
 }

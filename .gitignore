@@ -55,7 +55,22 @@ bin/
 
 # Sensitive Data
 web/src/main/resources/certs/
+**/certs/*.pem
+**/certs/*.key
+**/certs/*.p12
 .env
+
+# Maven generated
+.flattened-pom.xml
+*/.flattened-pom.xml
+**/.flattened-pom.xml
+
+# Build artifacts
+**/classpath.txt
+**/cp.txt
+**/compile-log.txt
+**/effective_pom.xml
+**/effective.xml
 stripe_pid.txt
 .env*
 *.b64

@@ -1,7 +1,5 @@
 package com.homebase.ecom.inventory.configuration.controller;
 
-import java.util.Map;
-
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.chenile.base.response.GenericResponse;
@@ -20,7 +18,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.chenile.workflow.dto.StateEntityServiceResponse;
-import com.homebase.ecom.inventory.model.Inventory;
+import com.homebase.ecom.inventory.domain.model.InventoryItem;
 import org.chenile.security.model.SecurityConfig;
 
 @RestController
@@ -29,7 +27,7 @@ public class InventoryController extends ControllerSupport {
 
 	@GetMapping("/inventory/{id}")
 	@SecurityConfig(authorities = { "some_premium_scope", "test.premium" })
-	public ResponseEntity<GenericResponse<StateEntityServiceResponse<Inventory>>> retrieve(
+	public ResponseEntity<GenericResponse<StateEntityServiceResponse<InventoryItem>>> retrieve(
 			HttpServletRequest httpServletRequest,
 			@PathVariable String id) {
 		return process(httpServletRequest, id);
@@ -37,16 +35,16 @@ public class InventoryController extends ControllerSupport {
 
 	@PostMapping("/inventory")
 	@SecurityConfig(authorities = { "some_premium_scope", "test.premium" })
-	public ResponseEntity<GenericResponse<StateEntityServiceResponse<Inventory>>> create(
+	public ResponseEntity<GenericResponse<StateEntityServiceResponse<InventoryItem>>> create(
 			HttpServletRequest httpServletRequest,
-			@ChenileParamType(StateEntity.class) @RequestBody Inventory entity) {
+			@ChenileParamType(StateEntity.class) @RequestBody InventoryItem entity) {
 		return process(httpServletRequest, entity);
 	}
 
 	@PatchMapping("/inventory/{id}/{eventID}")
 	@BodyTypeSelector("inventoryBodyTypeSelector")
 	@SecurityConfig(authoritiesSupplier = "inventoryEventAuthoritiesSupplier")
-	public ResponseEntity<GenericResponse<StateEntityServiceResponse<Inventory>>> processById(
+	public ResponseEntity<GenericResponse<StateEntityServiceResponse<InventoryItem>>> processById(
 			HttpServletRequest httpServletRequest,
 			@PathVariable String id,
 			@PathVariable String eventID,

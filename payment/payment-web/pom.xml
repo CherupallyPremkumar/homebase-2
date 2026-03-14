@@ -15,15 +15,23 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.ecommerce</groupId>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom</groupId>
             <artifactId>payment-service</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.ecommerce</groupId>
+            <groupId>com.homebase.ecom</groupId>
+            <artifactId>payment-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom</groupId>
             <artifactId>payment-ledger</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.ecommerce</groupId>
+            <groupId>com.homebase.ecom</groupId>
             <artifactId>payment-batch</artifactId>
         </dependency>
         <dependency>

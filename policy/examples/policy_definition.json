@@ -1,0 +1,29 @@
+{
+  "id": "pol-saree-visibility-001",
+  "name": "Storefront Visibility Policy",
+  "description": "Determines which sarees are featured in the Premium Collection",
+  "active": true,
+  "defaultEffect": "DENY",
+  "rules": [
+    {
+      "id": "rule-premium-silk-101",
+      "name": "High-End Kanchipuram Filter",
+      "expression": "#material == 'Silk' && #price >= 7000 && #stockCount > 0 && #weaverTier == 'MASTER'",
+      "effect": "ALLOW",
+      "priority": 10,
+      "active": true
+    },
+    {
+      "id": "rule-safety-check-002",
+      "name": "Spam Prevention",
+      "expression": "#description.length() < 20 || #price < 500",
+      "effect": "DENY",
+      "priority": 100,
+      "active": true
+    }
+  ],
+  "transientMap": {
+    "author": "Prem",
+    "version": "2.1.0"
+  }
+}

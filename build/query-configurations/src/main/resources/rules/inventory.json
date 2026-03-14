@@ -1,0 +1,30 @@
+{
+    "policies": {
+        "reservation": {
+            "maxQuantityPerOrder": 10,
+            "maxActiveReservationsPerProduct": 50,
+            "reservationTtlMinutes": 30
+        },
+        "stock": {
+            "minApprovalQuantity": 1,
+            "maxStockPerProduct": 1000
+        },
+        "damage": {
+            "autoDiscardOnSevereDamagePercent": 80
+        }
+    },
+    "rules": {
+        "alerts": {
+            "lowStockThreshold": 10,
+            "outOfStockAlertEnabled": true,
+            "lowStockAlertEnabled": true
+        },
+        "inspection": {
+            "autoApproveIfNoDefects": false,
+            "rejectionRequiresComment": true
+        },
+        "supplier": {
+            "maxProductsPerSupplier": 200
+        }
+    }
+}

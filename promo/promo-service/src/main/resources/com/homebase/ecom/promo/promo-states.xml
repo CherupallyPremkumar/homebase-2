@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <flow id='promo-flow' default='true'>
+    <security-strategy componentName="promoSecurityStrategy"/>
+    <entry-action componentName="promoEntryAction"/>
+    <exit-action componentName="promoExitAction"/>
+
+    <manual-state id='DRAFT' initialState='true' meta-mainPath="true" description="Promo created, not yet active">
+      <on eventId='activate' componentName='promoActivateAction' newStateId='ACTIVE' meta-mainPath="true" meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='ACTIVE' meta-mainPath="true" description="Promo live and applicable to orders">
+      <on eventId='expire' componentName='promoExpireAction' newStateId='EXPIRED' meta-acls="SYSTEM"/>
+      <on eventId='close' componentName='promoCloseAction' newStateId='CLOSED' meta-acls="ADMIN"/>
+      <on eventId='pause' componentName='promoPauseAction' newStateId='PAUSED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='PAUSED' description="Promo temporarily paused">
+      <on eventId='resume' componentName='promoResumeAction' newStateId='ACTIVE' meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='close' componentName='promoCloseAction' newStateId='CLOSED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='EXPIRED' description="Promo past expiry date">
+      <on eventId='reactivate' componentName='promoReactivateAction' newStateId='ACTIVE' meta-acls="ADMIN"/>
+      <on eventId='close' componentName='promoCloseAction' newStateId='CLOSED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='CLOSED' description="Promo permanently closed"/>
+  </flow>
+</states>

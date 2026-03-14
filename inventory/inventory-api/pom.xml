@@ -22,7 +22,15 @@
 		</dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
+			<artifactId>query-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
 			<artifactId>jpa-utils</artifactId>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>com.homebase.ecom.inventory</groupId>
+            <artifactId>inventory-query-api</artifactId>
+        </dependency>
+    </dependencies>
 </project>

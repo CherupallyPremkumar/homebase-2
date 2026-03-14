@@ -16,8 +16,16 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.chenile.cconfig</groupId>
+			<artifactId>cconfig-api</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.homebase.ecom.returnrequest</groupId>
 			<artifactId>returnrequest-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.returnrequest</groupId>
+			<artifactId>returnrequest-infrastructure</artifactId>
 		</dependency>
 	
 		<dependency>
@@ -52,19 +60,13 @@
             <artifactId>cucumber-workflow-utils</artifactId>
             <scope>test</scope>
         </dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>chenile-security-api</artifactId>
-		</dependency>
+
 		<!-- Test dependencies for security -->
-		<dependency>
+
+
+			<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>cucumber-sec-utils</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>security-interceptor</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

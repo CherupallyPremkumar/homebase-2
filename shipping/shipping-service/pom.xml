@@ -19,6 +19,10 @@
 			<groupId>com.homebase.ecom.shipping</groupId>
 			<artifactId>shipping-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.shipping</groupId>
+			<artifactId>shipping-infrastructure</artifactId>
+		</dependency>
 	
 		<dependency>
 			<groupId>org.chenile</groupId>
@@ -66,6 +70,14 @@
 			<groupId>org.chenile</groupId>
 			<artifactId>security-interceptor</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-kafka</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.shared</groupId>
+			<artifactId>shared-api</artifactId>
 		</dependency>
 	</dependencies>
 

@@ -2,51 +2,70 @@
 <states>
   <flow id='supplier-flow' default='true'>
     <security-strategy componentName="supplierSecurityStrategy"/>
-    <entry-action componentName="supplierFlowEntryAction" />
+    <entry-action componentName="supplierEntryAction" />
 
-    <manual-state id='ACTIVE' initialState='true' meta-mainPath="true">
+    <manual-state id='PENDING_REVIEW' initialState='true' description="Supplier application submitted, awaiting admin review">
+      <on eventId='approveSupplier'
+          componentName='supplierApproveSupplierAction'
+          newStateId='ACTIVE'
+          meta-mainPath="true"
+          meta-acls="ADMIN"/>
+      <on eventId='rejectSupplier'
+          componentName='supplierRejectSupplierAction'
+          newStateId='REJECTED'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='REJECTED' description="Supplier application rejected">
+       <on eventId='resubmitSupplier'
+          componentName='supplierResubmitSupplierAction'
+          newStateId='PENDING_REVIEW'
+          meta-acls="SUPPLIER"/>
+    </manual-state>
+
+    <manual-state id='ACTIVE' meta-mainPath="true" description="Supplier active and able to list products">
       <entry-action componentName="supplierActiveAction" />
-      <on eventId='suspendSupplier' 
+      <on eventId='suspendSupplier'
           componentName='supplierSuspendSupplierAction'
           newStateId='SUSPENDED'
           meta-acls="ADMIN"/>
-      <on eventId='pauseSupplier' 
+      <on eventId='pauseSupplier'
           componentName='supplierPauseSupplierAction'
           newStateId='INACTIVE'
           meta-acls="SUPPLIER,ADMIN"/>
-      <on eventId='blacklistSupplier' 
+      <on eventId='blacklistSupplier'
           componentName='supplierBlacklistSupplierAction'
           newStateId='BLACKLISTED'
           meta-acls="ADMIN"/>
     </manual-state>
 
-    <manual-state id='INACTIVE'>
+    <manual-state id='INACTIVE' description="Supplier temporarily paused">
       <entry-action componentName="supplierInactiveAction" />
-      <on eventId='reactivateSupplier' 
+      <on eventId='reactivateSupplier'
           componentName='supplierReactivateSupplierAction'
           newStateId='ACTIVE'
           meta-mainPath="true"
           meta-acls="SUPPLIER,ADMIN"/>
-      <on eventId='blacklistSupplier' 
+      <on eventId='blacklistSupplier'
           componentName='supplierBlacklistSupplierAction'
           newStateId='BLACKLISTED'
           meta-acls="ADMIN"/>
     </manual-state>
 
-    <manual-state id='SUSPENDED'>
+    <manual-state id='SUSPENDED' description="Supplier suspended by admin">
       <entry-action componentName="supplierSuspendedAction" />
-      <on eventId='reactivateSupplier' 
+      <on eventId='reactivateSupplier'
           componentName='supplierReactivateSupplierAction'
           newStateId='ACTIVE'
           meta-mainPath="true"
           meta-acls="ADMIN"/>
-      <on eventId='blacklistSupplier' 
+      <on eventId='blacklistSupplier'
           componentName='supplierBlacklistSupplierAction'
           newStateId='BLACKLISTED'
           meta-acls="ADMIN"/>
     </manual-state>
 
-    <manual-state id='BLACKLISTED'>
+    <manual-state id='BLACKLISTED' description="Supplier permanently blacklisted">
       <entry-action componentName="supplierBlacklistedAction" />
       <exit-action componentName="supplierDisableAllProductsAction" />
     </manual-state>

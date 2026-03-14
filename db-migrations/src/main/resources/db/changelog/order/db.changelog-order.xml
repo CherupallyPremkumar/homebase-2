@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="V4__create_order_saga_states" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/order/V4__create_order_saga_states.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="V19__add_gateway_session_id_to_orders" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/order/V19__add_gateway_session_id_to_orders.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="V33__add_supplier_id_to_order_items" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/order/V33__add_supplier_id_to_order_items.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="V35__add_orders_created_at" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/order/V35__add_orders_created_at.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+</databaseChangeLog>

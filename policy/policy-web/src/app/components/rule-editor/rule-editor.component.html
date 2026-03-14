@@ -1,0 +1,44 @@
+<div class="editor-container">
+    <h3>{{ rule.id ? 'Edit Rule' : 'Add Rule' }}</h3>
+    <div class="form-group">
+        <label>Rule Name</label>
+        <input type="text" [(ngModel)]="rule.name" class="form-control" placeholder="e.g. Allow admin access">
+    </div>
+    <div class="form-group builder-group">
+        <label>Rule Condition</label>
+        <div class="expression-builder">
+            <select [(ngModel)]="selectedFact" class="form-control">
+                <option value="">-- Select Fact --</option>
+                <optgroup *ngFor="let module of getModules()" [label]="module">
+                    <option *ngFor="let fact of getFactsByModule(module)" [value]="fact.attribute">
+                        {{fact.displayName}}
+                    </option>
+                </optgroup>
+            </select>
+            
+            <select [(ngModel)]="selectedOperator" class="form-control operator-select">
+                <option *ngFor="let op of operators" [value]="op.value">{{op.label}}</option>
+            </select>
+            
+            <input type="text" [(ngModel)]="enteredValue" class="form-control" placeholder="Value">
+        </div>
+        <small class="preview">Preview: {{ selectedFact }} {{ selectedOperator }} {{ enteredValue }}</small>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Effect</label>
+            <select [(ngModel)]="rule.effect" class="form-control">
+                <option value="ALLOW">ALLOW</option>
+                <option value="DENY">DENY</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Priority</label>
+            <input type="number" [(ngModel)]="rule.priority" class="form-control">
+        </div>
+    </div>
+    <div class="footer-actions">
+        <button class="btn btn-outline" (click)="onCancel()">Cancel</button>
+        <button class="btn btn-primary" (click)="onSave()">Save Rule</button>
+    </div>
+</div>

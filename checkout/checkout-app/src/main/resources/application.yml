@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: checkout-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/checkout_db
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+server:
+  port: 8083
+
+# Feign Client URLs
+cart:
+  service:
+    url: http://localhost:8080
+pricing:
+  service:
+    url: http://localhost:8081
+order:
+  service:
+    url: http://localhost:8084
+payment:
+  service:
+    url: http://localhost:8085
+
+# Resilience4j Config
+resilience4j:
+  circuitbreaker:
+    instances:
+      cartService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      pricingService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+
+logging:
+  level:
+    com.homebase.ecom.checkout: DEBUG
+    org.springframework.web: INFO

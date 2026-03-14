@@ -1,0 +1,64 @@
+[
+	{
+		"id": "PromoCode.getAll",
+		"name": "promos",
+		"workflowName": "promo",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"code": {
+				"name": "code",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"description": {
+				"name": "description",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"discountType": {
+				"name": "discountType",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"discountValue": {
+				"name": "discountValue",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"expiryDate": {
+				"name": "expiryDate",
+				"columnType": "Date",
+				"sortable": true
+			},
+			"usageCount": {
+				"name": "usageCount",
+				"columnType": "Number"
+			},
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "PromoCode.getById",
+		"name": "promo",
+		"columnMetadata": {
+			"code": {
+				"name": "code",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"description": {
+				"name": "description",
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
+	}
+]

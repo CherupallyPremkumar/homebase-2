@@ -24,62 +24,60 @@
         <module>payment-ledger</module>
         <module>payment-batch</module>
         <module>payment-web</module>
+        <module>payment-app</module>
+        <module>payment-client</module>
     </modules>
 
+
     <properties>
-        <razorpay.version>1.3.94</razorpay.version>
+        <razorpay.version>${revision}</razorpay.version>
     </properties>
 
+    
     <dependencyManagement>
         <dependencies>
-            <!-- Razorpay SDK -->
             <dependency>
-                <groupId>com.razorpay</groupId>
-                <artifactId>razorpay-java</artifactId>
-                <version>${razorpay.version}</version>
-            </dependency>
-
-            <!-- Internal Sub-modules -->
-            <dependency>
-                <groupId>com.ecommerce</groupId>
+                <groupId>com.homebase.ecom</groupId>
                 <artifactId>payment-common</artifactId>
-                <version>${project.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.ecommerce</groupId>
+                <groupId>com.homebase.ecom</groupId>
                 <artifactId>payment-gateway-api</artifactId>
-                <version>${project.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.ecommerce</groupId>
+                <groupId>com.homebase.ecom</groupId>
                 <artifactId>payment-stripe</artifactId>
-                <version>${project.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.ecommerce</groupId>
+                <groupId>com.homebase.ecom</groupId>
                 <artifactId>payment-razorpay</artifactId>
-                <version>${project.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.ecommerce</groupId>
+                <groupId>com.homebase.ecom</groupId>
                 <artifactId>payment-service</artifactId>
-                <version>${project.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.ecommerce</groupId>
+                <groupId>com.homebase.ecom</groupId>
                 <artifactId>payment-ledger</artifactId>
-                <version>${project.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.ecommerce</groupId>
+                <groupId>com.homebase.ecom</groupId>
                 <artifactId>payment-batch</artifactId>
-                <version>${project.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.ecommerce</groupId>
+                <groupId>com.homebase.ecom</groupId>
                 <artifactId>payment-web</artifactId>
-                <version>${project.version}</version>
+                <version>${revision}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
+
+

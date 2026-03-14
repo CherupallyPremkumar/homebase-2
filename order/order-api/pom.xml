@@ -17,16 +17,17 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.homebase.ecom</groupId>
+			<groupId>com.homebase.ecom.order</groupId>
+			<artifactId>order-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.shared</groupId>
 			<artifactId>shared-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
-			<artifactId>workflow-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>jpa-utils</artifactId>
+			<artifactId>query-api</artifactId>
+			<version>2.1.12</version>
 		</dependency>
 	</dependencies>
 </project>

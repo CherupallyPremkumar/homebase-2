@@ -1,0 +1,44 @@
+{
+    "policies": {
+        "catalog": {
+            "maxImagesPerProduct": 5,
+            "imageSizeLimitKb": 2048,
+            "allowedImageFormats": [
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+            ],
+            "descriptionMinLength": 30,
+            "descriptionMaxLength": 2000,
+            "nameMinLength": 3,
+            "nameMaxLength": 200
+        },
+        "offer": {
+            "minPriceInr": 100,
+            "maxPriceInr": 500000,
+            "maxOffersPerProduct": 5
+        },
+        "lifecycle": {
+            "requireImageBeforePublish": true,
+            "requireDescriptionBeforePublish": true,
+            "requireCategoryBeforeSubmit": true,
+            "rejectionRequiresComment": true,
+            "reworkCycleLimitPerProduct": 3
+        }
+    },
+    "rules": {
+        "review": {
+            "autoFlagIfNoCategorySet": true,
+            "lowQualityImageWarningEnabled": true
+        },
+        "quality": {
+            "minAcceptableScore": 70,
+            "autoRejectBelowScore": 40
+        },
+        "supplier": {
+            "maxActiveProductsPerSupplier": 100,
+            "trialPeriodDays": 15
+        }
+    }
+}

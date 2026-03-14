@@ -4,13 +4,12 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.homebase.ecom</groupId>
-    <artifactId>homebase-parent</artifactId>
-    <version>1.0.0</version>
-    <relativePath>../../pom.xml</relativePath>
+    <artifactId>shared-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>com.homebase.ecom</groupId>
+  <groupId>com.homebase.ecom.shared</groupId>
   <artifactId>shared-api</artifactId>
-  <version>1.0.0</version>
+  <version>0.0.1-SNAPSHOT</version>
   <name>Shared API Value Objects</name>
   <licenses>
     <license>
@@ -20,17 +19,16 @@
   </licenses>
   <dependencies>
     <dependency>
+      <groupId>org.chenile</groupId>
+      <artifactId>chenile-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>jakarta.persistence</groupId>
       <artifactId>jakarta.persistence-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.springframework.kafka</groupId>
-      <artifactId>spring-kafka</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <optional>true</optional>
+      <groupId>org.chenile</groupId>
+      <artifactId>chenile-kafka</artifactId>
     </dependency>
   </dependencies>
 </project>

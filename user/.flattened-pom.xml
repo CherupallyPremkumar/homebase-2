@@ -3,13 +3,13 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.chenile</groupId>
-    <artifactId>chenile-parent</artifactId>
-    <version>2.1.11</version>
+    <groupId>com.homebase.ecom</groupId>
+    <artifactId>homebase-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.homebase.ecom.user</groupId>
   <artifactId>user-parent</artifactId>
-  <version>1.0.0</version>
+  <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>All Modules that belong to the User</name>
   <description>Modules execution project and Parent Pom</description>
@@ -21,23 +21,44 @@
   </licenses>
   <modules>
     <module>user-api</module>
+    <module>user-domain</module>
+    <module>user-infrastructure</module>
+    <module>user-query-api</module>
+    <module>user-query</module>
     <module>user-service</module>
+    <module>user-app</module>
+    <module>user-client</module>
+    <module>user-k8s</module>
   </modules>
   <properties>
-    <user.version>1.0.0</user.version>
-    <revision>1.0.0</revision>
+    <user.version>${revision}</user.version>
   </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>com.homebase.ecom.user</groupId>
         <artifactId>user-service</artifactId>
-        <version>1.0.0</version>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.user</groupId>
+        <artifactId>user-query-api</artifactId>
+        <version>${revision}</version>
       </dependency>
       <dependency>
         <groupId>com.homebase.ecom.user</groupId>
         <artifactId>user-api</artifactId>
-        <version>1.0.0</version>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.user</groupId>
+        <artifactId>user-domain</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.user</groupId>
+        <artifactId>user-infrastructure</artifactId>
+        <version>${revision}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

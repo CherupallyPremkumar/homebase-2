@@ -1,64 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
   <flow id='return-request-flow' default='true'>
-    <security-strategy componentName="ReturnSecurityStrategy"/>
-    <entry-action componentName="ReturnEntryAction" />
+    <security-strategy componentName="returnrequestSecurityStrategy"/>
+    <entry-action componentName="returnrequestEntryAction" />
 
-    <manual-state id='REQUESTED' initialState='true' meta-mainPath="true">
-      <entry-action componentName="ReturnRequestedNotificationAction" />
-      <on eventId='inspectReturn' 
-          componentName='InspectReturnCommand'
-          newStateId='UNDER_REVIEW' 
+    <manual-state id='REQUESTED' initialState='true' meta-mainPath="true" description="Return requested by customer, awaiting inspection">
+      <entry-action componentName="returnRequestedNotificationAction" />
+      <on eventId='inspectReturn'
+          componentName='returnrequestInspectReturnAction'
+          newStateId='UNDER_REVIEW'
           meta-mainPath="true"
           meta-acls="QUALITY_CHECKER"/>
     </manual-state>
 
-    <manual-state id='UNDER_REVIEW' meta-mainPath="true">
-      <entry-action componentName="ReturnUnderReviewAction" />
-      <on eventId='approveReturn' 
-          componentName='approveReturnCommand'
-          newStateId='APPROVED' 
+    <manual-state id='UNDER_REVIEW' meta-mainPath="true" description="Return under quality review">
+      <on eventId='approveReturn'
+          componentName='returnrequestApproveReturnAction'
+          newStateId='APPROVED'
           meta-mainPath="true"
           meta-acls="QUALITY_CHECKER,ADMIN"/>
-      <on eventId='rejectReturn' 
-          componentName='rejectReturnCommand'
+      <on eventId='rejectReturn'
+          componentName='returnrequestRejectReturnAction'
           newStateId='REJECTED'
           meta-acls="QUALITY_CHECKER,ADMIN"/>
     </manual-state>
 
-    <manual-state id='APPROVED' meta-mainPath="true">
-      <entry-action componentName="ApprovedReturnNotificationAction" />
-      <on eventId='pickupInitiated' 
-          componentName='pickupInitiatedCommand'
+    <manual-state id='APPROVED' meta-mainPath="true" description="Return approved, awaiting pickup">
+      <entry-action componentName="approvedReturnNotificationAction" />
+      <on eventId='pickupInitiated'
+          componentName='returnrequestPickupInitiatedAction'
           newStateId='IN_TRANSIT_BACK'
           meta-mainPath="true"
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <manual-state id='IN_TRANSIT_BACK' meta-mainPath="true">
-      <on eventId='itemReceived' 
-          componentName='itemReceivedCommand'
-          newStateId='RECEIVED' 
+    <manual-state id='IN_TRANSIT_BACK' meta-mainPath="true" description="Return item in transit back to warehouse">
+      <on eventId='itemReceived'
+          componentName='returnrequestItemReceivedAction'
+          newStateId='RECEIVED'
           meta-mainPath="true"
           meta-acls="WAREHOUSE"/>
     </manual-state>
 
-    <manual-state id='RECEIVED' meta-mainPath="true">
-      <entry-action componentName="ReturnItemReceivedAction" />
-      <on eventId='processRefund' 
-          componentName='processRefundAction'
-          newStateId='REFUNDED' 
+    <manual-state id='RECEIVED' meta-mainPath="true" description="Returned item received at warehouse">
+      <entry-action componentName="returnItemReceivedAction" />
+      <on eventId='processRefund'
+          componentName='returnrequestProcessRefundAction'
+          newStateId='REFUNDED'
           meta-mainPath="true"
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <manual-state id='REFUNDED'>
-      <entry-action componentName="RefundProcessedNotificationAction" />
-      <exit-action componentName="AdjustSettlementAction" />
+    <manual-state id='REFUNDED' description="Refund processed for the returned item">
+      <entry-action componentName="refundProcessedNotificationAction" />
+      <exit-action componentName="returnrequestAdjustSettlementAction" />
     </manual-state>
 
-    <manual-state id='REJECTED'>
-      <entry-action componentName="ReturnRejectedNotificationAction" />
+    <manual-state id='REJECTED' description="Return request rejected">
+      <entry-action componentName="returnRejectedNotificationAction" />
     </manual-state>
   </flow>
 </states>

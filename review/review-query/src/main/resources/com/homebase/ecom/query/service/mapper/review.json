@@ -1,0 +1,94 @@
+[
+	{
+		"id": "Review.getAll",
+		"name": "reviews",
+		"workflowName": "review",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"productId": {
+				"name": "productId",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"userId": {
+				"name": "userId",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"rating": {
+				"name": "rating",
+				"filterable": true,
+				"columnType": "Number",
+				"sortable": true
+			},
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"verifiedPurchase": {
+				"name": "verifiedPurchase",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"helpfulCount": {
+				"name": "helpfulCount",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"createdAt": {
+				"name": "createdAt",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Review.getById",
+		"name": "review",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"rating": {
+				"name": "rating",
+				"columnType": "Number"
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "Review.getByProduct",
+		"name": "productReviews",
+		"columnMetadata": {
+			"productId": {
+				"name": "product_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"rating": {
+				"name": "rating",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

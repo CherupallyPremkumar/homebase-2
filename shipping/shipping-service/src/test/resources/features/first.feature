@@ -7,7 +7,8 @@ And that "initialState" equals "AWAITING_PICKUP"
 When I POST a REST request to URL "/shipping" with payload
 """json
 {
-    "description": "Description"
+    "description": "Description",
+    "orderId": "ORD-FIRST-001"
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -28,7 +29,8 @@ And the REST response key "mutatedEntity.currentState.stateId" is "${currentStat
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "carrier": "HOMEBASE-LOGISTICS"
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -56,7 +58,8 @@ And store "$.payload.mutatedEntity.currentState.stateId" from response to "final
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "returnReason": "Wrong item received"
 }
 """
 Then the REST response contains key "mutatedEntity"

@@ -1,31 +1,30 @@
 package com.homebase.ecom.product.model;
 
-import org.chenile.workflow.activities.model.ActivityEnabledStateEntity;
-import org.chenile.workflow.activities.model.ActivityLog;
+import org.chenile.stm.State;
+import java.io.Serializable;
 import java.util.*;
-import com.homebase.ecom.shared.model.Money;
-import org.chenile.workflow.model.*;
-import jakarta.persistence.*;
-import org.chenile.jpautils.entity.AbstractJpaStateEntity;
 
-@Entity
-@Table(name = "product")
-public class Product extends AbstractJpaStateEntity
-        implements ActivityEnabledStateEntity,
-        ContainsTransientMap {
-    @Column(nullable = false)
+public class Product implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private String id;
     private String name;
+    private String description;
+    private String brand;
+    private String categoryId;
+    private List<ProductAttributeValueDTO> attributes = new ArrayList<>();
+    private List<ProductMediaDTO> media = new ArrayList<>();
+    private List<VariantDTO> variants = new ArrayList<>();
+    private State currentState;
 
-    @Column(name = "image_url", length = 500)
-    private String imageUrl;
+    // Getters and Setters
+    public String getId() {
+        return id;
+    }
 
-    @Column(length = 100)
-    private String category;
-
-    @Column(length = 2000)
-    public String description;
-    @Transient
-    public TransientMap transientMap = new TransientMap();
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -33,22 +32,6 @@ public class Product extends AbstractJpaStateEntity
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
     }
 
     public String getDescription() {
@@ -59,34 +42,21 @@ public class Product extends AbstractJpaStateEntity
         this.description = description;
     }
 
-    public void setTransientMap(TransientMap transientMap) {
-        this.transientMap = transientMap;
-    }
+    public String getBrand() { return brand; }
+    public void setBrand(String brand) { this.brand = brand; }
 
-    public TransientMap getTransientMap() {
-        return this.transientMap;
-    }
+    public String getCategoryId() { return categoryId; }
+    public void setCategoryId(String categoryId) { this.categoryId = categoryId; }
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    @JoinColumn(name = "product_id")
-    public List<ProductActivityLog> activities = new ArrayList<>();
+    public List<ProductAttributeValueDTO> getAttributes() { return attributes; }
+    public void setAttributes(List<ProductAttributeValueDTO> attributes) { this.attributes = attributes; }
 
-    @Override
-    public Collection<ActivityLog> obtainActivities() {
-        Collection<ActivityLog> acts = new ArrayList<>();
-        for (ActivityLog a : activities) {
-            acts.add(a);
-        }
-        return acts;
-    }
+    public List<ProductMediaDTO> getMedia() { return media; }
+    public void setMedia(List<ProductMediaDTO> media) { this.media = media; }
 
-    @Override
-    public ActivityLog addActivity(String eventId, String comment) {
-        ProductActivityLog activityLog = new ProductActivityLog();
-        activityLog.activityName = eventId;
-        activityLog.activityComment = comment;
-        activityLog.activitySuccess = true;
-        activities.add(activityLog);
-        return activityLog;
-    }
+    public List<VariantDTO> getVariants() { return variants; }
+    public void setVariants(List<VariantDTO> variants) { this.variants = variants; }
+
+    public State getCurrentState() { return currentState; }
+    public void setCurrentState(State currentState) { this.currentState = currentState; }
 }

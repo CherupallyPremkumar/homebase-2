@@ -1,0 +1,22 @@
+{
+    "policies": {
+        "limits": {
+            "maxItemsPerCart": 50,
+            "maxQuantityPerItem": 10
+        },
+        "currency": {
+            "enforceSingle": true
+        },
+        "expiration": {
+            "idleDays": 10,
+            "stuckCheckoutMinutes": 15,
+            "stuckPaymentMinutes": 60
+        },
+        "inventory": {
+            "reservationType": "soft"
+        },
+        "multi_seller": {
+            "allowed": true
+        }
+    }
+}

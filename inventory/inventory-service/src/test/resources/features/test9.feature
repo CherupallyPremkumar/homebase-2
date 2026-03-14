@@ -8,7 +8,8 @@ And that "initialState" equals "STOCK_PENDING"
 When I POST a REST request to URL "/inventory" with payload
 """json
 {
-    "description": "Description"
+    "description": "Description",
+    "quantity": 100
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -44,7 +45,8 @@ And that "event" equals "damageFound"
 When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "damagedQuantity": 5
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -72,7 +74,9 @@ And that "event" equals "reserveStock"
 When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "quantity": 5,
+    "orderId": "ORD-T9-001"
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -86,7 +90,8 @@ And that "event" equals "soldAllReserved"
 When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "orderId": "ORD-T9-001"
 }
 """
 Then the REST response contains key "mutatedEntity"

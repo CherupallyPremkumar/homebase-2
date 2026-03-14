@@ -5,8 +5,13 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>shipping-api</module>
+		<module>shipping-domain</module>
+		<module>shipping-query-api</module>
+		<module>shipping-infrastructure</module>
 		<module>shipping-service</module>
 		<module>shipping-query</module>
+		<module>shipping-app</module>
+		<module>shipping-client</module>
 	</modules>
 	<parent>
 		<groupId>com.homebase.ecom</groupId>
@@ -17,7 +22,6 @@
 
 	<properties>
 		<shipping.version>${revision}</shipping.version>
-		<revision>1.0.0</revision>
 	</properties>
 	
 	<groupId>com.homebase.ecom.shipping</groupId>
@@ -37,6 +41,16 @@
 			<groupId>com.homebase.ecom.shipping</groupId>
 			<version>${revision}</version>
 			<artifactId>shipping-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.shipping</groupId>
+			<version>${revision}</version>
+			<artifactId>shipping-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.shipping</groupId>
+			<version>${revision}</version>
+			<artifactId>shipping-infrastructure</artifactId>
 		</dependency>
 	</dependencies>
 	</dependencyManagement>

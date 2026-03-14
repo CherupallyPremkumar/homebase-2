@@ -1,15 +1,36 @@
 package com.homebase.ecom.returnrequest.service.postSaveHooks;
 
 import com.homebase.ecom.returnrequest.model.Returnrequest;
+import com.homebase.ecom.returnrequest.service.event.ReturnApprovedEvent;
+import com.homebase.ecom.returnrequest.service.event.ReturnRequestEventPublisher;
 import org.chenile.stm.State;
 import org.chenile.workflow.model.TransientMap;
 import org.chenile.workflow.service.stmcmds.PostSaveHook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- Contains customized post Save Hook for the State ID.
-*/
-public class APPROVEDReturnrequestPostSaveHook implements PostSaveHook<Returnrequest>{
-	@Override
-    public void execute(State startState, State endState, Returnrequest returnrequest, TransientMap map){
+ * PostSaveHook for APPROVED state.
+ * Publishes ReturnApprovedEvent after the return request is approved.
+ */
+public class APPROVEDReturnrequestPostSaveHook implements PostSaveHook<Returnrequest> {
+
+    private static final Logger log = LoggerFactory.getLogger(APPROVEDReturnrequestPostSaveHook.class);
+
+    @Autowired
+    private ReturnRequestEventPublisher eventPublisher;
+
+    @Override
+    public void execute(State startState, State endState, Returnrequest returnrequest, TransientMap map) {
+        ReturnApprovedEvent event = new ReturnApprovedEvent(
+                returnrequest.getId(),
+                returnrequest.orderId,
+                returnrequest.orderItemId,
+                returnrequest.refundAmount,
+                returnrequest.returnType
+        );
+        log.info("Return request {} approved, publishing ReturnApprovedEvent", returnrequest.getId());
+        eventPublisher.publishReturnApproved(event);
     }
 }

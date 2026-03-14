@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <default-transition-action componentName="returnProcessingBaseTransitionAction"/>
+
+  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
+
+  <flow id='return-processing-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="returnProcessingEntryAction" />
+    <exit-action componentName="returnProcessingExitAction" />
+
+    <!-- ========== INITIAL STATE ========== -->
+    <status id='INITIATED' initialState='true' meta-mainPath="true" description="Return processing saga initiated">
+      <on eventId='schedulePickup'
+          componentName="returnProcessingSchedulePickupAction"
+          newStateId='PICKUP_SCHEDULED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== PICKUP SCHEDULED ========== -->
+    <status id='PICKUP_SCHEDULED' meta-mainPath="true" description="Return pickup has been scheduled with carrier">
+      <on eventId='receiveItem'
+          componentName="returnProcessingReceiveItemAction"
+          newStateId='ITEM_RECEIVED'
+          meta-mainPath="true"
+          meta-acls="WAREHOUSE"/>
+    </status>
+
+    <!-- ========== ITEM RECEIVED ========== -->
+    <status id='ITEM_RECEIVED' meta-mainPath="true" description="Returned item received at warehouse">
+      <on eventId='restockInventory'
+          componentName="returnProcessingRestockInventoryAction"
+          newStateId='INVENTORY_RESTOCKED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== INVENTORY RESTOCKED ========== -->
+    <status id='INVENTORY_RESTOCKED' meta-mainPath="true" description="Returned item restocked in inventory">
+      <on eventId='adjustSettlement'
+          componentName="returnProcessingAdjustSettlementAction"
+          newStateId='SETTLEMENT_ADJUSTED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== SETTLEMENT ADJUSTED ========== -->
+    <status id='SETTLEMENT_ADJUSTED' meta-mainPath="true" description="Supplier settlement adjusted for return">
+      <on eventId='processRefund'
+          componentName="returnProcessingProcessRefundAction"
+          newStateId='REFUNDED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== REFUNDED ========== -->
+    <status id='REFUNDED' meta-mainPath="true" description="Customer refund processed">
+      <on eventId='notifyCustomer'
+          componentName="returnProcessingNotifyCustomerAction"
+          newStateId='COMPLETED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== COMPLETED (TERMINAL) ========== -->
+    <status id='COMPLETED' description="Return processing saga completed successfully">
+      <!-- Terminal state -->
+    </status>
+
+    <!-- ========== FAILED ========== -->
+    <status id='FAILED' description="Return processing failed, can be retried">
+      <on eventId='retry'
+          componentName="returnProcessingRetryAction"
+          newStateId='INITIATED'
+          meta-acls="SYSTEM"/>
+    </status>
+  </flow>
+</states>

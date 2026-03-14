@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="V3__create_offers_table" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/offer/V3__create_offers_table.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="V6__seed_offers_and_activate_products" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/offer/V6__seed_offers_and_activate_products.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+</databaseChangeLog>

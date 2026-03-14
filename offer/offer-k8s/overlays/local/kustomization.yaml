@@ -1,0 +1,7 @@
+resources:
+- ../../base
+patches:
+- path: replica-patch.yaml
+  target:
+    kind: Deployment
+    name: app

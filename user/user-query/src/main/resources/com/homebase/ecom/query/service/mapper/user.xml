@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="User">
+
+    <select id="getAll" resultType="com.homebase.ecom.user.dto.UserDto">
+        SELECT 
+            u.id         as id,
+            u.id         as userId, 
+            u.name       as name,
+            u.name       as firstName, 
+            u.name       as lastName, 
+            u.email      as email, 
+            u.branch     as branch,
+            u.branch     as role,
+            u.percentage as percentage,
+            u.phone      as phone,
+            u.state_id   as stateId
+        FROM users u
+        <where>
+            <if test="userId != null">AND u.id = #{userId}</if>
+            <if test="email != null">AND u.email LIKE CONCAT('%', #{email}, '%')</if>
+            <if test="firstName != null">AND u.name LIKE CONCAT('%', #{firstName}, '%')</if>
+            <if test="lastName != null">AND u.name LIKE CONCAT('%', #{lastName}, '%')</if>
+            <if test="role != null">AND u.branch = #{role}</if>
+            <if test="phone != null">AND u.phone = #{phone}</if>
+        </where>
+    </select>
+
+    <select id="getAll-count" resultType="int">
+        SELECT count(*) FROM users u
+        <where>
+            <if test="userId != null">AND u.id = #{userId}</if>
+            <if test="email != null">AND u.email LIKE CONCAT('%', #{email}, '%')</if>
+            <if test="firstName != null">AND u.name LIKE CONCAT('%', #{firstName}, '%')</if>
+            <if test="lastName != null">AND u.name LIKE CONCAT('%', #{lastName}, '%')</if>
+            <if test="role != null">AND u.branch = #{role}</if>
+            <if test="phone != null">AND u.phone = #{phone}</if>
+        </where>
+    </select>
+
+    <select id="getById" resultType="com.homebase.ecom.user.dto.UserDto">
+        SELECT 
+            u.id         as id,
+            u.id         as userId, 
+            u.name       as name,
+            u.name       as firstName, 
+            u.name       as lastName, 
+            u.email      as email, 
+            u.branch     as branch,
+            u.branch     as role,
+            u.percentage as percentage,
+            u.phone      as phone,
+            u.state_id   as stateId
+        FROM users u
+        WHERE u.id = #{userId}
+    </select>
+
+</mapper>

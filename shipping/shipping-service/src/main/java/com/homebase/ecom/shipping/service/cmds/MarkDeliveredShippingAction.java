@@ -8,22 +8,33 @@ import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.shipping.model.Shipping;
 import com.homebase.ecom.shipping.dto.MarkDeliveredShippingPayload;
 
+import java.util.Date;
+
 /**
- Contains customized logic for the transition. Common logic resides at {@link DefaultSTMTransitionAction}
- <p>Use this class if you want to augment the common logic for this specific transition</p>
- <p>Use a customized payload if required instead of MinimalPayload</p>
-*/
+ * Handles the markDelivered transition: OUT_FOR_DELIVERY -> DELIVERED.
+ * Sets deliveredAt timestamp and captures delivery proof/signature.
+ */
 public class MarkDeliveredShippingAction extends AbstractSTMTransitionAction<Shipping,
+        MarkDeliveredShippingPayload> {
 
-    MarkDeliveredShippingPayload>{
-
-
-	@Override
-	public void transitionTo(Shipping shipping,
+    @Override
+    public void transitionTo(Shipping shipping,
             MarkDeliveredShippingPayload payload,
             State startState, String eventId,
-			State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-            shipping.transientMap.previousPayload = payload;
-	}
+            State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
+        shipping.getTransientMap().previousPayload = payload;
+
+        // Set delivered timestamp
+        shipping.setDeliveredAt(new Date());
+
+        // Capture delivery proof (photo, signature reference)
+        String proof = payload.getDeliveryProof();
+        if (proof != null && !proof.isEmpty()) {
+            shipping.setDeliveryProof(proof);
+        }
+
+        // Update location to delivered destination
+        shipping.setCurrentLocation("Delivered to " + (shipping.getShippingAddress() != null ? shipping.getShippingAddress() : "customer"));
+    }
 }

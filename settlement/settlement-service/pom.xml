@@ -19,10 +19,26 @@
 			<groupId>com.homebase.ecom.settlement</groupId>
 			<artifactId>settlement-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.settlement</groupId>
+			<artifactId>settlement-infrastructure</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile.cconfig</groupId>
+			<artifactId>cconfig-api</artifactId>
+		</dependency>
 	
 		<dependency>
 			<groupId>org.chenile</groupId>
             <artifactId>workflow-service</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.order</groupId>
+			<artifactId>order-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-proxy</artifactId>
 		</dependency>
         <dependency>
             <groupId>org.junit.vintage</groupId>

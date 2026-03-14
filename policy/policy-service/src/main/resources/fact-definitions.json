@@ -1,0 +1,42 @@
+[
+  {
+    "id": "fact_product_price",
+    "module": "Catalog",
+    "entityName": "Saree",
+    "displayName": "Saree Price",
+    "attribute": "#saree.price",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_product_material",
+    "module": "Catalog",
+    "entityName": "Saree",
+    "displayName": "Material Type",
+    "attribute": "#saree.material",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_product_handmade",
+    "module": "Catalog",
+    "entityName": "Saree",
+    "displayName": "Is Handmade?",
+    "attribute": "#saree.isHandmade",
+    "dataType": "BOOLEAN"
+  },
+  {
+    "id": "fact_user_city",
+    "module": "User",
+    "entityName": "Customer",
+    "displayName": "City",
+    "attribute": "#customer.address.city",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_order_total",
+    "module": "Order",
+    "entityName": "Order",
+    "displayName": "Total Order Value",
+    "attribute": "#order.totalValue",
+    "dataType": "NUMBER"
+  }
+]

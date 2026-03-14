@@ -8,7 +8,10 @@ And that "initialState" equals "PENDING"
 When I POST a REST request to URL "/settlement" with payload
 """json
 {
-    "description": "Description"
+    "description": "Description",
+    "supplierId": "SUP-TEST3",
+    "periodMonth": 5,
+    "periodYear": 2026
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -49,5 +52,5 @@ When I PATCH a REST request to URL "/settlement/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "SETTLED"
+And the REST response key "mutatedEntity.currentState.stateId" is "READY_FOR_PAYMENT"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"

@@ -1,23 +1,28 @@
 package com.homebase.ecom.product;
 
-
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.ActiveProfiles;
 
-import org.chenile.utils.entity.service.EntityStore;
-import com.homebase.ecom.product.model.Product;
+import org.springframework.kafka.core.KafkaTemplate;
 
+import static org.mockito.Mockito.mock;
 
 @Configuration
 @PropertySource("classpath:com/homebase/ecom/product/TestService.properties")
 @SpringBootApplication(scanBasePackages = { "org.chenile.configuration", "com.homebase.ecom.product.configuration" })
+@EnableJpaRepositories(basePackages = { "com.homebase.ecom.product" })
+@EntityScan(basePackages = { "com.homebase.ecom.product" })
 @ActiveProfiles("unittest")
-public class SpringTestConfig extends SpringBootServletInitializer{
-	
-}
+public class SpringTestConfig {
 
+    @SuppressWarnings("unchecked")
+    @Bean
+    public KafkaTemplate<String, Object> kafkaTemplate() {
+        return mock(KafkaTemplate.class);
+    }
+}

@@ -15,15 +15,19 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.ecommerce</groupId>
-            <artifactId>ecommerce-shared</artifactId>
+            <groupId>com.homebase.ecom.shared</groupId>
+            <artifactId>shared-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.ecommerce</groupId>
+            <groupId>org.chenile.cconfig</groupId>
+            <artifactId>cconfig-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom</groupId>
             <artifactId>payment-gateway-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.ecommerce</groupId>
+            <groupId>com.homebase.ecom</groupId>
             <artifactId>payment-ledger</artifactId>
         </dependency>
         <dependency>
@@ -35,8 +39,8 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-kafka</artifactId>
         </dependency>
     </dependencies>
 </project>

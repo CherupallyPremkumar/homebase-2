@@ -1,0 +1,30 @@
+{
+    "policies": {
+        "account": {
+            "requireEmailVerification": true,
+            "requirePhoneVerification": true,
+            "maxActiveAddresses": 5,
+            "requireProfileComplete": false
+        },
+        "security": {
+            "maxFailedLoginAttempts": 5,
+            "lockoutDurationMinutes": 30,
+            "sessionTimeoutMinutes": 120
+        }
+    },
+    "rules": {
+        "wishlist": {
+            "maxWishlistItems": 100
+        },
+        "notifications": {
+            "orderUpdatesEnabled": true,
+            "promotionalEmailsEnabled": true,
+            "smsNotificationsEnabled": false
+        },
+        "loyalty": {
+            "pointsPerRupee": 1,
+            "redemptionThresholdPoints": 1000,
+            "pointExpiryDays": 365
+        }
+    }
+}

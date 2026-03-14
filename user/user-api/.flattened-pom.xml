@@ -5,12 +5,12 @@
   <parent>
     <groupId>com.homebase.ecom.user</groupId>
     <artifactId>user-parent</artifactId>
-    <version>1.0.0</version>
+    <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.homebase.ecom.user</groupId>
   <artifactId>user-api</artifactId>
-  <version>1.0.0</version>
-  <name>User API Model and Interfaces</name>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>User API — DTOs, Service Interfaces, Exceptions</name>
   <licenses>
     <license>
       <name>MIT License</name>
@@ -19,12 +19,12 @@
   </licenses>
   <dependencies>
     <dependency>
-      <groupId>org.chenile</groupId>
-      <artifactId>workflow-api</artifactId>
+      <groupId>com.homebase.ecom.shared</groupId>
+      <artifactId>shared-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.chenile</groupId>
-      <artifactId>jpa-utils</artifactId>
+      <artifactId>workflow-api</artifactId>
     </dependency>
   </dependencies>
 </project>

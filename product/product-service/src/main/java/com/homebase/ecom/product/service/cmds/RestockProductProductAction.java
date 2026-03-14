@@ -5,7 +5,7 @@ import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
 
 import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
-import com.homebase.ecom.product.model.Product;
+import com.homebase.ecom.product.domain.model.Product;
 import com.homebase.ecom.product.dto.RestockProductProductPayload;
 
 /**
@@ -23,7 +23,7 @@ public class RestockProductProductAction extends AbstractSTMTransitionAction<Pro
             RestockProductProductPayload payload,
             State startState, String eventId,
 			State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-            product.transientMap.previousPayload = payload;
+            product.getTransientMap().put("previousPayload", payload);
 	}
 
 }

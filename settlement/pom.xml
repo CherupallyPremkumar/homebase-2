@@ -5,8 +5,13 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>settlement-api</module>
+		<module>settlement-query-api</module>
+		<module>settlement-domain</module>
+		<module>settlement-infrastructure</module>
 		<module>settlement-service</module>
 		<module>settlement-query</module>
+		<module>settlement-app</module>
+		<module>settlement-client</module>
 	</modules>
 	<parent>
 		<groupId>com.homebase.ecom</groupId>
@@ -16,8 +21,6 @@
 	</parent>
 
 	<properties>
-		<settlement.version>${revision}</settlement.version>
-		<revision>1.0.0</revision>
 	</properties>
 	
 	<groupId>com.homebase.ecom.settlement</groupId>
@@ -37,6 +40,21 @@
 			<groupId>com.homebase.ecom.settlement</groupId>
 			<version>${revision}</version>
 			<artifactId>settlement-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.settlement</groupId>
+			<version>${revision}</version>
+			<artifactId>settlement-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.settlement</groupId>
+			<version>${revision}</version>
+			<artifactId>settlement-infrastructure</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>settlement-query-service</artifactId>
+			<version>${revision}</version>
 		</dependency>
 	</dependencies>
 	</dependencyManagement>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Inventory">
+
+    <select id="getAll" resultType="com.homebase.ecom.inventory.dto.InventoryDto">
+        SELECT 
+            id,
+            product_id as "productId",
+            quantity,
+            reserved_quantity as "reserved",
+            low_stock_threshold as "lowStockThreshold",
+            status,
+            state_id as "stateId"
+        FROM inventory_item
+        <where>
+            <if test="productId != null">AND product_id = #{productId}</if>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="stateId != null">AND state_id = #{stateId}</if>
+        </where>
+    </select>
+
+    <select id="getAll-count" resultType="int">
+        SELECT count(*)
+        FROM inventory_item
+        <where>
+            <if test="productId != null">AND product_id = #{productId}</if>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="stateId != null">AND state_id = #{stateId}</if>
+        </where>
+    </select>
+
+    <select id="getByProductId" resultType="com.homebase.ecom.inventory.dto.InventoryDto">
+        SELECT 
+            id,
+            product_id as "productId",
+            quantity,
+            reserved_quantity as "reserved",
+            low_stock_threshold as "lowStockThreshold",
+            status,
+            state_id as "stateId"
+        FROM inventory_item
+        WHERE product_id = #{productId}
+    </select>
+
+</mapper>

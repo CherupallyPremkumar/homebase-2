@@ -5,11 +5,11 @@
   <parent>
     <groupId>com.homebase.ecom.cart</groupId>
     <artifactId>cart-parent</artifactId>
-    <version>1.0.0</version>
+    <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.homebase.ecom.cart</groupId>
   <artifactId>cart-api</artifactId>
-  <version>1.0.0</version>
+  <version>0.0.1-SNAPSHOT</version>
   <name>Cart API Model and Interfaces</name>
   <licenses>
     <license>
@@ -19,12 +19,26 @@
   </licenses>
   <dependencies>
     <dependency>
+      <groupId>com.homebase.ecom.cart</groupId>
+      <artifactId>cart-domain</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.chenile</groupId>
+      <artifactId>utils</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.chenile</groupId>
       <artifactId>workflow-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.chenile</groupId>
-      <artifactId>jpa-utils</artifactId>
+      <artifactId>query-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.homebase.ecom.shared</groupId>
+      <artifactId>shared-api</artifactId>
+      <version>${revision}</version>
     </dependency>
   </dependencies>
 </project>

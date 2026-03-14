@@ -15,7 +15,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.ecommerce</groupId>
+            <groupId>com.homebase.ecom</groupId>
             <artifactId>payment-gateway-api</artifactId>
         </dependency>
         <dependency>

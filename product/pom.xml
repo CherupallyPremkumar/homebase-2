@@ -5,7 +5,12 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>product-api</module>
+		<module>product-domain</module>
+		<module>product-infrastructure</module>
 		<module>product-service</module>
+		<module>product-app</module>
+		<module>product-client</module>
+		<module>product-query-api</module>
 		<module>product-query</module>
 	</modules>
 	<parent>
@@ -17,11 +22,9 @@
 
 	<properties>
 		<product.version>${revision}</product.version>
-		<revision>1.0.0</revision>
 	</properties>
 	
 	<groupId>com.homebase.ecom.product</groupId>
-	<version>${revision}</version>
 	<artifactId>product-parent</artifactId>
 	<name>All Modules that belong to the Product </name>
 	<description>Modules execution project and Parent Pom</description>
@@ -30,13 +33,43 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>product-api</artifactId>
 			<version>${revision}</version>
-			<artifactId>product-service</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>product-domain</artifactId>
 			<version>${revision}</version>
-			<artifactId>product-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>product-infrastructure</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>product-service</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>product-query-api</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>product-query-service</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>product-client</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+			<version>4.1.0</version> <!-- Should match Spring Boot 3.2.x/3.3.x compatibility -->
 		</dependency>
 	</dependencies>
 	</dependencyManagement>

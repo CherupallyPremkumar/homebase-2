@@ -7,23 +7,31 @@ import org.chenile.stm.model.Transition;
 import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.returnrequest.model.Returnrequest;
 import com.homebase.ecom.returnrequest.dto.PickupInitiatedReturnrequestPayload;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- Contains customized logic for the transition. Common logic resides at {@link DefaultSTMTransitionAction}
- <p>Use this class if you want to augment the common logic for this specific transition</p>
- <p>Use a customized payload if required instead of MinimalPayload</p>
-*/
+ * Handles the pickupInitiated transition (APPROVED -> IN_TRANSIT_BACK).
+ * Records pickup tracking number for the return shipment.
+ */
 public class PickupInitiatedReturnrequestAction extends AbstractSTMTransitionAction<Returnrequest,
+        PickupInitiatedReturnrequestPayload> {
 
-    PickupInitiatedReturnrequestPayload>{
+    private static final Logger log = LoggerFactory.getLogger(PickupInitiatedReturnrequestAction.class);
 
+    @Override
+    public void transitionTo(Returnrequest returnrequest,
+                             PickupInitiatedReturnrequestPayload payload,
+                             State startState, String eventId,
+                             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-	@Override
-	public void transitionTo(Returnrequest returnrequest,
-            PickupInitiatedReturnrequestPayload payload,
-            State startState, String eventId,
-			State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-            returnrequest.transientMap.previousPayload = payload;
-	}
+        // Record tracking number
+        if (payload.getPickupTrackingNumber() != null) {
+            returnrequest.pickupTrackingNumber = payload.getPickupTrackingNumber();
+        }
 
+        returnrequest.getTransientMap().previousPayload = payload;
+        log.info("Return request {} pickup initiated with tracking: {}",
+                returnrequest.getId(), returnrequest.pickupTrackingNumber);
+    }
 }

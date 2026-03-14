@@ -9,7 +9,7 @@
         <version>2.1.12</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    
+
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.homebase.ecom</groupId>
     <artifactId>homebase-parent</artifactId>
@@ -20,70 +20,691 @@
     <description>Parent POM for HomeBase microservices</description>
 
     <properties>
-        <revision>1.0.0</revision>
-        <java.version>17</java.version>
-        <spring.boot.version>3.2.0</spring.boot.version>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
-        <revision>1.0.0</revision>
+        <revision>0.0.1-SNAPSHOT</revision>
+        <java.version>25</java.version>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <maven.compiler.release>25</maven.compiler.release>
+        <chenile.client.version>2.1.12</chenile.client.version>
+        <chenile.config.version>${revision}</chenile.config.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <resilience4j.version>2.2.0</resilience4j.version>
     </properties>
-
     <modules>
-       <module>build</module>
-       <module>shared</module>
-       <module>cart</module>
-        <module>supplierproduct</module>
+        <module>cart</module>
+        <module>catalog</module>
+        <module>checkout</module>
+        <module>config</module>
+        <module>inventory</module>
+        <module>onboarding</module>
         <module>order</module>
         <module>payment</module>
         <module>product</module>
-        <module>user</module>
-        <module>inventory</module>
+        <module>promo</module>
+        <module>review</module>
+        <module>policy</module>
+        <module>pricing</module>
+        <module>return-processing</module>
         <module>returnrequest</module>
         <module>settlement</module>
-        <module>supplier</module>
+        <module>shared</module>
         <module>shipping</module>
-    </modules>    <dependencyManagement>
+        <module>support</module>
+        <module>supplier</module>
+        <module>user</module>
+        <module>notification</module>
+        <module>fulfillment</module>
+        <module>build</module>
+        <module>filter-core</module>
+        <module>db-migrations</module>
+        <module>offer</module>
+        <module>tax</module>
+        <module>cms</module>
+        <module>analytics</module>
+        <module>reconciliation</module>
+        <module>supplier-lifecycle</module>
+    </modules>
+
+    <dependencyManagement>
         <dependencies>
+            <!-- Override Spring Boot BOM inherited from chenile-parent -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Chenile Dependencies -->
+            <dependency>
+                <groupId>org.chenile</groupId>
+                <artifactId>workflow-api</artifactId>
+                <version>${chenile.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.chenile</groupId>
+                <artifactId>jpa-utils</artifactId>
+                <version>${chenile.client.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.homebase.ecom</groupId>
-                <artifactId>shared-api</artifactId>
-                <version>${project.version}</version>
+                <artifactId>catalog</artifactId>
+                <version>${revision}</version>
             </dependency>
+            <!-- Core/Shared Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.shared</groupId>
+                <artifactId>shared-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.shared</groupId>
+                <artifactId>shared-security</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.build</groupId>
+                <artifactId>core</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.homebase.ecom.cart</groupId>
+                <artifactId>cart-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>cart-query-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.cart</groupId>
+                <artifactId>cart-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>cart-query-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Checkout Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.checkout</groupId>
+                <artifactId>checkout-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.checkout</groupId>
+                <artifactId>checkout-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.checkout</groupId>
+                <artifactId>checkout-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.checkout</groupId>
+                <artifactId>checkout-app</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Inventory Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.inventory</groupId>
+                <artifactId>inventory-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.inventory</groupId>
+                <artifactId>inventory-query-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.inventory</groupId>
+                <artifactId>inventory-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Order Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.order</groupId>
+                <artifactId>order-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.order</groupId>
+                <artifactId>order-query-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.order</groupId>
+                <artifactId>order-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Shared Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>ecommerce-shared</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>payment-gateway-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>payment-common</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>payment-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>payment-ledger</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>payment-batch</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>payment-web</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>payment-stripe</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>payment-razorpay</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-app</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Product Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.product</groupId>
+                <artifactId>product-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.product</groupId>
+                <artifactId>product-query-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.product</groupId>
+                <artifactId>product-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Offer Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.offer</groupId>
+                <artifactId>offer-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.offer</groupId>
+                <artifactId>offer-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.offer</groupId>
+                <artifactId>offer-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.offer</groupId>
+                <artifactId>offer-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.offer</groupId>
+                <artifactId>offer-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.offer</groupId>
+                <artifactId>offer-app</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Pricing Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.pricing</groupId>
+                <artifactId>pricing-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.pricing</groupId>
+                <artifactId>pricing-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.pricing</groupId>
+                <artifactId>pricing-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.pricing</groupId>
+                <artifactId>pricing-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.pricing</groupId>
+                <artifactId>pricing-app</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.homebase.ecom.promo</groupId>
+                <artifactId>promo-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.promo</groupId>
+                <artifactId>promo-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.promo</groupId>
+                <artifactId>promo-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.promo</groupId>
+                <artifactId>promo-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.promo</groupId>
+                <artifactId>promo-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.promo</groupId>
+                <artifactId>promo-app</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Return Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.returnrequest</groupId>
+                <artifactId>returnrequest-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.returnrequest</groupId>
+                <artifactId>returnrequest-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Review Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.review</groupId>
+                <artifactId>review-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.review</groupId>
+                <artifactId>review-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.review</groupId>
+                <artifactId>review-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.review</groupId>
+                <artifactId>review-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Settlement Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.settlement</groupId>
+                <artifactId>settlement-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.settlement</groupId>
+                <artifactId>settlement-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Onboarding Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.onboarding</groupId>
+                <artifactId>onboarding-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.onboarding</groupId>
+                <artifactId>onboarding-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Chenile Config Modules -->
+            <dependency>
+                <groupId>org.chenile.cconfig</groupId>
+                <artifactId>cconfig-api</artifactId>
+                <version>${chenile.config.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.chenile.cconfig</groupId>
+                <artifactId>cconfig-service</artifactId>
+                <version>${chenile.config.version}</version>
+            </dependency>
+
+            <!-- Notification Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.notification</groupId>
+                <artifactId>notification-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.notification</groupId>
+                <artifactId>notification-query-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.notification</groupId>
+                <artifactId>notification-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Support Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.support</groupId>
+                <artifactId>support-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.support</groupId>
+                <artifactId>support-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.support</groupId>
+                <artifactId>support-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.support</groupId>
+                <artifactId>support-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>support-query-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Fulfillment Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.fulfillment</groupId>
+                <artifactId>fulfillment-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.fulfillment</groupId>
+                <artifactId>fulfillment-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Shipping Modules -->
+
+            <dependency>
+                <groupId>com.homebase.ecom.shipping</groupId>
+                <artifactId>shipping-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.shipping</groupId>
+                <artifactId>shipping-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Supplier Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.supplier</groupId>
+                <artifactId>supplier-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.supplier</groupId>
+                <artifactId>supplier-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Supplier Lifecycle Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.supplierlifecycle</groupId>
+                <artifactId>supplier-lifecycle-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.supplierlifecycle</groupId>
+                <artifactId>supplier-lifecycle-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.supplierlifecycle</groupId>
+                <artifactId>supplier-lifecycle-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.supplierlifecycle</groupId>
+                <artifactId>supplier-lifecycle-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- User Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.user</groupId>
+                <artifactId>user-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.user</groupId>
+                <artifactId>user-query-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.user</groupId>
+                <artifactId>user-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Analytics Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.analytics</groupId>
+                <artifactId>analytics-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.analytics</groupId>
+                <artifactId>analytics-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.analytics</groupId>
+                <artifactId>analytics-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.analytics</groupId>
+                <artifactId>analytics-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Reconciliation Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.reconciliation</groupId>
+                <artifactId>reconciliation-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.reconciliation</groupId>
+                <artifactId>reconciliation-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.stripe</groupId>
                 <artifactId>stripe-java</artifactId>
                 <version>24.0.0</version>
             </dependency>
             <dependency>
-                <groupId>com.ecommerce</groupId>
-                <artifactId>ecommerce-shared</artifactId>
-                <version>1.0.0</version>
+                <groupId>org.chenile</groupId>
+                <artifactId>owiz</artifactId>
+                <version>${chenile.client.version}</version>
+            </dependency>
+
+            <!-- Tax Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.tax</groupId>
+                <artifactId>tax-api</artifactId>
+                <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.18.30</version>
-                <scope>provided</scope>
+                <groupId>com.homebase.ecom.tax</groupId>
+                <artifactId>tax-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.tax</groupId>
+                <artifactId>tax-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.tax</groupId>
+                <artifactId>tax-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Chenile Core Dependencies -->
+            <dependency>
+                <groupId>org.chenile</groupId>
+                <artifactId>chenile-base</artifactId>
+                <version>${chenile.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.chenile</groupId>
+                <artifactId>chenile-core</artifactId>
+                <version>${chenile.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.chenile</groupId>
+                <artifactId>workflow-api</artifactId>
+                <version>${chenile.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.chenile</groupId>
+                <artifactId>jpa-utils</artifactId>
+                <version>${chenile.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.chenile</groupId>
+                <artifactId>utils</artifactId>
+                <version>${chenile.client.version}</version>
+            </dependency>   
+            <dependency>
+                <groupId>org.chenile</groupId>
+                <artifactId>stm</artifactId>
+                <version>${chenile.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.chenile</groupId>
+                <artifactId>chenile-http</artifactId>
+                <version>${chenile.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.chenile</groupId>
+                <artifactId>chenile-kafka</artifactId>
+                <version>${chenile.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.chenile</groupId>
+                <artifactId>query-api</artifactId>
+                <version>${chenile.client.version}</version>
+            </dependency>
+
+            <!-- Resilience4j for Circuit Breaker -->
+            <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-spring-boot3</artifactId>
+                <version>${resilience4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-micrometer</artifactId>
+                <version>${resilience4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+                <version>4.1.0</version>
+            </dependency>
+
+            <!-- Spring Boot Actuator for Observability -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-actuator</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-prometheus</artifactId>
+                <version>${spring-boot.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
 
-
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>${spring.boot.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.chenile</groupId>
-                    <artifactId>stm-generate-puml</artifactId>
-                    <version>2.1.12</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 </project>

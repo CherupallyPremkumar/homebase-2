@@ -3,62 +3,58 @@
   <flow id='shipping-flow' default='true'>
     <entry-action componentName="shippingEntryAction" />
 
-    <manual-state id='AWAITING_PICKUP' initialState='true' meta-mainPath="true">
+    <manual-state id='AWAITING_PICKUP' initialState='true' meta-mainPath="true" description="Shipment created, awaiting courier pickup">
       <entry-action componentName="awaitingPickupAction" />
-      <on eventId='courierAssigned' 
-          componentName='courierAssignedAction'
-          newStateId='PICKED_UP' 
+      <on eventId='courierAssigned'
+          componentName='shippingCourierAssignedAction'
+          newStateId='PICKED_UP'
           meta-mainPath="true"
           meta-acls="WAREHOUSE"/>
     </manual-state>
 
-    <manual-state id='PICKED_UP' meta-mainPath="true">
-      <entry-action componentName="pickedUpAction" />
-      <on eventId='inTransit' 
-          componentName='inTransitAction'
-          newStateId='IN_TRANSIT' 
+    <manual-state id='PICKED_UP' meta-mainPath="true" description="Courier has picked up the shipment">
+      <on eventId='inTransit'
+          componentName='shippingInTransitAction'
+          newStateId='IN_TRANSIT'
           meta-mainPath="true"
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <manual-state id='IN_TRANSIT' meta-mainPath="true">
-      <entry-action componentName="inTransitAction" />
-      <on eventId='outForDelivery' 
-          componentName='outForDeliveryAction'
-          newStateId='OUT_FOR_DELIVERY' 
+    <manual-state id='IN_TRANSIT' meta-mainPath="true" description="Shipment in transit to destination">
+      <on eventId='outForDelivery'
+          componentName='shippingOutForDeliveryAction'
+          newStateId='OUT_FOR_DELIVERY'
           meta-mainPath="true"
           meta-acls="SYSTEM"/>
-      <on eventId='returnRequested' 
-          componentName='returnRequestedAction'
-          newStateId='RETURN_REQUESTED'/>
+      <on eventId='returnRequested'
+          componentName='shippingReturnRequestedAction'
+          newStateId='RETURN_REQUESTED'
+          meta-acls="CUSTOMER"/>
     </manual-state>
 
-    <manual-state id='OUT_FOR_DELIVERY' meta-mainPath="true">
-      <entry-action componentName="outForDeliveryAction" />
-      <on eventId='markDelivered' 
-          componentName='markDeliveredAction'
-          newStateId='DELIVERED' 
+    <manual-state id='OUT_FOR_DELIVERY' meta-mainPath="true" description="Shipment out for delivery to customer">
+      <on eventId='markDelivered'
+          componentName='shippingMarkDeliveredAction'
+          newStateId='DELIVERED'
           meta-mainPath="true"
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <manual-state id='DELIVERED' meta-mainPath="true">
-      <entry-action componentName="deliveredAction" />
-      <on eventId='returnRequested' 
-          componentName='returnRequestedAction'
-          newStateId='RETURN_REQUESTED'/>
+    <manual-state id='DELIVERED' meta-mainPath="true" description="Shipment delivered to customer">
+      <on eventId='returnRequested'
+          componentName='shippingReturnRequestedAction'
+          newStateId='RETURN_REQUESTED'
+          meta-acls="CUSTOMER"/>
     </manual-state>
 
-    <manual-state id='RETURN_REQUESTED'>
-      <entry-action componentName="returnRequestedAction" />
-      <on eventId='returnPickup' 
-          componentName='returnPickupAction'
+    <manual-state id='RETURN_REQUESTED' description="Return requested, awaiting return pickup">
+      <on eventId='returnPickup'
+          componentName='shippingReturnPickupAction'
           newStateId='IN_TRANSIT'
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <manual-state id='RETURNED'>
-      <entry-action componentName="returnedAction" />
+    <manual-state id='RETURNED' description="Shipment returned to warehouse">
     </manual-state>
   </flow>
 </states>

@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.homebase.ecom</groupId>
+        <artifactId>catalog</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.homebase.ecom</groupId>
+    <artifactId>handmade-catalog-service</artifactId>
+    <packaging>jar</packaging>
+    <name>handmade-catalog-service</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile.cconfig</groupId>
+            <artifactId>cconfig-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.shared</groupId>
+            <artifactId>shared-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom</groupId>
+            <artifactId>handmade-catalog-api</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.product</groupId>
+            <artifactId>product-api</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom</groupId>
+            <artifactId>handmade-catalog-infrastructure</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom</groupId>
+            <artifactId>handmade-catalog-domain</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.policy</groupId>
+            <artifactId>policy-client</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-kafka</artifactId>
+        </dependency>
+        
+        
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>1.19.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.19.3</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

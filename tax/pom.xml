@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.homebase.ecom</groupId>
+        <artifactId>homebase-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.homebase.ecom.tax</groupId>
+    <artifactId>tax-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>Tax Parent</name>
+
+    <modules>
+        <module>tax-api</module>
+        <module>tax-domain</module>
+        <module>tax-infrastructure</module>
+        <module>tax-service</module>
+        <module>tax-query-api</module>
+        <module>tax-query</module>
+        <module>tax-app</module>
+        <module>tax-client</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.homebase.ecom.tax</groupId>
+                <artifactId>tax-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.tax</groupId>
+                <artifactId>tax-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.tax</groupId>
+                <artifactId>tax-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.tax</groupId>
+                <artifactId>tax-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.tax</groupId>
+                <artifactId>tax-query-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

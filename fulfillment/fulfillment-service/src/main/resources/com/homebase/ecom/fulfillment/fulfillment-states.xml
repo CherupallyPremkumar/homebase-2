@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <default-transition-action componentName="fulfillmentBaseTransitionAction"/>
+
+  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
+
+  <flow id='fulfillment-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="fulfillmentEntryAction" />
+    <exit-action componentName="fulfillmentExitAction" />
+
+    <!-- ========== INITIAL STATE ========== -->
+    <status id='INITIATED' initialState='true' meta-mainPath="true" description="Fulfillment saga initiated for order">
+      <on eventId='reserveInventory'
+          componentName='fulfillmentReserveInventoryAction'
+          newStateId='INVENTORY_RESERVED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== INVENTORY RESERVED ========== -->
+    <status id='INVENTORY_RESERVED' meta-mainPath="true" description="Inventory reserved for fulfillment">
+      <on eventId='createShipment'
+          componentName='fulfillmentCreateShipmentAction'
+          newStateId='SHIPMENT_CREATED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM,WAREHOUSE"/>
+    </status>
+
+    <!-- ========== SHIPMENT CREATED ========== -->
+    <status id='SHIPMENT_CREATED' meta-mainPath="true" description="Shipment created with carrier">
+      <on eventId='ship'
+          componentName='fulfillmentShipAction'
+          newStateId='SHIPPED'
+          meta-mainPath="true"
+          meta-acls="WAREHOUSE"/>
+    </status>
+
+    <!-- ========== SHIPPED ========== -->
+    <status id='SHIPPED' meta-mainPath="true" description="Order shipped and in transit">
+      <on eventId='notifyCustomer'
+          componentName='fulfillmentNotifyCustomerAction'
+          newStateId='CUSTOMER_NOTIFIED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== CUSTOMER NOTIFIED ========== -->
+    <status id='CUSTOMER_NOTIFIED' meta-mainPath="true" description="Customer notified about shipment status">
+      <on eventId='confirmDelivery'
+          componentName='fulfillmentConfirmDeliveryAction'
+          newStateId='COMPLETED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM,CUSTOMER"/>
+    </status>
+
+    <!-- ========== COMPLETED (TERMINAL) ========== -->
+    <status id='COMPLETED' description="Fulfillment completed successfully">
+      <!-- Terminal state -->
+    </status>
+
+    <!-- ========== FAILED ========== -->
+    <status id='FAILED' description="Fulfillment failed, can be retried">
+      <on eventId='retry'
+          componentName='fulfillmentRetryAction'
+          newStateId='INITIATED'
+          meta-acls="SYSTEM"/>
+    </status>
+  </flow>
+</states>

@@ -28,7 +28,9 @@ And the REST response key "mutatedEntity.currentState.stateId" is "${currentStat
 When I PATCH a REST request to URL "/cart/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "productId": "test-product-1",
+    "quantity": 2
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -47,7 +49,7 @@ When I PATCH a REST request to URL "/cart/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "CHECKOUT_INITIATED"
+And the REST response key "mutatedEntity.currentState.stateId" is "CHECKOUT_IN_PROGRESS"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
  Scenario: Send the completePayment event to the cart with comments

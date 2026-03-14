@@ -16,19 +16,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.ecommerce</groupId>
+            <groupId>com.homebase.ecom</groupId>
             <artifactId>payment-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ecommerce</groupId>
+            <groupId>com.homebase.ecom</groupId>
             <artifactId>payment-gateway-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ecommerce</groupId>
+            <groupId>com.homebase.ecom</groupId>
             <artifactId>payment-batch</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stripe</groupId>
@@ -39,8 +36,8 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-kafka</artifactId>
         </dependency>
     </dependencies>
 </project>

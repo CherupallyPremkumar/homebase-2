@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<parent>
+		<groupId>com.homebase.ecom.user</groupId>
+		<artifactId>user-parent</artifactId>
+		<version>${revision}</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>user-query-api</artifactId>
+	<name>User Query API — Shared DTOs for user query responses</name>
+	<description>
+		Contains only DTOs (Data Transfer Objects) for user query responses.
+		Both user-query-service (as resultType in MyBatis XML) and
+		user-service (in ChenileRepository method return types) depend on this module.
+		This enforces type-safe contracts between services without runtime string matching.
+	</description>
+
+	<dependencies>
+		<!-- No dependencies — pure DTO jar. Services that need ChenileRepository depend on chenile-query-client directly. -->
+	</dependencies>
+
+</project>

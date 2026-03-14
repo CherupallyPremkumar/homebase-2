@@ -1,0 +1,36 @@
+{
+    "policies": {
+        "transaction": {
+            "maxRefundWindowDays": 30,
+            "autoRefundOnCancel": true,
+            "requireRefundApprovalAboveInr": 5000.0,
+            "allowedGateways": [
+                "RAZORPAY",
+                "STRIPE"
+            ]
+        },
+        "webhook": {
+            "signatureValidationEnabled": true,
+            "deduplicationEnabled": true,
+            "maxRetries": 3
+        },
+        "reconciliation": {
+            "toleranceAmountInr": 1.0,
+            "autoFlagMismatchAboveInr": 500.0
+        }
+    },
+    "rules": {
+        "retry": {
+            "paymentRetryWindowMinutes": 30,
+            "maxPaymentRetries": 3
+        },
+        "refund": {
+            "processingDays": 5,
+            "partialRefundAllowed": true
+        },
+        "fraud": {
+            "flagHighValueTransactionAboveInr": 50000.0,
+            "requireVerificationAboveInr": 100000.0
+        }
+    }
+}

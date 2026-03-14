@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.homebase.ecom.tax</groupId>
+        <artifactId>tax-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>tax-service</artifactId>
+    <name>Tax Service</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.homebase.ecom.tax</groupId>
+            <artifactId>tax-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.tax</groupId>
+            <artifactId>tax-domain</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.tax</groupId>
+            <artifactId>tax-infrastructure</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-core</artifactId>
+        </dependency>
+    </dependencies>
+</project>

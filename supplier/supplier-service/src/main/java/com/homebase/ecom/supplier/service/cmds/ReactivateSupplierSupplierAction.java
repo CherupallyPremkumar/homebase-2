@@ -7,23 +7,39 @@ import org.chenile.stm.model.Transition;
 import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.supplier.model.Supplier;
 import com.homebase.ecom.supplier.dto.ReactivateSupplierSupplierPayload;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.LocalDateTime;
 
 /**
- Contains customized logic for the transition. Common logic resides at {@link DefaultSTMTransitionAction}
- <p>Use this class if you want to augment the common logic for this specific transition</p>
- <p>Use a customized payload if required instead of MinimalPayload</p>
-*/
+ * Transition action for reactivateSupplier event (SUSPENDED/INACTIVE -> ACTIVE).
+ * Clears suspension data, re-enables products, and updates active date.
+ */
 public class ReactivateSupplierSupplierAction extends AbstractSTMTransitionAction<Supplier,
+    ReactivateSupplierSupplierPayload> {
 
-    ReactivateSupplierSupplierPayload>{
+    private static final Logger log = LoggerFactory.getLogger(ReactivateSupplierSupplierAction.class);
 
-
-	@Override
-	public void transitionTo(Supplier supplier,
+    @Override
+    public void transitionTo(Supplier supplier,
             ReactivateSupplierSupplierPayload payload,
             State startState, String eventId,
-			State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-            supplier.transientMap.previousPayload = payload;
-	}
+            State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
+        // Clear suspension data
+        supplier.setSuspensionReason(null);
+        supplier.setSuspendedDate(null);
+
+        // Re-enable products
+        supplier.setProductsDisabled(false);
+
+        // Update active date to track reactivation
+        supplier.setActiveDate(LocalDateTime.now());
+
+        supplier.getTransientMap().previousPayload = payload;
+
+        log.info("Supplier '{}' (ID: {}) reactivated from {} state",
+                supplier.getName(), supplier.getId(), startState.getStateId());
+    }
 }

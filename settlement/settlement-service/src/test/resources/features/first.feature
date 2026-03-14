@@ -7,7 +7,10 @@ And that "initialState" equals "PENDING"
 When I POST a REST request to URL "/settlement" with payload
 """json
 {
-    "description": "Description"
+    "description": "Description",
+    "supplierId": "SUP-FIRST",
+    "periodMonth": 3,
+    "periodYear": 2026
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -47,7 +50,7 @@ When I PATCH a REST request to URL "/settlement/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "MANUAL_REVIEW"
+And the REST response key "mutatedEntity.currentState.stateId" is "READY_FOR_PAYMENT"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
  Scenario: Send the rejectSettlement event to the settlement with comments
@@ -66,7 +69,6 @@ And store "$.payload.mutatedEntity.currentState.stateId" from response to "final
 
 
 Scenario: Add new mandatory activities a1,a2 for the last state.
-Add a new state "__TERMINAL_STATE__"
 Add a completion checker activity "cc" to the last state that leads to __TERMINAL_STATE__
 Send cc event on the settlement with comments. This should fail since the mandatory activities
 have not been completed.

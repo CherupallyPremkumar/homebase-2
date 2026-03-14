@@ -7,23 +7,42 @@ import org.chenile.stm.model.Transition;
 import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.supplier.model.Supplier;
 import com.homebase.ecom.supplier.dto.SuspendSupplierSupplierPayload;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.LocalDateTime;
 
 /**
- Contains customized logic for the transition. Common logic resides at {@link DefaultSTMTransitionAction}
- <p>Use this class if you want to augment the common logic for this specific transition</p>
- <p>Use a customized payload if required instead of MinimalPayload</p>
-*/
+ * Transition action for suspendSupplier event (ACTIVE -> SUSPENDED).
+ * Requires a suspension reason. Records suspension date and disables products.
+ */
 public class SuspendSupplierSupplierAction extends AbstractSTMTransitionAction<Supplier,
+    SuspendSupplierSupplierPayload> {
 
-    SuspendSupplierSupplierPayload>{
+    private static final Logger log = LoggerFactory.getLogger(SuspendSupplierSupplierAction.class);
 
-
-	@Override
-	public void transitionTo(Supplier supplier,
+    @Override
+    public void transitionTo(Supplier supplier,
             SuspendSupplierSupplierPayload payload,
             State startState, String eventId,
-			State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-            supplier.transientMap.previousPayload = payload;
-	}
+            State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
+        // Validate that suspension reason is provided
+        String reason = payload.getReason();
+        if (reason == null || reason.trim().isEmpty()) {
+            reason = payload.getComment();
+        }
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new IllegalStateException("Suspension reason is required when suspending a supplier.");
+        }
+
+        supplier.setSuspensionReason(reason);
+        supplier.setSuspendedDate(LocalDateTime.now());
+        supplier.setProductsDisabled(true);
+
+        supplier.getTransientMap().previousPayload = payload;
+
+        log.info("Supplier '{}' (ID: {}) suspended. Reason: {}",
+                supplier.getName(), supplier.getId(), reason);
+    }
 }

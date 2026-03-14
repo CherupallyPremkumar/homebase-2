@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flows>
+  <!-- Chain for reserveInventory transition -->
+  <flow id="reserve-inventory-chain">
+    <chain>
+      <command componentName="validateStockAvailability"/>
+      <command componentName="deductStockFromWarehouse"/>
+      <command componentName="confirmReservation"/>
+    </chain>
+  </flow>
+
+  <!-- Chain for createShipment transition -->
+  <flow id="create-shipment-chain">
+    <chain>
+      <command componentName="selectCarrier"/>
+      <command componentName="generateTrackingNumber"/>
+      <command componentName="createShipmentRecord"/>
+    </chain>
+  </flow>
+
+  <!-- Chain for notifyCustomer transition -->
+  <flow id="notify-customer-chain">
+    <chain>
+      <command componentName="prepareShipmentNotification"/>
+      <command componentName="sendCustomerNotification"/>
+      <command componentName="updateNotificationStatus"/>
+    </chain>
+  </flow>
+</flows>

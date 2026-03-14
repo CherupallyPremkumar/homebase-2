@@ -7,7 +7,8 @@ And that "initialState" equals "STOCK_PENDING"
 When I POST a REST request to URL "/inventory" with payload
 """json
 {
-    "description": "Description"
+    "description": "Description",
+    "quantity": 100
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -42,7 +43,8 @@ And store "$.payload.mutatedEntity.currentState.stateId" from response to "final
 When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "quantity": 100
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -56,7 +58,9 @@ And store "$.payload.mutatedEntity.currentState.stateId" from response to "final
 When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "quantity": 100,
+    "warehouseId": "WH-01"
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -70,7 +74,9 @@ And store "$.payload.mutatedEntity.currentState.stateId" from response to "final
 When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "quantity": 5,
+    "orderId": "ORD-FIRST-001"
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -84,7 +90,8 @@ And store "$.payload.mutatedEntity.currentState.stateId" from response to "final
 When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "orderId": "ORD-FIRST-001"
 }
 """
 Then the REST response contains key "mutatedEntity"

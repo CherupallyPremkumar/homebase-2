@@ -1,0 +1,87 @@
+[
+	{
+		"id": "User.getAll",
+		"name": "users",
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {
+			"userId": {
+				"name": "userId",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"firstName": {
+				"name": "firstName",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"lastName": {
+				"name": "lastName",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"email": {
+				"name": "email",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"role": {
+				"name": "role",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"percentage": {
+				"name": "percentage",
+				"filterable": true,
+				"columnType": "Number"
+			},
+			"phone": {
+				"name": "phone",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "User.getById",
+		"name": "user",
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {
+			"userId": {
+				"name": "userId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"firstName": {
+				"name": "firstName",
+				"columnType": "Text"
+			},
+			"lastName": {
+				"name": "lastName",
+				"columnType": "Text"
+			},
+			"email": {
+				"name": "email",
+				"columnType": "Text"
+			},
+			"role": {
+				"name": "role",
+				"columnType": "Text"
+			},
+			"percentage": {
+				"name": "percentage",
+				"columnType": "Number"
+			},
+			"phone": {
+				"name": "phone",
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
+	}
+]

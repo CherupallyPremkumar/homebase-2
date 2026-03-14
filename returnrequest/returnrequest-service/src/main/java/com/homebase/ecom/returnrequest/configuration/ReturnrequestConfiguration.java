@@ -16,7 +16,9 @@ import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.returnrequest.model.Returnrequest;
 import com.homebase.ecom.returnrequest.service.cmds.*;
 import com.homebase.ecom.returnrequest.service.healthcheck.ReturnrequestHealthChecker;
-import com.homebase.ecom.returnrequest.service.store.ReturnrequestEntityStore;
+import com.homebase.ecom.returnrequest.infrastructure.persistence.ChenileReturnrequestEntityStore;
+import com.homebase.ecom.returnrequest.infrastructure.persistence.adapter.ReturnrequestJpaRepository;
+import com.homebase.ecom.returnrequest.infrastructure.persistence.mapper.ReturnrequestMapper;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.stm.State;
 import org.chenile.workflow.service.activities.ActivityChecker;
@@ -56,8 +58,13 @@ public class ReturnrequestConfiguration {
         return provider;
 	}
 	
-	@Bean EntityStore<Returnrequest> returnrequestEntityStore() {
-		return new ReturnrequestEntityStore();
+	@Bean
+	ReturnrequestMapper returnrequestMapper() {
+		return new ReturnrequestMapper();
+	}
+
+	@Bean EntityStore<Returnrequest> returnrequestEntityStore(ReturnrequestJpaRepository jpaRepository, ReturnrequestMapper mapper) {
+		return new ChenileReturnrequestEntityStore(jpaRepository, mapper);
 	}
 	
 	@Bean  StateEntityServiceImpl<Returnrequest> _returnrequestStateEntityService_(

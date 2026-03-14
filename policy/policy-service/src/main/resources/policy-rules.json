@@ -1,0 +1,372 @@
+{
+  "policies": [
+    {
+      "id": "policy-001",
+      "name": "Order Processing Policy",
+      "description": "Policy to control order creation, payment processing, and fulfillment",
+      "active": true,
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "rule-001",
+          "name": "Premium Members Can Order",
+          "expression": "#customer?.membershipLevel == 'PREMIUM' && #customer?.accountStatus == 'ACTIVE'",
+          "effect": "ALLOW",
+          "priority": 1,
+          "active": true
+        },
+        {
+          "id": "rule-002",
+          "name": "Standard Members Order Limit",
+          "expression": "#customer?.membershipLevel == 'STANDARD' && #order?.totalAmount <= 5000 && #customer?.accountStatus == 'ACTIVE'",
+          "effect": "ALLOW",
+          "priority": 2,
+          "active": true
+        },
+        {
+          "id": "rule-003",
+          "name": "Basic Members Order Limit",
+          "expression": "#customer?.membershipLevel == 'BASIC' && #order?.totalAmount <= 1000 && #customer?.accountStatus == 'ACTIVE'",
+          "effect": "ALLOW",
+          "priority": 3,
+          "active": true
+        },
+        {
+          "id": "rule-004",
+          "name": "Blacklisted Customers Denied",
+          "expression": "#customer?.status == 'BLACKLISTED'",
+          "effect": "DENY",
+          "priority": 0,
+          "active": true
+        },
+        {
+          "id": "rule-005",
+          "name": "High Value Orders Require Verification",
+          "expression": "#order?.totalAmount > 10000 && #customer?.verificationStatus == 'PENDING'",
+          "effect": "ABSTAIN",
+          "priority": 4,
+          "active": true
+        }
+      ],
+      "transientMap": {}
+    },
+    {
+      "id": "policy-payment-001",
+      "name": "Payment Processing Policy",
+      "description": "Controls which payment methods are allowed for different customer segments",
+      "active": true,
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "rule-payment-001",
+          "name": "Credit Card for All Active Customers",
+          "expression": "#paymentMethod == 'CREDIT_CARD' && #customer?.status == 'ACTIVE'",
+          "effect": "ALLOW",
+          "priority": 1,
+          "active": true
+        },
+        {
+          "id": "rule-payment-002",
+          "name": "Digital Wallets for Premium Only",
+          "expression": "#paymentMethod == 'DIGITAL_WALLET' && #customer?.membershipLevel == 'PREMIUM'",
+          "effect": "ALLOW",
+          "priority": 2,
+          "active": true
+        },
+        {
+          "id": "rule-payment-003",
+          "name": "COD for Domestic Orders Only",
+          "expression": "#paymentMethod == 'COD' && #order?.shippingCountry == 'DOMESTIC' && #order?.totalAmount <= 2000",
+          "effect": "ALLOW",
+          "priority": 3,
+          "active": true
+        },
+        {
+          "id": "rule-payment-004",
+          "name": "Deny Expired Cards",
+          "expression": "#paymentMethod == 'CREDIT_CARD' && #card?.expiryDate < T(java.time.LocalDate).now().toString()",
+          "effect": "DENY",
+          "priority": 0,
+          "active": true
+        },
+        {
+          "id": "rule-payment-005",
+          "name": "UPI for Mobile App",
+          "expression": "#paymentMethod == 'UPI' && #device?.type == 'MOBILE'",
+          "effect": "ALLOW",
+          "priority": 4,
+          "active": true
+        }
+      ],
+      "transientMap": {}
+    },
+    {
+      "id": "policy-return-001",
+      "name": "Return & Refund Policy",
+      "description": "Controls eligibility for product returns and refunds",
+      "active": true,
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "rule-return-001",
+          "name": "30-Day Return Window",
+          "expression": "#daysSincePurchase <= 30 && #order?.status != 'CANCELLED' && #product?.category != 'DIGITAL'",
+          "effect": "ALLOW",
+          "priority": 1,
+          "active": true
+        },
+        {
+          "id": "rule-return-002",
+          "name": "Premium Members Extended Return",
+          "expression": "#customer?.membershipLevel == 'PREMIUM' && #daysSincePurchase <= 60 && #product?.returnable == true",
+          "effect": "ALLOW",
+          "priority": 2,
+          "active": true
+        },
+        {
+          "id": "rule-return-003",
+          "name": "No Return on Sale Items",
+          "expression": "#product?.onSale == true && #product?.saleExclusions?.contains('NO_RETURN')",
+          "effect": "DENY",
+          "priority": 0,
+          "active": true
+        },
+        {
+          "id": "rule-return-004",
+          "name": "Digital Products Non-Returnable",
+          "expression": "#product?.category == 'DIGITAL'",
+          "effect": "DENY",
+          "priority": 0,
+          "active": true
+        }
+      ],
+      "transientMap": {}
+    },
+    {
+      "id": "policy-discount-001",
+      "name": "Discount & Coupon Policy",
+      "description": "Controls which discounts and coupons can be applied",
+      "active": true,
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "rule-discount-001",
+          "name": "Valid Coupon Code",
+          "expression": "#coupon?.status == 'ACTIVE' && #coupon?.expiryDate > T(java.time.LocalDate).now().toString() && #coupon?.usageCount < #coupon?.maxUsage",
+          "effect": "ALLOW",
+          "priority": 1,
+          "active": true
+        },
+        {
+          "id": "rule-discount-002",
+          "name": "Expired Coupon",
+          "expression": "#coupon?.expiryDate < T(java.time.LocalDate).now().toString()",
+          "effect": "DENY",
+          "priority": 0,
+          "active": true
+        },
+        {
+          "id": "rule-discount-003",
+          "name": "Premium Exclusive Discount",
+          "expression": "#coupon?.type == 'PREMIUM_EXCLUSIVE' && #customer?.membershipLevel == 'PREMIUM'",
+          "effect": "ALLOW",
+          "priority": 2,
+          "active": true
+        }
+      ],
+      "transientMap": {}
+    }
+  ],
+  "decisions": [
+    {
+      "id": "decision-001",
+      "policyId": "policy-001",
+      "subjectId": "customer-12345",
+      "resource": "orders",
+      "action": "CREATE",
+      "effect": "ALLOW",
+      "reasons": "Customer is PREMIUM member with ACTIVE status, matched rule-001",
+      "timestamp": "2024-03-10T14:30:45Z",
+      "metadata": {
+        "matchedRule": "rule-001",
+        "customerMembership": "PREMIUM",
+        "customerStatus": "ACTIVE",
+        "orderAmount": "4500.00",
+        "evaluationTime": "2ms"
+      }
+    },
+    {
+      "id": "decision-002",
+      "policyId": "policy-001",
+      "subjectId": "customer-67890",
+      "resource": "orders",
+      "action": "CREATE",
+      "effect": "DENY",
+      "reasons": "Customer is BLACKLISTED. Matched deny rule-004 with priority 0",
+      "timestamp": "2024-03-10T14:35:20Z",
+      "metadata": {
+        "matchedRule": "rule-004",
+        "customerStatus": "BLACKLISTED",
+        "reason": "Multiple payment defaults detected",
+        "blacklistDate": "2024-01-15",
+        "evaluationTime": "1ms"
+      }
+    },
+    {
+      "id": "decision-003",
+      "policyId": "policy-payment-001",
+      "subjectId": "customer-54321",
+      "resource": "payments",
+      "action": "PROCESS",
+      "effect": "ALLOW",
+      "reasons": "Payment method CREDIT_CARD approved for ACTIVE customer. Matched rule-payment-001",
+      "timestamp": "2024-03-10T15:00:10Z",
+      "metadata": {
+        "matchedRule": "rule-payment-001",
+        "paymentMethod": "CREDIT_CARD",
+        "cardLast4": "4521",
+        "amount": "2999.99",
+        "currency": "USD",
+        "riskScore": "LOW",
+        "evaluationTime": "3ms"
+      }
+    },
+    {
+      "id": "decision-004",
+      "policyId": "policy-return-001",
+      "subjectId": "customer-11111",
+      "resource": "returns",
+      "action": "REQUEST",
+      "effect": "ALLOW",
+      "reasons": "Product return eligible. Purchase within 30-day window. Matched rule-return-001",
+      "timestamp": "2024-03-10T15:45:30Z",
+      "metadata": {
+        "matchedRule": "rule-return-001",
+        "orderId": "order-98765",
+        "productId": "prod-55555",
+        "purchaseDate": "2024-02-20",
+        "daysSincePurchase": "19",
+        "productCategory": "ELECTRONICS",
+        "refundAmount": "1299.99",
+        "evaluationTime": "2ms"
+      }
+    },
+    {
+      "id": "decision-005",
+      "policyId": "policy-001",
+      "subjectId": "customer-99999",
+      "resource": "orders",
+      "action": "CREATE",
+      "effect": "ABSTAIN",
+      "reasons": "High-value order detected. Matched rule-005. Requires manual verification due to pending verification status",
+      "timestamp": "2024-03-10T16:10:15Z",
+      "metadata": {
+        "matchedRule": "rule-005",
+        "orderAmount": "15000.00",
+        "verificationStatus": "PENDING",
+        "riskLevel": "MEDIUM",
+        "recommendedAction": "MANUAL_REVIEW",
+        "escalationQueue": "HIGH_VALUE_ORDERS",
+        "evaluationTime": "2ms"
+      }
+    },
+    {
+      "id": "decision-006",
+      "policyId": "policy-payment-001",
+      "subjectId": "customer-22222",
+      "resource": "payments",
+      "action": "PROCESS",
+      "effect": "DENY",
+      "reasons": "Credit card has expired. Matched deny rule-payment-004",
+      "timestamp": "2024-03-10T16:25:40Z",
+      "metadata": {
+        "matchedRule": "rule-payment-004",
+        "paymentMethod": "CREDIT_CARD",
+        "cardLast4": "8765",
+        "expiryDate": "2023-12-31",
+        "amount": "1599.99",
+        "reason": "Card Expired",
+        "evaluationTime": "1ms"
+      }
+    },
+    {
+      "id": "decision-007",
+      "policyId": "policy-discount-001",
+      "subjectId": "customer-33333",
+      "resource": "coupons",
+      "action": "APPLY",
+      "effect": "ALLOW",
+      "reasons": "Valid coupon code. Active status and within usage limits. Matched rule-discount-001",
+      "timestamp": "2024-03-10T16:40:50Z",
+      "metadata": {
+        "matchedRule": "rule-discount-001",
+        "couponCode": "SUMMER2024",
+        "discountPercentage": "15",
+        "couponStatus": "ACTIVE",
+        "expiryDate": "2024-06-30",
+        "usageCount": "245",
+        "maxUsage": "1000",
+        "discountAmount": "299.99",
+        "evaluationTime": "2ms"
+      }
+    },
+    {
+      "id": "decision-008",
+      "policyId": "policy-return-001",
+      "subjectId": "customer-44444",
+      "resource": "returns",
+      "action": "REQUEST",
+      "effect": "DENY",
+      "reasons": "Item is on sale with NO_RETURN exclusion. Matched rule-return-003",
+      "timestamp": "2024-03-10T17:00:00Z",
+      "metadata": {
+        "matchedRule": "rule-return-003",
+        "orderId": "order-12345",
+        "productId": "prod-77777",
+        "productName": "Clearance Winter Jacket",
+        "onSale": true,
+        "saleExclusions": ["NO_RETURN"],
+        "purchasePrice": "799.99",
+        "salePrice": "299.99",
+        "evaluationTime": "1ms"
+      }
+    },
+    {
+      "id": "decision-009",
+      "policyId": "policy-001",
+      "subjectId": "customer-55555",
+      "resource": "orders",
+      "action": "CREATE",
+      "effect": "ALLOW",
+      "reasons": "Standard member within order limit. Matched rule-002",
+      "timestamp": "2024-03-10T17:15:30Z",
+      "metadata": {
+        "matchedRule": "rule-002",
+        "customerMembership": "STANDARD",
+        "customerStatus": "ACTIVE",
+        "orderAmount": "3500.00",
+        "orderLimit": "5000.00",
+        "evaluationTime": "2ms"
+      }
+    },
+    {
+      "id": "decision-010",
+      "policyId": "policy-payment-001",
+      "subjectId": "customer-66666",
+      "resource": "payments",
+      "action": "PROCESS",
+      "effect": "ALLOW",
+      "reasons": "UPI payment approved for mobile app user. Matched rule-payment-005",
+      "timestamp": "2024-03-10T17:30:15Z",
+      "metadata": {
+        "matchedRule": "rule-payment-005",
+        "paymentMethod": "UPI",
+        "deviceType": "MOBILE",
+        "amount": "899.99",
+        "upiId": "user@okhdfcbank",
+        "transactionId": "UPI123456789",
+        "evaluationTime": "1ms"
+      }
+    }
+  ]
+}

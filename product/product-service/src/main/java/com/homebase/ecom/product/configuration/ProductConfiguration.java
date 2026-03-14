@@ -13,7 +13,16 @@ import org.springframework.context.annotation.Configuration;
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
-import com.homebase.ecom.product.model.Product;
+import com.homebase.ecom.product.domain.model.Product;
+import com.homebase.ecom.product.api.MediaService;
+import com.homebase.ecom.product.configuration.controller.MediaController;
+import com.homebase.ecom.product.service.impl.MediaServiceImpl;
+import com.homebase.ecom.product.domain.port.*;
+import com.homebase.ecom.product.infrastructure.persistence.adapter.*;
+import com.homebase.ecom.product.infrastructure.persistence.mapper.*;
+import com.homebase.ecom.product.api.TaxonomyService;
+import com.homebase.ecom.product.configuration.controller.TaxonomyController;
+import com.homebase.ecom.product.service.impl.TaxonomyServiceImpl;
 import com.homebase.ecom.product.service.cmds.*;
 import com.homebase.ecom.product.service.healthcheck.ProductHealthChecker;
 import com.homebase.ecom.product.service.store.ProductEntityStore;
@@ -22,228 +31,332 @@ import org.chenile.stm.State;
 import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
 import com.homebase.ecom.product.service.postSaveHooks.*;
+import com.homebase.ecom.policy.client.PolicyClient;
+import com.homebase.ecom.product.infrastructure.adapter.PolicyDecisionAdapter;
 
 /**
- This is where you will instantiate all the required classes in Spring
-*/
+ * This is where you will instantiate all the required classes in Spring
+ */
 @Configuration
 public class ProductConfiguration {
-	private static final String FLOW_DEFINITION_FILE = "com/homebase/ecom/product/product-states.xml";
-	public static final String PREFIX_FOR_PROPERTIES = "Product";
+    private static final String FLOW_DEFINITION_FILE = "com/homebase/ecom/product/product-states.xml";
+    public static final String PREFIX_FOR_PROPERTIES = "Product";
     public static final String PREFIX_FOR_RESOLVER = "product";
 
-    @Bean BeanFactoryAdapter productBeanFactoryAdapter() {
-		return new SpringBeanFactoryAdapter();
-	}
-	
-	@Bean STMFlowStoreImpl productFlowStore(
-            @Qualifier("productBeanFactoryAdapter") BeanFactoryAdapter productBeanFactoryAdapter
-            )throws Exception{
-		STMFlowStoreImpl stmFlowStore = new STMFlowStoreImpl();
-		stmFlowStore.setBeanFactory(productBeanFactoryAdapter);
-		return stmFlowStore;
-	}
-	
-	@Bean  STM<Product> productEntityStm(@Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore) throws Exception{
-		STMImpl<Product> stm = new STMImpl<>();		
-		stm.setStmFlowStore(stmFlowStore);
-		return stm;
-	}
-	
-	@Bean  STMActionsInfoProvider productActionsInfoProvider(@Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore) {
-		STMActionsInfoProvider provider =  new STMActionsInfoProvider(stmFlowStore);
-        WorkflowRegistry.addSTMActionsInfoProvider("product",provider);
+    @Bean
+    BeanFactoryAdapter productBeanFactoryAdapter() {
+        return new SpringBeanFactoryAdapter();
+    }
+
+    @Bean
+    STMFlowStoreImpl productFlowStore(
+            @Qualifier("productBeanFactoryAdapter") BeanFactoryAdapter productBeanFactoryAdapter) throws Exception {
+        STMFlowStoreImpl stmFlowStore = new STMFlowStoreImpl();
+        stmFlowStore.setBeanFactory(productBeanFactoryAdapter);
+        return stmFlowStore;
+    }
+
+    @Bean
+    STM<Product> productEntityStm(@Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore) throws Exception {
+        STMImpl<Product> stm = new STMImpl<>();
+        stm.setStmFlowStore(stmFlowStore);
+        return stm;
+    }
+
+    @Bean
+    STMActionsInfoProvider productActionsInfoProvider(@Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore) {
+        STMActionsInfoProvider provider = new STMActionsInfoProvider(stmFlowStore);
+        WorkflowRegistry.addSTMActionsInfoProvider("product", provider);
         return provider;
-	}
-	
-	@Bean EntityStore<Product> productEntityStore() {
-		return new ProductEntityStore();
-	}
-	
-	@Bean  StateEntityServiceImpl<Product> _productStateEntityService_(
-			@Qualifier("productEntityStm") STM<Product> stm,
-			@Qualifier("productActionsInfoProvider") STMActionsInfoProvider productInfoProvider,
-			@Qualifier("productEntityStore") EntityStore<Product> entityStore){
-		return new StateEntityServiceImpl<>(stm, productInfoProvider, entityStore);
-	}
-	
-	// Now we start constructing the STM Components 
-
-
-    @Bean  DefaultPostSaveHook<Product> productDefaultPostSaveHook(
-    @Qualifier("productTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver){
-    DefaultPostSaveHook<Product> postSaveHook = new DefaultPostSaveHook<>(stmTransitionActionResolver);
-    return postSaveHook;
     }
 
-    @Bean  GenericEntryAction<Product> productEntryAction(@Qualifier("productEntityStore") EntityStore<Product> entityStore,
-    @Qualifier("productActionsInfoProvider") STMActionsInfoProvider productInfoProvider,
-    @Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore,
-    @Qualifier("productDefaultPostSaveHook") DefaultPostSaveHook<Product> postSaveHook)  {
-    GenericEntryAction<Product> entryAction =  new GenericEntryAction<Product>(entityStore,productInfoProvider,postSaveHook);
-    stmFlowStore.setEntryAction(entryAction);
-    return entryAction;
+    // Mappers
+    @Bean ProductMapper productMapper() { return new ProductMapper(); }
+    @Bean CategoryMapper categoryMapper() { return new CategoryMapper(); }
+    @Bean AttributeMapper attributeMapper() { return new AttributeMapper(); }
+    @Bean MediaMapper mediaMapper() { return new MediaMapper(); }
+    @Bean VariantMapper variantMapper() { return new VariantMapper(); }
+
+    // Repositories & Adapters
+    @Bean ProductRepositoryImpl productRepository(ProductRepositoryImpl.ProductJpaRepository r, ProductMapper m) {
+        return new ProductRepositoryImpl(r, m);
+    }
+    @Bean CategoryRepositoryImpl categoryRepository(CategoryRepositoryImpl.CategoryJpaRepository r, CategoryMapper m) {
+        return new CategoryRepositoryImpl(r, m);
+    }
+    @Bean AttributeRepositoryImpl attributeRepository(AttributeRepositoryImpl.AttributeJpaRepository r, AttributeMapper m) {
+        return new AttributeRepositoryImpl(r, m);
+    }
+    @Bean MediaRepositoryImpl mediaRepository(MediaRepositoryImpl.MediaJpaRepository r, MediaMapper m) {
+        return new MediaRepositoryImpl(r, m);
+    }
+    @Bean VariantRepositoryImpl variantRepository(VariantRepositoryImpl.VariantJpaRepository r, VariantMapper m) {
+        return new VariantRepositoryImpl(r, m);
     }
 
-    @Bean  DefaultAutomaticStateComputation<Product> productDefaultAutoState(
-    @Qualifier("productTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver,
-    @Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore){
-    DefaultAutomaticStateComputation<Product> autoState = new DefaultAutomaticStateComputation<>(stmTransitionActionResolver);
-    stmFlowStore.setDefaultAutomaticStateComputation(autoState);
-    return autoState;
+    @Bean
+    public PimPolicyPort pimPolicyPort(PolicyClient policyClient) {
+        return new PolicyDecisionAdapter(policyClient);
     }
 
-	@Bean GenericExitAction<Product> productExitAction(@Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore){
+    @Bean
+    EntityStore<Product> productEntityStore(@Qualifier("productRepository") ProductRepository repository) {
+        return new ProductEntityStore(repository);
+    }
+
+    @Bean
+    StateEntityServiceImpl<Product> _productStateEntityService_(
+            @Qualifier("productEntityStm") STM<Product> stm,
+            @Qualifier("productActionsInfoProvider") STMActionsInfoProvider productInfoProvider,
+            @Qualifier("productEntityStore") EntityStore<Product> entityStore) {
+        return new StateEntityServiceImpl<>(stm, productInfoProvider, entityStore);
+    }
+
+    // Now we start constructing the STM Components
+
+    @Bean
+    DefaultPostSaveHook<Product> productDefaultPostSaveHook(
+            @Qualifier("productTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver) {
+        DefaultPostSaveHook<Product> postSaveHook = new DefaultPostSaveHook<>(stmTransitionActionResolver);
+        return postSaveHook;
+    }
+
+    @Bean
+    GenericEntryAction<Product> productEntryAction(@Qualifier("productEntityStore") EntityStore<Product> entityStore,
+            @Qualifier("productActionsInfoProvider") STMActionsInfoProvider productInfoProvider,
+            @Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore,
+            @Qualifier("productDefaultPostSaveHook") DefaultPostSaveHook<Product> postSaveHook) {
+        GenericEntryAction<Product> entryAction = new GenericEntryAction<Product>(entityStore, productInfoProvider,
+                postSaveHook);
+        stmFlowStore.setEntryAction(entryAction);
+        return entryAction;
+    }
+
+    @Bean
+    DefaultAutomaticStateComputation<Product> productDefaultAutoState(
+            @Qualifier("productTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver,
+            @Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore) {
+        DefaultAutomaticStateComputation<Product> autoState = new DefaultAutomaticStateComputation<>(
+                stmTransitionActionResolver);
+        stmFlowStore.setDefaultAutomaticStateComputation(autoState);
+        return autoState;
+    }
+
+    @Bean
+    GenericExitAction<Product> productExitAction(@Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore) {
         GenericExitAction<Product> exitAction = new GenericExitAction<Product>();
         stmFlowStore.setExitAction(exitAction);
         return exitAction;
-	}
-
-	@Bean
-	XmlFlowReader productFlowReader(@Qualifier("productFlowStore") STMFlowStoreImpl flowStore) throws Exception {
-		XmlFlowReader flowReader = new XmlFlowReader(flowStore);
-		flowReader.setFilename(FLOW_DEFINITION_FILE);
-		return flowReader;
-	}
-	
-
-	@Bean ProductHealthChecker productHealthChecker(){
-    	return new ProductHealthChecker();
     }
 
-    @Bean STMTransitionAction<Product> defaultproductSTMTransitionAction() {
+    @Bean
+    XmlFlowReader productFlowReader(@Qualifier("productFlowStore") STMFlowStoreImpl flowStore) throws Exception {
+        XmlFlowReader flowReader = new XmlFlowReader(flowStore);
+        flowReader.setFilename(FLOW_DEFINITION_FILE);
+        return flowReader;
+    }
+
+    @Bean
+    ProductHealthChecker productHealthChecker() {
+        return new ProductHealthChecker();
+    }
+
+    @Bean
+    STMTransitionAction<Product> defaultproductSTMTransitionAction() {
         return new DefaultSTMTransitionAction<MinimalPayload>();
     }
 
     @Bean
     STMTransitionActionResolver productTransitionActionResolver(
-    @Qualifier("defaultproductSTMTransitionAction") STMTransitionAction<Product> defaultSTMTransitionAction){
-        return new STMTransitionActionResolver(PREFIX_FOR_RESOLVER,defaultSTMTransitionAction,true);
+            @Qualifier("defaultproductSTMTransitionAction") STMTransitionAction<Product> defaultSTMTransitionAction) {
+        return new STMTransitionActionResolver(PREFIX_FOR_RESOLVER, defaultSTMTransitionAction, true);
     }
 
-    @Bean  StmBodyTypeSelector productBodyTypeSelector(
-    @Qualifier("productActionsInfoProvider") STMActionsInfoProvider productInfoProvider,
-    @Qualifier("productTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver) {
-        return new StmBodyTypeSelector(productInfoProvider,stmTransitionActionResolver);
+    @Bean
+    StmBodyTypeSelector productBodyTypeSelector(
+            @Qualifier("productActionsInfoProvider") STMActionsInfoProvider productInfoProvider,
+            @Qualifier("productTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver) {
+        return new StmBodyTypeSelector(productInfoProvider, stmTransitionActionResolver);
     }
 
-
-    @Bean  STMTransitionAction<Product> productBaseTransitionAction(
-        @Qualifier("productTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver,
-        @Qualifier("productActivityChecker") ActivityChecker activityChecker,
-        @Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore){
+    @Bean
+    STMTransitionAction<Product> productBaseTransitionAction(
+            @Qualifier("productTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver,
+            @Qualifier("productActivityChecker") ActivityChecker activityChecker,
+            @Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore) {
         BaseTransitionAction<Product> baseTransitionAction = new BaseTransitionAction<>(stmTransitionActionResolver);
         baseTransitionAction.activityChecker = activityChecker;
         stmFlowStore.setDefaultTransitionAction(baseTransitionAction);
         return baseTransitionAction;
     }
 
-    @Bean ActivityChecker productActivityChecker(@Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore){
+    @Bean
+    ActivityChecker productActivityChecker(@Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore) {
         return new ActivityChecker(stmFlowStore);
     }
 
     @Bean
-    AreActivitiesComplete activitiesCompletionCheck(@Qualifier("productActivityChecker") ActivityChecker activityChecker){
+    AreActivitiesComplete activitiesCompletionCheck(
+            @Qualifier("productActivityChecker") ActivityChecker activityChecker) {
         return new AreActivitiesComplete(activityChecker);
     }
 
-    // Create the specific transition actions here. Make sure that these actions are inheriting from
-    // AbstractSTMTransitionMachine (The sample classes provide an example of this). To automatically wire
-    // them into the STM use the convention of "product" + eventId + "Action" for the method name. (product is the
+    // Create the specific transition actions here. Make sure that these actions are
+    // inheriting from
+    // AbstractSTMTransitionMachine (The sample classes provide an example of this).
+    // To automatically wire
+    // them into the STM use the convention of "product" + eventId + "Action" for
+    // the method name. (product is the
     // prefix passed to the TransitionActionResolver above.)
-    // This will ensure that these are detected automatically by the Workflow system.
-    // The payload types will be detected as well so that there is no need to introduce an <event-information/>
+    // This will ensure that these are detected automatically by the Workflow
+    // system.
+    // The payload types will be detected as well so that there is no need to
+    // introduce an <event-information/>
     // segment in src/main/resources/com/homebase/product/product-states.xml
 
-
-    @Bean RejectProductProductAction
-            productRejectProductAction(){
+    @Bean
+    RejectProductProductAction productRejectProductAction() {
         return new RejectProductProductAction();
     }
 
-    @Bean DiscontinueProductProductAction
-            productDiscontinueProductAction(){
+    @Bean
+    DiscontinueProductProductAction productDiscontinueProductAction() {
         return new DiscontinueProductProductAction();
     }
 
-    @Bean SubmitForReviewProductAction
-            productSubmitForReviewAction(){
+    @Bean
+    SubmitForReviewProductAction productSubmitForReviewAction() {
         return new SubmitForReviewProductAction();
     }
 
-    @Bean DisableProductProductAction
-            productDisableProductAction(){
+    @Bean
+    DisableProductProductAction productDisableProductAction() {
         return new DisableProductProductAction();
     }
 
-    @Bean RestockProductProductAction
-            productRestockProductAction(){
+    @Bean
+    RestockProductProductAction productRestockProductAction() {
         return new RestockProductProductAction();
     }
 
-    @Bean EnableProductProductAction
-            productEnableProductAction(){
+    @Bean
+    EnableProductProductAction productEnableProductAction() {
         return new EnableProductProductAction();
     }
 
-    @Bean MarkOutOfStockProductAction
-            productMarkOutOfStockAction(){
+    @Bean
+    MarkOutOfStockProductAction productMarkOutOfStockAction() {
         return new MarkOutOfStockProductAction();
     }
 
-    @Bean DeleteProductProductAction
-            productDeleteProductAction(){
+    @Bean
+    DeleteProductProductAction productDeleteProductAction() {
         return new DeleteProductProductAction();
     }
 
-    @Bean ApproveProductProductAction
-            productApproveProductAction(){
+    @Bean
+    ApproveProductProductAction productApproveProductAction() {
         return new ApproveProductProductAction();
     }
 
+    @Bean
+    ProductDeliveredProductAction productProductDeliveredAction() {
+        return new ProductDeliveredProductAction();
+    }
 
-    @Bean ConfigProviderImpl productConfigProvider() {
+    @Bean
+    ApproveQualityProductAction productApproveQualityAction() {
+        return new ApproveQualityProductAction();
+    }
+
+    @Bean
+    RejectQualityProductAction productRejectQualityAction() {
+        return new RejectQualityProductAction();
+    }
+
+    @Bean
+    NeedsReworkProductAction productNeedsReworkAction() {
+        return new NeedsReworkProductAction();
+    }
+
+    @Bean
+    PublishProductProductAction productPublishProductAction() {
+        return new PublishProductProductAction();
+    }
+
+    @Bean
+    ListProductProductAction productListProductAction() {
+        return new ListProductProductAction();
+    }
+
+    @Bean
+    public com.homebase.ecom.product.service.event.ProductReturnConsumer productReturnConsumer() {
+        return new com.homebase.ecom.product.service.event.ProductReturnConsumer();
+    }
+
+    @Bean
+    ConfigProviderImpl productConfigProvider() {
         return new ConfigProviderImpl();
     }
 
-    @Bean ConfigBasedEnablementStrategy productConfigBasedEnablementStrategy(
-        @Qualifier("productConfigProvider") ConfigProvider configProvider,
-        @Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore) {
-        ConfigBasedEnablementStrategy enablementStrategy = new ConfigBasedEnablementStrategy(configProvider,PREFIX_FOR_PROPERTIES);
+    @Bean
+    ConfigBasedEnablementStrategy productConfigBasedEnablementStrategy(
+            @Qualifier("productConfigProvider") ConfigProvider configProvider,
+            @Qualifier("productFlowStore") STMFlowStoreImpl stmFlowStore) {
+        ConfigBasedEnablementStrategy enablementStrategy = new ConfigBasedEnablementStrategy(configProvider,
+                PREFIX_FOR_PROPERTIES);
         stmFlowStore.setEnablementStrategy(enablementStrategy);
         return enablementStrategy;
     }
 
-
-
-    @Bean DISABLEDProductPostSaveHook
-        productDISABLEDPostSaveHook(){
-            return new DISABLEDProductPostSaveHook();
+    @Bean
+    DISABLEDProductPostSaveHook productDISABLEDPostSaveHook() {
+        return new DISABLEDProductPostSaveHook();
     }
 
-    @Bean PUBLISHEDProductPostSaveHook
-        productPUBLISHEDPostSaveHook(){
-            return new PUBLISHEDProductPostSaveHook();
+    @Bean
+    PUBLISHEDProductPostSaveHook productPUBLISHEDPostSaveHook() {
+        return new PUBLISHEDProductPostSaveHook();
     }
 
-    @Bean DRAFTProductPostSaveHook
-        productDRAFTPostSaveHook(){
-            return new DRAFTProductPostSaveHook();
+    @Bean
+    DRAFTProductPostSaveHook productDRAFTPostSaveHook() {
+        return new DRAFTProductPostSaveHook();
     }
 
-    @Bean OUT_OF_STOCKProductPostSaveHook
-        productOUT_OF_STOCKPostSaveHook(){
-            return new OUT_OF_STOCKProductPostSaveHook();
+    @Bean
+    OUT_OF_STOCKProductPostSaveHook productOUT_OF_STOCKPostSaveHook() {
+        return new OUT_OF_STOCKProductPostSaveHook();
     }
 
-    @Bean DISCONTINUEDProductPostSaveHook
-        productDISCONTINUEDPostSaveHook(){
-            return new DISCONTINUEDProductPostSaveHook();
+    @Bean
+    DISCONTINUEDProductPostSaveHook productDISCONTINUEDPostSaveHook() {
+        return new DISCONTINUEDProductPostSaveHook();
     }
 
-    @Bean UNDER_REVIEWProductPostSaveHook
-        productUNDER_REVIEWPostSaveHook(){
-            return new UNDER_REVIEWProductPostSaveHook();
+    @Bean
+    UNDER_REVIEWProductPostSaveHook productUNDER_REVIEWPostSaveHook() {
+        return new UNDER_REVIEWProductPostSaveHook();
+    }
+
+    @Bean
+    public TaxonomyService taxonomyService(CategoryRepository categoryRepository, AttributeRepository attributeRepository) {
+        return new TaxonomyServiceImpl(categoryRepository, attributeRepository);
+    }
+
+    @Bean
+    public TaxonomyController taxonomyController(TaxonomyService taxonomyService) {
+        return new TaxonomyController(taxonomyService);
+    }
+
+    @Bean
+    public MediaService mediaService(MediaRepository mediaRepository, ProductRepository productRepository, VariantRepository variantRepository) {
+        return new MediaServiceImpl(mediaRepository, productRepository, variantRepository);
+    }
+
+    @Bean
+    public MediaController mediaController(MediaService mediaService) {
+        return new MediaController(mediaService);
     }
 
 }

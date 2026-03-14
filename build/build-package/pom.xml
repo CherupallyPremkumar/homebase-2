@@ -23,12 +23,38 @@
 			<artifactId>chenile-http</artifactId>
 		</dependency>
 		<!-- Chenile Dependencies Ends -->
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>jpa-utils</artifactId>
+        </dependency>
 
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 		</dependency>
 
+		<!-- Shared Security (Keycloak JWT + CORS auto-configuration) -->
+		<dependency>
+			<groupId>com.homebase.ecom.shared</groupId>
+			<artifactId>shared-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>security-interceptor</artifactId>
+		</dependency>
+
+        <dependency>
+            <groupId>com.homebase.ecom.user</groupId>
+            <artifactId>user-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile.cconfig</groupId>
+            <artifactId>cconfig-service</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>utils</artifactId>
@@ -36,26 +62,59 @@
 		<dependency>
 			<groupId>com.homebase.ecom.build</groupId>
 			<artifactId>build-configurations</artifactId>
-			<version>${revision}</version>
+            <version>${revision}</version>
 		</dependency>
 		<dependency>
 				<groupId>org.springdoc</groupId>
 				<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 		</dependency>
-            <!-- This is a play dependency. Replace it with a serious Database -->
+
+		<!-- Structured JSON logging for production -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>7.4</version>
+		</dependency>
+
+		<!-- Chenile Kafka for event-driven communication -->
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-kafka</artifactId>
+		</dependency>
+
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>
 
-
-		<!-- Start including all the services that need to be packaged with this mini monolith -->
-  			<dependency>
-				<groupId>com.homebase.ecom.myService</groupId>
-				<artifactId>myService-service</artifactId>
-				<version>myServiceVersion</version>
-			</dependency>
-		
+		<!-- Test dependencies for BDD -->
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>cucumber-utils</artifactId>
+			<version>${chenile.client.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>cucumber-workflow-utils</artifactId>
+			<version>${chenile.client.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+			<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>cucumber-sec-utils</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 
@@ -74,6 +133,43 @@
             </plugins>
         </build>
     <profiles>
+            <profile>
+                <id>dev</id>
+                <properties>
+                    <env>development</env>
+                </properties>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.h2database</groupId>
+                        <artifactId>h2</artifactId>
+                        <version>2.2.220</version>
+                    </dependency>
+                		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>cucumber-sec-utils</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+            </profile>
+
+            <profile>
+                <id>prod</id>
+                <properties>
+                    <env>production</env>
+                </properties>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>42.6.0</version> <!-- use latest stable version -->
+                    </dependency>
+                		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>cucumber-sec-utils</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+            </profile>
     <profile>
         <id>it</id>
         <activation>

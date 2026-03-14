@@ -8,12 +8,19 @@
 			"id": {
 				"name": "id",
 				"filterable": true,
-				"columnType": "Text"
+				"columnType": "Text",
+				"sortable": true
 			},
 			"userId": {
-				"name": "user_id",
+				"name": "userId",
 				"columnType": "Text",
 				"filterable": true
+			},
+			"customerEmail": {
+				"name": "customerEmail",
+				"columnType": "Text",
+				"filterable": true,
+				"likeQuery": true
 			},
 			"status": {
 				"name": "status",
@@ -26,18 +33,93 @@
 				"columnType": "Text"
 			},
 			"totalAmount": {
-				"name": "total_amount",
+				"name": "totalAmount",
 				"filterable": true,
-				"columnType": "Numeric"
+				"columnType": "Number",
+				"sortable": true
 			},
 			"createdAt": {
-				"name": "created_at",
+				"name": "createdAt",
 				"columnType": "Date",
-				"sortable": true
+				"sortable": true,
+				"filterable": true
 			}
 		},
-		"flexiblePropnames": false,
 		"paginated": true,
 		"sortable": true
+	},
+	{
+		"id": "Order.getById",
+		"name": "order",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"totalAmount": {
+				"name": "totalAmount",
+				"columnType": "Number"
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "Order.getDeliveredOrderItemsForSupplier",
+		"name": "deliveredItems",
+		"columnMetadata": {
+			"orderId": {
+				"name": "order_id",
+				"columnType": "Text"
+			},
+			"orderItemId": {
+				"name": "id",
+				"columnType": "Text"
+			},
+			"productId": {
+				"name": "product_id",
+				"columnType": "Text"
+			},
+			"productName": {
+				"name": "product_name",
+				"columnType": "Text"
+			},
+			"quantity": {
+				"name": "quantity",
+				"columnType": "Number"
+			},
+			"unitPrice": {
+				"name": "unit_price",
+				"columnType": "Number"
+			},
+			"itemSalesAmount": {
+				"name": "total_price",
+				"columnType": "Number"
+			},
+			"orderDate": {
+				"name": "order_date",
+				"columnType": "Date"
+			}
+		},
+		"paginated": true
+	},
+	{
+		"id": "Order.getHeldFundsReport",
+		"name": "heldFunds",
+		"columnMetadata": {
+			"supplierId": {
+				"name": "supplier_id",
+				"columnType": "Text"
+			},
+			"heldAmount": {
+				"name": "heldAmount",
+				"columnType": "Number"
+			},
+			"itemCount": {
+				"name": "itemCount",
+				"columnType": "Number"
+			}
+		},
+		"paginated": true
 	}
 ]

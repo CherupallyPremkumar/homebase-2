@@ -1,0 +1,13 @@
+{
+  "subjectId": "saree-kanchi-99",
+  "resource": "collection:premium-silks",
+  "action": "LIST_ON_STOREFRONT",
+  "facts": {
+    "material": "Silk",
+    "price": 12500,
+    "stockCount": 5,
+    "weaverTier": "MASTER",
+    "description": "Authentic hand-woven Kanchipuram silk saree with gold zari work.",
+    "categoryId": "cat-silk-001"
+  }
+}

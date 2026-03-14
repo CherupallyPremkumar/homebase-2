@@ -1,18 +1,19 @@
 package com.homebase.ecom.returnrequest.service.errorcodes;
 
 public enum ErrorCodes {
-    // replace the 50000 below with your own sub error range.
-	// Each service must have its own sub error range so that it is easy
-	// to know the service from the sub error range
-	// Make sure that the sub error number matches the one in the resources
-	SOME_ERROR(50000);
+    RETURN_WINDOW_EXPIRED(50001),
+    INVALID_RETURN_REASON(50002),
+    COMMENT_REQUIRED_ON_REJECT(50003),
+    INVALID_REFUND_AMOUNT(50004),
+    RETURN_REQUEST_NOT_FOUND(50005);
 
-	private final int subError;
-	private ErrorCodes(int subError) {
-		this.subError = subError;
-	}
-	
-	public int getSubError() {
-		return this.subError;
-	}
+    private final int subError;
+
+    private ErrorCodes(int subError) {
+        this.subError = subError;
+    }
+
+    public int getSubError() {
+        return this.subError;
+    }
 }

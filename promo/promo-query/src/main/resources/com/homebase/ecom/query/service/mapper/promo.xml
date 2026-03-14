@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PromoCode">
+
+    <select id="getAll" resultType="com.homebase.ecom.dto.PromoCodeDto">
+        SELECT 
+            p.code as code, 
+            p.description as description, 
+            p.discount_type as "discountType", 
+            p.discount_value as "discountValue", 
+            p.expiry_date as "expiryDate",
+            p.usage_count as "usageCount",
+            p.state_id as "stateId"
+        FROM promo_code p
+        <where>
+            <if test="code != null">AND p.code LIKE CONCAT('%', #{code}, '%')</if>
+            <if test="discountType != null">AND p.discount_type = #{discountType}</if>
+            <if test="stateId != null">AND p.state_id = #{stateId}</if>
+        </where>
+    </select>
+
+    <select id="getAll-count" resultType="int">
+        SELECT count(*) FROM promo_code p
+        <where>
+            <if test="code != null">AND p.code LIKE CONCAT('%', #{code}, '%')</if>
+            <if test="discountType != null">AND p.discount_type = #{discountType}</if>
+            <if test="stateId != null">AND p.state_id = #{stateId}</if>
+        </where>
+    </select>
+
+    <select id="getById" resultType="com.homebase.ecom.dto.PromoCodeDto">
+        SELECT 
+            p.code as code, 
+            p.description as description, 
+            p.discount_type as "discountType", 
+            p.discount_value as "discountValue", 
+            p.expiry_date as "expiryDate",
+            p.usage_count as "usageCount",
+            p.state_id as "stateId"
+        FROM promo_code p
+        WHERE p.code = #{code}
+    </select>
+
+</mapper>

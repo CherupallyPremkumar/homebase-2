@@ -68,3 +68,4 @@ query:
   mapperFiles: classpath*:com/homebase/ecom/query/service/mapper/*.xml
   definitionFiles: classpath*:com/homebase/ecom/query/service/mapper/*.json
 
+

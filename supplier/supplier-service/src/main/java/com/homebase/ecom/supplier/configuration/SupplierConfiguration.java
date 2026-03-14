@@ -7,6 +7,7 @@ import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,7 +17,11 @@ import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.supplier.model.Supplier;
 import com.homebase.ecom.supplier.service.cmds.*;
 import com.homebase.ecom.supplier.service.healthcheck.SupplierHealthChecker;
-import com.homebase.ecom.supplier.service.store.SupplierEntityStore;
+import com.homebase.ecom.supplier.infrastructure.persistence.ChenileSupplierEntityStore;
+import com.homebase.ecom.supplier.infrastructure.persistence.adapter.SupplierJpaRepository;
+import com.homebase.ecom.supplier.infrastructure.persistence.mapper.SupplierMapper;
+import com.homebase.ecom.supplier.infrastructure.messaging.SupplierEventPublisherImpl;
+import com.homebase.ecom.supplier.domain.port.SupplierEventPublisher;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.stm.State;
 import org.chenile.workflow.service.activities.ActivityChecker;
@@ -24,7 +29,9 @@ import org.chenile.workflow.service.activities.AreActivitiesComplete;
 import com.homebase.ecom.supplier.service.postSaveHooks.*;
 
 /**
- * This is where you will instantiate all the required classes in Spring
+ * Spring configuration for the Supplier bounded context.
+ * Registers all STM components, transition actions, entry actions,
+ * post-save hooks, and the event publisher.
  */
 @Configuration
 public class SupplierConfiguration {
@@ -60,8 +67,13 @@ public class SupplierConfiguration {
     }
 
     @Bean
-    EntityStore<Supplier> supplierEntityStore() {
-        return new SupplierEntityStore();
+    SupplierMapper supplierMapper() {
+        return new SupplierMapper();
+    }
+
+    @Bean
+    EntityStore<Supplier> supplierEntityStore(SupplierJpaRepository jpaRepository, SupplierMapper mapper) {
+        return new ChenileSupplierEntityStore(jpaRepository, mapper);
     }
 
     @Bean
@@ -72,7 +84,14 @@ public class SupplierConfiguration {
         return new StateEntityServiceImpl<>(stm, supplierInfoProvider, entityStore);
     }
 
-    // Now we start constructing the STM Components
+    // --- Event Publisher ---
+
+    @Bean
+    SupplierEventPublisher supplierEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        return new SupplierEventPublisherImpl(applicationEventPublisher);
+    }
+
+    // --- STM Components ---
 
     @Bean
     DefaultPostSaveHook<Supplier> supplierDefaultPostSaveHook(
@@ -162,22 +181,28 @@ public class SupplierConfiguration {
         return new AreActivitiesComplete(activityChecker);
     }
 
-    // Create the specific transition actions here. Make sure that these actions are
-    // inheriting from
-    // AbstractSTMTransitionMachine (The sample classes provide an example of this).
-    // To automatically wire
-    // them into the STM use the convention of "supplier" + eventId + "Action" for
-    // the method name. (supplier is the
-    // prefix passed to the TransitionActionResolver above.)
-    // This will ensure that these are detected automatically by the Workflow
-    // system.
-    // The payload types will be detected as well so that there is no need to
-    // introduce an <event-information/>
-    // segment in src/main/resources/com/homebase/supplier/supplier-states.xml
+    // --- Transition Actions ---
+    // Bean names follow convention: "supplier" + eventId + "Action"
+    // so STMTransitionActionResolver auto-discovers them.
 
     @Bean
     SupplierFlowEntryAction supplierFlowEntryAction() {
         return new SupplierFlowEntryAction();
+    }
+
+    @Bean
+    ApproveSupplierAction supplierApproveSupplierAction() {
+        return new ApproveSupplierAction();
+    }
+
+    @Bean
+    RejectSupplierAction supplierRejectSupplierAction() {
+        return new RejectSupplierAction();
+    }
+
+    @Bean
+    ResubmitSupplierAction supplierResubmitSupplierAction() {
+        return new ResubmitSupplierAction();
     }
 
     @Bean
@@ -239,6 +264,8 @@ public class SupplierConfiguration {
         stmFlowStore.setEnablementStrategy(enablementStrategy);
         return enablementStrategy;
     }
+
+    // --- Post-Save Hooks ---
 
     @Bean
     ACTIVESupplierPostSaveHook supplierACTIVEPostSaveHook() {

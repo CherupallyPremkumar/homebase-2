@@ -1,28 +1,18 @@
 package com.homebase.ecom.cart.service.cmds;
 
+import com.homebase.ecom.cart.dto.AddItemCartPayload;
+import com.homebase.ecom.cart.model.Cart;
+import com.homebase.ecom.cart.model.CartItem;
+import com.homebase.ecom.dto.OfferDto;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
 
-import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
-import com.homebase.ecom.cart.model.Cart;
-import com.homebase.ecom.cart.model.CartItem;
-import com.homebase.ecom.cart.dto.AddItemCartPayload;
-
 /**
  * Contains customized logic for the transition. Common logic resides at
  * {@link DefaultSTMTransitionAction}
- * <p>
- * Use this class if you want to augment the common logic for this specific
- * transition
- * </p>
- * <p>
- * Use a customized payload if required instead of MinimalPayload
- * </p>
  */
-public class AddItemCartAction extends AbstractSTMTransitionAction<Cart,
-
-        AddItemCartPayload> {
+public class AddItemCartAction extends AbstractCartAction<AddItemCartPayload> {
 
     @Override
     public void transitionTo(Cart cart,
@@ -30,20 +20,36 @@ public class AddItemCartAction extends AbstractSTMTransitionAction<Cart,
             State startState, String eventId,
             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
+        OfferDto offer = validateAndGetOffer(payload.productId, payload.quantity);
+
         CartItem existingItem = cart.getItems().stream()
                 .filter(item -> item.getProductId().equals(payload.productId))
                 .findFirst()
                 .orElse(null);
 
         if (existingItem != null) {
+            // Validate the hypothetical state of the item
+            CartItem checkItem = new CartItem();
+            checkItem.setProductId(payload.productId);
+            checkItem.setQuantity(existingItem.getQuantity() + payload.quantity);
+
+            cartPolicyValidator.validate(cart, checkItem, offer);
+
             existingItem.setQuantity(existingItem.getQuantity() + payload.quantity);
+            // Update to latest price/seller if needed
+            existingItem.setPrice(offer.getPrice());
+            existingItem.setSellerId(offer.getSellerId());
         } else {
             CartItem newItem = new CartItem();
             newItem.setProductId(payload.productId);
             newItem.setQuantity(payload.quantity);
+            newItem.setPrice(offer.getPrice());
+            newItem.setSellerId(offer.getSellerId());
+
+            cartPolicyValidator.validate(cart, newItem, offer);
+
             cart.addItem(newItem);
         }
-        cart.transientMap.previousPayload = payload;
+        cart.getTransientMap().previousPayload = payload;
     }
-
 }

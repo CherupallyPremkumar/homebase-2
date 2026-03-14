@@ -19,24 +19,55 @@
 			<groupId>com.homebase.ecom.cart</groupId>
 			<artifactId>cart-api</artifactId>
 		</dependency>
-	
+		<dependency>
+			<groupId>com.homebase.ecom.promo</groupId>
+			<artifactId>promo-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.inventory</groupId>
+			<artifactId>inventory-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>product-api</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-proxy</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
             <artifactId>workflow-service</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.homebase.ecom</groupId>
+			<groupId>com.homebase.ecom.cart</groupId>
+			<artifactId>cart-query-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>product-query-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.inventory</groupId>
+			<artifactId>inventory-query-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.shared</groupId>
 			<artifactId>shared-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.chenile.cconfig</groupId>
+			<artifactId>cconfig-api</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>org.chenile.cconfig</groupId>
+            <artifactId>cconfig-service</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
-		<dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-	    </dependency>
 	    <dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>chenile-http</artifactId>
@@ -56,25 +87,84 @@
             <artifactId>cucumber-workflow-utils</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.promo</groupId>
+            <artifactId>promo-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>service-registry-service</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
-			<artifactId>chenile-security-api</artifactId>
+			<artifactId>chenile-kafka</artifactId>
 		</dependency>
-		<!-- Test dependencies for security -->
+
+        <dependency>
+            <groupId>com.homebase.ecom</groupId>
+            <artifactId>cart-query-service</artifactId>
+        </dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.testcontainers</groupId>-->
+<!--			<artifactId>testcontainers</artifactId>-->
+<!--			<version>1.20.4</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.testcontainers</groupId>-->
+<!--			<artifactId>junit-jupiter</artifactId>-->
+<!--			<version>1.20.4</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.testcontainers</groupId>-->
+<!--			<artifactId>postgresql</artifactId>-->
+<!--			<version>1.20.4</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
 		<dependency>
+			<groupId>com.homebase.ecom.pricing</groupId>
+			<artifactId>pricing-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.cart</groupId>
+			<artifactId>cart-infrastructure</artifactId>
+			<version>${revision}</version>
+		</dependency>
+			<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>cucumber-sec-utils</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>security-interceptor</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-query-jar</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.homebase.ecom.build</groupId>
+                                    <artifactId>query-build</artifactId>
+                                    <version>${revision}</version>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/test-dependencies</outputDirectory>
+                                    <destFileName>query-build.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.chenile</groupId>
                 <artifactId>stm-generate-puml</artifactId>
@@ -123,6 +213,16 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Dspring.classformat.ignore=true</argLine>
+                    <systemPropertyVariables>
+                        <DOCKER_API_VERSION>1.44</DOCKER_API_VERSION>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>

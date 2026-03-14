@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../chenile-corefork"
+		},
+		{
+			"path": "../../chenile-service-registry"
+		},
+		{
+			"path": "../../chenile-query-workflowfork-blueprintsfork"
+		}
+	],
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "automatic",
+		"java.compile.nullAnalysis.mode": "automatic"
+	}
+}

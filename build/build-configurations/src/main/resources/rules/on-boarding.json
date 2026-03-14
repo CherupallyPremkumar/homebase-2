@@ -1,0 +1,19 @@
+{
+    "rules": {
+        "finances": {
+            "commissionDefault": 10.0
+        },
+        "media": {
+            "maxImagesPerSaree": 5
+        },
+        "workflow": {
+            "autoApproveCount": 0
+        },
+        "validation": {
+            "requiredAttributes": [
+                "material",
+                "color"
+            ]
+        }
+    }
+}

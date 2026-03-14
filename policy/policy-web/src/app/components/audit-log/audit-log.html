@@ -1,0 +1,44 @@
+<div class="page-header">
+    <h1>Policy Audit Log</h1>
+    <p>View all evaluation decisions made by the engine</p>
+</div>
+
+<div class="card-grid" style="display: block;">
+    <table class="table" style="width: 100%; text-align: left; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid #eee;">
+                <th>Timestamp</th>
+                <th>Policy ID</th>
+                <th>Module</th>
+                <th>Subject</th>
+                <th>Resource</th>
+                <th>Action</th>
+                <th>Effect</th>
+                <th>Reasons</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let decision of decisions" style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px">{{ decision.timestamp | date:'medium' }}</td>
+                <td style="padding: 10px">{{ decision.policyId }}</td>
+                <td style="padding: 10px">{{ decision.targetModule || 'N/A' }}</td>
+                <td style="padding: 10px">{{ decision.subjectId || 'N/A' }}</td>
+                <td style="padding: 10px">{{ decision.resource || 'N/A' }}</td>
+                <td style="padding: 10px">{{ decision.action || 'N/A' }}</td>
+                <td style="padding: 10px">
+                    <span class="status" [ngClass]="{
+                        'active': decision.effect === 'ALLOW',
+                        'inactive': decision.effect === 'DENY'
+                    }">{{ decision.effect }}</span>
+                </td>
+                <td style="padding: 10px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                    [title]="decision.reasons">
+                    {{ decision.reasons }}
+                </td>
+            </tr>
+            <tr *ngIf="decisions.length === 0">
+                <td colspan="7" style="padding: 20px; text-align: center;">No evaluations found in the audit log.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

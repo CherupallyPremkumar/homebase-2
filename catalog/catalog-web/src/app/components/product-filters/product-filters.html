@@ -1,0 +1,35 @@
+<div class="filter-panel glass">
+  <div class="filter-header">
+    <h3>Refine Search</h3>
+    <button class="btn-text" (click)="resetFilters()">Clear All</button>
+  </div>
+
+  <div class="filter-group">
+    <label>Search</label>
+    <div class="search-input-wrapper">
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        placeholder="Search products..." 
+        (ngModelChange)="applyFilters()"
+      >
+      <i class="search-icon"></i>
+    </div>
+  </div>
+
+  <div class="filter-group">
+    <label>Category</label>
+    <select [(ngModel)]="selectedCategory" (change)="applyFilters()">
+      <option value="">All Categories</option>
+      <option *ngFor="let cat of categories" [value]="cat.id">{{cat.name}}</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label>Maker</label>
+    <select [(ngModel)]="selectedMaker" (change)="applyFilters()">
+      <option value="">All Makers</option>
+      <option *ngFor="let maker of makers" [value]="maker.id">{{maker.name}}</option>
+    </select>
+  </div>
+</div>

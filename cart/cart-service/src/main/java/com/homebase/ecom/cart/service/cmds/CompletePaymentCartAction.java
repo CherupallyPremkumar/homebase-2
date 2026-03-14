@@ -23,7 +23,7 @@ public class CompletePaymentCartAction extends AbstractSTMTransitionAction<Cart,
             CompletePaymentCartPayload payload,
             State startState, String eventId,
 			State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-            cart.transientMap.previousPayload = payload;
+            cart.getTransientMap().previousPayload = payload;
 	}
 
 }

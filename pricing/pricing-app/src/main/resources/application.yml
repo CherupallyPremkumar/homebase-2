@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: pricing-service
+  
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pricing_db
+    username: pricing_user
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: pricing-service-group
+      properties:
+        spring.json.trusted.packages: "com.homebase.ecom.pricing.infrastructure.event"
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      promo-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 60000
+        failureRateThreshold: 50
+  retry:
+    instances:
+      promo-service:
+        maxAttempts: 3
+        waitDuration: 1000
+
+server:
+  port: 8081
+
+promo:
+  service:
+    url: http://localhost:8082
+
+security:
+  pricing:
+    hmac-secret-key: "staff-engineer-secret-key-12345"
+    lock-duration-minutes: 15

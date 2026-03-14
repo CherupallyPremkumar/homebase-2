@@ -8,7 +8,8 @@ And that "initialState" equals "AWAITING_PICKUP"
 When I POST a REST request to URL "/shipping" with payload
 """json
 {
-    "description": "Description"
+    "description": "Description",
+    "orderId": "ORD-TEST2-001"
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -30,7 +31,8 @@ And that "event" equals "courierAssigned"
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "carrier": "HOMEBASE-LOGISTICS"
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -72,12 +74,15 @@ And that "event" equals "markDelivered"
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "deliveryProof": "photo-proof-001.jpg"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "DELIVERED"
+And the REST response contains key "mutatedEntity.deliveredAt"
+And the REST response key "mutatedEntity.deliveryProof" is "photo-proof-001.jpg"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
 Scenario: Send the returnRequested event to the shipping with comments
@@ -86,10 +91,13 @@ And that "event" equals "returnRequested"
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "returnReason": "Wrong size received"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "RETURN_REQUESTED"
+And the REST response key "mutatedEntity.returnReason" is "Wrong size received"
+And the REST response contains key "mutatedEntity.returnTrackingNumber"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"

@@ -1,8 +1,8 @@
 package com.homebase.ecom.inventory.service.listener;
 
-import com.ecommerce.inventory.service.InventoryService;
-import com.ecommerce.shared.event.*;
+import com.homebase.ecom.inventory.service.InventoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.homebase.ecom.shared.event.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -60,13 +60,15 @@ public class InventoryKafkaListener {
 
         switch (envelope.getEventType()) {
             case PaymentSucceededEvent.EVENT_TYPE: {
-                PaymentSucceededEvent event = objectMapper.convertValue(envelope.getPayload(), PaymentSucceededEvent.class);
+                PaymentSucceededEvent event = objectMapper.convertValue(envelope.getPayload(),
+                        PaymentSucceededEvent.class);
                 log.info("Inventory: received PaymentSucceededEvent for order: {}", event.getOrderId());
                 inventoryService.commit(event.getOrderId());
                 break;
             }
             case PaymentSessionExpiredEvent.EVENT_TYPE: {
-                PaymentSessionExpiredEvent event = objectMapper.convertValue(envelope.getPayload(), PaymentSessionExpiredEvent.class);
+                PaymentSessionExpiredEvent event = objectMapper.convertValue(envelope.getPayload(),
+                        PaymentSessionExpiredEvent.class);
                 log.info("Inventory: received PaymentSessionExpiredEvent for order: {}", event.getOrderId());
                 inventoryService.release(event.getOrderId());
                 break;
@@ -79,6 +81,40 @@ public class InventoryKafkaListener {
             }
             default:
                 // ignore
+        }
+    }
+
+    @KafkaListener(topics = KafkaTopics.CART_EVENTS, groupId = "inventory-group")
+    @Transactional
+    public void onCartEvent(EventEnvelope envelope) {
+        if (envelope == null || envelope.getEventType() == null) {
+            return;
+        }
+
+        if (CartCheckoutInitiatedEvent.EVENT_TYPE.equals(envelope.getEventType())) {
+            CartCheckoutInitiatedEvent event = objectMapper.convertValue(envelope.getPayload(),
+                    CartCheckoutInitiatedEvent.class);
+            log.info("Inventory: received CartCheckoutInitiatedEvent for cart: {}", event.getCartId());
+            try {
+                java.util.Map<String, Integer> items = new java.util.HashMap<>();
+                event.getItems().forEach(item -> items.put(item.getProductId(), item.getQuantity()));
+
+                inventoryService.reserveForOrder(event.getCartId(), items);
+
+                log.info("Stock reserved for cart: {}", event.getCartId());
+                sendAfterCommit(KafkaTopics.INVENTORY_EVENTS, event.getCartId(),
+                        new InventoryEvent(event.getCartId(), InventoryEvent.STOCK_RESERVED));
+            } catch (Exception e) {
+                log.error("Failed to reserve stock for cart: {}, error: {}",
+                        event.getCartId(), e.getMessage());
+                kafkaTemplate.send(KafkaTopics.INVENTORY_EVENTS, event.getCartId(),
+                        new InventoryEvent(event.getCartId(), InventoryEvent.STOCK_FAILED));
+            }
+        } else if (CartAbandonedEvent.EVENT_TYPE.equals(envelope.getEventType())) {
+            CartAbandonedEvent event = objectMapper.convertValue(envelope.getPayload(),
+                    CartAbandonedEvent.class);
+            log.info("Inventory: received CartAbandonedEvent for cart: {}", event.getCartId());
+            inventoryService.release(event.getCartId());
         }
     }
 

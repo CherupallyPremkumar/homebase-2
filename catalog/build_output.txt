@@ -1,0 +1,320 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] catalog                                                            [pom]
+[INFO] handmade-catalog-api                                               [jar]
+[INFO] handmade-catalog-domain                                            [jar]
+[INFO] handmade-catalog-infrastructure                                    [jar]
+[INFO] Query Service Test Cases for catalog                               [jar]
+[INFO] handmade-catalog-service                                           [jar]
+[INFO] Catalog App — Spring Boot Launcher                                 [jar]
+[INFO] 
+[INFO] ---------------------< com.homebase.ecom:catalog >----------------------
+[INFO] Building catalog 0.0.1-SNAPSHOT                                    [1/7]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ catalog ---
+[INFO] 
+[INFO] --- flatten:1.1.0:clean (flatten.clean) @ catalog ---
+[INFO] Deleting /Users/premkumar/Documents/HomeBase/catalog/.flattened-pom.xml
+[INFO] 
+[INFO] --- jacoco:0.8.14:prepare-agent (prepare-agent) @ catalog ---
+[INFO] argLine set to -javaagent:/Users/premkumar/.m2/repository/org/jacoco/org.jacoco.agent/0.8.14/org.jacoco.agent-0.8.14-runtime.jar=destfile=/Users/premkumar/Documents/HomeBase/catalog/target/jacoco.exec,excludes=**/*Driver*:java*/**:**/ietf/**:sun/**:jdk/**
+[INFO] 
+[INFO] --- flatten:1.1.0:flatten (flatten) @ catalog ---
+[INFO] Generating flattened POM of project com.homebase.ecom:catalog:pom:0.0.1-SNAPSHOT...
+[INFO] 
+[INFO] --- jacoco:0.8.14:report (report) @ catalog ---
+[INFO] Skipping JaCoCo execution due to missing execution data file.
+[INFO] 
+[INFO] --- install:3.1.4:install (default-install) @ catalog ---
+[INFO] Installing /Users/premkumar/Documents/HomeBase/catalog/.flattened-pom.xml to /Users/premkumar/.m2/repository/com/homebase/ecom/catalog/0.0.1-SNAPSHOT/catalog-0.0.1-SNAPSHOT.pom
+[INFO] 
+[INFO] ---------------< com.homebase.ecom:handmade-catalog-api >---------------
+[INFO] Building handmade-catalog-api 0.0.1-SNAPSHOT                       [2/7]
+[INFO]   from catalog-api/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] 1 problem was encountered while building the effective model for org.javassist:javassist:jar:3.20.0-GA during dependency collection step for project (use -X to see details)
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ handmade-catalog-api ---
+[INFO] Deleting /Users/premkumar/Documents/HomeBase/catalog/catalog-api/target
+[INFO] 
+[INFO] --- flatten:1.1.0:clean (flatten.clean) @ handmade-catalog-api ---
+[INFO] Deleting /Users/premkumar/Documents/HomeBase/catalog/catalog-api/.flattened-pom.xml
+[INFO] 
+[INFO] --- jacoco:0.8.14:prepare-agent (prepare-agent) @ handmade-catalog-api ---
+[INFO] argLine set to -javaagent:/Users/premkumar/.m2/repository/org/jacoco/org.jacoco.agent/0.8.14/org.jacoco.agent-0.8.14-runtime.jar=destfile=/Users/premkumar/Documents/HomeBase/catalog/catalog-api/target/jacoco.exec,excludes=**/*Driver*:java*/**:**/ietf/**:sun/**:jdk/**
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ handmade-catalog-api ---
+[INFO] skip non existing resourceDirectory /Users/premkumar/Documents/HomeBase/catalog/catalog-api/src/main/resources
+[INFO] skip non existing resourceDirectory /Users/premkumar/Documents/HomeBase/catalog/catalog-api/src/main/resources
+[INFO] 
+[INFO] --- flatten:1.1.0:flatten (flatten) @ handmade-catalog-api ---
+[INFO] Generating flattened POM of project com.homebase.ecom:handmade-catalog-api:jar:0.0.1-SNAPSHOT...
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ handmade-catalog-api ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ handmade-catalog-api ---
+[INFO] skip non existing resourceDirectory /Users/premkumar/Documents/HomeBase/catalog/catalog-api/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ handmade-catalog-api ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ handmade-catalog-api ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ handmade-catalog-api ---
+[WARNING] JAR will be empty - no content was marked for inclusion!
+[INFO] Building jar: /Users/premkumar/Documents/HomeBase/catalog/catalog-api/target/handmade-catalog-api-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- jacoco:0.8.14:report (report) @ handmade-catalog-api ---
+[INFO] Skipping JaCoCo execution due to missing execution data file.
+[INFO] 
+[INFO] --- install:3.1.4:install (default-install) @ handmade-catalog-api ---
+[INFO] Installing /Users/premkumar/Documents/HomeBase/catalog/catalog-api/.flattened-pom.xml to /Users/premkumar/.m2/repository/com/homebase/ecom/handmade-catalog-api/0.0.1-SNAPSHOT/handmade-catalog-api-0.0.1-SNAPSHOT.pom
+[INFO] Installing /Users/premkumar/Documents/HomeBase/catalog/catalog-api/target/handmade-catalog-api-0.0.1-SNAPSHOT.jar to /Users/premkumar/.m2/repository/com/homebase/ecom/handmade-catalog-api/0.0.1-SNAPSHOT/handmade-catalog-api-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] -------------< com.homebase.ecom:handmade-catalog-domain >--------------
+[INFO] Building handmade-catalog-domain 0.0.1-SNAPSHOT                    [3/7]
+[INFO]   from catalog-domain/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ handmade-catalog-domain ---
+[INFO] Deleting /Users/premkumar/Documents/HomeBase/catalog/catalog-domain/target
+[INFO] 
+[INFO] --- flatten:1.1.0:clean (flatten.clean) @ handmade-catalog-domain ---
+[INFO] Deleting /Users/premkumar/Documents/HomeBase/catalog/catalog-domain/.flattened-pom.xml
+[INFO] 
+[INFO] --- jacoco:0.8.14:prepare-agent (prepare-agent) @ handmade-catalog-domain ---
+[INFO] argLine set to -javaagent:/Users/premkumar/.m2/repository/org/jacoco/org.jacoco.agent/0.8.14/org.jacoco.agent-0.8.14-runtime.jar=destfile=/Users/premkumar/Documents/HomeBase/catalog/catalog-domain/target/jacoco.exec,excludes=**/*Driver*:java*/**:**/ietf/**:sun/**:jdk/**
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ handmade-catalog-domain ---
+[INFO] skip non existing resourceDirectory /Users/premkumar/Documents/HomeBase/catalog/catalog-domain/src/main/resources
+[INFO] skip non existing resourceDirectory /Users/premkumar/Documents/HomeBase/catalog/catalog-domain/src/main/resources
+[INFO] 
+[INFO] --- flatten:1.1.0:flatten (flatten) @ handmade-catalog-domain ---
+[INFO] Generating flattened POM of project com.homebase.ecom:handmade-catalog-domain:jar:0.0.1-SNAPSHOT...
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ handmade-catalog-domain ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 28 source files with javac [debug parameters release 17] to target/classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ handmade-catalog-domain ---
+[INFO] skip non existing resourceDirectory /Users/premkumar/Documents/HomeBase/catalog/catalog-domain/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ handmade-catalog-domain ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ handmade-catalog-domain ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ handmade-catalog-domain ---
+[INFO] Building jar: /Users/premkumar/Documents/HomeBase/catalog/catalog-domain/target/handmade-catalog-domain-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- jacoco:0.8.14:report (report) @ handmade-catalog-domain ---
+[INFO] Skipping JaCoCo execution due to missing execution data file.
+[INFO] 
+[INFO] --- install:3.1.4:install (default-install) @ handmade-catalog-domain ---
+[INFO] Installing /Users/premkumar/Documents/HomeBase/catalog/catalog-domain/.flattened-pom.xml to /Users/premkumar/.m2/repository/com/homebase/ecom/handmade-catalog-domain/0.0.1-SNAPSHOT/handmade-catalog-domain-0.0.1-SNAPSHOT.pom
+[INFO] Installing /Users/premkumar/Documents/HomeBase/catalog/catalog-domain/target/handmade-catalog-domain-0.0.1-SNAPSHOT.jar to /Users/premkumar/.m2/repository/com/homebase/ecom/handmade-catalog-domain/0.0.1-SNAPSHOT/handmade-catalog-domain-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] ---------< com.homebase.ecom:handmade-catalog-infrastructure >----------
+[INFO] Building handmade-catalog-infrastructure 0.0.1-SNAPSHOT            [4/7]
+[INFO]   from catalog-infrastructure/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ handmade-catalog-infrastructure ---
+[INFO] Deleting /Users/premkumar/Documents/HomeBase/catalog/catalog-infrastructure/target
+[INFO] 
+[INFO] --- flatten:1.1.0:clean (flatten.clean) @ handmade-catalog-infrastructure ---
+[INFO] Deleting /Users/premkumar/Documents/HomeBase/catalog/catalog-infrastructure/.flattened-pom.xml
+[INFO] 
+[INFO] --- jacoco:0.8.14:prepare-agent (prepare-agent) @ handmade-catalog-infrastructure ---
+[INFO] argLine set to -javaagent:/Users/premkumar/.m2/repository/org/jacoco/org.jacoco.agent/0.8.14/org.jacoco.agent-0.8.14-runtime.jar=destfile=/Users/premkumar/Documents/HomeBase/catalog/catalog-infrastructure/target/jacoco.exec,excludes=**/*Driver*:java*/**:**/ietf/**:sun/**:jdk/**
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ handmade-catalog-infrastructure ---
+[INFO] skip non existing resourceDirectory /Users/premkumar/Documents/HomeBase/catalog/catalog-infrastructure/src/main/resources
+[INFO] skip non existing resourceDirectory /Users/premkumar/Documents/HomeBase/catalog/catalog-infrastructure/src/main/resources
+[INFO] 
+[INFO] --- flatten:1.1.0:flatten (flatten) @ handmade-catalog-infrastructure ---
+[INFO] Generating flattened POM of project com.homebase.ecom:handmade-catalog-infrastructure:jar:0.0.1-SNAPSHOT...
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ handmade-catalog-infrastructure ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 24 source files with javac [debug parameters release 17] to target/classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ handmade-catalog-infrastructure ---
+[INFO] skip non existing resourceDirectory /Users/premkumar/Documents/HomeBase/catalog/catalog-infrastructure/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ handmade-catalog-infrastructure ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ handmade-catalog-infrastructure ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ handmade-catalog-infrastructure ---
+[INFO] Building jar: /Users/premkumar/Documents/HomeBase/catalog/catalog-infrastructure/target/handmade-catalog-infrastructure-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- jacoco:0.8.14:report (report) @ handmade-catalog-infrastructure ---
+[INFO] Skipping JaCoCo execution due to missing execution data file.
+[INFO] 
+[INFO] --- install:3.1.4:install (default-install) @ handmade-catalog-infrastructure ---
+[INFO] Installing /Users/premkumar/Documents/HomeBase/catalog/catalog-infrastructure/.flattened-pom.xml to /Users/premkumar/.m2/repository/com/homebase/ecom/handmade-catalog-infrastructure/0.0.1-SNAPSHOT/handmade-catalog-infrastructure-0.0.1-SNAPSHOT.pom
+[INFO] Installing /Users/premkumar/Documents/HomeBase/catalog/catalog-infrastructure/target/handmade-catalog-infrastructure-0.0.1-SNAPSHOT.jar to /Users/premkumar/.m2/repository/com/homebase/ecom/handmade-catalog-infrastructure/0.0.1-SNAPSHOT/handmade-catalog-infrastructure-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --------------< com.homebase.ecom:catalog-query-service >---------------
+[INFO] Building Query Service Test Cases for catalog 0.0.1-SNAPSHOT       [5/7]
+[INFO]   from catalog-query/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ catalog-query-service ---
+[INFO] Deleting /Users/premkumar/Documents/HomeBase/catalog/catalog-query/target
+[INFO] 
+[INFO] --- flatten:1.1.0:clean (flatten.clean) @ catalog-query-service ---
+[INFO] Deleting /Users/premkumar/Documents/HomeBase/catalog/catalog-query/.flattened-pom.xml
+[INFO] 
+[INFO] --- jacoco:0.8.14:prepare-agent (prepare-agent) @ catalog-query-service ---
+[INFO] argLine set to -javaagent:/Users/premkumar/.m2/repository/org/jacoco/org.jacoco.agent/0.8.14/org.jacoco.agent-0.8.14-runtime.jar=destfile=/Users/premkumar/Documents/HomeBase/catalog/catalog-query/target/jacoco.exec,excludes=**/*Driver*:java*/**:**/ietf/**:sun/**:jdk/**
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ catalog-query-service ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- flatten:1.1.0:flatten (flatten) @ catalog-query-service ---
+[INFO] Generating flattened POM of project com.homebase.ecom:catalog-query-service:jar:0.0.1-SNAPSHOT...
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ catalog-query-service ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 1 source file with javac [debug parameters release 17] to target/classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ catalog-query-service ---
+[INFO] Copying 7 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ catalog-query-service ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 3 source files with javac [debug parameters release 17] to target/test-classes
+[INFO] /Users/premkumar/Documents/HomeBase/catalog/catalog-query/src/test/java/com/mycompany/myorg/catalog/query/service/bdd/CukesRestTest.java: /Users/premkumar/Documents/HomeBase/catalog/catalog-query/src/test/java/com/mycompany/myorg/catalog/query/service/bdd/CukesRestTest.java uses or overrides a deprecated API.
+[INFO] /Users/premkumar/Documents/HomeBase/catalog/catalog-query/src/test/java/com/mycompany/myorg/catalog/query/service/bdd/CukesRestTest.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ catalog-query-service ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ catalog-query-service ---
+[INFO] Building jar: /Users/premkumar/Documents/HomeBase/catalog/catalog-query/target/catalog-query-service-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- jacoco:0.8.14:report (report) @ catalog-query-service ---
+[INFO] Skipping JaCoCo execution due to missing execution data file.
+[INFO] 
+[INFO] --- install:3.1.4:install (default-install) @ catalog-query-service ---
+[INFO] Installing /Users/premkumar/Documents/HomeBase/catalog/catalog-query/.flattened-pom.xml to /Users/premkumar/.m2/repository/com/homebase/ecom/catalog-query-service/0.0.1-SNAPSHOT/catalog-query-service-0.0.1-SNAPSHOT.pom
+[INFO] Installing /Users/premkumar/Documents/HomeBase/catalog/catalog-query/target/catalog-query-service-0.0.1-SNAPSHOT.jar to /Users/premkumar/.m2/repository/com/homebase/ecom/catalog-query-service/0.0.1-SNAPSHOT/catalog-query-service-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] -------------< com.homebase.ecom:handmade-catalog-service >-------------
+[INFO] Building handmade-catalog-service 0.0.1-SNAPSHOT                   [6/7]
+[INFO]   from catalog-service/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ handmade-catalog-service ---
+[INFO] Deleting /Users/premkumar/Documents/HomeBase/catalog/catalog-service/target
+[INFO] 
+[INFO] --- flatten:1.1.0:clean (flatten.clean) @ handmade-catalog-service ---
+[INFO] Deleting /Users/premkumar/Documents/HomeBase/catalog/catalog-service/.flattened-pom.xml
+[INFO] 
+[INFO] --- jacoco:0.8.14:prepare-agent (prepare-agent) @ handmade-catalog-service ---
+[INFO] argLine set to -javaagent:/Users/premkumar/.m2/repository/org/jacoco/org.jacoco.agent/0.8.14/org.jacoco.agent-0.8.14-runtime.jar=destfile=/Users/premkumar/Documents/HomeBase/catalog/catalog-service/target/jacoco.exec,excludes=**/*Driver*:java*/**:**/ietf/**:sun/**:jdk/**
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ handmade-catalog-service ---
+[INFO] skip non existing resourceDirectory /Users/premkumar/Documents/HomeBase/catalog/catalog-service/src/main/resources
+[INFO] skip non existing resourceDirectory /Users/premkumar/Documents/HomeBase/catalog/catalog-service/src/main/resources
+[INFO] 
+[INFO] --- flatten:1.1.0:flatten (flatten) @ handmade-catalog-service ---
+[INFO] Generating flattened POM of project com.homebase.ecom:handmade-catalog-service:jar:0.0.1-SNAPSHOT...
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ handmade-catalog-service ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 9 source files with javac [debug parameters release 17] to target/classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ handmade-catalog-service ---
+[INFO] skip non existing resourceDirectory /Users/premkumar/Documents/HomeBase/catalog/catalog-service/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ handmade-catalog-service ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 4 source files with javac [debug parameters release 17] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ handmade-catalog-service ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ handmade-catalog-service ---
+[INFO] Building jar: /Users/premkumar/Documents/HomeBase/catalog/catalog-service/target/handmade-catalog-service-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- jacoco:0.8.14:report (report) @ handmade-catalog-service ---
+[INFO] Skipping JaCoCo execution due to missing execution data file.
+[INFO] 
+[INFO] --- install:3.1.4:install (default-install) @ handmade-catalog-service ---
+[INFO] Installing /Users/premkumar/Documents/HomeBase/catalog/catalog-service/.flattened-pom.xml to /Users/premkumar/.m2/repository/com/homebase/ecom/handmade-catalog-service/0.0.1-SNAPSHOT/handmade-catalog-service-0.0.1-SNAPSHOT.pom
+[INFO] Installing /Users/premkumar/Documents/HomeBase/catalog/catalog-service/target/handmade-catalog-service-0.0.1-SNAPSHOT.jar to /Users/premkumar/.m2/repository/com/homebase/ecom/handmade-catalog-service/0.0.1-SNAPSHOT/handmade-catalog-service-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] -------------------< com.homebase.ecom:catalog-app >--------------------
+[INFO] Building Catalog App — Spring Boot Launcher 0.0.1-SNAPSHOT         [7/7]
+[INFO]   from catalog-app/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ catalog-app ---
+[INFO] 
+[INFO] --- flatten:1.1.0:clean (flatten.clean) @ catalog-app ---
+[INFO] 
+[INFO] --- jacoco:0.8.14:prepare-agent (prepare-agent) @ catalog-app ---
+[INFO] argLine set to -javaagent:/Users/premkumar/.m2/repository/org/jacoco/org.jacoco.agent/0.8.14/org.jacoco.agent-0.8.14-runtime.jar=destfile=/Users/premkumar/Documents/HomeBase/catalog/catalog-app/target/jacoco.exec,excludes=**/*Driver*:java*/**:**/ietf/**:sun/**:jdk/**
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ catalog-app ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- flatten:1.1.0:flatten (flatten) @ catalog-app ---
+[INFO] Generating flattened POM of project com.homebase.ecom:catalog-app:jar:0.0.1-SNAPSHOT...
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ catalog-app ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 1 source file with javac [debug parameters release 17] to target/classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ catalog-app ---
+[INFO] skip non existing resourceDirectory /Users/premkumar/Documents/HomeBase/catalog/catalog-app/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ catalog-app ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ catalog-app ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ catalog-app ---
+[INFO] Building jar: /Users/premkumar/Documents/HomeBase/catalog/catalog-app/target/catalog-app-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot:4.0.1:repackage (repackage) @ catalog-app ---
+[INFO] Replacing main artifact /Users/premkumar/Documents/HomeBase/catalog/catalog-app/target/catalog-app-0.0.1-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /Users/premkumar/Documents/HomeBase/catalog/catalog-app/target/catalog-app-0.0.1-SNAPSHOT.jar.original
+[INFO] 
+[INFO] --- jacoco:0.8.14:report (report) @ catalog-app ---
+[INFO] Skipping JaCoCo execution due to missing execution data file.
+[INFO] 
+[INFO] --- install:3.1.4:install (default-install) @ catalog-app ---
+[INFO] Installing /Users/premkumar/Documents/HomeBase/catalog/catalog-app/.flattened-pom.xml to /Users/premkumar/.m2/repository/com/homebase/ecom/catalog-app/0.0.1-SNAPSHOT/catalog-app-0.0.1-SNAPSHOT.pom
+[INFO] Installing /Users/premkumar/Documents/HomeBase/catalog/catalog-app/target/catalog-app-0.0.1-SNAPSHOT.jar to /Users/premkumar/.m2/repository/com/homebase/ecom/catalog-app/0.0.1-SNAPSHOT/catalog-app-0.0.1-SNAPSHOT.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for catalog 0.0.1-SNAPSHOT:
+[INFO] 
+[INFO] catalog ............................................ SUCCESS [  0.713 s]
+[INFO] handmade-catalog-api ............................... SUCCESS [  0.842 s]
+[INFO] handmade-catalog-domain ............................ SUCCESS [  1.412 s]
+[INFO] handmade-catalog-infrastructure .................... SUCCESS [  2.885 s]
+[INFO] Query Service Test Cases for catalog ............... SUCCESS [  2.320 s]
+[INFO] handmade-catalog-service ........................... SUCCESS [  3.039 s]
+[INFO] Catalog App — Spring Boot Launcher ................. SUCCESS [  1.776 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  13.250 s
+[INFO] Finished at: 2026-03-12T18:29:20-05:00
+[INFO] ------------------------------------------------------------------------

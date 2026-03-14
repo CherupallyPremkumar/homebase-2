@@ -1,59 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="Settlement">
 
-<resultMap id="result" type="map">
-   <result property="id" column="id"/>
-   <result property="supplierId" column="supplier_id"/>
-   <result property="periodMonth" column="period_month"/>
-   <result property="periodYear" column="period_year"/>
-   <result property="status" column="status"/>
-   <result property="stateId" column="stateId"/>
-   <result property="totalSalesAmount" column="total_sales_amount"/>
-   <result property="commissionAmount" column="commission_amount"/>
-   <result property="netPayoutAmount" column="net_payout_amount"/>
-</resultMap>
+    <select id="getAll" resultType="com.homebase.ecom.dto.SettlementDto">
+        SELECT 
+            id, 
+            supplier_id as "supplierId", 
+            period_month as "periodMonth", 
+            period_year as "periodYear", 
+            status, 
+            state_id as "stateId", 
+            total_sales_amount as "totalSalesAmount", 
+            commission_amount as "commissionAmount", 
+            net_payout_amount as "netPayoutAmount"
+        FROM settlements
+        <where>
+            <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="stateId != null">AND state_id = #{stateId}</if>
+            <if test="periodMonth != null">AND period_month = #{periodMonth}</if>
+            <if test="periodYear != null">AND period_year = #{periodYear}</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
 
-<select id='getAll-count' resultType="int">
-	select count(*) from settlements
-    <where>
-        <if test="supplierId != null">
-            supplier_id = #{supplierId}
-        </if>
-        <if test="status != null">
-            AND status = #{status}
-        </if>
-        <if test="stateId != null">
-            AND "stateId" = #{stateId}
-        </if>
-        <if test="periodMonth != null">
-            AND period_month = #{periodMonth}
-        </if>
-        <if test="periodYear != null">
-            AND period_year = #{periodYear}
-        </if>
-    </where>
-</select>
-
-<select id="getAll" resultMap="result">	
-    SELECT id, supplier_id, period_month, period_year, status, "stateId", total_sales_amount, commission_amount, net_payout_amount FROM settlements
-    <where>
-        <if test="supplierId != null">
-            supplier_id = #{supplierId}
-        </if>
-        <if test="status != null">
-            AND status = #{status}
-        </if>
-        <if test="stateId != null">
-            AND "stateId" = #{stateId}
-        </if>
-        <if test="periodMonth != null">
-            AND period_month = #{periodMonth}
-        </if>
-        <if test="periodYear != null">
-            AND period_year = #{periodYear}
-        </if>
-    </where>
-    ${orderby} ${pagination}
-</select>
+    <select id="getAll-count" resultType="int">
+        SELECT count(*) FROM settlements
+        <where>
+            <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="stateId != null">AND state_id = #{stateId}</if>
+            <if test="periodMonth != null">AND period_month = #{periodMonth}</if>
+            <if test="periodYear != null">AND period_year = #{periodYear}</if>
+        </where>
+    </select>
 
 </mapper>

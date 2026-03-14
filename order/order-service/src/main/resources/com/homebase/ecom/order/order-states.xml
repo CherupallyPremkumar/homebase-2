@@ -5,102 +5,123 @@
     <entry-action componentName="orderEntryAction" />
     <exit-action componentName="orderExitAction" />
 
-    <manual-state id='CREATED' initialState='true' meta-mainPath="true">
+    <manual-state id='CREATED' initialState='true' meta-mainPath="true" description="Order created, awaiting payment">
       <entry-action componentName="orderCreatedNotificationAction" />
-      <on eventId='processPayment' 
-          componentName='processPaymentCommand'
-          newStateId='PAYMENT_CONFIRMED' 
+      <on eventId='processPayment'
+          componentName='orderProcessPaymentAction'
+          newStateId='PAYMENT_CONFIRMED'
           meta-mainPath="true"
           meta-acls="SYSTEM"/>
-      <on eventId='cancelOrder' 
-          componentName='cancelOrderCommand'
+      <on eventId='paymentFailed'
+          componentName='orderPaymentFailedAction'
+          newStateId='FAILED'
+          meta-acls="SYSTEM"/>
+      <on eventId='cancelOrder'
+          componentName='orderCancelOrderAction'
           newStateId='CANCELLED'
           meta-acls="CUSTOMER"/>
     </manual-state>
 
-    <manual-state id='PAYMENT_CONFIRMED' meta-mainPath="true">
+    <manual-state id='FAILED' description="Payment failed for the order">
+      <entry-action componentName="orderFailedNotificationAction" />
+    </manual-state>
+
+    <manual-state id='PAYMENT_CONFIRMED' meta-mainPath="true" description="Payment confirmed, awaiting warehouse processing">
       <entry-action componentName="paymentConfirmedAction" />
-      <on eventId='startProcessing' 
-          componentName='startProcessingCommand'
-          newStateId='PROCESSING' 
+      <on eventId='startProcessing'
+          componentName='orderStartProcessingAction'
+          newStateId='PROCESSING'
           meta-mainPath="true"
           meta-acls="WAREHOUSE"/>
+      <on eventId='cancelOrderItem'
+          componentName='orderCancelOrderItemAction'
+          meta-acls="CUSTOMER"/>
+      <on eventId='refundOrderItem'
+          componentName='orderRefundOrderItemAction'
+          meta-acls="CUSTOMER"/>
     </manual-state>
 
-    <manual-state id='PROCESSING' meta-mainPath="true">
+    <manual-state id='PROCESSING' meta-mainPath="true" description="Order being processed at warehouse">
       <entry-action componentName="processingStartedAction" />
-      <on eventId='itemsPicked' 
-          componentName='itemsPickedCommand'
-          newStateId='PICKED' 
+      <on eventId='itemsPicked'
+          componentName='orderItemsPickedAction'
+          newStateId='PICKED'
           meta-mainPath="true"
           meta-acls="WAREHOUSE"/>
+      <on eventId='cancelOrderItem'
+          componentName='orderCancelOrderItemAction'
+          meta-acls="CUSTOMER"/>
+      <on eventId='refundOrderItem'
+          componentName='orderRefundOrderItemAction'
+          meta-acls="CUSTOMER"/>
     </manual-state>
 
-    <manual-state id='PICKED' meta-mainPath="true">
+    <manual-state id='PICKED' meta-mainPath="true" description="Items picked and packed, awaiting courier pickup">
       <entry-action componentName="itemsPackedAction" />
-      <on eventId='courierPickup' 
-          componentName='courierPickupCommand'
-          newStateId='SHIPPED' 
+      <on eventId='courierPickup'
+          componentName='orderCourierPickupAction'
+          newStateId='SHIPPED'
           meta-mainPath="true"
           meta-acls="WAREHOUSE"/>
     </manual-state>
 
-    <manual-state id='SHIPPED' meta-mainPath="true">
+    <manual-state id='SHIPPED' meta-mainPath="true" description="Order shipped, in transit to customer">
       <entry-action componentName="shippedNotificationAction" />
-      <on eventId='deliverOrder' 
-          componentName='deliverOrderCommand'
-          newStateId='DELIVERED' 
+      <on eventId='deliverOrder'
+          componentName='orderDeliverOrderAction'
+          newStateId='DELIVERED'
           meta-mainPath="true"
           meta-acls="SYSTEM"/>
-      <on eventId='returnRequested' 
-          componentName='returnRequestedCommand'
-          newStateId='RETURN_INITIATED'/>
-    </manual-state>
-
-    <manual-state id='DELIVERED' meta-mainPath="true">
-      <entry-action componentName="deliveredNotificationAction" />
-      <on eventId='confirmDelivery' 
-          componentName='confirmDeliveryCommand'
-          newStateId='COMPLETED' 
-          meta-mainPath="true"
-          meta-acls="CUSTOMER"/>
-      <on eventId='initiateReturn' 
-          componentName='initiateReturnCommand'
+      <on eventId='returnRequested'
+          componentName='orderReturnRequestedAction'
           newStateId='RETURN_INITIATED'
           meta-acls="CUSTOMER"/>
     </manual-state>
 
-    <manual-state id='COMPLETED'>
+    <manual-state id='DELIVERED' meta-mainPath="true" description="Order delivered to customer">
+      <entry-action componentName="deliveredNotificationAction" />
+      <on eventId='confirmDelivery'
+          componentName='orderConfirmDeliveryAction'
+          newStateId='COMPLETED'
+          meta-mainPath="true"
+          meta-acls="CUSTOMER"/>
+      <on eventId='initiateReturn'
+          componentName='orderInitiateReturnAction'
+          newStateId='RETURN_INITIATED'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <manual-state id='COMPLETED' description="Order completed and confirmed by customer">
       <entry-action componentName="orderCompletedAction" />
       <exit-action componentName="triggerSettlementAction" />
     </manual-state>
 
-    <manual-state id='RETURN_INITIATED'>
+    <manual-state id='RETURN_INITIATED' description="Return requested by customer, awaiting review">
       <entry-action componentName="returnInitiatedAction" />
-      <on eventId='approveReturn' 
-          componentName='approveReturnCommand'
-          newStateId='REFUND_INITIATED' 
+      <on eventId='approveReturn'
+          componentName='orderApproveReturnAction'
+          newStateId='REFUND_INITIATED'
           meta-acls="ADMIN"/>
-      <on eventId='rejectReturn' 
-          componentName='rejectReturnCommand'
-          newStateId='COMPLETED' 
+      <on eventId='rejectReturn'
+          componentName='orderRejectReturnAction'
+          newStateId='COMPLETED'
           meta-acls="ADMIN"/>
     </manual-state>
 
-    <manual-state id='REFUND_INITIATED'>
+    <manual-state id='REFUND_INITIATED' description="Refund being processed for the order">
       <entry-action componentName="refundProcessingAction" />
-      <on eventId='refundComplete' 
-          componentName='refundCompleteCommand'
-          newStateId='REFUNDED' 
+      <on eventId='refundComplete'
+          componentName='orderRefundCompleteAction'
+          newStateId='REFUNDED'
           meta-mainPath="true"
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <manual-state id='REFUNDED'>
+    <manual-state id='REFUNDED' description="Refund completed for the order">
       <exit-action componentName="adjustSettlementAction" />
     </manual-state>
 
-    <manual-state id='CANCELLED'>
+    <manual-state id='CANCELLED' description="Order cancelled">
       <entry-action componentName="cancelledNotificationAction" />
     </manual-state>
   </flow>

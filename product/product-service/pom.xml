@@ -19,6 +19,14 @@
 			<groupId>com.homebase.ecom.product</groupId>
 			<artifactId>product-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>product-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>product-infrastructure</artifactId>
+		</dependency>
 	
 		<dependency>
 			<groupId>org.chenile</groupId>
@@ -65,6 +73,19 @@
 		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>security-interceptor</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>query-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

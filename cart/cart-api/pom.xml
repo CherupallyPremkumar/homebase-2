@@ -17,12 +17,27 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>workflow-api</artifactId>
+			<groupId>com.homebase.ecom.cart</groupId>
+			<artifactId>cart-domain</artifactId>
+			<version>${revision}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
-			<artifactId>jpa-utils</artifactId>
+			<artifactId>utils</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>workflow-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>query-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.shared</groupId>
+			<artifactId>shared-api</artifactId>
+			<version>${revision}</version>
 		</dependency>
 	</dependencies>
 </project>

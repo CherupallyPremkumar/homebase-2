@@ -7,7 +7,9 @@
 		<module>build-configurations</module>	
 		<module>build-package</module>
 		<module>core</module>
-	</modules>
+		<module>query-build</module>
+        <module>query-configurations</module>
+    </modules>
 
 	<parent>
 		<groupId>com.homebase.ecom</groupId>
@@ -18,13 +20,40 @@
 
 	<properties>
 		<build.version>${revision}</build.version>
-		<revision>0.0.1-SNAPSHOT</revision>
 	</properties>
 	
 	<groupId>com.homebase.ecom.build</groupId>
 	<artifactId>build-parent</artifactId>
-	<version>${revision}</version>
 	<name>All Modules that belong to the Build deployment</name>
 	<description>Modules execution and deployment project</description>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.homebase.ecom.build</groupId>
+				<artifactId>query-build</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.homebase.ecom.build</groupId>
+				<artifactId>query-configurations</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.homebase.ecom.build</groupId>
+				<artifactId>build-configurations</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.homebase.ecom.build</groupId>
+				<artifactId>build-package</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.homebase.ecom.build</groupId>
+				<artifactId>core</artifactId>
+				<version>${revision}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>

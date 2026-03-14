@@ -1,20 +1,21 @@
-Feature: Tests the user Workflow Service using a REST client. This is done only for the
-first testcase. User service exists and is under test.
-It helps to create a user and manages the state of the user as documented in states xml
+Feature: Tests the user Workflow Service using a REST client.
+  User service exists and is under test.
+  It helps to create a user and manages the state of the user as documented in user-states.xml.
+
 Scenario: Create a new user
 Given that "flowName" equals "user-flow"
-And that "initialState" equals "REGISTERED"
+And that "initialState" equals "PENDING_VERIFICATION"
 When I POST a REST request to URL "/user" with payload
 """json
 {
-    "description": "Description"
+    "description": "Description",
+    "email": "first-test@homebase.com"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And store "$.payload.mutatedEntity.id" from response to "id"
 And the REST response key "mutatedEntity.currentState.stateId" is "${initialState}"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
-And the REST response key "mutatedEntity.description" is "Description"
 
 Scenario: Retrieve the user that just got created
 When I GET a REST request to URL "/user/${id}"
@@ -22,9 +23,9 @@ Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "${currentState}"
 
- Scenario: Send the cancelSignup event to the user with comments
- Given that "comment" equals "Comment for cancelSignup"
- And that "event" equals "cancelSignup"
+Scenario: Verify email to activate the user (PENDING_VERIFICATION -> ACTIVE)
+Given that "comment" equals "Comment for verifyEmail"
+And that "event" equals "verifyEmail"
 When I PATCH a REST request to URL "/user/${id}/${event}" with payload
 """json
 {
@@ -33,88 +34,24 @@ When I PATCH a REST request to URL "/user/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "CANCELLED"
+And the REST response key "mutatedEntity.currentState.stateId" is "ACTIVE"
+And store "$.payload.mutatedEntity.currentState.stateId" from response to "activeState"
+
+Scenario: Delete the active user (ACTIVE -> DELETED)
+Given that "comment" equals "Comment for deleteAccount"
+And that "event" equals "deleteAccount"
+When I PATCH a REST request to URL "/user/${id}/${event}" with payload
+"""json
+{
+    "comment": "${comment}"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${id}"
+And the REST response key "mutatedEntity.currentState.stateId" is "DELETED"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
-
-Scenario: Add new mandatory activities a1,a2 for the last state.
-Add a new state "__TERMINAL_STATE__"
-Add a completion checker activity "cc" to the last state that leads to __TERMINAL_STATE__
-Send cc event on the user with comments. This should fail since the mandatory activities
-have not been completed.
-Given that "terminalState" equals "__TERMINAL_STATE__"
-And that config strategy is "userConfigProvider" with prefix "User"
-And that a new mandatory activity "a1" is added from state "${finalState}" to state "${finalState}" in flow "${flowName}"
-And that a new mandatory activity "a2" is added from state "${finalState}" to state "${finalState}" in flow "${flowName}"
-And that a new state "${terminalState}" is added to flow "${flowName}"
-And that a new activity completion checker "cc" is added from state "${finalState}" to state "${terminalState}" in flow "${flowName}"
-And that "comment" equals "Attempting to send cc event without mandatory activities being completed."
-And that "event" equals "cc"
-When I PATCH a REST request to URL "/user/${id}/${event}" with payload
-"""json
-    {
-    "comment": "${comment}"
-    }
-"""
-Then the REST response does not contain key "mutatedEntity"
-And success is false
-And the http status code is 400
-And the top level subErrorCode is 49000
-
-Scenario: Retrieve the user that just got created
-When I GET a REST request to URL "/user/${id}"
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${finalState}"
-
-Scenario: Perform mandatory activity (a1) on the  user with comments
-Given that "comment" equals "Performed activity a1."
-And that "event" equals "a1"
-When I PATCH a REST request to URL "/user/${id}/${event}" with payload
-"""json
-{
-"comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${finalState}"
-And the REST response key "mutatedEntity.activities" collection has an item with keys and values:
-| key             | value         |
-| activityName    | ${event}      |
-| activityComment | ${comment}    |
-
-Scenario: Perform mandatory activity (a2) on the  user with comments
-Given that "comment" equals "Performed activity a2."
-And that "event" equals "a2"
-When I PATCH a REST request to URL "/user/${id}/${event}" with payload
-"""json
-{
-"comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${finalState}"
-And the REST response key "mutatedEntity.activities" collection has an item with keys and values:
-| key             | value         |
-| activityName    | ${event}      |
-| activityComment | ${comment}    |
-
-Scenario: Perform mandatory activity (cc) on the  user with comments
-Given that "comment" equals "Performed activity cc after completing all activities."
-And that "event" equals "cc"
-When I PATCH a REST request to URL "/user/${id}/${event}" with payload
-"""json
-{
-"comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${terminalState}"
-
-Scenario: Send an invalid event to user . This will err out.
+Scenario: Send an invalid event to user. This will err out.
 When I PATCH a REST request to URL "/user/${id}/invalid" with payload
 """json
 {
@@ -123,4 +60,3 @@ When I PATCH a REST request to URL "/user/${id}/invalid" with payload
 """
 Then the REST response does not contain key "mutatedEntity"
 And the http status code is 422
-

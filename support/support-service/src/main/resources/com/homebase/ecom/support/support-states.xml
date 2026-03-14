@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <default-transition-action componentName="supportBaseTransitionAction"/>
+
+  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
+
+  <flow id='support-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="supportEntryAction" />
+    <exit-action componentName="supportExitAction" />
+
+    <!-- ========== INITIAL STATE ========== -->
+    <status id='OPEN' initialState='true' meta-mainPath="true" description="Support ticket opened by customer">
+      <on eventId='assignAgent'
+          componentName='supportAssignAgentAction'
+          newStateId='ASSIGNED'
+          meta-mainPath="true"
+          meta-acls="ADMIN"/>
+      <on eventId='resolve'
+          componentName='supportResolveAction'
+          newStateId='RESOLVED'
+          meta-acls="ADMIN"/>
+    </status>
+
+    <!-- ========== ASSIGNED ========== -->
+    <status id='ASSIGNED' meta-mainPath="true" description="Ticket assigned to a support agent">
+      <on eventId='reply'
+          componentName='supportReplyAction'
+          newStateId='ASSIGNED'
+          meta-acls="AGENT,CUSTOMER"/>
+      <on eventId='escalate'
+          componentName='supportEscalateAction'
+          newStateId='ESCALATED'
+          meta-acls="AGENT"/>
+      <on eventId='resolve'
+          componentName='supportResolveAction'
+          newStateId='RESOLVED'
+          meta-mainPath="true"
+          meta-acls="AGENT"/>
+    </status>
+
+    <!-- ========== ESCALATED ========== -->
+    <status id='ESCALATED' description="Ticket escalated to senior support or admin">
+      <on eventId='assignAgent'
+          componentName='supportAssignAgentAction'
+          newStateId='ASSIGNED'
+          meta-acls="ADMIN"/>
+      <on eventId='resolve'
+          componentName='supportResolveAction'
+          newStateId='RESOLVED'
+          meta-acls="ADMIN"/>
+    </status>
+
+    <!-- ========== RESOLVED ========== -->
+    <status id='RESOLVED' meta-mainPath="true" description="Ticket resolved, awaiting customer confirmation">
+      <on eventId='reopen'
+          componentName='supportReopenAction'
+          newStateId='OPEN'
+          meta-acls="CUSTOMER"/>
+      <on eventId='close'
+          componentName='supportCloseAction'
+          newStateId='CLOSED'
+          meta-mainPath="true"
+          meta-acls="CUSTOMER,SYSTEM"/>
+    </status>
+
+    <!-- ========== CLOSED (TERMINAL) ========== -->
+    <status id='CLOSED' description="Ticket closed and archived">
+      <!-- Terminal state -->
+    </status>
+  </flow>
+</states>

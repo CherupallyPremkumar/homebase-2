@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="V1__create_tables" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/common/V1__create_tables.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="V2__add_indices" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/common/V2__add_indices.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="V12__create_spring_batch_tables" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/common/V12__create_spring_batch_tables.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="V14__create_audit_logs_table" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/common/V14__create_audit_logs_table.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="V18__create_admin_notifications_table" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/common/V18__create_admin_notifications_table.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="V30__create_missing_domain_tables" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/common/V30__create_missing_domain_tables.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="V31__add_audit_and_state_fields" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/common/V31__add_audit_and_state_fields.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="V36__create_missing_catalog_promo_return_tables" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/common/V36__create_missing_catalog_promo_return_tables.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="V37__production_schema_alignment" author="homebase" runOnChange="false">
+        <sqlFile path="db/migration/common/V37__production_schema_alignment.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+</databaseChangeLog>

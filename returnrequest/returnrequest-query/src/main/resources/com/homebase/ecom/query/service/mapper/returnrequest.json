@@ -17,7 +17,7 @@
 			},
 			"amount": {
 				"name": "amount",
-				"columnType": "Numeric",
+				"columnType": "Number",
 				"filterable": true
 			},
 			"status": {

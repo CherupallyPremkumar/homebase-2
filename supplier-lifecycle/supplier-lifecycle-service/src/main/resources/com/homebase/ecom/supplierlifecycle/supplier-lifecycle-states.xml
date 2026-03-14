@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <default-transition-action componentName="supplierLifecycleBaseTransitionAction"/>
+
+  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
+
+  <flow id='suspend-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="supplierLifecycleEntryAction" />
+    <exit-action componentName="supplierLifecycleExitAction" />
+
+    <!-- ========== INITIAL STATE ========== -->
+    <status id='INITIATED' initialState='true' meta-mainPath="true" description="Supplier suspension saga initiated">
+      <on eventId='disableProducts'
+          componentName='supplierLifecycleDisableProductsAction'
+          newStateId='PRODUCTS_DISABLED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== PRODUCTS DISABLED ========== -->
+    <status id='PRODUCTS_DISABLED' meta-mainPath="true" description="All supplier products disabled from storefront">
+      <on eventId='removeCatalog'
+          componentName='supplierLifecycleRemoveCatalogAction'
+          newStateId='CATALOG_CLEARED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== CATALOG CLEARED ========== -->
+    <status id='CATALOG_CLEARED' meta-mainPath="true" description="Supplier catalog entries removed">
+      <on eventId='freezeInventory'
+          componentName='supplierLifecycleFreezeInventoryAction'
+          newStateId='INVENTORY_FROZEN'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== INVENTORY FROZEN ========== -->
+    <status id='INVENTORY_FROZEN' meta-mainPath="true" description="Supplier inventory frozen, no new reservations">
+      <on eventId='cancelOrders'
+          componentName='supplierLifecycleCancelOrdersAction'
+          newStateId='ORDERS_CANCELLED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== ORDERS CANCELLED ========== -->
+    <status id='ORDERS_CANCELLED' meta-mainPath="true" description="Open orders for supplier cancelled">
+      <on eventId='notifyCustomers'
+          componentName='supplierLifecycleNotifyCustomersAction'
+          newStateId='COMPLETED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== COMPLETED (TERMINAL) ========== -->
+    <status id='COMPLETED' description="Supplier suspension completed successfully">
+      <!-- Terminal state -->
+    </status>
+
+    <!-- ========== FAILED ========== -->
+    <status id='FAILED' description="Supplier suspension failed, can be retried">
+      <on eventId='retry'
+          componentName='supplierLifecycleRetryAction'
+          newStateId='INITIATED'
+          meta-acls="SYSTEM"/>
+    </status>
+  </flow>
+
+  <flow id='reactivate-flow'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="supplierLifecycleEntryAction" />
+    <exit-action componentName="supplierLifecycleExitAction" />
+
+    <!-- ========== INITIAL STATE ========== -->
+    <status id='INITIATED' initialState='true' meta-mainPath="true" description="Supplier reactivation saga initiated">
+      <on eventId='enableProducts'
+          componentName='supplierLifecycleEnableProductsAction'
+          newStateId='PRODUCTS_ENABLED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== PRODUCTS ENABLED ========== -->
+    <status id='PRODUCTS_ENABLED' meta-mainPath="true" description="Supplier products re-enabled on storefront">
+      <on eventId='restoreCatalog'
+          componentName='supplierLifecycleRestoreCatalogAction'
+          newStateId='CATALOG_RESTORED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== CATALOG RESTORED ========== -->
+    <status id='CATALOG_RESTORED' meta-mainPath="true" description="Supplier catalog entries restored">
+      <on eventId='unfreezeInventory'
+          componentName='supplierLifecycleUnfreezeInventoryAction'
+          newStateId='INVENTORY_UNFROZEN'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== INVENTORY UNFROZEN ========== -->
+    <status id='INVENTORY_UNFROZEN' meta-mainPath="true" description="Supplier inventory unfrozen, reservations allowed">
+      <on eventId='notifySupplier'
+          componentName='supplierLifecycleNotifySupplierAction'
+          newStateId='COMPLETED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <!-- ========== COMPLETED (TERMINAL) ========== -->
+    <status id='COMPLETED' description="Supplier reactivation completed successfully">
+      <!-- Terminal state -->
+    </status>
+
+    <!-- ========== FAILED ========== -->
+    <status id='FAILED' description="Supplier reactivation failed, can be retried">
+      <on eventId='retry'
+          componentName='supplierLifecycleRetryAction'
+          newStateId='INITIATED'
+          meta-acls="SYSTEM"/>
+    </status>
+  </flow>
+</states>

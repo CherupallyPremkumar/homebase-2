@@ -1,0 +1,76 @@
+spring:
+  application:
+    name: payment-service
+
+# ============================================================
+# Actuator — Health and Metrics (Production Readiness)
+# ============================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,circuitbreakers,circuitbreakerevents
+  endpoint:
+    health:
+      show-details: when_authorized
+      show-components: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+# ============================================================
+# Resilience4j — Circuit Breakers for Payment Gateways
+# ============================================================
+resilience4j:
+  circuitbreaker:
+    instances:
+      paymentGateway:
+        # Failure rate threshold: if 50% of the last 10 calls fail, open the circuit
+        failure-rate-threshold: 50
+        # Slow call threshold: calls taking longer than 5s are counted as failures
+        slow-call-rate-threshold: 80
+        slow-call-duration-threshold: 5s
+        # Sliding window over last 10 calls (count-based)
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        # Minimum calls before evaluating failure rate
+        minimum-number-of-calls: 5
+        # Half-open: allow 3 test calls before deciding to close or reopen
+        permitted-number-of-calls-in-half-open-state: 3
+        # Wait 30s in OPEN state before transitioning to HALF_OPEN
+        wait-duration-in-open-state: 30s
+        # Automatically transition to HALF_OPEN after wait (no manual trigger needed)
+        automatic-transition-from-open-to-half-open-enabled: true
+        # Record these exception types as failures
+        record-exceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.client.ResourceAccessException
+          - com.stripe.exception.ApiConnectionException
+          - com.stripe.exception.StripeException
+
+  retry:
+    instances:
+      paymentGateway:
+        # Max 3 total attempts (1 original + 2 retries), sourced from payment.json policy
+        max-attempts: 3
+        # Exponential backoff: start at 500ms, double each retry
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        # Only retry on transient errors, not on business validation failures
+        retry-exceptions:
+          - java.io.IOException
+          - org.springframework.web.client.ResourceAccessException
+        # Do NOT retry on these (business logic failures, not transient)
+        ignore-exceptions:
+          - com.homebase.ecom.shared.exception.PolicyViolationException
+          - java.lang.IllegalArgumentException
+          - java.lang.IllegalStateException
+
+  timelimiter:
+    instances:
+      paymentGateway:
+        # Cancel gateway call if it exceeds 10s (Stripe/Razorpay SLA expectation)
+        timeout-duration: 10s
+        cancel-running-future: true

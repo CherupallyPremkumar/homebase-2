@@ -4,6 +4,7 @@
 		"name": "carts",
 		"workflowName": "cart",
 		"stateColumn": "stateId",
+		"responseClass": "com.homebase.ecom.cart.dto.CartDto",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -34,5 +35,48 @@
 		"flexiblePropnames": false,
 		"paginated": true,
 		"sortable": true
+	},
+	{
+		"id": "Cart.getIdleCarts",
+		"name": "idleCarts",
+		"responseClass": "com.homebase.ecom.cart.dto.CartTimeoutDto",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"lastModifiedTime": {
+				"name": "last_modified_time",
+				"columnType": "Date"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getStuckCheckouts",
+		"name": "stuckCheckouts",
+		"responseClass": "com.homebase.ecom.cart.dto.CartTimeoutDto",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "Cart.getStuckPayments",
+		"name": "stuckPayments",
+		"responseClass": "com.homebase.ecom.cart.dto.CartTimeoutDto",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
 	}
 ]

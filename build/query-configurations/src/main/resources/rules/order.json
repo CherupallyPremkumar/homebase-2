@@ -1,0 +1,36 @@
+{
+    "policies": {
+        "cancellation": {
+            "allowCancellationBeforeShipment": true,
+            "cancellationWindowHours": 24,
+            "requireCancellationReason": true,
+            "maxCancellationsPerUser": 5
+        },
+        "return": {
+            "returnWindowDays": 10,
+            "requireReturnReason": true,
+            "requireReturnProof": false,
+            "allowedReturnReasons": [
+                "DAMAGED",
+                "WRONG_ITEM",
+                "NOT_AS_DESCRIBED",
+                "CHANGED_MIND"
+            ]
+        },
+        "refund": {
+            "autoRefundOnCancellation": true,
+            "refundProcessingDays": 5
+        }
+    },
+    "rules": {
+        "fulfillment": {
+            "maxFulfillmentDays": 7,
+            "slaAlertAfterHours": 48,
+            "hubPickupRequired": true
+        },
+        "audit": {
+            "requireCommentOnRejectReturn": true,
+            "requireCommentOnApproveReturn": false
+        }
+    }
+}

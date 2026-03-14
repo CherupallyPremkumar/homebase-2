@@ -1,113 +1,57 @@
-<states xmlns="http://www.chenile.org/state-machine">
-
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
   <flow id="product-flow" default="true">
-
-    <!-- ===================================================== -->
-    <!-- FLOW LEVEL ACTIONS                                    -->
-    <!-- ===================================================== -->
-
+    <security-strategy componentName="productSecurityStrategy"/>
     <entry-action componentName="productEntryAction"/>
     <exit-action componentName="productExitAction"/>
 
-    <security-strategy componentName="productSecurityStrategy"/>
-
-
-    <!-- ===================================================== -->
-    <!-- DRAFT                                                 -->
-    <!-- ===================================================== -->
-
-    <manual-state id="DRAFT" initialState="true">
-
+    <manual-state id="DRAFT" initialState="true" meta-mainPath="true" description="New product, not yet submitted for review">
       <on eventId="submitForReview"
-          componentName="com.homebase.ecom.product.service.cmds.SubmitForReviewAction"
-          newStateId="UNDER_REVIEW"/>
-
+          componentName="productSubmitForReviewAction"
+          newStateId="UNDER_REVIEW"
+          meta-mainPath="true"
+          meta-acls="SUPPLIER"/>
       <on eventId="deleteProduct"
-          componentName="com.homebase.ecom.product.service.cmds.DeleteProductAction"
-          newStateId="DISCONTINUED"/>
-
+          componentName="productDeleteProductAction"
+          newStateId="DISCONTINUED"
+          meta-acls="SUPPLIER,ADMIN"/>
     </manual-state>
 
-
-    <!-- ===================================================== -->
-    <!-- UNDER REVIEW                                          -->
-    <!-- ===================================================== -->
-
-    <manual-state id="UNDER_REVIEW">
-
+    <manual-state id="UNDER_REVIEW" meta-mainPath="true" description="Product submitted, awaiting admin approval">
       <on eventId="approveProduct"
-          componentName="com.homebase.ecom.product.service.cmds.ApproveProductAction"
-          newStateId="PUBLISHED"/>
-
+          componentName="productApproveProductAction"
+          newStateId="PUBLISHED"
+          meta-mainPath="true"
+          meta-acls="ADMIN"/>
       <on eventId="rejectProduct"
-          componentName="com.homebase.ecom.product.service.cmds.RejectProductAction"
-          newStateId="DRAFT"/>
-
+          componentName="productRejectProductAction"
+          newStateId="DRAFT"
+          meta-acls="ADMIN"/>
     </manual-state>
 
-
-    <!-- ===================================================== -->
-    <!-- PUBLISHED                                             -->
-    <!-- ===================================================== -->
-
-    <manual-state id="PUBLISHED">
-
-      <on eventId="markOutOfStock"
-          componentName="com.homebase.ecom.product.service.cmds.MarkOutOfStockAction"
-          newStateId="OUT_OF_STOCK"/>
-
+    <manual-state id="PUBLISHED" meta-mainPath="true" description="Product live and visible in catalog">
       <on eventId="disableProduct"
-          componentName="com.homebase.ecom.product.service.cmds.DisableProductAction"
-          newStateId="DISABLED"/>
-
+          componentName="productDisableProductAction"
+          newStateId="DISABLED"
+          meta-acls="ADMIN"/>
       <on eventId="discontinueProduct"
-          componentName="com.homebase.ecom.product.service.cmds.DiscontinueProductAction"
-          newStateId="DISCONTINUED"/>
-
+          componentName="productDiscontinueProductAction"
+          newStateId="DISCONTINUED"
+          meta-acls="ADMIN,SUPPLIER"/>
     </manual-state>
 
-
-    <!-- ===================================================== -->
-    <!-- OUT OF STOCK                                          -->
-    <!-- ===================================================== -->
-
-    <manual-state id="OUT_OF_STOCK">
-
-      <on eventId="restockProduct"
-          componentName="com.homebase.ecom.product.service.cmds.RestockProductAction"
-          newStateId="PUBLISHED"/>
-
-      <on eventId="discontinueProduct"
-          componentName="com.homebase.ecom.product.service.cmds.DiscontinueProductAction"
-          newStateId="DISCONTINUED"/>
-
-    </manual-state>
-
-
-    <!-- ===================================================== -->
-    <!-- DISABLED                                              -->
-    <!-- ===================================================== -->
-
-    <manual-state id="DISABLED">
-
+    <manual-state id="DISABLED" description="Product temporarily hidden from catalog">
       <on eventId="enableProduct"
-          componentName="com.homebase.ecom.product.service.cmds.EnableProductAction"
-          newStateId="PUBLISHED"/>
-
+          componentName="productEnableProductAction"
+          newStateId="PUBLISHED"
+          meta-mainPath="true"
+          meta-acls="ADMIN"/>
       <on eventId="discontinueProduct"
-          componentName="com.homebase.ecom.product.service.cmds.DiscontinueProductAction"
-          newStateId="DISCONTINUED"/>
-
+          componentName="productDiscontinueProductAction"
+          newStateId="DISCONTINUED"
+          meta-acls="ADMIN,SUPPLIER"/>
     </manual-state>
 
-
-    <!-- ===================================================== -->
-    <!-- TERMINAL STATE                                        -->
-    <!-- ===================================================== -->
-
-    <manual-state id="DISCONTINUED">
-    </manual-state>
-
+    <manual-state id="DISCONTINUED" description="Product permanently removed from catalog"/>
   </flow>
-
 </states>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TaxRate">
+
+    <select id="getAll" resultType="com.homebase.ecom.tax.dto.TaxRateQueryDto">
+        SELECT
+            t.id as id,
+            t.name as name,
+            t.region_code as regionCode,
+            t.tax_type as taxType,
+            t.rate as rate,
+            t.active as active,
+            t.created_time as createdAt
+        FROM tax_rates t
+        <where>
+            <if test="id != null">AND t.id = #{id}</if>
+            <if test="regionCode != null">AND t.region_code = #{regionCode}</if>
+            <if test="taxType != null">AND t.tax_type = #{taxType}</if>
+            <if test="active != null">AND t.active = #{active}</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getAll-count" resultType="int">
+        SELECT count(*)
+        FROM tax_rates t
+        <where>
+            <if test="id != null">AND t.id = #{id}</if>
+            <if test="regionCode != null">AND t.region_code = #{regionCode}</if>
+            <if test="taxType != null">AND t.tax_type = #{taxType}</if>
+            <if test="active != null">AND t.active = #{active}</if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,119 @@
+{
+  "realm": "homebase-test",
+  "enabled": true,
+  "registrationAllowed": false,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 300,
+  "roles": {
+    "realm": [
+      { "name": "CUSTOMER", "description": "Customer role" },
+      { "name": "ADMIN", "description": "Admin role" },
+      { "name": "WAREHOUSE", "description": "Warehouse role" },
+      { "name": "SUPPLIER", "description": "Supplier role" },
+      { "name": "SYSTEM", "description": "System role" },
+      { "name": "QUALITY_CHECKER", "description": "Quality checker role" },
+      { "name": "AGENT", "description": "Support agent role" }
+    ]
+  },
+  "defaultRoles": ["CUSTOMER"],
+  "clients": [
+    {
+      "clientId": "homebase-test-client",
+      "name": "HomeBase Test Client",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "test-secret",
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "protocolMappers": [
+        {
+          "name": "realm-roles-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "test-admin",
+      "email": "admin@test.homebase.in",
+      "enabled": true,
+      "firstName": "Test",
+      "lastName": "Admin",
+      "credentials": [{ "type": "password", "value": "test123", "temporary": false }],
+      "realmRoles": ["ADMIN", "CUSTOMER"]
+    },
+    {
+      "username": "test-customer",
+      "email": "customer@test.homebase.in",
+      "enabled": true,
+      "firstName": "Test",
+      "lastName": "Customer",
+      "credentials": [{ "type": "password", "value": "test123", "temporary": false }],
+      "realmRoles": ["CUSTOMER"]
+    },
+    {
+      "username": "test-warehouse",
+      "email": "warehouse@test.homebase.in",
+      "enabled": true,
+      "firstName": "Test",
+      "lastName": "Warehouse",
+      "credentials": [{ "type": "password", "value": "test123", "temporary": false }],
+      "realmRoles": ["WAREHOUSE"]
+    },
+    {
+      "username": "test-supplier",
+      "email": "supplier@test.homebase.in",
+      "enabled": true,
+      "firstName": "Test",
+      "lastName": "Supplier",
+      "credentials": [{ "type": "password", "value": "test123", "temporary": false }],
+      "realmRoles": ["SUPPLIER"]
+    },
+    {
+      "username": "test-system",
+      "email": "system@test.homebase.in",
+      "enabled": true,
+      "firstName": "Test",
+      "lastName": "System",
+      "credentials": [{ "type": "password", "value": "test123", "temporary": false }],
+      "realmRoles": ["SYSTEM"]
+    },
+    {
+      "username": "test-quality",
+      "email": "quality@test.homebase.in",
+      "enabled": true,
+      "firstName": "Test",
+      "lastName": "QualityChecker",
+      "credentials": [{ "type": "password", "value": "test123", "temporary": false }],
+      "realmRoles": ["QUALITY_CHECKER"]
+    },
+    {
+      "username": "test-agent",
+      "email": "agent@test.homebase.in",
+      "enabled": true,
+      "firstName": "Test",
+      "lastName": "Agent",
+      "credentials": [{ "type": "password", "value": "test123", "temporary": false }],
+      "realmRoles": ["AGENT"]
+    }
+  ],
+  "scopeMappings": [
+    {
+      "client": "homebase-test-client",
+      "roles": ["CUSTOMER", "ADMIN", "WAREHOUSE", "SUPPLIER", "SYSTEM", "QUALITY_CHECKER", "AGENT"]
+    }
+  ]
+}

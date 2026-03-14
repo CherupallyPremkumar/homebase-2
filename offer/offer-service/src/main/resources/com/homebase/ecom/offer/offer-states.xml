@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <flow id='offer-flow' default='true'>
+    <security-strategy componentName="offerSecurityStrategy"/>
+    <entry-action componentName="offerEntryAction"/>
+    <exit-action componentName="offerExitAction"/>
+
+    <manual-state id='PENDING_REVIEW' initialState='true' meta-mainPath="true" description="Offer submitted, awaiting admin review">
+      <on eventId='approve' componentName='offerApproveAction' newStateId='ACTIVE' meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='reject' componentName='offerRejectAction' newStateId='REJECTED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='ACTIVE' meta-mainPath="true" description="Offer live and visible to customers">
+      <on eventId='deactivate' componentName='offerDeactivateAction' newStateId='INACTIVE' meta-acls="ADMIN,SUPPLIER"/>
+      <on eventId='returnOffer' componentName='offerReturnAction' newStateId='RETURNED' meta-acls="SUPPLIER"/>
+    </manual-state>
+
+    <manual-state id='REJECTED' description="Offer rejected by admin">
+      <on eventId='resubmit' componentName='offerResubmitAction' newStateId='PENDING_REVIEW' meta-acls="SUPPLIER"/>
+    </manual-state>
+
+    <manual-state id='RETURNED' description="Offer returned/withdrawn by supplier"/>
+
+    <manual-state id='INACTIVE' description="Offer temporarily deactivated">
+      <on eventId='activate' componentName='offerActivateAction' newStateId='ACTIVE' meta-mainPath="true" meta-acls="ADMIN,SUPPLIER"/>
+    </manual-state>
+  </flow>
+</states>

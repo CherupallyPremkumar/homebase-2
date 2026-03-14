@@ -1,14 +1,17 @@
 package com.homebase.ecom.product.service.store;
 
 import org.chenile.utils.entity.service.EntityStore;
-import com.homebase.ecom.product.model.Product;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.homebase.ecom.product.domain.model.Product;
+import com.homebase.ecom.product.domain.port.ProductRepository;
 import org.chenile.base.exception.NotFoundException;
-import com.homebase.ecom.product.configuration.dao.ProductRepository;
 import java.util.Optional;
 
 public class ProductEntityStore implements EntityStore<Product>{
-    @Autowired private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+
+    public ProductEntityStore(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
 
 	@Override
 	public void store(Product entity) {

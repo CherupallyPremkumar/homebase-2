@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.homebase.ecom</groupId>
+        <artifactId>homebase-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.homebase.ecom.policy</groupId>
+    <artifactId>policy</artifactId>
+    <packaging>pom</packaging>
+    <name>Policy Parent</name>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
+    </properties>
+
+
+    <modules>
+        <module>policy-api</module>
+        <module>policy-domain</module>
+        <module>policy-infrastructure</module>
+        <module>policy-query-api</module>
+        <module>policy-service</module>
+        <module>policy-query</module>
+        <module>policy-app</module>
+        <module>policy-client</module>
+        <module>policy-web</module>
+        <module>policy-k8s</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-web</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-app</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.policy</groupId>
+                <artifactId>policy-k8s</artifactId>
+                <version>${revision}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

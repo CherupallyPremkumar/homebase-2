@@ -7,4 +7,12 @@ import org.chenile.workflow.param.MinimalPayload;
 */
 public class ReleaseReservedStockInventoryPayload extends MinimalPayload{
 
+    private int quantity;
+    private String orderId;
+
+    public int getQuantity() { return quantity; }
+    public void setQuantity(int quantity) { this.quantity = quantity; }
+
+    public String getOrderId() { return orderId; }
+    public void setOrderId(String orderId) { this.orderId = orderId; }
 }

@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Catalog">
+
+    <resultMap id="result" type="map">
+        <result property="id" column="ID"/>
+        <result property="name" column="NAME"/>
+        <result property="branch" column="BRANCH"/>
+        <result property="percentage" column="PERCENTAGE"/>
+        <result property="phone" column="PHONE"/>
+        <result property="email" column="EMAIL"/>
+    </resultMap>
+
+    <resultMap id="catalogItemResult" type="map">
+        <result property="id" column="ID"/>
+        <result property="productId" column="product_id"/>
+        <result property="name" column="name"/>
+        <result property="price" column="price"/>
+        <result property="featured" column="featured"/>
+        <result property="active" column="active"/>
+        <result property="makerId" column="maker_id"/>
+        <result property="categoryId" column="category_id"/>
+    </resultMap>
+
+    <resultMap id="categoryResult" type="map">
+        <result property="id" column="ID"/>
+        <result property="name" column="name"/>
+        <result property="slug" column="slug"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="bannerImageUrl" column="banner_image_url"/>
+        <result property="active" column="active"/>
+    </resultMap>
+
+    <resultMap id="collectionResult" type="map">
+        <result property="id" column="ID"/>
+        <result property="name" column="name"/>
+        <result property="slug" column="slug"/>
+        <result property="type" column="type"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="featured" column="featured"/>
+        <result property="active" column="active"/>
+    </resultMap>
+
+    <resultMap id="menuResult" type="map">
+        <result property="id" column="ID"/>
+        <result property="name" column="name"/>
+        <result property="slug" column="slug"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="level" column="level"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="icon" column="icon"/>
+        <result property="displayOrder" column="display_order"/>
+    </resultMap>
+
+    <select id='getAll-count' resultType="int">
+        select count(*) from catalog
+        <where>
+            <if test="branch != null">
+                branch in
+                <foreach item="item" index="index" collection="branch"
+                         open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+            <if test="phone != null">
+                AND phone = #{phone}
+            </if>
+        </where>
+    </select>
+
+    <select id="getAll" resultMap="result">
+        SELECT * FROM catalog
+        <where>
+            <if test="branch != null">
+                branch in
+                <foreach item="item" index="index" collection="branch"
+                         open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+            <if test="phone != null">
+                AND phone = #{phone}
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id='getUserPicks-count' resultType="int">
+        select count(*) from catalog_items
+        <where>
+            <if test="featured != null">
+                AND featured = #{featured}
+            </if>
+            <if test="active != null">
+                AND active = #{active}
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+            <if test="productId != null">
+                AND product_id = #{productId}
+            </if>
+        </where>
+    </select>
+
+    <select id="getUserPicks" resultMap="catalogItemResult">
+        SELECT * FROM catalog_items
+        <where>
+            <if test="featured != null">
+                AND featured = #{featured}
+            </if>
+            <if test="active != null">
+                AND active = #{active}
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+            <if test="productId != null">
+                AND product_id = #{productId}
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id='getBanners-count' resultType="int">
+        select count(*) from categories
+        <where>
+            AND banner_image_url IS NOT NULL
+            <if test="active != null">
+                AND active = #{active}
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+        </where>
+    </select>
+
+    <select id="getBanners" resultMap="categoryResult">
+        SELECT * FROM categories
+        <where>
+            AND banner_image_url IS NOT NULL
+            <if test="active != null">
+                AND active = #{active}
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id='getUserCollections-count' resultType="int">
+        select count(*) from collections
+        <where>
+            <if test="featured != null">
+                AND featured = #{featured}
+            </if>
+            <if test="active != null">
+                AND active = #{active}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+        </where>
+    </select>
+
+    <select id="getUserCollections" resultMap="collectionResult">
+        SELECT * FROM collections
+        <where>
+            <if test="featured != null">
+                AND featured = #{featured}
+            </if>
+            <if test="active != null">
+                AND active = #{active}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id='getSuggestions-count' resultType="int">
+        select count(distinct ci.id) from catalog_items ci
+        left join catalog_item_tags cit on ci.id = cit.catalog_item_id
+        <where>
+            <if test="tags != null">
+                AND cit.tag in
+                <foreach item="item" index="index" collection="tags"
+                         open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="active != null">
+                AND ci.active = #{active}
+            </if>
+        </where>
+    </select>
+
+    <select id="getSuggestions" resultMap="catalogItemResult">
+        SELECT distinct ci.* FROM catalog_items ci
+        left join catalog_item_tags cit on ci.id = cit.catalog_item_id
+        <where>
+            <if test="tags != null">
+                AND cit.tag in
+                <foreach item="item" index="index" collection="tags"
+                         open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="active != null">
+                AND ci.active = #{active}
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id='getMenu-count' resultType="int">
+        select count(*) from categories
+        <where>
+            AND active = true
+            AND show_in_menu = true
+            <if test="parentId != null">
+                AND parent_id = #{parentId}
+            </if>
+            <if test="level != null">
+                AND level = #{level}
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+        </where>
+    </select>
+
+    <select id="getMenu" resultMap="menuResult">
+        SELECT * FROM categories
+        <where>
+            AND active = true
+            AND show_in_menu = true
+            <if test="parentId != null">
+                AND parent_id = #{parentId}
+            </if>
+            <if test="level != null">
+                AND level = #{level}
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id='browse-count' resultType="int">
+        select count(*) from catalog_items
+        <where>
+            AND active = true
+            <if test="featured != null">
+                AND featured = #{featured}
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+            <if test="productId != null">
+                AND product_id = #{productId}
+            </if>
+            <if test="makerId != null">
+                AND maker_id = #{makerId}
+            </if>
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+        </where>
+    </select>
+
+    <select id="browse" resultMap="catalogItemResult">
+        SELECT * FROM catalog_items
+        <where>
+            AND active = true
+            <if test="featured != null">
+                AND featured = #{featured}
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+            <if test="productId != null">
+                AND product_id = #{productId}
+            </if>
+            <if test="makerId != null">
+                AND maker_id = #{makerId}
+            </if>
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id='getByCategory-count' resultType="int">
+        select count(*) from catalog_items ci
+        join category_product_mapping cpm on ci.product_id = cpm.product_id
+        <where>
+            <if test="categoryId != null">
+                AND cpm.category_id = #{categoryId}
+            </if>
+            <if test="active != null">
+                AND ci.active = #{active}
+            </if>
+            <if test="name != null">
+                AND ci.name like #{name}
+            </if>
+            <if test="productId != null">
+                AND ci.product_id = #{productId}
+            </if>
+        </where>
+    </select>
+
+    <select id="getByCategory" resultMap="catalogItemResult">
+        SELECT ci.* FROM catalog_items ci
+        join category_product_mapping cpm on ci.product_id = cpm.product_id
+        <where>
+            <if test="categoryId != null">
+                AND cpm.category_id = #{categoryId}
+            </if>
+            <if test="active != null">
+                AND ci.active = #{active}
+            </if>
+            <if test="name != null">
+                AND ci.name like #{name}
+            </if>
+            <if test="productId != null">
+                AND ci.product_id = #{productId}
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+</mapper>

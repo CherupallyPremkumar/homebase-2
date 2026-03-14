@@ -7,11 +7,12 @@ import org.chenile.stm.model.Transition;
 import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.settlement.model.Settlement;
 import com.homebase.ecom.settlement.dto.CalculateSettlementSettlementPayload;
-import com.homebase.ecom.shared.model.Money;
+import com.homebase.ecom.shared.Money;
+import com.homebase.ecom.shared.CurrencyResolver;
+import org.chenile.cconfig.sdk.CconfigClient;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * Contains customized logic for the transition. Common logic resides at
@@ -26,70 +27,87 @@ import java.util.List;
  */
 public class CalculateSettlementSettlementAction extends AbstractSTMTransitionAction<Settlement,
 
-        CalculateSettlementSettlementPayload> {
+                CalculateSettlementSettlementPayload> {
 
-    @Autowired
-    private com.homebase.ecom.settlement.service.client.InternalOrderClient orderClient;
+        @Autowired
+        private com.homebase.ecom.settlement.service.client.InternalOrderClient orderClient;
 
-    // Platform commission rate, e.g., 10%
-    private static final java.math.BigDecimal COMMISSION_RATE = new java.math.BigDecimal("0.10");
+        @Autowired
+        private CconfigClient cconfigClient;
 
-    @Override
-    public void transitionTo(Settlement settlement,
-            CalculateSettlementSettlementPayload payload,
-            State startState, String eventId,
-            State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
+        @Autowired
+        private CurrencyResolver currencyResolver;
 
-        // 1. Fetch completed order items for this supplier for the given month/year
-        java.util.List<com.homebase.ecom.settlement.dto.SettlementOrderItemDTO> deliveredItems = orderClient
-                .getDeliveredOrderItemsForSupplier(
-                        settlement.getSupplierId(), settlement.getPeriodMonth(), settlement.getPeriodYear());
+        @Override
+        public void transitionTo(Settlement settlement,
+                        CalculateSettlementSettlementPayload payload,
+                        State startState, String eventId,
+                        State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-        java.math.BigDecimal totalSales = java.math.BigDecimal.ZERO;
-        java.math.BigDecimal totalCommission = java.math.BigDecimal.ZERO;
+                // --- Fetch Dynamic Rules (Commission & Currency) ---
+                BigDecimal commissionRate = new BigDecimal("0.10"); // Default fallback
+                String currency = currencyResolver.resolve().code();
 
-        // 2. Aggregate line items
-        for (com.homebase.ecom.settlement.dto.SettlementOrderItemDTO item : deliveredItems) {
-            com.homebase.ecom.settlement.model.SettlementLineItem lineItem = new com.homebase.ecom.settlement.model.SettlementLineItem();
-            lineItem.setSettlement(settlement);
-            lineItem.setOrderId(item.orderId);
-            lineItem.setOrderItemId(item.orderItemId);
+                try {
+                        // Fetch Commission Rate from onboarding module
+                        java.util.Map<String, Object> map = cconfigClient.value("on-boarding", null);
+                        if (map != null) {
+                                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                                com.fasterxml.jackson.databind.JsonNode node = mapper.valueToTree(map);
+                                com.fasterxml.jackson.databind.JsonNode commNode = node
+                                                .at("/rules/finances/commissionDefault");
+                                if (!commNode.isMissingNode() && commNode.isNumber()) {
+                                        commissionRate = BigDecimal.valueOf(commNode.asDouble())
+                                                        .divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
+                                }
+                        }
+                } catch (Exception e) {
+                        // Log or handle error, using default commissionRate
+                }
 
-            com.homebase.ecom.shared.model.Money salesMoney = new com.homebase.ecom.shared.model.Money();
-            salesMoney.setAmount(item.itemSalesAmount);
-            salesMoney.setCurrency("INR");
-            lineItem.setItemSalesAmount(salesMoney);
+                // 1. Fetch completed order items for this supplier for the given month/year
+                java.util.List<com.homebase.ecom.settlement.dto.SettlementOrderItemDTO> deliveredItems = orderClient
+                                .getDeliveredOrderItemsForSupplier(
+                                                settlement.getSupplierId(), settlement.getPeriodMonth(),
+                                                settlement.getPeriodYear());
 
-            // Calculate commission for this item
-            java.math.BigDecimal itemCommission = item.itemSalesAmount.multiply(COMMISSION_RATE);
-            com.homebase.ecom.shared.model.Money commMoney = new com.homebase.ecom.shared.model.Money();
-            commMoney.setAmount(itemCommission);
-            commMoney.setCurrency("INR");
-            lineItem.setItemCommissionAmount(commMoney);
+                java.math.BigDecimal totalSales = java.math.BigDecimal.ZERO;
+                java.math.BigDecimal totalCommission = java.math.BigDecimal.ZERO;
 
-            settlement.getLineItems().add(lineItem);
+                // 2. Aggregate line items
+                for (com.homebase.ecom.settlement.dto.SettlementOrderItemDTO item : deliveredItems) {
+                        com.homebase.ecom.settlement.model.SettlementLineItem lineItem = new com.homebase.ecom.settlement.model.SettlementLineItem();
+                        lineItem.setSettlement(settlement);
+                        lineItem.setOrderId(item.orderId);
+                        lineItem.setOrderItemId(item.orderItemId);
 
-            totalSales = totalSales.add(item.itemSalesAmount);
-            totalCommission = totalCommission.add(itemCommission);
+                        com.homebase.ecom.shared.Money salesMoney = new com.homebase.ecom.shared.Money(
+                                        item.itemSalesAmount, currency);
+                        lineItem.setItemSalesAmount(salesMoney);
+
+                        // Calculate commission for this item (scale 2 for currency precision)
+                        java.math.BigDecimal itemCommission = item.itemSalesAmount.multiply(commissionRate)
+                                        .setScale(2, java.math.RoundingMode.HALF_UP);
+                        com.homebase.ecom.shared.Money commMoney = new com.homebase.ecom.shared.Money(itemCommission,
+                                        currency);
+                        lineItem.setItemCommissionAmount(commMoney);
+
+                        settlement.getLineItems().add(lineItem);
+
+                        totalSales = totalSales.add(item.itemSalesAmount);
+                        totalCommission = totalCommission.add(itemCommission);
+                }
+
+                // 3. Finalize settlement aggregate (all amounts scaled to 2 decimal places)
+                totalSales = totalSales.setScale(2, java.math.RoundingMode.HALF_UP);
+                totalCommission = totalCommission.setScale(2, java.math.RoundingMode.HALF_UP);
+                java.math.BigDecimal netPayout = totalSales.subtract(totalCommission).setScale(2, java.math.RoundingMode.HALF_UP);
+
+                settlement.setTotalSalesAmount(new com.homebase.ecom.shared.Money(totalSales, currency));
+                settlement.setCommissionAmount(new com.homebase.ecom.shared.Money(totalCommission, currency));
+                settlement.setNetPayoutAmount(new com.homebase.ecom.shared.Money(netPayout, currency));
+
+                settlement.getTransientMap().previousPayload = payload;
         }
-
-        // 3. Set aggregated amounts on the Settlement root entity
-        com.homebase.ecom.shared.model.Money totalM = new com.homebase.ecom.shared.model.Money();
-        totalM.setAmount(totalSales);
-        totalM.setCurrency("INR");
-        settlement.setTotalSalesAmount(totalM);
-
-        com.homebase.ecom.shared.model.Money commM = new com.homebase.ecom.shared.model.Money();
-        commM.setAmount(totalCommission);
-        commM.setCurrency("INR");
-        settlement.setCommissionAmount(commM);
-
-        com.homebase.ecom.shared.model.Money netM = new com.homebase.ecom.shared.model.Money();
-        netM.setAmount(totalSales.subtract(totalCommission));
-        netM.setCurrency("INR");
-        settlement.setNetPayoutAmount(netM);
-
-        settlement.transientMap.previousPayload = payload;
-    }
 
 }

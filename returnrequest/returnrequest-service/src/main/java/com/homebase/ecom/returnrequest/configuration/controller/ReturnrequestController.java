@@ -21,14 +21,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.chenile.workflow.dto.StateEntityServiceResponse;
 import com.homebase.ecom.returnrequest.model.Returnrequest;
-import org.chenile.security.model.SecurityConfig;
 
 @RestController
 @ChenileController(value = "returnrequestService", serviceName = "_returnrequestStateEntityService_", healthCheckerName = "returnrequestHealthChecker")
 public class ReturnrequestController extends ControllerSupport {
 
 	@GetMapping("/returnrequest/{id}")
-	@SecurityConfig(authorities = { "some_premium_scope", "test.premium" })
 	public ResponseEntity<GenericResponse<StateEntityServiceResponse<Returnrequest>>> retrieve(
 			HttpServletRequest httpServletRequest,
 			@PathVariable String id) {
@@ -36,7 +34,6 @@ public class ReturnrequestController extends ControllerSupport {
 	}
 
 	@PostMapping("/returnrequest")
-	@SecurityConfig(authorities = { "some_premium_scope", "test.premium" })
 	public ResponseEntity<GenericResponse<StateEntityServiceResponse<Returnrequest>>> create(
 			HttpServletRequest httpServletRequest,
 			@ChenileParamType(StateEntity.class) @RequestBody Returnrequest entity) {
@@ -45,7 +42,6 @@ public class ReturnrequestController extends ControllerSupport {
 
 	@PatchMapping("/returnrequest/{id}/{eventID}")
 	@BodyTypeSelector("returnrequestBodyTypeSelector")
-	@SecurityConfig(authoritiesSupplier = "returnrequestEventAuthoritiesSupplier")
 	public ResponseEntity<GenericResponse<StateEntityServiceResponse<Returnrequest>>> processById(
 			HttpServletRequest httpServletRequest,
 			@PathVariable String id,

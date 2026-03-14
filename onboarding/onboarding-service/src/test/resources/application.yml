@@ -1,0 +1,45 @@
+logging:
+  level:
+    ROOT: INFO
+    org.hibernate.SQL: INFO
+    org.chenile.*: DEBUG
+
+chenile:
+  base:
+    url:
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  banner:
+    location: classpath:banner.txt
+  devtools:
+    restart:
+      enabled: true
+      additional-exclude: static/**,.h2.server.properties
+    livereload:
+      enabled: false
+  jackson:
+    serialization:
+      indent-output: true
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:h2:mem:onboarding_test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: demo
+    password: password
+    hikari:
+      poolName: Hikari
+      auto-commit: false
+  liquibase:
+    contexts: dev, faker
+  messages:
+    cache-duration: PT1S
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8000
+  error:
+    whitelabel:
+      enabled: false
+

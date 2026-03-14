@@ -17,12 +17,12 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>workflow-api</artifactId>
+			<groupId>com.homebase.ecom.returnrequest</groupId>
+			<artifactId>returnrequest-domain</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
-			<artifactId>jpa-utils</artifactId>
+			<artifactId>workflow-api</artifactId>
 		</dependency>
 	</dependencies>
 </project>

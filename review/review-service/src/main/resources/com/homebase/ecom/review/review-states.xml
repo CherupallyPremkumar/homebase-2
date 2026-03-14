@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <default-transition-action componentName="reviewBaseTransitionAction"/>
+
+  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
+
+  <flow id='review-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="reviewEntryAction" />
+    <exit-action componentName="reviewExitAction" />
+
+    <!-- ========== INITIAL STATE ========== -->
+    <status id='PENDING' initialState='true' meta-mainPath="true" description="Review submitted, awaiting moderation">
+      <on eventId='approveReview'
+          componentName='reviewApproveReviewAction'
+          newStateId='APPROVED'
+          meta-mainPath="true"
+          meta-acls="ADMIN"/>
+      <on eventId='rejectReview'
+          componentName='reviewRejectReviewAction'
+          newStateId='REJECTED'
+          meta-acls="ADMIN"/>
+      <on eventId='flagReview'
+          componentName='reviewFlagReviewAction'
+          newStateId='FLAGGED'
+          meta-acls="CUSTOMER,SYSTEM"/>
+    </status>
+
+    <!-- ========== APPROVED ========== -->
+    <status id='APPROVED' meta-mainPath="true" description="Review approved and visible to customers">
+      <on eventId='markHelpful'
+          componentName='reviewMarkHelpfulAction'
+          newStateId='APPROVED'
+          meta-acls="CUSTOMER"/>
+      <on eventId='flagReview'
+          componentName='reviewFlagReviewAction'
+          newStateId='FLAGGED'
+          meta-acls="CUSTOMER,SYSTEM"/>
+    </status>
+
+    <!-- ========== FLAGGED ========== -->
+    <status id='FLAGGED' description="Review flagged for re-moderation">
+      <on eventId='approveReview'
+          componentName='reviewApproveReviewAction'
+          newStateId='APPROVED'
+          meta-acls="ADMIN"/>
+      <on eventId='rejectReview'
+          componentName='reviewRejectReviewAction'
+          newStateId='REJECTED'
+          meta-acls="ADMIN"/>
+    </status>
+
+    <!-- ========== REJECTED (TERMINAL) ========== -->
+    <status id='REJECTED' description="Review rejected by moderator">
+      <!-- Terminal state -->
+    </status>
+  </flow>
+</states>

@@ -4,9 +4,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
 	<modules>
+		<module>order-domain</module>
 		<module>order-api</module>
+		<module>order-infrastructure</module>
 		<module>order-service</module>
+		<module>order-query-api</module>
 		<module>order-query</module>
+		<module>order-app</module>
+		<module>order-client</module>
 	</modules>
 	<parent>
 		<groupId>com.homebase.ecom</groupId>
@@ -17,7 +22,6 @@
 
 	<properties>
 		<order.version>${revision}</order.version>
-		<revision>1.0.0</revision>
 	</properties>
 	
 	<groupId>com.homebase.ecom.order</groupId>
@@ -37,6 +41,26 @@
 			<groupId>com.homebase.ecom.order</groupId>
 			<version>${revision}</version>
 			<artifactId>order-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.order</groupId>
+			<version>${revision}</version>
+			<artifactId>order-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.order</groupId>
+			<version>${revision}</version>
+			<artifactId>order-infrastructure</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.order</groupId>
+			<artifactId>order-query-api</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>order-query-service</artifactId>
+			<version>${revision}</version>
 		</dependency>
 	</dependencies>
 	</dependencyManagement>

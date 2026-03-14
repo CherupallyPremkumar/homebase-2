@@ -1,0 +1,32 @@
+{
+    "policies": {
+        "return": {
+            "maxReturnWindowDays": 10,
+            "requireReturnReason": true,
+            "requirePhotographicProof": false,
+            "allowedReturnReasons": [
+                "DAMAGED",
+                "WRONG_ITEM",
+                "NOT_AS_DESCRIBED",
+                "CHANGED_MIND"
+            ],
+            "hubInspectionRequired": true
+        },
+        "approval": {
+            "autoApproveBelow": 500.0,
+            "requireHubManagerApprovalAbove": 5000.0,
+            "maxReturnItemsPerOrder": 10
+        }
+    },
+    "rules": {
+        "refund": {
+            "autoRefundOnHubReceipt": true,
+            "holdRefundUntilInspection": false,
+            "refundProcessingDays": 3
+        },
+        "audit": {
+            "requireCommentOnReject": true,
+            "requireCommentOnApprove": false
+        }
+    }
+}

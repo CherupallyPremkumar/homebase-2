@@ -17,12 +17,17 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.homebase.ecom.supplier</groupId>
+			<artifactId>supplier-domain</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>workflow-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
-			<artifactId>jpa-utils</artifactId>
+			<artifactId>chenile-core</artifactId>
 		</dependency>
 	</dependencies>
 </project>

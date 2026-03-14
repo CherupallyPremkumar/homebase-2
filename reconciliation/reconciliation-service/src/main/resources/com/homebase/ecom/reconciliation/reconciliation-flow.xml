@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flows>
+    <flow id="reconciliation-flow">
+        <chain>
+            <command componentName="fetchGatewayTransactions"/>
+            <command componentName="fetchSystemTransactions"/>
+            <command componentName="matchTransactions"/>
+            <command componentName="flagMismatches"/>
+            <command componentName="autoResolveCommand"/>
+            <command componentName="generateReconciliationReport"/>
+        </chain>
+    </flow>
+</flows>

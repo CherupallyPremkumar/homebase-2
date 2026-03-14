@@ -5,7 +5,15 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>user-api</module>
+		<module>user-domain</module>
+		<module>user-infrastructure</module>
+		<module>user-query-api</module>
+		<module>user-query</module>
 		<module>user-service</module>
+		<module>user-app</module>
+		<module>user-client</module>
+		<module>user-k8s</module>
+
 	</modules>
 	<parent>
 		<groupId>com.homebase.ecom</groupId>
@@ -16,11 +24,9 @@
 
 	<properties>
 		<user.version>${revision}</user.version>
-		<revision>1.0.0</revision>
 	</properties>
 	
 	<groupId>com.homebase.ecom.user</groupId>
-	<version>${revision}</version>
 	<artifactId>user-parent</artifactId>
 	<name>All Modules that belong to the User </name>
 	<description>Modules execution project and Parent Pom</description>
@@ -35,7 +41,22 @@
 		<dependency>
 			<groupId>com.homebase.ecom.user</groupId>
 			<version>${revision}</version>
+			<artifactId>user-query-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.user</groupId>
+			<version>${revision}</version>
 			<artifactId>user-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.user</groupId>
+			<version>${revision}</version>
+			<artifactId>user-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.user</groupId>
+			<version>${revision}</version>
+			<artifactId>user-infrastructure</artifactId>
 		</dependency>
 	</dependencies>
 	</dependencyManagement>

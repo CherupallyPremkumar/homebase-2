@@ -5,8 +5,13 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>returnrequest-api</module>
+		<module>returnrequest-domain</module>
+		<module>returnrequest-infrastructure</module>
+		<module>returnrequest-query-api</module>
 		<module>returnrequest-service</module>
 		<module>returnrequest-query</module>
+		<module>returnrequest-app</module>
+		<module>returnrequest-client</module>
 	</modules>
 	<parent>
 		<groupId>com.homebase.ecom</groupId>
@@ -17,7 +22,6 @@
 
 	<properties>
 		<returnrequest.version>${revision}</returnrequest.version>
-		<revision>1.0.0</revision>
 	</properties>
 	
 	<groupId>com.homebase.ecom.returnrequest</groupId>
@@ -31,12 +35,22 @@
 		<dependency>
 			<groupId>com.homebase.ecom.returnrequest</groupId>
 			<version>${revision}</version>
-			<artifactId>returnrequest-service</artifactId>
+			<artifactId>returnrequest-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.homebase.ecom.returnrequest</groupId>
 			<version>${revision}</version>
-			<artifactId>returnrequest-api</artifactId>
+			<artifactId>returnrequest-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.returnrequest</groupId>
+			<version>${revision}</version>
+			<artifactId>returnrequest-infrastructure</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.returnrequest</groupId>
+			<version>${revision}</version>
+			<artifactId>returnrequest-service</artifactId>
 		</dependency>
 	</dependencies>
 	</dependencyManagement>

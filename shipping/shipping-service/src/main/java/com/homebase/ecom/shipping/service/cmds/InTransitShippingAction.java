@@ -8,22 +8,43 @@ import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.shipping.model.Shipping;
 import com.homebase.ecom.shipping.dto.InTransitShippingPayload;
 
+import java.util.Calendar;
+import java.util.Date;
+
 /**
- Contains customized logic for the transition. Common logic resides at {@link DefaultSTMTransitionAction}
- <p>Use this class if you want to augment the common logic for this specific transition</p>
- <p>Use a customized payload if required instead of MinimalPayload</p>
-*/
+ * Handles the inTransit transition: PICKED_UP -> IN_TRANSIT.
+ * Updates tracking status with current location and recalculates ETA.
+ */
 public class InTransitShippingAction extends AbstractSTMTransitionAction<Shipping,
+        InTransitShippingPayload> {
 
-    InTransitShippingPayload>{
-
-
-	@Override
-	public void transitionTo(Shipping shipping,
+    @Override
+    public void transitionTo(Shipping shipping,
             InTransitShippingPayload payload,
             State startState, String eventId,
-			State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-            shipping.transientMap.previousPayload = payload;
-	}
+            State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
+        shipping.getTransientMap().previousPayload = payload;
+
+        // Update current location if provided
+        String location = payload.getCurrentLocation();
+        if (location != null && !location.isEmpty()) {
+            shipping.setCurrentLocation(location);
+        } else {
+            shipping.setCurrentLocation("In transit - sorting facility");
+        }
+
+        // Recalculate ETA if updated days provided
+        int updatedEtaDays = payload.getUpdatedEtaDays();
+        if (updatedEtaDays > 0) {
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DAY_OF_MONTH, updatedEtaDays);
+            shipping.setEstimatedDelivery(cal.getTime());
+        }
+
+        // Ensure shippedAt is set (in case it was missed)
+        if (shipping.getShippedAt() == null) {
+            shipping.setShippedAt(new Date());
+        }
+    }
 }

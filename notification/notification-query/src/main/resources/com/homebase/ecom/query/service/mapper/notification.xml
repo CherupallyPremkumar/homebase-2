@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Notification">
+
+    <select id="getAll" resultType="com.homebase.ecom.notification.dto.NotificationDto">
+        SELECT
+            id,
+            user_id as "userId",
+            channel,
+            template_code as "templateCode",
+            subject,
+            reference_type as "referenceType",
+            reference_id as "referenceId",
+            sent_at as "sentAt",
+            read_at as "readAt",
+            retry_count as "retryCount",
+            state_id as "stateId"
+        FROM notifications
+        <where>
+            <if test="userId != null">AND user_id = #{userId}</if>
+            <if test="channel != null">AND channel = #{channel}</if>
+            <if test="referenceType != null">AND reference_type = #{referenceType}</if>
+            <if test="referenceId != null">AND reference_id = #{referenceId}</if>
+            <if test="stateId != null">AND state_id = #{stateId}</if>
+        </where>
+    </select>
+
+    <select id="getAll-count" resultType="int">
+        SELECT count(*)
+        FROM notifications
+        <where>
+            <if test="userId != null">AND user_id = #{userId}</if>
+            <if test="channel != null">AND channel = #{channel}</if>
+            <if test="referenceType != null">AND reference_type = #{referenceType}</if>
+            <if test="referenceId != null">AND reference_id = #{referenceId}</if>
+            <if test="stateId != null">AND state_id = #{stateId}</if>
+        </where>
+    </select>
+
+    <select id="getById" resultType="com.homebase.ecom.notification.dto.NotificationDto">
+        SELECT
+            id,
+            user_id as "userId",
+            channel,
+            template_code as "templateCode",
+            subject,
+            reference_type as "referenceType",
+            reference_id as "referenceId",
+            sent_at as "sentAt",
+            read_at as "readAt",
+            retry_count as "retryCount",
+            state_id as "stateId"
+        FROM notifications
+        WHERE id = #{id}
+    </select>
+
+</mapper>
