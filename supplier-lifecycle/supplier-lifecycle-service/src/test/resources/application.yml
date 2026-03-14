@@ -13,9 +13,10 @@ chenile:
       secret: secret
     keycloak:
       host: http://localhost:8180
-      port: 8080
+      port: 8180
       base:
-        realm: homebase
+        realm: tenant0
+
 
 spring:
   main:

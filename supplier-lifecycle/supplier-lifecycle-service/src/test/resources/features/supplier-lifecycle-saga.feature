@@ -7,7 +7,8 @@ Feature: Supplier Lifecycle Orchestration
   Also covers: FAILED state and retry flow.
 
 Background:
-  Given I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
 
 # ======================================================================
 # SUSPEND SUPPLIER CASCADING EFFECTS (suspend-flow)
