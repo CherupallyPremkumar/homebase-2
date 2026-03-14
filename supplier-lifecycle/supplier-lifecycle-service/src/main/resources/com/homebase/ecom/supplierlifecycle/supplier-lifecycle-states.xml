@@ -4,6 +4,17 @@
 
   <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
 
+  <event-information eventId='disableProducts' meta-acls="SYSTEM"/>
+  <event-information eventId='removeCatalog' meta-acls="SYSTEM"/>
+  <event-information eventId='freezeInventory' meta-acls="SYSTEM"/>
+  <event-information eventId='cancelOrders' meta-acls="SYSTEM"/>
+  <event-information eventId='notifyCustomers' meta-acls="SYSTEM"/>
+  <event-information eventId='enableProducts' meta-acls="SYSTEM"/>
+  <event-information eventId='restoreCatalog' meta-acls="SYSTEM"/>
+  <event-information eventId='unfreezeInventory' meta-acls="SYSTEM"/>
+  <event-information eventId='notifySupplier' meta-acls="SYSTEM"/>
+  <event-information eventId='retry' meta-acls="SYSTEM"/>
+
   <flow id='suspend-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="supplierLifecycleEntryAction" />

@@ -43,9 +43,7 @@
       "enabled": true,
       "serviceAccountClientId": "authz-servlet",
       "clientRoles": {
-        "authz-servlet": [
-          "uma_protection"
-        ]
+        "authz-servlet" : ["uma_protection"]
       }
     }
   ],
@@ -121,6 +119,5 @@
         "user_premium"
       ]
     }
-  ],
-  "sslRequired": "none"
+  ]
 }

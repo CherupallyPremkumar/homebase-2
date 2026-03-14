@@ -1,8 +1,42 @@
 {
   "realm": "tenant0",
   "enabled": true,
-  "requiredCredentials": [
-    "password"
+  "sslRequired": "none",
+  "requiredCredentials": ["password"],
+  "roles": {
+    "realm": [
+      {"name": "user"},
+      {"name": "user_premium"},
+      {"name": "SYSTEM"},
+      {"name": "ADMIN"},
+      {"name": "CUSTOMER"},
+      {"name": "WAREHOUSE"},
+      {"name": "SUPPLIER"},
+      {"name": "QUALITY_CHECKER"},
+      {"name": "AGENT"}
+    ]
+  },
+  "clientScopes": [
+    {"name": "test.normal", "protocol": "openid-connect", "attributes": {"include.in.token.scope": "true"}},
+    {"name": "test.premium", "protocol": "openid-connect", "attributes": {"include.in.token.scope": "true"}},
+    {"name": "SYSTEM", "protocol": "openid-connect", "attributes": {"include.in.token.scope": "true"}},
+    {"name": "ADMIN", "protocol": "openid-connect", "attributes": {"include.in.token.scope": "true"}},
+    {"name": "CUSTOMER", "protocol": "openid-connect", "attributes": {"include.in.token.scope": "true"}},
+    {"name": "WAREHOUSE", "protocol": "openid-connect", "attributes": {"include.in.token.scope": "true"}},
+    {"name": "SUPPLIER", "protocol": "openid-connect", "attributes": {"include.in.token.scope": "true"}},
+    {"name": "QUALITY_CHECKER", "protocol": "openid-connect", "attributes": {"include.in.token.scope": "true"}},
+    {"name": "AGENT", "protocol": "openid-connect", "attributes": {"include.in.token.scope": "true"}}
+  ],
+  "scopeMappings": [
+    {"clientScope": "test.normal", "roles": ["user", "user_premium"]},
+    {"clientScope": "test.premium", "roles": ["user_premium"]},
+    {"clientScope": "SYSTEM", "roles": ["SYSTEM"]},
+    {"clientScope": "ADMIN", "roles": ["ADMIN"]},
+    {"clientScope": "CUSTOMER", "roles": ["CUSTOMER"]},
+    {"clientScope": "WAREHOUSE", "roles": ["WAREHOUSE"]},
+    {"clientScope": "SUPPLIER", "roles": ["SUPPLIER"]},
+    {"clientScope": "QUALITY_CHECKER", "roles": ["QUALITY_CHECKER"]},
+    {"clientScope": "AGENT", "roles": ["AGENT"]}
   ],
   "users": [
     {
@@ -11,16 +45,8 @@
       "lastName": "Wonderland",
       "email": "alice@keycloak.org",
       "enabled": true,
-      "credentials": [
-        {
-          "type": "password",
-          "value": "t0-normal"
-        }
-      ],
-      "realmRoles": [
-        "user",
-        "SYSTEM"
-      ]
+      "credentials": [{"type": "password", "value": "t0-normal"}],
+      "realmRoles": ["user", "CUSTOMER"]
     },
     {
       "username": "t0-premium",
@@ -28,129 +54,27 @@
       "lastName": "Doe",
       "email": "jdoe@keycloak.org",
       "enabled": true,
-      "credentials": [
-        {
-          "type": "password",
-          "value": "t0-premium"
-        }
-      ],
-      "realmRoles": [
-        "user",
-        "user_premium",
-        "SYSTEM"
-      ]
+      "credentials": [{"type": "password", "value": "t0-premium"}],
+      "realmRoles": ["user", "user_premium", "SYSTEM", "ADMIN", "CUSTOMER", "WAREHOUSE", "SUPPLIER", "QUALITY_CHECKER", "AGENT"]
     },
     {
       "username": "service-account-authz-servlet",
-      "enabled": true,
       "serviceAccountClientId": "authz-servlet",
-      "clientRoles": {
-        "authz-servlet": [
-          "uma_protection"
-        ]
-      },
-      "realmRoles": [
-        "SYSTEM"
-      ]
+      "enabled": true,
+      "realmRoles": ["SYSTEM"]
     }
   ],
-  "roles": {
-    "realm": [
-      {
-        "name": "user",
-        "description": "User privileges"
-      },
-      {
-        "name": "user_premium",
-        "description": "User Premium privileges"
-      },
-      {
-        "name": "SYSTEM"
-      },
-      {
-        "name": "ADMIN"
-      },
-      {
-        "name": "CUSTOMER"
-      },
-      {
-        "name": "WAREHOUSE"
-      },
-      {
-        "name": "SUPPLIER"
-      }
-    ]
-  },
   "clients": [
     {
       "clientId": "authz-servlet",
+      "name": "authz-servlet",
       "enabled": true,
-      "bearerOnly": false,
-      "redirectUris": [
-        "http://localhost:8080/login/oauth2/code/authz_servlet"
-      ],
+      "publicClient": false,
       "secret": "secret",
-      "authorizationServicesEnabled": true,
       "directAccessGrantsEnabled": true,
-      "defaultClientScopes": [
-        "SYSTEM",
-        "ADMIN",
-        "CUSTOMER",
-        "WAREHOUSE",
-        "SUPPLIER"
-      ],
-      "protocolMappers": [
-        {
-          "name": "realm-roles-scope",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usermodel-realm-role-mapper",
-          "config": {
-            "claim.name": "scope",
-            "jsonType.label": "String",
-            "multivalued": "true",
-            "id.token.claim": "false",
-            "access.token.claim": "true",
-            "userinfo.token.claim": "false"
-          }
-        }
-      ]
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "defaultClientScopes": ["test.normal", "test.premium", "SYSTEM", "ADMIN", "CUSTOMER", "WAREHOUSE", "SUPPLIER", "QUALITY_CHECKER", "AGENT"]
     }
-  ],
-  "clientScopes": [
-    {
-      "name": "test.premium",
-      "description": "Enhanced test scope for premium users",
-      "protocol": "openid-connect",
-      "attributes": {
-        "include.in.token.scope": "true",
-        "display.on.consent.screen": "true",
-        "gui.order": "",
-        "consent.screen.text": ""
-      }
-    },
-    {
-      "name": "test.normal",
-      "description": "Normal test scope for all users",
-      "protocol": "openid-connect",
-      "attributes": {
-        "include.in.token.scope": "true",
-        "display.on.consent.screen": "true",
-        "gui.order": "",
-        "consent.screen.text": ""
-      }
-    }
-  ],
-  "scopeMappings": [
-    {
-      "client": "authz-servlet",
-      "roles": [
-        "SYSTEM",
-        "ADMIN",
-        "CUSTOMER",
-        "WAREHOUSE",
-        "SUPPLIER"
-      ]
-    }
-  ],
-  "sslRequired": "none"
+  ]
 }
