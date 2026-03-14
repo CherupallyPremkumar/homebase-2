@@ -304,4 +304,11 @@ public class SupplierLifecycleConfiguration {
     INVENTORY_UNFROZENSupplierLifecycleSagaPostSaveHook supplierLifecycleINVENTORY_UNFROZENPostSaveHook() {
         return new INVENTORY_UNFROZENSupplierLifecycleSagaPostSaveHook();
     }
+
+    @Bean
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> supplierLifecycleEventAuthoritiesSupplier(
+            @Qualifier("supplierLifecycleActionsInfoProvider") STMActionsInfoProvider supplierLifecycleInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(supplierLifecycleInfoProvider, true);
+        return builder.build();
+    }
 }

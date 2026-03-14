@@ -18,7 +18,8 @@
         }
       ],
       "realmRoles": [
-        "user"
+        "user",
+        "SYSTEM"
       ]
     },
     {
@@ -35,7 +36,8 @@
       ],
       "realmRoles": [
         "user",
-        "user_premium"
+        "user_premium",
+        "SYSTEM"
       ]
     },
     {
@@ -46,7 +48,10 @@
         "authz-servlet": [
           "uma_protection"
         ]
-      }
+      },
+      "realmRoles": [
+        "SYSTEM"
+      ]
     }
   ],
   "roles": {
@@ -58,6 +63,21 @@
       {
         "name": "user_premium",
         "description": "User Premium privileges"
+      },
+      {
+        "name": "SYSTEM"
+      },
+      {
+        "name": "ADMIN"
+      },
+      {
+        "name": "CUSTOMER"
+      },
+      {
+        "name": "WAREHOUSE"
+      },
+      {
+        "name": "SUPPLIER"
       }
     ]
   },
@@ -73,13 +93,26 @@
       "authorizationServicesEnabled": true,
       "directAccessGrantsEnabled": true,
       "defaultClientScopes": [
-        "web-origins",
-        "acr",
-        "test.normal",
-        "roles",
-        "profile",
-        "test.premium",
-        "email"
+        "SYSTEM",
+        "ADMIN",
+        "CUSTOMER",
+        "WAREHOUSE",
+        "SUPPLIER"
+      ],
+      "protocolMappers": [
+        {
+          "name": "realm-roles-scope",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "scope",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false"
+          }
+        }
       ]
     }
   ],
@@ -109,16 +142,13 @@
   ],
   "scopeMappings": [
     {
-      "clientScope": "test.normal",
+      "client": "authz-servlet",
       "roles": [
-        "user_premium",
-        "user"
-      ]
-    },
-    {
-      "clientScope": "test.premium",
-      "roles": [
-        "user_premium"
+        "SYSTEM",
+        "ADMIN",
+        "CUSTOMER",
+        "WAREHOUSE",
+        "SUPPLIER"
       ]
     }
   ],

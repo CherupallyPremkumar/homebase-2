@@ -26,7 +26,13 @@ public class ChenileJpaEntityStore<M, E> implements EntityStore<M> {
     @Override
     public void store(M model) {
         E entity = toEntity.apply(model);
-        repository.save(entity);
+        E saved = repository.save(entity);
+        // Copy generated ID and updated fields back to domain model
+        M updated = toModel.apply(saved);
+        if (model instanceof org.chenile.utils.entity.model.ChenileEntity cm
+                && updated instanceof org.chenile.utils.entity.model.ChenileEntity cu) {
+            cm.setId(cu.getId());
+        }
     }
 
     @Override
