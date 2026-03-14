@@ -1,20 +1,20 @@
 {
-  "realm": "tenant0",
+  "realm": "tenant1",
   "enabled": true,
   "requiredCredentials": [
     "password"
   ],
   "users": [
     {
-      "username": "t0-normal",
-      "firstName": "Alice",
-      "lastName": "Wonderland",
-      "email": "alice@keycloak.org",
+      "username": "t1-normal",
+      "firstName": "Sam",
+      "lastName": "Collins",
+      "email": "samcollins@keycloak.org",
       "enabled": true,
       "credentials": [
         {
           "type": "password",
-          "value": "t0-normal"
+          "value": "t1-normal"
         }
       ],
       "realmRoles": [
@@ -22,15 +22,15 @@
       ]
     },
     {
-      "username": "t0-premium",
-      "firstName": "John",
-      "lastName": "Doe",
-      "email": "jdoe@keycloak.org",
+      "username": "t1-premium",
+      "firstName": "James",
+      "lastName": "Munroe",
+      "email": "jmunroe@keycloak.org",
       "enabled": true,
       "credentials": [
         {
           "type": "password",
-          "value": "t0-premium"
+          "value": "t1-premium"
         }
       ],
       "realmRoles": [
@@ -86,7 +86,7 @@
   "clientScopes": [
     {
       "name": "test.premium",
-      "description": "Enhanced test scope for premium users",
+      "description": "Premium test scope for premium users",
       "protocol": "openid-connect",
       "attributes": {
         "include.in.token.scope": "true",
@@ -109,16 +109,16 @@
   ],
   "scopeMappings": [
     {
+      "clientScope": "test.premium",
+      "roles": [
+        "user_premium"
+      ]
+    },
+    {
       "clientScope": "test.normal",
       "roles": [
         "user_premium",
         "user"
-      ]
-    },
-    {
-      "clientScope": "test.premium",
-      "roles": [
-        "user_premium"
       ]
     }
   ],

@@ -7,6 +7,7 @@ import org.chenile.http.annotation.BodyTypeSelector;
 import org.chenile.http.annotation.ChenileController;
 import org.chenile.http.annotation.ChenileParamType;
 import org.chenile.http.handler.ControllerSupport;
+import org.chenile.security.model.SecurityConfig;
 import org.springframework.http.ResponseEntity;
 
 import org.chenile.stm.StateEntity;
@@ -21,10 +22,12 @@ import org.chenile.workflow.dto.StateEntityServiceResponse;
 import com.homebase.ecom.supplierlifecycle.domain.model.SupplierLifecycleSaga;
 
 @RestController
-@ChenileController(value = "supplierLifecycleService", serviceName = "_supplierLifecycleStateEntityService_")
+@ChenileController(value = "supplierLifecycleService", serviceName = "_supplierLifecycleStateEntityService_",
+        healthCheckerName = "supplierLifecycleHealthChecker")
 public class SupplierLifecycleController extends ControllerSupport {
 
     @GetMapping("/supplier-lifecycle/{id}")
+    @SecurityConfig(authorities = {"some_premium_scope", "test.premium"})
     public ResponseEntity<GenericResponse<StateEntityServiceResponse<SupplierLifecycleSaga>>> retrieve(
             HttpServletRequest httpServletRequest,
             @PathVariable String id) {
@@ -32,6 +35,7 @@ public class SupplierLifecycleController extends ControllerSupport {
     }
 
     @PostMapping("/supplier-lifecycle")
+    @SecurityConfig(authorities = {"some_premium_scope", "test.premium"})
     public ResponseEntity<GenericResponse<StateEntityServiceResponse<SupplierLifecycleSaga>>> create(
             HttpServletRequest httpServletRequest,
             @ChenileParamType(StateEntity.class) @RequestBody SupplierLifecycleSaga entity) {
@@ -40,6 +44,7 @@ public class SupplierLifecycleController extends ControllerSupport {
 
     @PatchMapping("/supplier-lifecycle/{id}/{eventID}")
     @BodyTypeSelector("supplierLifecycleBodyTypeSelector")
+    @SecurityConfig(authoritiesSupplier = "supplierLifecycleEventAuthoritiesSupplier")
     public ResponseEntity<GenericResponse<StateEntityServiceResponse<SupplierLifecycleSaga>>> processById(
             HttpServletRequest httpServletRequest,
             @PathVariable String id,

@@ -1,24 +1,14 @@
 package com.homebase.ecom.supplierlifecycle;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.persistence.autoconfigure.EntityScan;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
 @PropertySource("classpath:com/homebase/ecom/supplierlifecycle/TestService.properties")
-@SpringBootApplication(scanBasePackages = { "org.chenile.configuration",
-        "com.homebase.ecom.supplierlifecycle.configuration",
-        "org.chenile.service.registry.configuration",
-        "org.chenile.cconfig.**" })
-@EnableJpaRepositories(basePackages = {"com.homebase.ecom.supplierlifecycle",
-        "org.chenile.service.registry.configuration.dao",
-        "org.chenile.cconfig.configuration.dao"})
-@EntityScan(basePackages = {"com.homebase.ecom.supplierlifecycle",
-        "org.chenile.service.registry.model",
-        "org.chenile.cconfig.model"})
+@SpringBootApplication(scanBasePackages = { "org.chenile.configuration", "com.homebase.ecom.supplierlifecycle.configuration" })
 @ActiveProfiles("unittest")
-public class SpringTestConfig {
+public class SpringTestConfig extends SpringBootServletInitializer {
 }

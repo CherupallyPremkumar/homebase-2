@@ -16,17 +16,11 @@ import io.cucumber.java.en.Given;
 @AutoConfigureMockMvc
 @CucumberContextConfiguration
 @ActiveProfiles("unittest")
-public class CukesSteps extends BaseSecurityTest {
-
-    static {
-        BaseSecurityTest.startContainer();
-    }
+public class CukesSteps {
 
     @DynamicPropertySource
     static void keycloakProps(DynamicPropertyRegistry registry) {
         BaseSecurityTest.keycloakProperties(registry);
-        registry.add("chenile.security.client.id", () -> "authz-servlet");
-        registry.add("chenile.security.client.secret", () -> "secret");
     }
 
     @Given("dummy") public void dummy() {}

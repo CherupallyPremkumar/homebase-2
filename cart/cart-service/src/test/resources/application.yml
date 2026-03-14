@@ -5,17 +5,10 @@ logging:
     org.chenile.*: DEBUG
 
 chenile:
-  query:
-    proxy:
-      enabled: true                  # MUST be true to load SyncableQueryStore
-    remote:
-      base-url: http://localhost:8081
   base:
     url:
 
 spring:
-  main:
-    allow-bean-definition-overriding: true
   banner:
     location: classpath:banner.txt
   devtools:
@@ -46,33 +39,9 @@ spring:
     cache: false
 
 server:
+  port: 8000
   error:
     whitelabel:
       enabled: false
-
-query:
-  jpa:
-    hibernate:
-      show_sql: true
-      ddl-auto: update
-    database-platform: org.hibernate.dialect.H2Dialect
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
-  defaultTenantId: default
-  datasources:
-    default:
-      type: com.zaxxer.hikari.HikariDataSource
-      username: demo
-      password: password
-      maximumPoolSize: 10
-      minimumIdle: 2
-      idleTimeout: 5000
-      jdbcUrl: jdbc:h2:mem:demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-      driverClassName: org.h2.Driver
-  mapperFiles: classpath*:com/homebase/ecom/query/service/mapper/*.xml
-  definitionFiles: classpath*:com/homebase/ecom/query/service/mapper/*.json
-
 
 

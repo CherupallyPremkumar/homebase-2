@@ -7,9 +7,6 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.ActiveProfiles;
 import com.homebase.ecom.cart.SpringTestConfig;
 
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.chenile.security.test.BaseSecurityTest;
 import io.cucumber.java.en.Given;
 
 
@@ -25,6 +22,6 @@ import io.cucumber.java.en.Given;
 @AutoConfigureMockMvc
 @CucumberContextConfiguration
 @ActiveProfiles("unittest")
-public class CukesSteps extends org.chenile.security.test.BaseSecurityTest {
+public class CukesSteps {
 	@Given("dummy") public void dummy(){}
 }
