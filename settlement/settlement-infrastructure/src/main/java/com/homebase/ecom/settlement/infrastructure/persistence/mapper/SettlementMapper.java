@@ -2,10 +2,10 @@ package com.homebase.ecom.settlement.infrastructure.persistence.mapper;
 
 import com.homebase.ecom.settlement.model.Settlement;
 import com.homebase.ecom.settlement.model.SettlementActivityLog;
-import com.homebase.ecom.settlement.model.SettlementLineItem;
+import com.homebase.ecom.settlement.model.SettlementAdjustment;
 import com.homebase.ecom.settlement.infrastructure.persistence.entity.SettlementActivityLogEntity;
+import com.homebase.ecom.settlement.infrastructure.persistence.entity.SettlementAdjustmentEntity;
 import com.homebase.ecom.settlement.infrastructure.persistence.entity.SettlementEntity;
-import com.homebase.ecom.settlement.infrastructure.persistence.entity.SettlementLineItemEntity;
 import java.util.stream.Collectors;
 
 public class SettlementMapper {
@@ -16,16 +16,19 @@ public class SettlementMapper {
         entity.setId(model.getId());
         entity.setDescription(model.getDescription());
         entity.setSupplierId(model.getSupplierId());
-        entity.setPeriodMonth(model.getPeriodMonth());
-        entity.setPeriodYear(model.getPeriodYear());
-        entity.setTotalSalesAmount(model.getTotalSalesAmount());
+        entity.setOrderId(model.getOrderId());
+        entity.setOrderAmount(model.getOrderAmount());
         entity.setCommissionAmount(model.getCommissionAmount());
-        entity.setNetPayoutAmount(model.getNetPayoutAmount());
+        entity.setPlatformFee(model.getPlatformFee());
+        entity.setNetAmount(model.getNetAmount());
+        entity.setSettlementPeriodStart(model.getSettlementPeriodStart());
+        entity.setSettlementPeriodEnd(model.getSettlementPeriodEnd());
+        entity.setDisbursementReference(model.getDisbursementReference());
         entity.setCurrentState(model.getCurrentState());
 
-        if (model.getLineItems() != null) {
-            entity.setLineItems(model.getLineItems().stream()
-                    .map(item -> toLineItemEntity(item, entity))
+        if (model.getAdjustments() != null) {
+            entity.setAdjustments(model.getAdjustments().stream()
+                    .map(this::toAdjustmentEntity)
                     .collect(Collectors.toList()));
         }
 
@@ -44,16 +47,19 @@ public class SettlementMapper {
         model.setId(entity.getId());
         model.setDescription(entity.getDescription());
         model.setSupplierId(entity.getSupplierId());
-        model.setPeriodMonth(entity.getPeriodMonth());
-        model.setPeriodYear(entity.getPeriodYear());
-        model.setTotalSalesAmount(entity.getTotalSalesAmount());
+        model.setOrderId(entity.getOrderId());
+        model.setOrderAmount(entity.getOrderAmount());
         model.setCommissionAmount(entity.getCommissionAmount());
-        model.setNetPayoutAmount(entity.getNetPayoutAmount());
+        model.setPlatformFee(entity.getPlatformFee());
+        model.setNetAmount(entity.getNetAmount());
+        model.setSettlementPeriodStart(entity.getSettlementPeriodStart());
+        model.setSettlementPeriodEnd(entity.getSettlementPeriodEnd());
+        model.setDisbursementReference(entity.getDisbursementReference());
         model.setCurrentState(entity.getCurrentState());
 
-        if (entity.getLineItems() != null) {
-            model.setLineItems(entity.getLineItems().stream()
-                    .map(this::toLineItemModel)
+        if (entity.getAdjustments() != null) {
+            model.setAdjustments(entity.getAdjustments().stream()
+                    .map(this::toAdjustmentModel)
                     .collect(Collectors.toList()));
         }
 
@@ -67,26 +73,25 @@ public class SettlementMapper {
         return model;
     }
 
-    private SettlementLineItemEntity toLineItemEntity(SettlementLineItem model, SettlementEntity settlementEntity) {
+    private SettlementAdjustmentEntity toAdjustmentEntity(SettlementAdjustment model) {
         if (model == null) return null;
-        SettlementLineItemEntity entity = new SettlementLineItemEntity();
+        SettlementAdjustmentEntity entity = new SettlementAdjustmentEntity();
         entity.setId(model.getId());
-        entity.setSettlement(settlementEntity);
-        entity.setOrderId(model.getOrderId());
-        entity.setOrderItemId(model.getOrderItemId());
-        entity.setItemSalesAmount(model.getItemSalesAmount());
-        entity.setItemCommissionAmount(model.getItemCommissionAmount());
+        entity.setAmount(model.getAmount());
+        entity.setReason(model.getReason());
+        entity.setAdjustedBy(model.getAdjustedBy());
+        entity.setAdjustedAt(model.getAdjustedAt());
         return entity;
     }
 
-    private SettlementLineItem toLineItemModel(SettlementLineItemEntity entity) {
+    private SettlementAdjustment toAdjustmentModel(SettlementAdjustmentEntity entity) {
         if (entity == null) return null;
-        SettlementLineItem model = new SettlementLineItem();
+        SettlementAdjustment model = new SettlementAdjustment();
         model.setId(entity.getId());
-        model.setOrderId(entity.getOrderId());
-        model.setOrderItemId(entity.getOrderItemId());
-        model.setItemSalesAmount(entity.getItemSalesAmount());
-        model.setItemCommissionAmount(entity.getItemCommissionAmount());
+        model.setAmount(entity.getAmount());
+        model.setReason(entity.getReason());
+        model.setAdjustedBy(entity.getAdjustedBy());
+        model.setAdjustedAt(entity.getAdjustedAt());
         return model;
     }
 

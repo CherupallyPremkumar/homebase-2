@@ -8,6 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+/**
+ * Kafka listener for product events affecting carts.
+ * Logs price change events for future batch processing if needed.
+ */
 @Component
 public class CartProductEventListener {
 
@@ -22,10 +26,9 @@ public class CartProductEventListener {
     public void onPriceChanged(ProductPriceChangedEvent event) {
         log.info("Cart: received ProductPriceChangedEvent for product: {}", event.getProductId());
         try {
-            cartBatchUpdateService.processPriceChange(event);
-            log.info("Cart: successfully updated prices for product: {}", event.getProductId());
+            cartBatchUpdateService.logEventReceived("PRICE_CHANGED", event.getProductId());
         } catch (Exception e) {
-            log.error("Cart: failed to update prices for product: {}", event.getProductId(), e);
+            log.error("Cart: failed to process price change for product: {}", event.getProductId(), e);
         }
     }
 }

@@ -10,6 +10,10 @@ Feature: Return Processing Saga
 # COMPLETE RETURN PROCESSING FLOW
 # ======================================================================
 
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
 Scenario: Create a new return processing saga in INITIATED state
 Given that "flowName" equals "return-processing-flow"
 And that "initialState" equals "INITIATED"

@@ -1,28 +1,160 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
+
+  <!-- ================================================================ -->
+  <!-- Event definitions with ACLs and payload types                     -->
+  <!-- Item 15: ACL roles for each event                                 -->
+  <!-- ================================================================ -->
+  <event-information eventId='submit' meta-acls="SELLER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='approve' meta-acls="CATALOG_ADMIN,ADMIN" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='reject' meta-acls="CATALOG_ADMIN,ADMIN" meta-bodyType="com.homebase.ecom.offer.service.cmds.RejectOfferPayload"/>
+  <event-information eventId='goLive' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='expire' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='suspend' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.offer.service.cmds.SuspendOfferPayload"/>
+  <event-information eventId='archive' meta-acls="ADMIN,SELLER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='resubmit' meta-acls="SELLER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='resume' meta-acls="ADMIN" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+
   <flow id='offer-flow' default='true'>
-    <security-strategy componentName="offerSecurityStrategy"/>
+    <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="offerEntryAction"/>
     <exit-action componentName="offerExitAction"/>
 
-    <manual-state id='PENDING_REVIEW' initialState='true' meta-mainPath="true" description="Offer submitted, awaiting admin review">
-      <on eventId='approve' componentName='offerApproveAction' newStateId='ACTIVE' meta-mainPath="true" meta-acls="ADMIN"/>
-      <on eventId='reject' componentName='offerRejectAction' newStateId='REJECTED' meta-acls="ADMIN"/>
+    <!-- ================================================================ -->
+    <!-- DRAFT: Seller creates offer, not yet submitted                   -->
+    <!-- ACL: create(SELLER,ADMIN)                                        -->
+    <!-- ================================================================ -->
+
+    <manual-state id='DRAFT' initialState='true' meta-mainPath="true"
+                  description="Offer created by seller, not yet submitted for approval">
+      <on eventId='submit'
+          componentName='offerSubmitAction'
+          newStateId='CHECK_AUTO_APPROVE'
+          meta-mainPath="true" meta-acls="SELLER"/>
     </manual-state>
 
-    <manual-state id='ACTIVE' meta-mainPath="true" description="Offer live and visible to customers">
-      <on eventId='deactivate' componentName='offerDeactivateAction' newStateId='INACTIVE' meta-acls="ADMIN,SUPPLIER"/>
-      <on eventId='returnOffer' componentName='offerReturnAction' newStateId='RETURNED' meta-acls="SUPPLIER"/>
+    <!-- ================================================================ -->
+    <!-- Item 16: Auto-state CHECK_AUTO_APPROVE                           -->
+    <!-- If discountPercent <= requireApprovalAboveDiscount AND            -->
+    <!--    sellerRating >= autoApproveSellerRating → APPROVED             -->
+    <!-- Else → PENDING_APPROVAL                                          -->
+    <!-- ================================================================ -->
+
+    <auto-state id='CHECK_AUTO_APPROVE'
+                componentName='ifAction'
+                condition='discountPercent != null and discountPercent.doubleValue() &lt;= 30.0 and sellerRating != null and sellerRating.doubleValue() &gt;= 4.5'
+                then='autoApproved'
+                else='needsApproval'>
+      <on eventId='autoApproved' newStateId='APPROVED'/>
+      <on eventId='needsApproval' newStateId='PENDING_APPROVAL'/>
+    </auto-state>
+
+    <!-- ================================================================ -->
+    <!-- PENDING_APPROVAL: Awaiting catalog admin review                  -->
+    <!-- ================================================================ -->
+
+    <manual-state id='PENDING_APPROVAL' meta-mainPath="true"
+                  description="Offer submitted, awaiting catalog admin approval">
+      <on eventId='approve'
+          componentName='offerApproveAction'
+          newStateId='APPROVED'
+          meta-mainPath="true" meta-acls="CATALOG_ADMIN,ADMIN"/>
+      <on eventId='reject'
+          componentName='offerRejectAction'
+          newStateId='REJECTED'
+          meta-acls="CATALOG_ADMIN,ADMIN"/>
     </manual-state>
 
-    <manual-state id='REJECTED' description="Offer rejected by admin">
-      <on eventId='resubmit' componentName='offerResubmitAction' newStateId='PENDING_REVIEW' meta-acls="SUPPLIER"/>
+    <!-- ================================================================ -->
+    <!-- APPROVED: Ready to go live                                       -->
+    <!-- ================================================================ -->
+
+    <manual-state id='APPROVED' meta-mainPath="true"
+                  description="Offer approved, ready to go live">
+      <on eventId='goLive'
+          componentName='offerGoLiveAction'
+          newStateId='LIVE'
+          meta-mainPath="true" meta-acls="SYSTEM"/>
     </manual-state>
 
-    <manual-state id='RETURNED' description="Offer returned/withdrawn by supplier"/>
+    <!-- ================================================================ -->
+    <!-- LIVE: Active and visible to customers                            -->
+    <!-- ================================================================ -->
 
-    <manual-state id='INACTIVE' description="Offer temporarily deactivated">
-      <on eventId='activate' componentName='offerActivateAction' newStateId='ACTIVE' meta-mainPath="true" meta-acls="ADMIN,SUPPLIER"/>
+    <manual-state id='LIVE' meta-mainPath="true"
+                  description="Offer is live and visible to customers">
+      <on eventId='expire'
+          componentName='offerExpireAction'
+          newStateId='EXPIRED'
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='suspend'
+          componentName='offerSuspendAction'
+          newStateId='SUSPENDED'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- EXPIRED: Offer has passed its end date                           -->
+    <!-- ================================================================ -->
+
+    <manual-state id='EXPIRED' meta-mainPath="true"
+                  description="Offer expired, no longer active">
+      <on eventId='archive'
+          componentName='offerArchiveAction'
+          newStateId='ARCHIVED'
+          meta-mainPath="true" meta-acls="ADMIN,SELLER"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- ARCHIVED: Terminal state                                         -->
+    <!-- ================================================================ -->
+
+    <manual-state id='ARCHIVED' description="Offer archived, historical record only">
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- REJECTED: Offer rejected by catalog admin                        -->
+    <!-- ================================================================ -->
+
+    <manual-state id='REJECTED' description="Offer rejected by catalog admin">
+      <on eventId='resubmit'
+          componentName='offerResubmitAction'
+          newStateId='CHECK_AUTO_APPROVE'
+          meta-acls="SELLER"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- SUSPENDED: Offer suspended from LIVE (e.g., out of stock)        -->
+    <!-- ================================================================ -->
+
+    <manual-state id='SUSPENDED' description="Offer suspended from live state">
+      <on eventId='resume'
+          componentName='offerResumeAction'
+          newStateId='LIVE'
+          meta-acls="ADMIN"/>
+      <on eventId='expire'
+          componentName='offerExpireAction'
+          newStateId='EXPIRED'
+          meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- Item 16: Auto-state CHECK_EXPIRATION                             -->
+    <!-- Used by scheduler / event handler to check if offer has expired  -->
+    <!-- ================================================================ -->
+
+    <auto-state id='CHECK_EXPIRATION'
+                componentName='ifAction'
+                condition='endDate != null and endDate.getTime() &lt; new java.util.Date().getTime()'
+                then='expired'
+                else='stillActive'>
+      <on eventId='expired' newStateId='EXPIRED'/>
+      <on eventId='stillActive' newStateId='LIVE'/>
+    </auto-state>
+
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
     </manual-state>
   </flow>
 </states>

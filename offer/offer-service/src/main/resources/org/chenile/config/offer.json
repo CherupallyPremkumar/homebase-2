@@ -1,0 +1,22 @@
+{
+  "policies": {
+    "discount": {
+      "maxDiscountPercent": 70,
+      "requireApprovalAboveDiscount": 30
+    },
+    "margin": {
+      "minMarginPercent": 5
+    },
+    "offer": {
+      "maxOffersPerProduct": 3,
+      "offerDurationMaxDays": 90
+    },
+    "approval": {
+      "autoApproveSellerRating": 4.5
+    }
+  },
+  "policyEngine": {
+    "offer-submit": "policy-offer-submit-001",
+    "offer-approve": "policy-offer-approve-001"
+  }
+}

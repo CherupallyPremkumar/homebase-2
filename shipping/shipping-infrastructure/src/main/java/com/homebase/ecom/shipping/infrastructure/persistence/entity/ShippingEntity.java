@@ -23,41 +23,48 @@ public class ShippingEntity extends AbstractJpaStateEntity
     @Column(name = "order_id", nullable = false)
     private String orderId;
 
+    @Column(name = "customer_id")
+    private String customerId;
+
+    @Column(name = "tracking_number")
+    private String trackingNumber;
+
     @Column(nullable = false)
     private String carrier;
 
-    @Column(name = "tracking_number", nullable = false)
-    private String trackingNumber;
-
-    @Column(name = "tracking_url")
-    private String trackingUrl;
-
-    @Column(name = "shipped_at")
-    private Date shippedAt;
-
-    @Column(name = "estimated_delivery")
-    private Date estimatedDelivery;
+    @Column(name = "shipping_method")
+    private String shippingMethod;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "shipping_address", columnDefinition = "jsonb")
-    private String shippingAddress;
+    @Column(name = "from_address", columnDefinition = "jsonb")
+    private String fromAddress;
 
-    @Column(name = "delivered_at")
-    private Date deliveredAt;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "to_address", columnDefinition = "jsonb")
+    private String toAddress;
 
-    private String description;
+    @Column
+    private String weight;
 
-    @Column(name = "delivery_proof")
-    private String deliveryProof;
+    @Column
+    private String dimensions;
 
-    @Column(name = "return_reason")
-    private String returnReason;
+    @Column(name = "estimated_delivery_date")
+    private Date estimatedDeliveryDate;
 
-    @Column(name = "return_tracking_number")
-    private String returnTrackingNumber;
+    @Column(name = "actual_delivery_date")
+    private Date actualDeliveryDate;
+
+    @Column(name = "delivery_attempts")
+    private int deliveryAttempts;
+
+    @Column(name = "delivery_instructions")
+    private String deliveryInstructions;
 
     @Column(name = "current_location")
     private String currentLocation;
+
+    private String description;
 
     @Transient
     public TransientMap transientMap = new TransientMap();
@@ -66,105 +73,58 @@ public class ShippingEntity extends AbstractJpaStateEntity
     @JoinColumn(name = "shipping_id")
     public List<ShippingActivityLogEntity> activities = new ArrayList<>();
 
-    public String getOrderId() {
-        return orderId;
-    }
+    // ── Getters and Setters ──
 
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
-    }
+    public String getOrderId() { return orderId; }
+    public void setOrderId(String orderId) { this.orderId = orderId; }
 
-    public String getCarrier() {
-        return carrier;
-    }
+    public String getCustomerId() { return customerId; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
 
-    public void setCarrier(String carrier) {
-        this.carrier = carrier;
-    }
+    public String getTrackingNumber() { return trackingNumber; }
+    public void setTrackingNumber(String trackingNumber) { this.trackingNumber = trackingNumber; }
 
-    public String getTrackingNumber() {
-        return trackingNumber;
-    }
+    public String getCarrier() { return carrier; }
+    public void setCarrier(String carrier) { this.carrier = carrier; }
 
-    public void setTrackingNumber(String trackingNumber) {
-        this.trackingNumber = trackingNumber;
-    }
+    public String getShippingMethod() { return shippingMethod; }
+    public void setShippingMethod(String shippingMethod) { this.shippingMethod = shippingMethod; }
 
-    public String getTrackingUrl() {
-        return trackingUrl;
-    }
+    public String getFromAddress() { return fromAddress; }
+    public void setFromAddress(String fromAddress) { this.fromAddress = fromAddress; }
 
-    public void setTrackingUrl(String trackingUrl) {
-        this.trackingUrl = trackingUrl;
-    }
+    public String getToAddress() { return toAddress; }
+    public void setToAddress(String toAddress) { this.toAddress = toAddress; }
 
-    public Date getShippedAt() {
-        return shippedAt;
-    }
+    public String getWeight() { return weight; }
+    public void setWeight(String weight) { this.weight = weight; }
 
-    public void setShippedAt(Date shippedAt) {
-        this.shippedAt = shippedAt;
-    }
+    public String getDimensions() { return dimensions; }
+    public void setDimensions(String dimensions) { this.dimensions = dimensions; }
 
-    public Date getEstimatedDelivery() {
-        return estimatedDelivery;
-    }
+    public Date getEstimatedDeliveryDate() { return estimatedDeliveryDate; }
+    public void setEstimatedDeliveryDate(Date estimatedDeliveryDate) { this.estimatedDeliveryDate = estimatedDeliveryDate; }
 
-    public void setEstimatedDelivery(Date estimatedDelivery) {
-        this.estimatedDelivery = estimatedDelivery;
-    }
+    public Date getActualDeliveryDate() { return actualDeliveryDate; }
+    public void setActualDeliveryDate(Date actualDeliveryDate) { this.actualDeliveryDate = actualDeliveryDate; }
 
-    public String getShippingAddress() {
-        return shippingAddress;
-    }
+    public int getDeliveryAttempts() { return deliveryAttempts; }
+    public void setDeliveryAttempts(int deliveryAttempts) { this.deliveryAttempts = deliveryAttempts; }
 
-    public void setShippingAddress(String shippingAddress) {
-        this.shippingAddress = shippingAddress;
-    }
-
-    public Date getDeliveredAt() {
-        return deliveredAt;
-    }
-
-    public void setDeliveredAt(Date deliveredAt) {
-        this.deliveredAt = deliveredAt;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getDeliveryProof() { return deliveryProof; }
-    public void setDeliveryProof(String deliveryProof) { this.deliveryProof = deliveryProof; }
-
-    public String getReturnReason() { return returnReason; }
-    public void setReturnReason(String returnReason) { this.returnReason = returnReason; }
-
-    public String getReturnTrackingNumber() { return returnTrackingNumber; }
-    public void setReturnTrackingNumber(String returnTrackingNumber) { this.returnTrackingNumber = returnTrackingNumber; }
+    public String getDeliveryInstructions() { return deliveryInstructions; }
+    public void setDeliveryInstructions(String deliveryInstructions) { this.deliveryInstructions = deliveryInstructions; }
 
     public String getCurrentLocation() { return currentLocation; }
     public void setCurrentLocation(String currentLocation) { this.currentLocation = currentLocation; }
 
-    public TransientMap getTransientMap() {
-        return this.transientMap;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setTransientMap(TransientMap transientMap) {
-        this.transientMap = transientMap;
-    }
+    public TransientMap getTransientMap() { return this.transientMap; }
+    public void setTransientMap(TransientMap transientMap) { this.transientMap = transientMap; }
 
-    public List<ShippingActivityLogEntity> getActivities() {
-        return activities;
-    }
-
-    public void setActivities(List<ShippingActivityLogEntity> activities) {
-        this.activities = activities;
-    }
+    public List<ShippingActivityLogEntity> getActivities() { return activities; }
+    public void setActivities(List<ShippingActivityLogEntity> activities) { this.activities = activities; }
 
     @Override
     public Collection<ActivityLog> obtainActivities() {

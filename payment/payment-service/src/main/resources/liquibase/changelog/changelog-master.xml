@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="payment-001-create-payment-table" author="homebase">
+        <createTable tableName="payment">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="customer_id" type="VARCHAR(36)"/>
+            <column name="amount" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="payment_method" type="VARCHAR(20)"/>
+            <column name="gateway_transaction_id" type="VARCHAR(255)"/>
+            <column name="gateway_response" type="TEXT"/>
+            <column name="retry_count" type="INT" defaultValueNumeric="0"/>
+            <column name="failure_reason" type="TEXT"/>
+            <!-- Chenile STM fields -->
+            <column name="stateId" type="VARCHAR(50)"/>
+            <column name="flowId" type="VARCHAR(50)"/>
+            <!-- Audit fields from BaseJpaEntity -->
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+        </createTable>
+
+        <createIndex tableName="payment" indexName="idx_payment_order_id">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex tableName="payment" indexName="idx_payment_customer_id">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex tableName="payment" indexName="idx_payment_state">
+            <column name="stateId"/>
+        </createIndex>
+        <createIndex tableName="payment" indexName="idx_payment_method">
+            <column name="payment_method"/>
+        </createIndex>
+        <createIndex tableName="payment" indexName="idx_payment_gateway_txn">
+            <column name="gateway_transaction_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="payment-002-create-activity-log-table" author="homebase">
+        <createTable tableName="payment_activity_log">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="payment_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_id" type="VARCHAR(100)"/>
+            <column name="comment" type="TEXT"/>
+            <column name="success" type="BOOLEAN"/>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_payment_activity_payment"
+                                 baseTableName="payment_activity_log" baseColumnNames="payment_id"
+                                 referencedTableName="payment" referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

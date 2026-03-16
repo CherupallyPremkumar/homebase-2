@@ -2,57 +2,128 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="User">
 
+    <!-- Dashboard: getAll -->
     <select id="getAll" resultType="com.homebase.ecom.user.dto.UserDto">
-        SELECT 
-            u.id         as id,
-            u.id         as userId, 
-            u.name       as name,
-            u.name       as firstName, 
-            u.name       as lastName, 
-            u.email      as email, 
-            u.branch     as branch,
-            u.branch     as role,
-            u.percentage as percentage,
-            u.phone      as phone,
-            u.state_id   as stateId
-        FROM users u
+        SELECT
+            u.id            as id,
+            u.id            as userId,
+            u.first_name    as firstName,
+            u.last_name     as lastName,
+            u.email         as email,
+            u.phone         as phone,
+            u.role          as role,
+            u.kyc_status    as kycStatus,
+            u.state_id      as stateId
+        FROM user_profiles u
         <where>
             <if test="userId != null">AND u.id = #{userId}</if>
             <if test="email != null">AND u.email LIKE CONCAT('%', #{email}, '%')</if>
-            <if test="firstName != null">AND u.name LIKE CONCAT('%', #{firstName}, '%')</if>
-            <if test="lastName != null">AND u.name LIKE CONCAT('%', #{lastName}, '%')</if>
-            <if test="role != null">AND u.branch = #{role}</if>
+            <if test="firstName != null">AND u.first_name LIKE CONCAT('%', #{firstName}, '%')</if>
+            <if test="lastName != null">AND u.last_name LIKE CONCAT('%', #{lastName}, '%')</if>
+            <if test="role != null">AND u.role = #{role}</if>
             <if test="phone != null">AND u.phone = #{phone}</if>
+            <if test="stateId != null">AND u.state_id = #{stateId}</if>
         </where>
     </select>
 
     <select id="getAll-count" resultType="int">
-        SELECT count(*) FROM users u
+        SELECT count(*) FROM user_profiles u
         <where>
             <if test="userId != null">AND u.id = #{userId}</if>
             <if test="email != null">AND u.email LIKE CONCAT('%', #{email}, '%')</if>
-            <if test="firstName != null">AND u.name LIKE CONCAT('%', #{firstName}, '%')</if>
-            <if test="lastName != null">AND u.name LIKE CONCAT('%', #{lastName}, '%')</if>
-            <if test="role != null">AND u.branch = #{role}</if>
+            <if test="firstName != null">AND u.first_name LIKE CONCAT('%', #{firstName}, '%')</if>
+            <if test="lastName != null">AND u.last_name LIKE CONCAT('%', #{lastName}, '%')</if>
+            <if test="role != null">AND u.role = #{role}</if>
             <if test="phone != null">AND u.phone = #{phone}</if>
+            <if test="stateId != null">AND u.state_id = #{stateId}</if>
         </where>
     </select>
 
+    <!-- Dashboard: getById -->
     <select id="getById" resultType="com.homebase.ecom.user.dto.UserDto">
-        SELECT 
-            u.id         as id,
-            u.id         as userId, 
-            u.name       as name,
-            u.name       as firstName, 
-            u.name       as lastName, 
-            u.email      as email, 
-            u.branch     as branch,
-            u.branch     as role,
-            u.percentage as percentage,
-            u.phone      as phone,
-            u.state_id   as stateId
-        FROM users u
+        SELECT
+            u.id            as id,
+            u.id            as userId,
+            u.first_name    as firstName,
+            u.last_name     as lastName,
+            u.email         as email,
+            u.phone         as phone,
+            u.role          as role,
+            u.kyc_status    as kycStatus,
+            u.state_id      as stateId
+        FROM user_profiles u
         WHERE u.id = #{userId}
+    </select>
+
+    <!-- Dashboard: getStateCounts -->
+    <select id="getStateCounts" resultType="com.homebase.ecom.user.dto.UserDto">
+        SELECT
+            u.state_id      as stateId,
+            count(*)         as userCount
+        FROM user_profiles u
+        GROUP BY u.state_id
+    </select>
+
+    <!-- Dashboard: getRecentRegistrations -->
+    <select id="getRecentRegistrations" resultType="com.homebase.ecom.user.dto.UserDto">
+        SELECT
+            u.id            as id,
+            u.id            as userId,
+            u.first_name    as firstName,
+            u.last_name     as lastName,
+            u.email         as email,
+            u.role          as role,
+            u.state_id      as stateId
+        FROM user_profiles u
+        WHERE u.state_id = 'REGISTERED'
+        ORDER BY u.created_time DESC
+    </select>
+
+    <!-- Dashboard: getSuspendedUsers -->
+    <select id="getSuspendedUsers" resultType="com.homebase.ecom.user.dto.UserDto">
+        SELECT
+            u.id            as id,
+            u.id            as userId,
+            u.first_name    as firstName,
+            u.last_name     as lastName,
+            u.email         as email,
+            u.role          as role,
+            u.suspend_reason as suspendReason,
+            u.state_id      as stateId
+        FROM user_profiles u
+        WHERE u.state_id = 'SUSPENDED'
+    </select>
+
+    <!-- Admin: getByEmail -->
+    <select id="getByEmail" resultType="com.homebase.ecom.user.dto.UserDto">
+        SELECT
+            u.id            as id,
+            u.id            as userId,
+            u.first_name    as firstName,
+            u.last_name     as lastName,
+            u.email         as email,
+            u.phone         as phone,
+            u.role          as role,
+            u.kyc_status    as kycStatus,
+            u.state_id      as stateId
+        FROM user_profiles u
+        WHERE u.email = #{email}
+    </select>
+
+    <!-- Admin: getByRole -->
+    <select id="getByRole" resultType="com.homebase.ecom.user.dto.UserDto">
+        SELECT
+            u.id            as id,
+            u.id            as userId,
+            u.first_name    as firstName,
+            u.last_name     as lastName,
+            u.email         as email,
+            u.phone         as phone,
+            u.role          as role,
+            u.kyc_status    as kycStatus,
+            u.state_id      as stateId
+        FROM user_profiles u
+        WHERE u.role = #{role}
     </select>
 
 </mapper>

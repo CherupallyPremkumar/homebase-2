@@ -17,8 +17,8 @@ import java.util.List;
 public class SupportTicketEntity extends AbstractJpaStateEntity
         implements ActivityEnabledStateEntity, ContainsTransientMap {
 
-    @Column(name = "user_id", nullable = false)
-    private String userId;
+    @Column(name = "customer_id", nullable = false)
+    private String customerId;
 
     @Column(name = "order_id")
     private String orderId;
@@ -32,15 +32,24 @@ public class SupportTicketEntity extends AbstractJpaStateEntity
     @Column(nullable = false)
     private String priority;
 
-    @Column(name = "assigned_to")
-    private String assignedTo;
+    @Column(length = 4000)
+    private String description;
+
+    @Column(name = "assigned_agent_id")
+    private String assignedAgentId;
 
     @Column(name = "resolved_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date resolvedAt;
 
-    @Column(length = 4000)
-    private String description;
+    @Column(name = "reopen_count")
+    private int reopenCount = 0;
+
+    @Column(name = "sla_breached")
+    private boolean slaBreached = false;
+
+    @Column(name = "auto_close_ready")
+    private boolean autoCloseReady = false;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "ticket_id")
@@ -55,8 +64,8 @@ public class SupportTicketEntity extends AbstractJpaStateEntity
 
     // --- Getters and Setters ---
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public String getCustomerId() { return customerId; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
 
     public String getOrderId() { return orderId; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
@@ -70,14 +79,23 @@ public class SupportTicketEntity extends AbstractJpaStateEntity
     public String getPriority() { return priority; }
     public void setPriority(String priority) { this.priority = priority; }
 
-    public String getAssignedTo() { return assignedTo; }
-    public void setAssignedTo(String assignedTo) { this.assignedTo = assignedTo; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getAssignedAgentId() { return assignedAgentId; }
+    public void setAssignedAgentId(String assignedAgentId) { this.assignedAgentId = assignedAgentId; }
 
     public Date getResolvedAt() { return resolvedAt; }
     public void setResolvedAt(Date resolvedAt) { this.resolvedAt = resolvedAt; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public int getReopenCount() { return reopenCount; }
+    public void setReopenCount(int reopenCount) { this.reopenCount = reopenCount; }
+
+    public boolean isSlaBreached() { return slaBreached; }
+    public void setSlaBreached(boolean slaBreached) { this.slaBreached = slaBreached; }
+
+    public boolean isAutoCloseReady() { return autoCloseReady; }
+    public void setAutoCloseReady(boolean autoCloseReady) { this.autoCloseReady = autoCloseReady; }
 
     public List<TicketMessageEntity> getMessages() { return messages; }
     public void setMessages(List<TicketMessageEntity> messages) { this.messages = messages; }

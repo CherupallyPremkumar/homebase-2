@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * STM action for repairing multiple damaged items during the PARTIAL_DAMAGE stage
+ * STM action for repairing damaged items during the PARTIAL_DAMAGE stage
  * (before warehouse allocation). Moves repaired units back to the approved pool.
  */
 public class RepairDamagedsInventoryItemAction extends AbstractSTMTransitionAction<InventoryItem, RepairDamagedsInventoryPayload> {
@@ -25,8 +25,7 @@ public class RepairDamagedsInventoryItemAction extends AbstractSTMTransitionActi
 
         int repairedQty = payload.getRepairedQuantity() != null ? payload.getRepairedQuantity() : inventory.getDamagedQuantity();
 
-        // Use domain method for pre-allocation repair (does not add to availableQuantity)
-        inventory.repairDamagedPreAllocation(repairedQty);
+        inventory.repairDamagedPreAllocation(repairedQty, payload.getUnitIdentifiers());
 
         log.info("Repaired {} pre-allocation damaged units for productId={}, remaining damaged={}",
                 repairedQty, inventory.getProductId(), inventory.getDamagedQuantity());

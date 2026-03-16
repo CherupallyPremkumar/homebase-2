@@ -12,14 +12,20 @@ import jakarta.persistence.*;
 @Table(name = "inventory_item")
 public class InventoryItemEntity extends AbstractJpaStateEntity {
 
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "sku")
     private String sku;
 
     @Column(name = "asin")
     private String asin;
 
-    @Column(name = "product_id", unique = true)
+    @Column(name = "product_id")
     private String productId;
+
+    @Column(name = "variant_id", unique = true)
+    private String variantId;
 
     @Column(name = "quantity")
     private Integer quantity;
@@ -63,7 +69,11 @@ public class InventoryItemEntity extends AbstractJpaStateEntity {
     @CollectionTable(name = "inventory_movements", joinColumns = @JoinColumn(name = "inventory_item_id"))
     private List<StockMovementEntity> movementHistory = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @ElementCollection
+    @CollectionTable(name = "inventory_damage_records", joinColumns = @JoinColumn(name = "inventory_item_id"))
+    private List<DamageRecordEntity> damageRecords = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "inventory_item_id")
     private List<InventoryItemActivityLogEntity> activities = new ArrayList<>();
 
@@ -74,6 +84,9 @@ public class InventoryItemEntity extends AbstractJpaStateEntity {
     private Instant lastRestockAt;
 
     // Getters and Setters
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
     public String getSku() { return sku; }
     public void setSku(String sku) { this.sku = sku; }
 
@@ -82,6 +95,9 @@ public class InventoryItemEntity extends AbstractJpaStateEntity {
 
     public String getProductId() { return productId; }
     public void setProductId(String productId) { this.productId = productId; }
+
+    public String getVariantId() { return variantId; }
+    public void setVariantId(String variantId) { this.variantId = variantId; }
 
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
@@ -121,6 +137,9 @@ public class InventoryItemEntity extends AbstractJpaStateEntity {
 
     public List<StockMovementEntity> getMovementHistory() { return movementHistory; }
     public void setMovementHistory(List<StockMovementEntity> movementHistory) { this.movementHistory = movementHistory; }
+
+    public List<DamageRecordEntity> getDamageRecords() { return damageRecords; }
+    public void setDamageRecords(List<DamageRecordEntity> damageRecords) { this.damageRecords = damageRecords; }
 
     public List<InventoryItemActivityLogEntity> getActivities() { return activities; }
     public void setActivities(List<InventoryItemActivityLogEntity> activities) { this.activities = activities; }

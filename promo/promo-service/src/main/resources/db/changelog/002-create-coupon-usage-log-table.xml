@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="002-create-coupon-usage-log" author="homebase">
+        <createTable tableName="coupon_usage_log">
+            <column name="usage_id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="coupon_code" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="used_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="refunded_at" type="timestamp"/>
+            <column name="ip_address" type="varchar(50)"/>
+        </createTable>
+
+        <createIndex tableName="coupon_usage_log" indexName="idx_usage_coupon_user">
+            <column name="coupon_code"/>
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

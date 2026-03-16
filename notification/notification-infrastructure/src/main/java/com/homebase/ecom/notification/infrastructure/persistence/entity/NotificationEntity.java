@@ -2,7 +2,9 @@ package com.homebase.ecom.notification.infrastructure.persistence.entity;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.chenile.jpautils.entity.AbstractJpaStateEntity;
 import jakarta.persistence.*;
@@ -11,14 +13,14 @@ import jakarta.persistence.*;
 @Table(name = "notifications")
 public class NotificationEntity extends AbstractJpaStateEntity {
 
-    @Column(name = "user_id")
-    private String userId;
+    @Column(name = "customer_id")
+    private String customerId;
 
     @Column(name = "channel")
     private String channel;
 
-    @Column(name = "template_code")
-    private String templateCode;
+    @Column(name = "template_id")
+    private String templateId;
 
     @Column(name = "subject")
     private String subject;
@@ -26,22 +28,25 @@ public class NotificationEntity extends AbstractJpaStateEntity {
     @Column(name = "body", columnDefinition = "TEXT")
     private String body;
 
-    @Column(name = "reference_type")
-    private String referenceType;
+    @Column(name = "recipient_address")
+    private String recipientAddress;
 
-    @Column(name = "reference_id")
-    private String referenceId;
-
-    @Column(name = "read_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date readAt;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "notification_metadata", joinColumns = @JoinColumn(name = "notification_id"))
+    @MapKeyColumn(name = "meta_key")
+    @Column(name = "meta_value")
+    private Map<String, String> metadata = new HashMap<>();
 
     @Column(name = "sent_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date sentAt;
 
-    @Column(name = "error_message", columnDefinition = "TEXT")
-    private String errorMessage;
+    @Column(name = "delivered_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date deliveredAt;
+
+    @Column(name = "failure_reason", columnDefinition = "TEXT")
+    private String failureReason;
 
     @Column(name = "retry_count")
     private int retryCount;
@@ -51,14 +56,14 @@ public class NotificationEntity extends AbstractJpaStateEntity {
     private List<NotificationActivityLogEntity> activities = new ArrayList<>();
 
     // Getters and Setters
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public String getCustomerId() { return customerId; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
 
     public String getChannel() { return channel; }
     public void setChannel(String channel) { this.channel = channel; }
 
-    public String getTemplateCode() { return templateCode; }
-    public void setTemplateCode(String templateCode) { this.templateCode = templateCode; }
+    public String getTemplateId() { return templateId; }
+    public void setTemplateId(String templateId) { this.templateId = templateId; }
 
     public String getSubject() { return subject; }
     public void setSubject(String subject) { this.subject = subject; }
@@ -66,20 +71,20 @@ public class NotificationEntity extends AbstractJpaStateEntity {
     public String getBody() { return body; }
     public void setBody(String body) { this.body = body; }
 
-    public String getReferenceType() { return referenceType; }
-    public void setReferenceType(String referenceType) { this.referenceType = referenceType; }
+    public String getRecipientAddress() { return recipientAddress; }
+    public void setRecipientAddress(String recipientAddress) { this.recipientAddress = recipientAddress; }
 
-    public String getReferenceId() { return referenceId; }
-    public void setReferenceId(String referenceId) { this.referenceId = referenceId; }
-
-    public Date getReadAt() { return readAt; }
-    public void setReadAt(Date readAt) { this.readAt = readAt; }
+    public Map<String, String> getMetadata() { return metadata; }
+    public void setMetadata(Map<String, String> metadata) { this.metadata = metadata; }
 
     public Date getSentAt() { return sentAt; }
     public void setSentAt(Date sentAt) { this.sentAt = sentAt; }
 
-    public String getErrorMessage() { return errorMessage; }
-    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+    public Date getDeliveredAt() { return deliveredAt; }
+    public void setDeliveredAt(Date deliveredAt) { this.deliveredAt = deliveredAt; }
+
+    public String getFailureReason() { return failureReason; }
+    public void setFailureReason(String failureReason) { this.failureReason = failureReason; }
 
     public int getRetryCount() { return retryCount; }
     public void setRetryCount(int retryCount) { this.retryCount = retryCount; }

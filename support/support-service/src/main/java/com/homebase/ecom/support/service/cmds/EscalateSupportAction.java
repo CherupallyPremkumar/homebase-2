@@ -9,8 +9,12 @@ import com.homebase.ecom.support.model.SupportTicket;
 import com.homebase.ecom.support.model.TicketMessage;
 import com.homebase.ecom.support.dto.EscalatePayload;
 
+import java.util.Date;
+import java.util.UUID;
+
 /**
- * Escalates a support ticket from ASSIGNED to ESCALATED.
+ * Escalates a support ticket to ESCALATED state.
+ * Increases priority and optionally reassigns to senior agent.
  */
 public class EscalateSupportAction extends AbstractSTMTransitionAction<SupportTicket, EscalatePayload> {
 
@@ -37,16 +41,16 @@ public class EscalateSupportAction extends AbstractSTMTransitionAction<SupportTi
 
         // Reassign to senior agent if specified
         if (payload.getEscalateTo() != null && !payload.getEscalateTo().trim().isEmpty()) {
-            ticket.setAssignedTo(payload.getEscalateTo());
+            ticket.setAssignedAgentId(payload.getEscalateTo());
         } else {
-            // Clear assignment so admin can reassign
-            ticket.setAssignedTo(null);
+            ticket.setAssignedAgentId(null);
         }
 
         // Add system message about escalation
         TicketMessage escalationMsg = new TicketMessage();
-        escalationMsg.setId(java.util.UUID.randomUUID().toString());
+        escalationMsg.setId(UUID.randomUUID().toString());
         escalationMsg.setSenderType("SYSTEM");
+        escalationMsg.setTimestamp(new Date());
         escalationMsg.setMessage("Ticket escalated. Reason: " + payload.getEscalationReason()
                 + ". Priority changed to: " + ticket.getPriority());
         ticket.getMessages().add(escalationMsg);

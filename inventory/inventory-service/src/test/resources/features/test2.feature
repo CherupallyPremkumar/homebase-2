@@ -2,6 +2,10 @@ Feature: Testcase ID 2
 Tests the inventory Workflow Service using a REST client. Inventory service exists and is under test.
 It helps to create a inventory and manages the state of the inventory as documented in states xml
 
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
 Scenario: Create a new inventory
 Given that "flowName" equals "inventory-flow"
 And that "initialState" equals "STOCK_PENDING"
@@ -82,7 +86,7 @@ When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "DAMAGED_AT_WAREHOUSE"
+And the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
 Scenario: Send the discardDamaged event to the inventory with comments
@@ -96,5 +100,5 @@ When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "DISCARDED"
+And the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"

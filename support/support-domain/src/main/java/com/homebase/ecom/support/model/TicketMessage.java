@@ -1,12 +1,19 @@
 package com.homebase.ecom.support.model;
 
+import java.util.Date;
+import java.util.List;
+
+/**
+ * Value object for a message in a support ticket conversation.
+ */
 public class TicketMessage {
 
     private String id;
     private String senderId;
     private String senderType; // CUSTOMER, AGENT, SYSTEM
     private String message;
-    private String attachments; // JSON string
+    private Date timestamp;
+    private List<String> attachments;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -20,6 +27,9 @@ public class TicketMessage {
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
 
-    public String getAttachments() { return attachments; }
-    public void setAttachments(String attachments) { this.attachments = attachments; }
+    public Date getTimestamp() { return timestamp; }
+    public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
+
+    public List<String> getAttachments() { return attachments; }
+    public void setAttachments(List<String> attachments) { this.attachments = attachments; }
 }

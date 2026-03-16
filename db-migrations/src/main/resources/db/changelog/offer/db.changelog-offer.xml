@@ -5,12 +5,107 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
+    <!-- ================================================================== -->
+    <!-- V3: Create offers table                                            -->
+    <!-- ================================================================== -->
     <changeSet id="V3__create_offers_table" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/offer/V3__create_offers_table.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+        <createTable tableName="offers">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(36)">
+                <constraints nullable="false" foreignKeyName="fk_offers_product" referencedTableName="products" referencedColumnNames="id"/>
+            </column>
+            <column name="seller_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="NUMERIC(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_offers_product_id" tableName="offers">
+            <column name="product_id"/>
+        </createIndex>
+        <createIndex indexName="idx_offers_seller_id" tableName="offers">
+            <column name="seller_id"/>
+        </createIndex>
     </changeSet>
 
+    <!-- ================================================================== -->
+    <!-- V6: Seed offers for existing products and activate them            -->
+    <!-- ================================================================== -->
     <changeSet id="V6__seed_offers_and_activate_products" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/offer/V6__seed_offers_and_activate_products.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+        <insert tableName="offers">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="product_id" value="prod-001"/>
+            <column name="seller_id" value="SYSTEM"/>
+            <column name="price" valueNumeric="7999.00"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="offers">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="product_id" value="prod-002"/>
+            <column name="seller_id" value="SYSTEM"/>
+            <column name="price" valueNumeric="2999.00"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="offers">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="product_id" value="prod-003"/>
+            <column name="seller_id" value="SYSTEM"/>
+            <column name="price" valueNumeric="2499.00"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="offers">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="product_id" value="prod-004"/>
+            <column name="seller_id" value="SYSTEM"/>
+            <column name="price" valueNumeric="11999.00"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="offers">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="product_id" value="prod-005"/>
+            <column name="seller_id" value="SYSTEM"/>
+            <column name="price" valueNumeric="3999.00"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="offers">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="product_id" value="prod-006"/>
+            <column name="seller_id" value="SYSTEM"/>
+            <column name="price" valueNumeric="19999.00"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="offers">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="product_id" value="prod-007"/>
+            <column name="seller_id" value="SYSTEM"/>
+            <column name="price" valueNumeric="3499.00"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="offers">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="product_id" value="prod-008"/>
+            <column name="seller_id" value="SYSTEM"/>
+            <column name="price" valueNumeric="5999.00"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <update tableName="products">
+            <column name="status" value="ACTIVE"/>
+            <where>status = 'DRAFT'</where>
+        </update>
     </changeSet>
 
 </databaseChangeLog>

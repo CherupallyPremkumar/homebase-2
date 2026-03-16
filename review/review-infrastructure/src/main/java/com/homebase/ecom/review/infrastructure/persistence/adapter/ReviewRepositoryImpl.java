@@ -5,7 +5,9 @@ import com.homebase.ecom.review.domain.port.ReviewRepository;
 import com.homebase.ecom.review.infrastructure.persistence.entity.ReviewEntity;
 import com.homebase.ecom.review.infrastructure.persistence.mapper.ReviewMapper;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ReviewRepositoryImpl implements ReviewRepository {
 
@@ -20,6 +22,20 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     @Override
     public Optional<Review> findById(String id) {
         return jpaRepository.findById(id).map(mapper::toModel);
+    }
+
+    @Override
+    public List<Review> findByProductId(String productId) {
+        return jpaRepository.findByProductId(productId).stream()
+                .map(mapper::toModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Review> findByCustomerId(String customerId) {
+        return jpaRepository.findByCustomerId(customerId).stream()
+                .map(mapper::toModel)
+                .collect(Collectors.toList());
     }
 
     @Override

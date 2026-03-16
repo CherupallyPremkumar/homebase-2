@@ -5,137 +5,133 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.chenile.cconfig.sdk.CconfigClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
- * Central component enforcing all user account policies and rules.
+ * UserPolicyValidator -- enforces all user account policies and business rules.
  *
- * <h3>Policies (enforce constraints)</h3>
- * <ul>
- * <li>Email/phone verification requirements</li>
- * <li>Maximum active addresses</li>
- * <li>Account lockout after failed login attempts</li>
- * </ul>
+ * Policies (from user.json via CconfigClient):
+ *  - Email format validation
+ *  - Password strength (min length from config, default 8)
+ *  - Login attempt limits (maxLoginAttempts, default 5)
+ *  - Address count limits (maxAddressesPerUser, default 10)
+ *  - Lockout duration (lockoutDurationMinutes, default 30)
+ *  - Email verification timeout (emailVerificationTimeoutHours, default 48)
+ *  - KYC requirement for seller (kycRequiredForSeller, default true)
  *
- * <h3>Rules (return config values)</h3>
- * <ul>
- * <li>Wishlist item limit</li>
- * <li>Loyalty points: earn rate, redemption threshold, expiry</li>
- * <li>Notification preferences</li>
- * </ul>
- *
- * All values sourced from {@code user.json} via {@code CconfigClient}.
+ * No @Component -- wired in UserConfiguration.
  */
-@Component
 public class UserPolicyValidator {
 
     private static final Logger log = LoggerFactory.getLogger(UserPolicyValidator.class);
 
-    @Autowired
+    private static final Pattern EMAIL_PATTERN =
+            Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+
     private CconfigClient cconfigClient;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    public UserPolicyValidator() {}
+
+    public void setCconfigClient(CconfigClient cconfigClient) {
+        this.cconfigClient = cconfigClient;
+    }
+
     private JsonNode getUserConfig() {
+        if (cconfigClient == null) return mapper.createObjectNode();
         try {
-            Map<String, Object> map = cconfigClient.value("user", null);
-            if (map != null)
-                return mapper.valueToTree(map);
+            java.util.Map<String, Object> map = cconfigClient.value("user", null);
+            if (map != null) return mapper.valueToTree(map);
         } catch (Exception e) {
             log.warn("Failed to load user.json from cconfig, using defaults: {}", e.getMessage());
         }
         return mapper.createObjectNode();
     }
 
-    // ===========================================================
-    // POLICY: Account
-    // ===========================================================
+    // ── Email validation ─────────────────────────────────────────────────
 
-    /**
-     * Returns true if email verification is required on signup.
-     * Controlled by: user.json → policies.account.requireEmailVerification
-     */
-    public boolean isEmailVerificationRequired() {
-        JsonNode node = getUserConfig().at("/policies/account/requireEmailVerification");
-        return node.isMissingNode() || node.asBoolean(true);
-    }
-
-    /**
-     * Returns true if phone verification is required on signup.
-     * Controlled by: user.json → policies.account.requirePhoneVerification
-     */
-    public boolean isPhoneVerificationRequired() {
-        JsonNode node = getUserConfig().at("/policies/account/requirePhoneVerification");
-        return node.isMissingNode() || node.asBoolean(true);
-    }
-
-    /**
-     * Validates that the user has not exceeded the maximum allowed addresses.
-     * Controlled by: user.json → policies.account.maxActiveAddresses
-     */
-    public void validateAddressCount(int currentAddressCount) {
-        JsonNode node = getUserConfig().at("/policies/account/maxActiveAddresses");
-        int max = (!node.isMissingNode() && node.isInt()) ? node.asInt() : 5;
-        if (currentAddressCount >= max) {
-            throw new IllegalStateException(
-                    "Maximum " + max + " saved addresses allowed. Remove an existing address first.");
+    /** Validates email format. Throws IllegalArgumentException if invalid. */
+    public void validateEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw new IllegalArgumentException("Invalid email format: " + email);
         }
     }
 
-    // ===========================================================
-    // POLICY: Security
-    // ===========================================================
+    // ── Password strength ────────────────────────────────────────────────
+
+    /** Validates password meets minimum length. */
+    public void validatePasswordStrength(String password) {
+        int minLength = getPasswordMinLength();
+        if (password == null || password.length() < minLength) {
+            throw new IllegalArgumentException("Password must be at least " + minLength + " characters");
+        }
+    }
+
+    public int getPasswordMinLength() {
+        JsonNode node = getUserConfig().at("/passwordMinLength");
+        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 8;
+    }
+
+    // ── Login attempt limits ─────────────────────────────────────────────
 
     /** Returns max allowed failed login attempts before lockout. */
-    public int getMaxFailedLoginAttempts() {
-        JsonNode node = getUserConfig().at("/policies/security/maxFailedLoginAttempts");
+    public int getMaxLoginAttempts() {
+        JsonNode node = getUserConfig().at("/maxLoginAttempts");
         return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 5;
     }
 
+    /** Validates that the user has not exceeded the max login attempts. */
+    public void validateLoginAttempts(int currentAttempts) {
+        int max = getMaxLoginAttempts();
+        if (currentAttempts >= max) {
+            throw new IllegalStateException(
+                    "Account locked: " + currentAttempts + " failed attempts (max " + max + ")");
+        }
+    }
+
+    // ── Lockout duration ─────────────────────────────────────────────────
+
     /** Returns account lockout duration in minutes. */
     public int getLockoutDurationMinutes() {
-        JsonNode node = getUserConfig().at("/policies/security/lockoutDurationMinutes");
+        JsonNode node = getUserConfig().at("/lockoutDurationMinutes");
         return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 30;
     }
 
-    /** Returns session timeout duration in minutes. */
-    public int getSessionTimeoutMinutes() {
-        JsonNode node = getUserConfig().at("/policies/security/sessionTimeoutMinutes");
-        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 120;
+    // ── Address limits ───────────────────────────────────────────────────
+
+    /** Returns max addresses per user. */
+    public int getMaxAddressesPerUser() {
+        JsonNode node = getUserConfig().at("/maxAddressesPerUser");
+        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 10;
     }
 
-    // ===========================================================
-    // RULE: Wishlist
-    // ===========================================================
-
-    /** Returns maximum wishlist items per user. */
-    public int getMaxWishlistItems() {
-        JsonNode node = getUserConfig().at("/rules/wishlist/maxWishlistItems");
-        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 100;
+    /** Validates that the user has not exceeded the max address count. */
+    public void validateAddressCount(int currentAddressCount) {
+        int max = getMaxAddressesPerUser();
+        if (currentAddressCount >= max) {
+            throw new IllegalStateException(
+                    "Maximum " + max + " addresses allowed. Remove an existing address first.");
+        }
     }
 
-    // ===========================================================
-    // RULE: Loyalty
-    // ===========================================================
+    // ── Email verification timeout ───────────────────────────────────────
 
-    /** Returns points earned per rupee spent. */
-    public int getLoyaltyPointsPerRupee() {
-        JsonNode node = getUserConfig().at("/rules/loyalty/pointsPerRupee");
-        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 1;
+    /** Returns email verification timeout in hours. */
+    public int getEmailVerificationTimeoutHours() {
+        JsonNode node = getUserConfig().at("/emailVerificationTimeoutHours");
+        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 48;
     }
 
-    /** Returns minimum points required for redemption. */
-    public int getLoyaltyRedemptionThreshold() {
-        JsonNode node = getUserConfig().at("/rules/loyalty/redemptionThresholdPoints");
-        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 1000;
-    }
+    // ── KYC requirement ──────────────────────────────────────────────────
 
-    /** Returns loyalty point expiry in days. */
-    public int getLoyaltyPointExpiryDays() {
-        JsonNode node = getUserConfig().at("/rules/loyalty/pointExpiryDays");
-        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 365;
+    /** Returns whether KYC is required for seller role. */
+    public boolean isKycRequiredForSeller() {
+        JsonNode node = getUserConfig().at("/kycRequiredForSeller");
+        return node.isMissingNode() || node.asBoolean(true);
     }
 }

@@ -10,8 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Admin rejects the onboarding application during review.
- * Requires a rejection reason and notifies the applicant.
+ * Admin rejects the onboarding application at any rejectable state.
+ * Requires a rejection reason.
  */
 public class RejectAction extends AbstractSTMTransitionAction<OnboardingSaga, RejectOnboardingPayload> {
 
@@ -23,16 +23,12 @@ public class RejectAction extends AbstractSTMTransitionAction<OnboardingSaga, Re
                  Transition transition) throws Exception {
 
         String reason = payload.getReason();
-        if (reason == null || reason.trim().isEmpty()) {
+        if (reason == null || reason.isBlank()) {
             throw new IllegalArgumentException("Rejection reason is required");
         }
 
-        saga.setErrorMessage(reason);
-
-        // Flag for notification to applicant
-        saga.getTransientMap().put("rejectionNotificationRequired", true);
-
-        log.info("Onboarding application REJECTED for supplier: {}, reason: {}",
-                saga.getSupplierName(), reason);
+        saga.setRejectionReason(reason);
+        log.info("Onboarding application REJECTED for business: {}, reason: {}",
+                saga.getBusinessName(), reason);
     }
 }

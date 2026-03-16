@@ -19,9 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.chenile.workflow.dto.StateEntityServiceResponse;
 import com.homebase.ecom.support.model.SupportTicket;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @ChenileController(value = "supportService", serviceName = "_supportStateEntityService_", healthCheckerName = "supportHealthChecker")
+@Tag(name = "Support", description = "Customer support ticket management")
 public class SupportController extends ControllerSupport {
 
 	@GetMapping("/support/{id}")

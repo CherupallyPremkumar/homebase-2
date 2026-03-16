@@ -1,10 +1,8 @@
 package com.homebase.ecom.shared.event;
 
 import com.homebase.ecom.shared.Address;
-import com.homebase.ecom.shared.Money;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,13 +16,13 @@ public class CartCheckoutInitiatedEvent implements Serializable {
 
     private String cartId;
     private String userId;
-    private BigDecimal totalAmount;
+    private long totalAmount;
     private String currency;
     private List<CartItemPayload> items;
     private Address shippingAddress;
     private Address billingAddress;
     private String promoCode;
-    private BigDecimal discountAmount;
+    private long discountAmount;
     private String eventType = EVENT_TYPE;
     private LocalDateTime timestamp;
 
@@ -57,11 +55,11 @@ public class CartCheckoutInitiatedEvent implements Serializable {
         this.userId = userId;
     }
 
-    public BigDecimal getTotalAmount() {
+    public long getTotalAmount() {
         return totalAmount;
     }
 
-    public void setTotalAmount(BigDecimal totalAmount) {
+    public void setTotalAmount(long totalAmount) {
         this.totalAmount = totalAmount;
     }
 
@@ -105,11 +103,11 @@ public class CartCheckoutInitiatedEvent implements Serializable {
         this.promoCode = promoCode;
     }
 
-    public BigDecimal getDiscountAmount() {
+    public long getDiscountAmount() {
         return discountAmount;
     }
 
-    public void setDiscountAmount(BigDecimal discountAmount) {
+    public void setDiscountAmount(long discountAmount) {
         this.discountAmount = discountAmount;
     }
 
@@ -135,7 +133,7 @@ public class CartCheckoutInitiatedEvent implements Serializable {
     public static class CartItemPayload implements Serializable {
         private String productId;
         private Integer quantity;
-        private Money unitPrice;
+        private long unitPrice;
         private String productName;
         private String supplierId;
 
@@ -181,11 +179,11 @@ public class CartCheckoutInitiatedEvent implements Serializable {
             this.supplierId = supplierId;
         }
 
-        public Money getUnitPrice() {
+        public long getUnitPrice() {
             return unitPrice;
         }
 
-        public void setUnitPrice(Money unitPrice) {
+        public void setUnitPrice(long unitPrice) {
             this.unitPrice = unitPrice;
         }
     }

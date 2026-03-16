@@ -1,31 +1,30 @@
 package com.homebase.ecom.cart.model;
 
+import com.homebase.ecom.shared.Money;
 import org.chenile.workflow.activities.model.ActivityEnabledStateEntity;
 import org.chenile.workflow.activities.model.ActivityLog;
-import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
-import com.homebase.ecom.shared.Money;
 import org.chenile.workflow.model.*;
 import org.chenile.utils.entity.model.AbstractExtendedStateEntity;
 
+/**
+ * Cart bounded context domain model.
+ *
+ * All money fields use the Money value object which stores amounts
+ * in the smallest currency unit (paise for INR, cents for USD).
+ */
 public class Cart extends AbstractExtendedStateEntity implements ActivityEnabledStateEntity, ContainsTransientMap {
 
-    private String userId;
-
+    private String customerId;
+    private String sessionId;
     private List<CartItem> items = new ArrayList<>();
-
-    private Money totalAmount;
-
-    private String shippingAddress;
-
-    private String billingAddress;
-
-    private String appliedPromoCode;
-
-    private Money discountAmount;
-
-    private Money taxAmount;
+    private Money subtotal = Money.ZERO_INR;
+    private List<String> couponCodes = new ArrayList<>();
+    private Money discountAmount = Money.ZERO_INR;
+    private Money total = Money.ZERO_INR;
+    private LocalDateTime expiresAt;
+    private String notes;
 
     public String description;
 
@@ -36,60 +35,22 @@ public class Cart extends AbstractExtendedStateEntity implements ActivityEnabled
 
     public TransientMap transientMap = new TransientMap();
 
-    public String getShippingAddress() {
-        return shippingAddress;
+    // ── Getters & Setters ──────────────────────────────────────────────
+
+    public String getCustomerId() {
+        return customerId;
     }
 
-    public void setShippingAddress(String shippingAddress) {
-        this.shippingAddress = shippingAddress;
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
     }
 
-    public String getBillingAddress() {
-        return billingAddress;
+    public String getSessionId() {
+        return sessionId;
     }
 
-    public void setBillingAddress(String billingAddress) {
-        this.billingAddress = billingAddress;
-    }
-
-    public String getAppliedPromoCode() {
-        return appliedPromoCode;
-    }
-
-    public void setAppliedPromoCode(String appliedPromoCode) {
-        this.appliedPromoCode = appliedPromoCode;
-    }
-
-    public Money getDiscountAmount() {
-        return discountAmount;
-    }
-
-    public void setDiscountAmount(Money discountAmount) {
-        this.discountAmount = discountAmount;
-    }
-
-    public Money getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(Money totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public Money getTaxAmount() {
-        return taxAmount;
-    }
-
-    public void setTaxAmount(Money taxAmount) {
-        this.taxAmount = taxAmount;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 
     public List<CartItem> getItems() {
@@ -100,103 +61,124 @@ public class Cart extends AbstractExtendedStateEntity implements ActivityEnabled
         this.items = items;
     }
 
+    public Money getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(Money subtotal) {
+        this.subtotal = subtotal;
+    }
+
+    public String getCurrency() {
+        return subtotal.getCurrency();
+    }
+
+    public List<String> getCouponCodes() {
+        return couponCodes;
+    }
+
+    public void setCouponCodes(List<String> couponCodes) {
+        this.couponCodes = couponCodes;
+    }
+
+    public Money getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(Money discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(LocalDateTime expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public Money getTotal() {
+        return total;
+    }
+
+    public void setTotal(Money total) {
+        this.total = total;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    // ── Domain logic ───────────────────────────────────────────────────
+
     /**
-     * Adds an item to the cart. If the product already exists, increments quantity.
-     * Recalculates the cart total after modification.
+     * Adds an item to the cart. If the same variantId already exists, increments quantity.
+     * variantId is the unique key for cart line items.
+     * Note: pricing is NOT recalculated here — caller must call recalculatePricing() via PricingPort.
      */
     public void addItem(CartItem item) {
         Optional<CartItem> existing = items.stream()
-                .filter(i -> i.getProductId().equals(item.getProductId()))
+                .filter(i -> i.getVariantId().equals(item.getVariantId()))
                 .findFirst();
         if (existing.isPresent()) {
             existing.get().setQuantity(existing.get().getQuantity() + item.getQuantity());
         } else {
             items.add(item);
         }
-        recalculateTotal();
     }
 
     /**
-     * Removes an item from the cart by productId and recalculates the total.
+     * Removes an item from the cart by variantId.
+     * Note: pricing is NOT recalculated here — caller must call recalculatePricing() via PricingPort.
      */
-    public void removeItem(String productId) {
-        items.removeIf(i -> i.getProductId().equals(productId));
-        recalculateTotal();
+    public void removeItem(String variantId) {
+        items.removeIf(i -> i.getVariantId().equals(variantId));
     }
 
     /**
-     * Updates the quantity of an existing item and recalculates the total.
+     * Updates the quantity of an existing item by variantId.
+     * Note: pricing is NOT recalculated here — caller must call recalculatePricing() via PricingPort.
      */
-    public void updateItemQuantity(String productId, int newQuantity) {
+    public void updateItemQuantity(String variantId, int newQuantity) {
         items.stream()
-                .filter(i -> i.getProductId().equals(productId))
+                .filter(i -> i.getVariantId().equals(variantId))
                 .findFirst()
-                .ifPresent(item -> {
-                    item.setQuantity(newQuantity);
-                    recalculateTotal();
-                });
+                .ifPresent(item -> item.setQuantity(newQuantity));
     }
 
     /**
-     * Returns true if any item in the cart is not AVAILABLE.
+     * Adds a coupon code to the cart.
      */
-    public boolean hasUnavailableItems() {
-        return items.stream().anyMatch(i -> i.getStatus() != CartItemStatus.AVAILABLE);
+    public void addCouponCode(String couponCode) {
+        if (!couponCodes.contains(couponCode)) {
+            couponCodes.add(couponCode);
+        }
     }
 
     /**
-     * Snapshots current prices by recording a freeze timestamp in the description.
+     * Removes a coupon code from the cart.
      */
-    public void freezePrices() {
-        this.description = "Prices frozen at checkout: " + Instant.now();
+    public void removeCouponCode(String couponCode) {
+        couponCodes.remove(couponCode);
     }
 
     /**
-     * Recalculates the cart total from available items, applying any active discount.
-     * Uses the currency from the existing totalAmount or the first item's price.
+     * Local fallback: recalculates line totals and subtotal from items.
+     * In production, Pricing Service computes ALL values (subtotal, discount, total, line totals).
+     * This method is only used as a fallback when Pricing Service is unavailable (e.g. unit tests).
      */
-    public void recalculateTotal() {
-        BigDecimal itemsTotal = BigDecimal.ZERO;
-        String currency = resolveCurrency();
-
+    public void recalculateSubtotal() {
+        String curr = subtotal.getCurrency();
+        Money sum = Money.zero(curr);
         for (CartItem item : items) {
-            if (item.getStatus() == CartItemStatus.AVAILABLE
-                    && item.getPrice() != null
-                    && item.getPrice().getAmount() != null) {
-                itemsTotal = itemsTotal.add(
-                        item.getPrice().getAmount().multiply(BigDecimal.valueOf(item.getQuantity())));
-            }
+            item.recalculateLineTotal();
+            sum = sum.add(item.getLineTotal());
         }
-
-        BigDecimal finalTotal = itemsTotal;
-
-        // Apply discount if promo code is active
-        if (this.discountAmount != null
-                && this.discountAmount.getAmount() != null
-                && this.discountAmount.getAmount().compareTo(BigDecimal.ZERO) > 0) {
-            finalTotal = finalTotal.subtract(this.discountAmount.getAmount());
-            if (finalTotal.compareTo(BigDecimal.ZERO) < 0) {
-                finalTotal = BigDecimal.ZERO;
-            }
-        }
-
-        this.totalAmount = new Money(finalTotal, currency);
-    }
-
-    /**
-     * Resolves the currency to use for the cart total.
-     */
-    private String resolveCurrency() {
-        if (this.totalAmount != null && this.totalAmount.getCurrency() != null) {
-            return this.totalAmount.getCurrency();
-        }
-        // Fall back to first item's currency
-        for (CartItem item : items) {
-            if (item.getPrice() != null && item.getPrice().getCurrency() != null) {
-                return item.getPrice().getCurrency();
-            }
-        }
-        return "INR"; // Default currency
+        this.subtotal = sum;
     }
 
     public TransientMap getTransientMap() {
@@ -206,6 +188,8 @@ public class Cart extends AbstractExtendedStateEntity implements ActivityEnabled
     public void setTransientMap(TransientMap transientMap) {
         this.transientMap = transientMap;
     }
+
+    // ── Activity support ───────────────────────────────────────────────
 
     public List<CartActivityLog> activities = new ArrayList<>();
 

@@ -1,78 +1,130 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
-  <enablement-strategy componentName="cartConfigBasedEnablementStrategy"/>
-  <default-transition-action componentName="cartBaseTransitionAction"/>
 
-  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
+  <!-- ================================================================ -->
+  <!-- Event definitions with ACLs and payload types                     -->
+  <!-- ================================================================ -->
+  <event-information eventId='create' meta-acls="CUSTOMER,SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='addItem' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.cart.dto.AddItemCartPayload"/>
+  <event-information eventId='removeItem' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.cart.dto.RemoveItemCartPayload"/>
+  <event-information eventId='updateQuantity' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.cart.dto.UpdateQuantityCartPayload"/>
+  <event-information eventId='applyCoupon' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.cart.dto.ApplyCouponCartPayload"/>
+  <event-information eventId='removeCoupon' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.cart.dto.RemoveCouponCartPayload"/>
+  <event-information eventId='initiateCheckout' meta-acls="CUSTOMER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='cancelCheckout' meta-acls="CUSTOMER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='completeCheckout' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.cart.dto.CompleteCheckoutCartPayload"/>
+  <event-information eventId='abandon' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='expire' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='reactivate' meta-acls="CUSTOMER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='merge' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.cart.dto.MergeCartPayload"/>
 
   <flow id='cart-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
-    <entry-action componentName="cartEntryAction" />
-    <exit-action componentName="cartExitAction" />
+    <entry-action componentName="cartEntryAction"/>
+    <exit-action componentName="cartExitAction"/>
 
-    <!-- ========== INITIAL STATE ========== -->
-    <status id='CREATED' initialState='true' meta-mainPath="true" description="New cart, no items yet">
-      <on eventId='addItem' componentName="cartAddItemAction" newStateId='ACTIVE' meta-acls="CUSTOMER"/>
-      <on eventId='mergeCart' componentName="cartMergeCartAction" newStateId='ACTIVE' meta-acls="CUSTOMER"/>
-    </status>
+    <!-- ================================================================ -->
+    <!-- ACTIVE: Cart created, user adding/removing items                  -->
+    <!-- ================================================================ -->
+    <manual-state id='ACTIVE' initialState='true' meta-mainPath="true"
+                  description="Cart created, user shopping — adding/removing items">
+      <on eventId='addItem'
+          componentName='cartAddItemAction'
+          newStateId='ACTIVE'
+          meta-acls="CUSTOMER"/>
+      <on eventId='removeItem'
+          componentName='cartRemoveItemAction'
+          newStateId='ACTIVE'
+          meta-acls="CUSTOMER"/>
+      <on eventId='updateQuantity'
+          componentName='cartUpdateQuantityAction'
+          newStateId='ACTIVE'
+          meta-acls="CUSTOMER"/>
+      <on eventId='applyCoupon'
+          componentName='cartApplyCouponAction'
+          newStateId='ACTIVE'
+          meta-acls="CUSTOMER"/>
+      <on eventId='removeCoupon'
+          componentName='cartRemoveCouponAction'
+          newStateId='ACTIVE'
+          meta-acls="CUSTOMER"/>
+      <on eventId='merge'
+          componentName='cartMergeAction'
+          newStateId='ACTIVE'
+          meta-acls="CUSTOMER"/>
+      <on eventId='initiateCheckout'
+          componentName='cartInitiateCheckoutAction'
+          newStateId='CHECKOUT_INITIATED'
+          meta-mainPath="true" meta-acls="CUSTOMER"/>
+      <on eventId='abandon'
+          componentName='cartAbandonAction'
+          newStateId='ABANDONED'
+          meta-acls="SYSTEM"/>
+      <on eventId='expire'
+          componentName='cartExpireAction'
+          newStateId='EXPIRED'
+          meta-acls="SYSTEM"/>
+    </manual-state>
 
-    <!-- ========== MAIN SHOPPING STATE ========== -->
-    <status id='ACTIVE' meta-mainPath="true" description="User shopping, adding/removing items">
-      <on eventId='addItem' componentName="cartAddItemAction" newStateId='ACTIVE' meta-acls="CUSTOMER"/>
-      <on eventId='removeItem' componentName="cartRemoveItemAction" newStateId='ACTIVE' meta-acls="CUSTOMER"/>
-      <on eventId='updateQuantity' componentName="cartUpdateQuantityAction" newStateId='ACTIVE' meta-acls="CUSTOMER"/>
-      <on eventId='addDeliveryAddress' componentName="cartAddDeliveryAddressAction" newStateId='ACTIVE' meta-acls="CUSTOMER"/>
-      <on eventId='applyPromoCode' componentName="cartApplyPromoCodeAction" newStateId='ACTIVE' meta-acls="CUSTOMER"/>
-      
-      <on eventId='moveToWishlist' componentName="cartMoveToWishlistAction" newStateId='SAVED' meta-acls="CUSTOMER"/>
-      
-      <on eventId='initiateCheckout' componentName="cartInitiateCheckoutAction" newStateId='LOCKED' meta-mainPath="true" meta-acls="CUSTOMER"/>
-      
-      <on eventId='sessionTimeout' componentName="cartSessionTimeoutAction" newStateId='ABANDONED' meta-acls="SYSTEM"/>
-    </status>
+    <!-- ================================================================ -->
+    <!-- CHECKOUT_INITIATED: Cart locked for checkout                      -->
+    <!-- Checkout service orchestrates payment, then tells cart "done"     -->
+    <!-- ================================================================ -->
+    <manual-state id='CHECKOUT_INITIATED' meta-mainPath="true"
+                  description="Checkout initiated, inventory reserved, awaiting checkout completion">
+      <on eventId='completeCheckout'
+          componentName='cartCompleteCheckoutAction'
+          newStateId='CHECKOUT_COMPLETED'
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='cancelCheckout'
+          componentName='cartCancelCheckoutAction'
+          newStateId='ACTIVE'
+          meta-acls="CUSTOMER"/>
+      <on eventId='abandon'
+          componentName='cartAbandonAction'
+          newStateId='ABANDONED'
+          meta-acls="SYSTEM"/>
+      <on eventId='expire'
+          componentName='cartExpireAction'
+          newStateId='EXPIRED'
+          meta-acls="SYSTEM"/>
+    </manual-state>
 
-    <!-- ========== SAVED (WISH LIST) ========== -->
-    <status id='SAVED' description="Items moved to 'Save for Later'">
-      <on eventId='moveToCart' componentName="cartMoveToCartAction" newStateId='ACTIVE' meta-acls="CUSTOMER"/>
-    </status>
+    <!-- ================================================================ -->
+    <!-- CHECKOUT_COMPLETED: Order created from cart — terminal            -->
+    <!-- ================================================================ -->
+    <manual-state id='CHECKOUT_COMPLETED' meta-mainPath="true"
+                  description="Checkout completed, order created from cart">
+    </manual-state>
 
-    <!-- ========== LOCKED (CHECKOUT INITIATED) ========== -->
-    <status id='LOCKED' meta-mainPath="true" description="Checkout initiated, price frozen.">
-      <on eventId='reserveInventory' componentName="inventoryReserveAction" newStateId='RESERVED' meta-acls="SYSTEM"/>
-      <on eventId='abandonCheckout' componentName="cartAbandonCheckoutAction" newStateId='ACTIVE' meta-acls="CUSTOMER"/>
-      <on eventId='lockTimeout' componentName="cartLockTimeoutAction" newStateId='EXPIRED' meta-acls="SYSTEM"/>
-    </status>
+    <!-- ================================================================ -->
+    <!-- ABANDONED: User abandoned cart — can reactivate                   -->
+    <!-- ================================================================ -->
+    <manual-state id='ABANDONED'
+                  description="Cart abandoned by user or system timeout">
+      <on eventId='reactivate'
+          componentName='cartReactivateAction'
+          newStateId='ACTIVE'
+          meta-acls="CUSTOMER"/>
+      <on eventId='expire'
+          componentName='cartExpireAction'
+          newStateId='EXPIRED'
+          meta-acls="SYSTEM"/>
+    </manual-state>
 
-    <!-- ========== RESERVED (INVENTORY SOFT-BLOCKED) ========== -->
-    <status id='RESERVED' meta-mainPath="true" description="Inventory soft-blocked for the user.">
-      <on eventId='createPaymentSession' componentName="cartCreatePaymentSessionAction" newStateId='PAYMENT_PENDING' meta-mainPath="true" meta-acls="CUSTOMER,SYSTEM"/>
-      <on eventId='inventoryReservationFailed' componentName="cartInventoryReservationFailedAction" newStateId='ACTIVE' meta-acls="SYSTEM"/>
-      <on eventId='reserveTimeout' componentName="cartReserveTimeoutAction" newStateId='EXPIRED' meta-acls="SYSTEM"/>
-    </status>
+    <!-- ================================================================ -->
+    <!-- EXPIRED: Cart expired — terminal                                  -->
+    <!-- ================================================================ -->
+    <manual-state id='EXPIRED'
+                  description="Cart expired due to inactivity or TTL">
+    </manual-state>
 
-    <!-- ========== PAYMENT PENDING ========== -->
-    <status id='PAYMENT_PENDING' description="User on gateway, awaiting webhook">
-      <!-- Payment successful -->
-      <on eventId='paymentSuccess' componentName="cartPaymentSuccessAction" newStateId='CONVERTED' meta-mainPath="true" meta-acls="SYSTEM"/>
-      
-      <!-- Payment failed -->
-      <on eventId='paymentFailed' componentName="cartPaymentFailedAction" newStateId='ACTIVE' meta-acls="SYSTEM"/>
-    </status>
+    <!-- ================================================================ -->
+    <!-- MERGED: Cart merged into another cart — terminal                   -->
+    <!-- ================================================================ -->
+    <manual-state id='MERGED'
+                  description="Cart merged into another user cart after login">
+    </manual-state>
 
-    <!-- ========== CONVERTED (SUCCESS) ========== -->
-    <status id='CONVERTED' description="✅ Order complete, cart is converted">
-      <!-- Terminal state -->
-    </status>
-
-    <!-- ========== ABANDONED CART ========== -->
-    <status id='ABANDONED' description="User abandoned cart mid-checkout or inactive">
-      <on eventId='recoverCart' componentName="cartRecoverCartAction" newStateId='ACTIVE' meta-acls="CUSTOMER"/>
-      <on eventId='inventoryRelease' componentName="cartInventoryReleaseAction" meta-acls="SYSTEM" />
-    </status>
-
-    <!-- ========== EXPIRED CART ========== -->
-    <status id='EXPIRED' description="Cart expired due to lock/TTL, or deleted">
-       <!-- Terminal State -->
-    </status>
   </flow>
 </states>

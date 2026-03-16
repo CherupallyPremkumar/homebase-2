@@ -1,0 +1,17 @@
+{
+	"name": "offerEventService",
+	"id": "offerEventService",
+	"serviceName": "offerEventService",
+	"operations": [
+		{
+			"name": "handleProductEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["product.events"]
+		},
+		{
+			"name": "handleInventoryEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["inventory.events"]
+		}
+	]
+}

@@ -14,12 +14,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.homebase.ecom</groupId>
-			<artifactId>handmade-catalog-service</artifactId>
+			<artifactId>catalog-service</artifactId>
 			<version>${revision}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.homebase.ecom</groupId>
-			<artifactId>handmade-catalog-infrastructure</artifactId>
+			<artifactId>catalog-infrastructure</artifactId>
 			<version>${revision}</version>
 		</dependency>
 		<dependency>

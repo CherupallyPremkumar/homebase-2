@@ -5,97 +5,95 @@ import org.chenile.workflow.activities.model.ActivityLog;
 import org.chenile.utils.entity.model.AbstractExtendedStateEntity;
 import org.chenile.workflow.model.ContainsTransientMap;
 import org.chenile.workflow.model.TransientMap;
-import com.homebase.ecom.shared.Money;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
-public class Offer extends AbstractExtendedStateEntity 
+/**
+ * Offer domain model. Represents a seller's offer on a product.
+ *
+ * Fields: id, productId, supplierId, offerType, title, description,
+ * originalPrice, offerPrice, discountPercent, startDate, endDate,
+ * maxQuantity, soldQuantity, sellerRating, stateId, flowId.
+ */
+public class Offer extends AbstractExtendedStateEntity
         implements ActivityEnabledStateEntity, ContainsTransientMap {
 
     private String id;
-    private String variantId; // Links to Product BC Variant
-    private String supplierId; // Maker's ID
-    private Money price;
-    private Money msrp;
-    private OfferStatus status;
-    private java.util.Date trialEndDate;
+    private String productId;
+    private String supplierId;
+    private OfferType offerType;
+    private String title;
+    private String description;
+    private BigDecimal originalPrice;
+    private BigDecimal offerPrice;
+    private BigDecimal discountPercent;
+    private Date startDate;
+    private Date endDate;
+    private int maxQuantity;
+    private int soldQuantity;
+    private BigDecimal sellerRating;
     private TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
 
-    public String getId() {
-        return id;
-    }
+    // ── Getters / Setters ──────────────────────────────────────────────────
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public String getVariantId() {
-        return variantId;
-    }
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
 
-    public void setVariantId(String variantId) {
-        this.variantId = variantId;
-    }
+    public String getSupplierId() { return supplierId; }
+    public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
 
-    public String getSupplierId() {
-        return supplierId;
-    }
+    public OfferType getOfferType() { return offerType; }
+    public void setOfferType(OfferType offerType) { this.offerType = offerType; }
 
-    public void setSupplierId(String supplierId) {
-        this.supplierId = supplierId;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public Money getPrice() {
-        return price;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setPrice(Money price) {
-        this.price = price;
-    }
+    public BigDecimal getOriginalPrice() { return originalPrice; }
+    public void setOriginalPrice(BigDecimal originalPrice) { this.originalPrice = originalPrice; }
 
-    public Money getMsrp() {
-        return msrp;
-    }
+    public BigDecimal getOfferPrice() { return offerPrice; }
+    public void setOfferPrice(BigDecimal offerPrice) { this.offerPrice = offerPrice; }
 
-    public void setMsrp(Money msrp) {
-        this.msrp = msrp;
-    }
+    public BigDecimal getDiscountPercent() { return discountPercent; }
+    public void setDiscountPercent(BigDecimal discountPercent) { this.discountPercent = discountPercent; }
 
-    public OfferStatus getStatus() {
-        return status;
-    }
+    public Date getStartDate() { return startDate; }
+    public void setStartDate(Date startDate) { this.startDate = startDate; }
 
-    public void setStatus(OfferStatus status) {
-        this.status = status;
-    }
+    public Date getEndDate() { return endDate; }
+    public void setEndDate(Date endDate) { this.endDate = endDate; }
 
-    public java.util.Date getTrialEndDate() {
-        return trialEndDate;
-    }
+    public int getMaxQuantity() { return maxQuantity; }
+    public void setMaxQuantity(int maxQuantity) { this.maxQuantity = maxQuantity; }
 
-    public void setTrialEndDate(java.util.Date trialEndDate) {
-        this.trialEndDate = trialEndDate;
-    }
+    public int getSoldQuantity() { return soldQuantity; }
+    public void setSoldQuantity(int soldQuantity) { this.soldQuantity = soldQuantity; }
+
+    public BigDecimal getSellerRating() { return sellerRating; }
+    public void setSellerRating(BigDecimal sellerRating) { this.sellerRating = sellerRating; }
+
+    // ── STM / Activity support ─────────────────────────────────────────────
 
     @Override
-    public TransientMap getTransientMap() {
-        return transientMap;
-    }
-
-    public void setTransientMap(TransientMap transientMap) {
-        this.transientMap = transientMap;
-    }
+    public TransientMap getTransientMap() { return transientMap; }
+    public void setTransientMap(TransientMap transientMap) { this.transientMap = transientMap; }
 
     public List<ActivityLog> getActivities() { return activities; }
     public void setActivities(List<ActivityLog> activities) { this.activities = activities; }
 
     @Override
-    public Collection<ActivityLog> obtainActivities() {
-        return activities;
-    }
+    public Collection<ActivityLog> obtainActivities() { return activities; }
 
     @Override
     public ActivityLog addActivity(String eventId, String comment) {
@@ -107,8 +105,31 @@ public class Offer extends AbstractExtendedStateEntity
         return log;
     }
 
-    // Domain logic: Is the offer eligible for sale?
-    public boolean isSalable() {
-        return status == OfferStatus.ACTIVE;
+    // ── Domain logic ───────────────────────────────────────────────────────
+
+    /**
+     * Is the offer currently live and available for purchase?
+     */
+    public boolean isLive() {
+        return getCurrentState() != null && "LIVE".equals(getCurrentState().getStateId());
+    }
+
+    /**
+     * Has the offer passed its end date?
+     */
+    public boolean isExpired() {
+        return endDate != null && new Date().after(endDate);
+    }
+
+    /**
+     * Compute margin percent: (originalPrice - offerPrice) / originalPrice * 100.
+     */
+    public BigDecimal computeMarginPercent() {
+        if (originalPrice == null || offerPrice == null || originalPrice.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+        return originalPrice.subtract(offerPrice)
+                .divide(originalPrice, 4, java.math.RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
     }
 }

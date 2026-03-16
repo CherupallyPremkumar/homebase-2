@@ -5,11 +5,13 @@ import com.homebase.ecom.cms.dto.CmsPageDto;
 import com.homebase.ecom.cms.service.CmsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/cms")
+@Tag(name = "CMS", description = "Content management system")
 public class CmsController {
 
     private final CmsService cmsService;

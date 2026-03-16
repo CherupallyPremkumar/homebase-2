@@ -18,17 +18,21 @@
         <dependency>
             <groupId>com.homebase.ecom.policy</groupId>
             <artifactId>policy-api</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom.policy</groupId>
             <artifactId>policy-domain</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>workflow-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.build</groupId>
+            <artifactId>core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -60,6 +64,10 @@
         </dependency>
         <dependency>
             <groupId>org.chenile</groupId>
+            <artifactId>service-registry-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
             <artifactId>chenile-kafka</artifactId>
         </dependency>
         <dependency>
@@ -81,7 +89,13 @@
         <dependency>
             <groupId>com.homebase.ecom.policy</groupId>
             <artifactId>policy-infrastructure</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.dasniko</groupId>
+            <artifactId>testcontainers-keycloak</artifactId>
+            <version>3.4.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

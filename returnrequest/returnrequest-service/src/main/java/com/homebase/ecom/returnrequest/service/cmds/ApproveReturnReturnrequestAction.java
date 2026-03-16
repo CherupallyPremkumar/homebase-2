@@ -14,8 +14,7 @@ import java.math.BigDecimal;
 
 /**
  * Handles the approveReturn transition (UNDER_REVIEW -> APPROVED).
- * Validates return window, calculates refund amount based on refund type.
- * Sets the refund amount on the return request for downstream processing.
+ * Sets refund amount and return type for downstream processing.
  */
 public class ApproveReturnReturnrequestAction extends AbstractSTMTransitionAction<Returnrequest,
         ApproveReturnReturnrequestPayload> {
@@ -28,24 +27,25 @@ public class ApproveReturnReturnrequestAction extends AbstractSTMTransitionActio
                              State startState, String eventId,
                              State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-        // Calculate refund amount
+        // Set refund amount from payload or keep existing
         if (payload.getRefundAmount() != null) {
-            // Explicit refund amount provided (partial refund scenario)
-            returnrequest.refundAmount = payload.getRefundAmount();
-        } else if (returnrequest.itemPrice != null) {
-            // Default to item price for full refund
-            returnrequest.refundAmount = returnrequest.itemPrice.multiply(
-                    BigDecimal.valueOf(returnrequest.quantity != null ? returnrequest.quantity : 1));
+            returnrequest.totalRefundAmount = payload.getRefundAmount();
         }
 
+        // Set return type
         if (payload.getRefundType() != null) {
             returnrequest.returnType = payload.getRefundType();
-        } else if (returnrequest.returnType == null || !returnrequest.returnType.equals("AUTO_APPROVED")) {
-            returnrequest.returnType = "FULL";
+        } else if (returnrequest.returnType == null) {
+            returnrequest.returnType = "REFUND";
+        }
+
+        // Calculate restocking fee (0% default)
+        if (returnrequest.restockingFee == null) {
+            returnrequest.restockingFee = BigDecimal.ZERO;
         }
 
         returnrequest.getTransientMap().previousPayload = payload;
-        log.info("Return request {} approved with refund type={}, amount={}",
-                returnrequest.getId(), returnrequest.returnType, returnrequest.refundAmount);
+        log.info("Return request {} approved with returnType={}, totalRefundAmount={}",
+                returnrequest.getId(), returnrequest.returnType, returnrequest.totalRefundAmount);
     }
 }

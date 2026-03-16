@@ -1,7 +1,6 @@
 package com.homebase.ecom.inventory.service.cmds;
 
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
-import com.homebase.ecom.inventory.domain.model.InventoryStatus;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
@@ -12,9 +11,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * STM action for discarding damaged inventory.
- * Behavior depends on transition context:
- * - From PARTIAL_DAMAGE -> IN_WAREHOUSE: discard damaged, allocate remaining to warehouse
- * - From DAMAGED_AT_WAREHOUSE -> DISCARDED: discard and write off
+ * Updates damage record statuses and adjusts quantities — XML auto-states handle routing.
  */
 public class DiscardDamagedInventoryItemAction extends AbstractSTMTransitionAction<InventoryItem, DiscardDamagedInventoryPayload> {
 
@@ -28,22 +25,10 @@ public class DiscardDamagedInventoryItemAction extends AbstractSTMTransitionActi
 
         int discardQty = payload.getDiscardQuantity() != null ? payload.getDiscardQuantity() : inventory.getDamagedQuantity();
 
-        // Discard the damaged units
-        inventory.discardDamaged(discardQty);
+        inventory.discardDamaged(discardQty, payload.getUnitIdentifiers());
 
-        // If transitioning to IN_WAREHOUSE (from PARTIAL_DAMAGE), allocate remaining to warehouse
-        if ("IN_WAREHOUSE".equals(endState.getStateId())) {
-            // Remaining good stock becomes available in warehouse
-            int remainingGood = inventory.getQuantity();
-            inventory.setAvailableQuantity(remainingGood);
-            inventory.setStatus(InventoryStatus.AVAILABLE);
-            log.info("Discarded {} damaged units for productId={}, allocated {} good units to warehouse",
-                    discardQty, inventory.getProductId(), remainingGood);
-        } else {
-            // Full discard (DAMAGED_AT_WAREHOUSE -> DISCARDED)
-            log.info("Discarded {} damaged units for productId={}, remaining total={}",
-                    discardQty, inventory.getProductId(), inventory.getQuantity());
-        }
+        log.info("Discarded {} damaged units for productId={}, remainingQty={}",
+                discardQty, inventory.getProductId(), inventory.getQuantity());
 
         inventory.getTransientMap().put("previousPayload", payload);
         inventory.getTransientMap().put("discardedQuantity", discardQty);

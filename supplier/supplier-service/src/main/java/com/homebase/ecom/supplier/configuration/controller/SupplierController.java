@@ -20,27 +20,35 @@ import org.springframework.web.bind.annotation.RestController;
 import org.chenile.workflow.dto.StateEntityServiceResponse;
 import com.homebase.ecom.supplier.model.Supplier;
 import org.chenile.security.model.SecurityConfig;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @ChenileController(value = "supplierService", serviceName = "_supplierStateEntityService_", healthCheckerName = "supplierHealthChecker")
+@Tag(name = "Supplier", description = "Supplier lifecycle management")
 public class SupplierController extends ControllerSupport {
 
-	@GetMapping("/supplier/{id}")
-	@SecurityConfig(authorities = { "some_premium_scope", "test.premium" })
-	public ResponseEntity<GenericResponse<StateEntityServiceResponse<Supplier>>> retrieve(
-			HttpServletRequest httpServletRequest,
-			@PathVariable String id) {
-		return process(httpServletRequest, id);
-	}
-
+	/**
+	 * Apply: SELLER creates a new supplier application (initial state APPLIED).
+	 */
 	@PostMapping("/supplier")
-	@SecurityConfig(authorities = { "some_premium_scope", "test.premium" })
+	@SecurityConfig(authorities = { "SELLER", "ADMIN", "some_premium_scope", "test.premium" })
 	public ResponseEntity<GenericResponse<StateEntityServiceResponse<Supplier>>> create(
 			HttpServletRequest httpServletRequest,
 			@ChenileParamType(StateEntity.class) @RequestBody Supplier entity) {
 		return process(httpServletRequest, entity);
 	}
 
+	@GetMapping("/supplier/{id}")
+	@SecurityConfig(authorities = { "SELLER", "ADMIN", "some_premium_scope", "test.premium" })
+	public ResponseEntity<GenericResponse<StateEntityServiceResponse<Supplier>>> retrieve(
+			HttpServletRequest httpServletRequest,
+			@PathVariable String id) {
+		return process(httpServletRequest, id);
+	}
+
+	/**
+	 * Process state transitions. ACLs are event-level (defined in supplier-states.xml).
+	 */
 	@PatchMapping("/supplier/{id}/{eventID}")
 	@BodyTypeSelector("supplierBodyTypeSelector")
 	@SecurityConfig(authoritiesSupplier = "supplierEventAuthoritiesSupplier")

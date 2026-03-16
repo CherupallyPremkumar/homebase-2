@@ -9,14 +9,14 @@
     </parent>
 
     <groupId>com.homebase.ecom</groupId>
-    <artifactId>handmade-catalog-scheduler</artifactId>
-    <name>handmade-catalog-scheduler</name>
+    <artifactId>catalog-scheduler</artifactId>
+    <name>catalog-scheduler</name>
     <description>Background jobs for catalog maintenance (Smart Collections, etc)</description>
 
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom</groupId>
-            <artifactId>handmade-catalog-service</artifactId>
+            <artifactId>catalog-service</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>

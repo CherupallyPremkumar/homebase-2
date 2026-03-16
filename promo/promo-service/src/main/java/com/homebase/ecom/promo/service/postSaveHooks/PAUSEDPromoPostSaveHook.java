@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Contains customized post Save Hook for the PAUSED state.
+ * Post save hook for PAUSED state.
  * Notifies downstream that the promo is temporarily unavailable.
  */
 public class PAUSEDPromoPostSaveHook implements PostSaveHook<Coupon> {
@@ -16,10 +16,10 @@ public class PAUSEDPromoPostSaveHook implements PostSaveHook<Coupon> {
 
     @Override
     public void execute(State startState, State endState, Coupon coupon, TransientMap map) {
-        log.info("PromoPausedEvent: Promo code '{}' (id={}) has been paused.",
-                coupon.getCode(), coupon.getCouponId());
+        log.info("PromoPausedEvent: Promo '{}' (code={}) has been paused.",
+                coupon.getName(), coupon.getCode());
 
-        map.put("eventType", "PromoPausedEvent");
+        map.put("eventType", "PROMO_PAUSED");
         map.put("promoCode", coupon.getCode());
     }
 }

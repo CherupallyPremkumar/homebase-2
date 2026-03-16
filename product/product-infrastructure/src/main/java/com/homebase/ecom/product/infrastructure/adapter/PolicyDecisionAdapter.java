@@ -2,7 +2,7 @@ package com.homebase.ecom.product.infrastructure.adapter;
 
 import com.homebase.ecom.policy.api.dto.EvaluateRequest;
 import com.homebase.ecom.policy.api.dto.DecisionDto;
-import com.homebase.ecom.policy.client.PolicyClient;
+import com.homebase.ecom.policy.api.service.DecisionService;
 import com.homebase.ecom.product.domain.model.Product;
 import com.homebase.ecom.product.domain.port.PimPolicyPort;
 
@@ -11,14 +11,14 @@ import java.util.Map;
 
 /**
  * Infrastructure adapter that connects the Product BC to the Policy BC.
- * Evaluates PIM policies using the PolicyClient (Feign).
+ * Evaluates PIM policies using the DecisionService (Chenile proxy).
  */
 public class PolicyDecisionAdapter implements PimPolicyPort {
 
-    private final PolicyClient policyClient;
+    private final DecisionService decisionService;
 
-    public PolicyDecisionAdapter(PolicyClient policyClient) {
-        this.policyClient = policyClient;
+    public PolicyDecisionAdapter(DecisionService decisionService) {
+        this.decisionService = decisionService;
     }
 
     @Override
@@ -29,35 +29,39 @@ public class PolicyDecisionAdapter implements PimPolicyPort {
     @Override
     public PolicyDecision evaluate(String eventId, Product product, Map<String, Object> additionalContext) {
         EvaluateRequest request = new EvaluateRequest();
-        
-        // Subject is the Product
+
         request.setSubjectId(product.getId() != null ? product.getId().toString() : "new-product");
-        request.setTargetModule("CATALOG");
         request.setAction(eventId);
-        
-        // Map product data into facts for the SpEL evaluation
+
+        // Use policyId from context if provided (resolved by cconfig), otherwise fall back to targetModule
+        if (additionalContext != null && additionalContext.containsKey("policyId")) {
+            request.setPolicyId((String) additionalContext.get("policyId"));
+        } else {
+            request.setTargetModule("PRODUCT");
+        }
+
         Map<String, Object> facts = new HashMap<>();
         if (additionalContext != null) {
-            facts.putAll(additionalContext);
+            additionalContext.entrySet().stream()
+                    .filter(e -> !"policyId".equals(e.getKey()))
+                    .forEach(e -> facts.put(e.getKey(), e.getValue()));
         }
-        
-        // Hydrate facts with product details
-        facts.put("product.name", product.getName());
-        facts.put("product.description", product.getDescription());
-        facts.put("product.brand", product.getBrand());
-        facts.put("product.categoryId", product.getCategoryId());
-        facts.put("product.currentState", product.getCurrentState());
-        
-        // Add counts/lengths for common rules
-        facts.put("product.nameLength", product.getName() != null ? product.getName().length() : 0);
-        facts.put("product.mediaCount", product.getMedia() != null ? product.getMedia().size() : 0);
-        facts.put("product.attributeCount", product.getAttributes() != null ? product.getAttributes().size() : 0);
-        
+
+        facts.put("productName", product.getName());
+        facts.put("productDescription", product.getDescription());
+        facts.put("productBrand", product.getBrand());
+        facts.put("productCategoryId", product.getCategoryId());
+        facts.put("productCurrentState", product.getCurrentState() != null ? product.getCurrentState().toString() : null);
+        facts.put("productNameLength", product.getName() != null ? product.getName().length() : 0);
+        facts.put("productDescriptionLength", product.getDescription() != null ? product.getDescription().length() : 0);
+        facts.put("productMediaCount", product.getMedia() != null ? product.getMedia().size() : 0);
+        facts.put("productAttributeCount", product.getAttributes() != null ? product.getAttributes().size() : 0);
+        facts.put("productVariantCount", product.getVariants() != null ? product.getVariants().size() : 0);
+
         request.setFacts(facts);
-        
-        // Call the external policy microservice via Feign
-        DecisionDto decisionDto = policyClient.evaluate(request);
-        
+
+        DecisionDto decisionDto = decisionService.evaluate(request);
+
         boolean allowed = decisionDto.getEffect() == com.homebase.ecom.policy.api.enums.Effect.ALLOW;
         return new PolicyDecision(allowed, decisionDto.getReasons());
     }

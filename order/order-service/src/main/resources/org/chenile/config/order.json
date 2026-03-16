@@ -1,0 +1,36 @@
+{
+  "policies": {
+    "order": {
+      "maxItemsPerOrder": 50,
+      "maxOrderValue": 500000,
+      "minOrderValue": 100,
+      "cancellationWindowHours": 24,
+      "paymentTimeoutMinutes": 30,
+      "maxProcessingDays": 7,
+      "autoConfirmPayment": false
+    },
+    "cancellation": {
+      "cancellationWindowHours": 24,
+      "requireCancellationReason": true,
+      "minReasonLength": 5
+    },
+    "refund": {
+      "returnWindowDays": 10,
+      "allowedReturnReasons": ["DAMAGED_IN_TRANSIT", "WRONG_ITEM", "DEFECTIVE", "NOT_AS_DESCRIBED", "CHANGED_MIND"]
+    }
+  },
+  "rules": {
+    "fulfillment": {
+      "maxFulfillmentDays": 7,
+      "slaAlertAfterHours": 48
+    },
+    "audit": {
+      "requireCommentOnRejectReturn": true
+    }
+  },
+  "policyEngine": {
+    "order-create": "policy-order-create-001",
+    "order-cancel": "policy-order-cancel-001",
+    "order-refund": "policy-order-refund-001"
+  }
+}

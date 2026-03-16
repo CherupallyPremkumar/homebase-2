@@ -12,10 +12,10 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 
 /**
- * Triggered when user enters SUSPENDED state.
- * Publishes UserSuspended event so downstream can:
+ * UserSuspendedHook -- triggered when user enters SUSPENDED state.
+ * Publishes USER_SUSPENDED event so downstream can:
  *   - Notify the user about their suspension and the reason
- *   - Revoke active sessions in Keycloak
+ *   - Revoke active sessions
  *   - Log the admin action for audit
  */
 public class SUSPENDEDUserPostSaveHook implements PostSaveHook<User> {

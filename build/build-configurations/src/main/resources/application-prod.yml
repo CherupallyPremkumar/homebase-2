@@ -71,6 +71,12 @@ management:
       show-details: when_authorized
       probes:
         enabled: true
+  tracing:
+    sampling:
+      probability: 0.1  # 10% sampling in production
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
 
 query:
   defaultTenantId: homebase

@@ -6,20 +6,19 @@ import java.time.Instant;
  * Domain Events published by the User BC.
  *
  * These are records (immutable) that describe facts that happened in the domain.
- * The Event Management module (infra) translates these to the event bus.
- *
- * Events are versioned via the class name and must remain backward-compatible.
+ * Published to user.events: USER_REGISTERED, USER_VERIFIED, USER_SUSPENDED, USER_DEACTIVATED.
  */
 public final class UserDomainEvents {
 
     private UserDomainEvents() {}
 
-    // ─── Registration & Verification ───────────────────────────────────────
+    // --- Registration and Verification ---
 
     public record UserProfileCreated(
             String userId,
             String keycloakId,
             String email,
+            String role,
             Instant createdAt
     ) {}
 
@@ -35,14 +34,7 @@ public final class UserDomainEvents {
             Instant activatedAt
     ) {}
 
-    public record UnverifiedUserDeleted(
-            String userId,
-            String email,
-            Instant deletedAt,
-            String reason   // e.g. "Unverified after 7 days"
-    ) {}
-
-    // ─── Profile & Preferences ─────────────────────────────────────────────
+    // --- Profile and Addresses ---
 
     public record ProfileUpdated(
             String userId,
@@ -62,20 +54,7 @@ public final class UserDomainEvents {
             Instant removedAt
     ) {}
 
-    public record DefaultAddressChanged(
-            String userId,
-            String newDefaultAddressId,
-            Instant changedAt
-    ) {}
-
-    public record PreferencesUpdated(
-            String userId,
-            String newCurrency,
-            String newLanguage,
-            Instant updatedAt
-    ) {}
-
-    // ─── Account Status Changes ────────────────────────────────────────────
+    // --- Account Status Changes ---
 
     public record AccountLocked(
             String userId,
@@ -86,27 +65,40 @@ public final class UserDomainEvents {
 
     public record AccountUnlocked(
             String userId,
-            String unlockedBy,   // "ADMIN" or "TIMEOUT"
+            String unlockedBy,
             Instant unlockedAt
     ) {}
 
     public record UserSuspended(
             String userId,
             String reason,
-            String suspendedBy,  // admin ID
+            String suspendedBy,
             Instant suspendedAt
     ) {}
 
     public record UserReinstated(
             String userId,
-            String reinstatedBy, // admin ID
+            String reinstatedBy,
             Instant reinstatedAt
     ) {}
 
     public record UserDeleted(
             String userId,
             String email,
-            String deletedBy,    // "SELF", "ADMIN"
+            String deletedBy,
             Instant deletedAt
+    ) {}
+
+    // --- KYC ---
+
+    public record KycSubmitted(
+            String userId,
+            String documentType,
+            Instant submittedAt
+    ) {}
+
+    public record KycVerified(
+            String userId,
+            Instant verifiedAt
     ) {}
 }

@@ -5,6 +5,8 @@ import org.chenile.jpautils.entity.BaseJpaEntity;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.util.Date;
+
 @Entity
 @Table(name = "ticket_messages")
 public class TicketMessageEntity extends BaseJpaEntity {
@@ -18,6 +20,10 @@ public class TicketMessageEntity extends BaseJpaEntity {
     @Column(nullable = false, length = 4000)
     private String message;
 
+    @Column(name = "message_timestamp")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date timestamp;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String attachments;
@@ -30,6 +36,9 @@ public class TicketMessageEntity extends BaseJpaEntity {
 
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
+
+    public Date getTimestamp() { return timestamp; }
+    public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
 
     public String getAttachments() { return attachments; }
     public void setAttachments(String attachments) { this.attachments = attachments; }

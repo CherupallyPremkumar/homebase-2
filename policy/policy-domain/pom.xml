@@ -17,12 +17,12 @@
         <dependency>
             <groupId>com.homebase.ecom.policy</groupId>
             <artifactId>policy-api</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom.shared</groupId>
             <artifactId>shared-api</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>org.chenile</groupId>

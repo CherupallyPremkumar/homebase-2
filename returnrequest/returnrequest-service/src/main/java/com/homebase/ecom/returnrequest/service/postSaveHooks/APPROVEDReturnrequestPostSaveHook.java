@@ -1,7 +1,7 @@
 package com.homebase.ecom.returnrequest.service.postSaveHooks;
 
+import com.homebase.ecom.returnrequest.domain.port.NotificationPort;
 import com.homebase.ecom.returnrequest.model.Returnrequest;
-import com.homebase.ecom.returnrequest.service.event.ReturnApprovedEvent;
 import com.homebase.ecom.returnrequest.service.event.ReturnRequestEventPublisher;
 import org.chenile.stm.State;
 import org.chenile.workflow.model.TransientMap;
@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * PostSaveHook for APPROVED state.
- * Publishes ReturnApprovedEvent after the return request is approved.
+ * Notifies customer + creates shipping label. Publishes RETURN_APPROVED event.
  */
 public class APPROVEDReturnrequestPostSaveHook implements PostSaveHook<Returnrequest> {
 
@@ -21,16 +21,20 @@ public class APPROVEDReturnrequestPostSaveHook implements PostSaveHook<Returnreq
     @Autowired
     private ReturnRequestEventPublisher eventPublisher;
 
+    @Autowired(required = false)
+    private NotificationPort notificationPort;
+
     @Override
     public void execute(State startState, State endState, Returnrequest returnrequest, TransientMap map) {
-        ReturnApprovedEvent event = new ReturnApprovedEvent(
-                returnrequest.getId(),
-                returnrequest.orderId,
-                returnrequest.orderItemId,
-                returnrequest.refundAmount,
-                returnrequest.returnType
-        );
-        log.info("Return request {} approved, publishing ReturnApprovedEvent", returnrequest.getId());
-        eventPublisher.publishReturnApproved(event);
+        log.info("Return request {} approved, publishing RETURN_APPROVED and notifying customer", returnrequest.getId());
+
+        // Notify customer
+        if (notificationPort != null) {
+            notificationPort.notifyReturnApproved(
+                    returnrequest.getId(), returnrequest.customerId, returnrequest.orderId);
+        }
+
+        // Publish event
+        eventPublisher.publishReturnApproved(returnrequest);
     }
 }

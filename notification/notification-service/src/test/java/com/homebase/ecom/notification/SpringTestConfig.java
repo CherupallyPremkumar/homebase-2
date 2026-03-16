@@ -9,9 +9,9 @@ import org.springframework.test.context.ActiveProfiles;
 
 @Configuration
 @PropertySource("classpath:com/homebase/ecom/notification/TestService.properties")
-@SpringBootApplication(scanBasePackages = { "org.chenile.configuration", "com.homebase.ecom.notification.configuration", "com.homebase.ecom.notification.infrastructure" })
-@EnableJpaRepositories(basePackages = {"com.homebase.ecom.notification"})
-@EntityScan(basePackages = {"com.homebase.ecom.notification"})
+@SpringBootApplication(scanBasePackages = { "org.chenile.configuration", "org.chenile.service.registry.configuration", "com.homebase.ecom.notification.configuration", "com.homebase.ecom.notification.infrastructure" })
+@EnableJpaRepositories(basePackages = {"com.homebase.ecom.notification", "org.chenile.service.registry.configuration.dao"})
+@EntityScan(basePackages = {"com.homebase.ecom.notification", "org.chenile.service.registry.model"})
 @ActiveProfiles("unittest")
 public class SpringTestConfig {
 }

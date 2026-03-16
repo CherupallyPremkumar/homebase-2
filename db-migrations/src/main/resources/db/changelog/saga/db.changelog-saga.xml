@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ============================================================ -->
+    <!-- FULFILLMENT SAGA                                             -->
+    <!-- ============================================================ -->
+    <changeSet id="create-fulfillment-saga" author="homebase">
+        <createTable tableName="fulfillment_saga">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)"/>
+            <column name="shipment_id" type="VARCHAR(36)"/>
+            <column name="tracking_number" type="VARCHAR(255)"/>
+            <column name="error_message" type="TEXT"/>
+            <column name="retry_count" type="INT" defaultValueNumeric="0"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flowId" type="VARCHAR(100)"/>
+            <column name="stateId" type="VARCHAR(100)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-fulfillment-saga-activity" author="homebase">
+        <createTable tableName="fulfillment_saga_activity">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="fulfillment_saga_id" type="VARCHAR(36)">
+                <constraints nullable="false"
+                             foreignKeyName="fk_fulfillment_activity_saga"
+                             references="fulfillment_saga(id)"/>
+            </column>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="TEXT"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="idx-fulfillment-saga-order" author="homebase">
+        <createIndex indexName="idx_fulfillment_saga_order" tableName="fulfillment_saga">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- RETURN PROCESSING SAGA                                       -->
+    <!-- ============================================================ -->
+    <changeSet id="create-return-processing-saga" author="homebase">
+        <createTable tableName="return_processing_saga">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="return_request_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_id" type="VARCHAR(36)"/>
+            <column name="order_item_id" type="VARCHAR(36)"/>
+            <column name="refund_amount" type="NUMERIC(15,2)"/>
+            <column name="shipment_id" type="VARCHAR(36)"/>
+            <column name="settlement_adjustment_id" type="VARCHAR(36)"/>
+            <column name="refund_id" type="VARCHAR(36)"/>
+            <column name="error_message" type="TEXT"/>
+            <column name="retry_count" type="INT" defaultValueNumeric="0"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flowId" type="VARCHAR(100)"/>
+            <column name="stateId" type="VARCHAR(100)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-return-processing-saga-activity" author="homebase">
+        <createTable tableName="return_processing_saga_activity">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="return_processing_saga_id" type="VARCHAR(36)">
+                <constraints nullable="false"
+                             foreignKeyName="fk_return_activity_saga"
+                             references="return_processing_saga(id)"/>
+            </column>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="TEXT"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="idx-return-processing-saga-return" author="homebase">
+        <createIndex indexName="idx_return_processing_saga_return" tableName="return_processing_saga">
+            <column name="return_request_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- SUPPLIER LIFECYCLE SAGA                                      -->
+    <!-- ============================================================ -->
+    <changeSet id="create-supplier-lifecycle-saga" author="homebase">
+        <createTable tableName="supplier_lifecycle_saga">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="supplier_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reason" type="VARCHAR(1000)"/>
+            <column name="products_affected" type="INT" defaultValueNumeric="0"/>
+            <column name="catalog_entries_removed" type="INT" defaultValueNumeric="0"/>
+            <column name="inventory_frozen" type="INT" defaultValueNumeric="0"/>
+            <column name="orders_cancelled" type="INT" defaultValueNumeric="0"/>
+            <column name="error_message" type="TEXT"/>
+            <column name="retry_count" type="INT" defaultValueNumeric="0"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flowId" type="VARCHAR(100)"/>
+            <column name="stateId" type="VARCHAR(100)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-supplier-lifecycle-saga-activity" author="homebase">
+        <createTable tableName="supplier_lifecycle_saga_activity">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="supplier_lifecycle_saga_id" type="VARCHAR(36)">
+                <constraints nullable="false"
+                             foreignKeyName="fk_supplier_lc_activity_saga"
+                             references="supplier_lifecycle_saga(id)"/>
+            </column>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="TEXT"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="idx-supplier-lifecycle-saga-supplier" author="homebase">
+        <createIndex indexName="idx_supplier_lifecycle_saga_supplier" tableName="supplier_lifecycle_saga">
+            <column name="supplier_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- SUPPLIER ONBOARDING SAGA ACTIVITY                            -->
+    <!-- ============================================================ -->
+    <changeSet id="create-supplier-onboarding-saga-activity" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="supplier_onboarding_saga_activity"/>
+            </not>
+        </preConditions>
+        <createTable tableName="supplier_onboarding_saga_activity">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="supplier_onboarding_saga_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="TEXT"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

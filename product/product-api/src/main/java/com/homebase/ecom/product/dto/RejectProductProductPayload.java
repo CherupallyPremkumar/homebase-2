@@ -1,19 +1,17 @@
 package com.homebase.ecom.product.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.chenile.workflow.param.MinimalPayload;
 
 /**
- * Customized Payload for the rejectProduct event.
+ * Payload for the rejectProduct event.
  * Includes a mandatory audit comment explaining the reason for rejection.
  */
 public class RejectProductProductPayload extends MinimalPayload {
 
-    /**
-     * Reason for rejection. Required when
-     * policies.lifecycle.rejectionRequiresComment = true.
-     * Examples: "Poor image quality", "Incorrect category", "Misleading
-     * description".
-     */
+    @NotBlank(message = "Rejection comment is required")
+    @Size(min = 10, max = 1000, message = "Rejection comment must be between 10 and 1000 characters")
     private String comment;
 
     public String getComment() {

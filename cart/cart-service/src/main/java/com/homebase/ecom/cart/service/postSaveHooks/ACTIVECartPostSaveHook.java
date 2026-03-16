@@ -1,34 +1,23 @@
 package com.homebase.ecom.cart.service.postSaveHooks;
 
 import com.homebase.ecom.cart.model.Cart;
-import com.homebase.ecom.cart.repository.CartEventPublisher;
-import com.homebase.ecom.shared.event.CartAbandonedEvent;
 import org.chenile.stm.State;
 import org.chenile.workflow.model.TransientMap;
 import org.chenile.workflow.service.stmcmds.PostSaveHook;
-import org.springframework.beans.factory.annotation.Autowired;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Contains customized post Save Hook for the ACTIVE State ID.
+ * Post-save hook for ACTIVE state.
+ * No-op currently — placeholder for future analytics (e.g., cart modification events).
  */
 public class ACTIVECartPostSaveHook implements PostSaveHook<Cart> {
 
-    @Autowired
-    private CartEventPublisher cartEventPublisher;
-
-    private static final List<String> CHECKOUT_STATES = Arrays.asList("CHECKOUT_IN_PROGRESS", "PAYMENT_PENDING",
-            "PAYMENT_FAILED");
+    private static final Logger log = LoggerFactory.getLogger(ACTIVECartPostSaveHook.class);
 
     @Override
     public void execute(State startState, State endState, Cart cart, TransientMap map) {
-        // If we transition to ACTIVE from a checkout-related state, it means checkout
-        // was abandoned.
-        if (startState != null && CHECKOUT_STATES.contains(startState.getStateId())) {
-            CartAbandonedEvent event = new CartAbandonedEvent(cart.getId(), LocalDateTime.now());
-            cartEventPublisher.publishCartAbandoned(event);
-        }
+        log.debug("Cart {} transitioned to ACTIVE from {}", cart.getId(),
+                startState != null ? startState.getStateId() : "initial");
     }
 }

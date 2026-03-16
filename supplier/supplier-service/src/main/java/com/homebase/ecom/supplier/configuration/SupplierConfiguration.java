@@ -2,10 +2,11 @@ package com.homebase.ecom.supplier.configuration;
 
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
+import org.chenile.stm.action.scriptsupport.IfAction;
 import org.chenile.stm.impl.*;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -13,9 +14,11 @@ import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.supplier.model.Supplier;
 import com.homebase.ecom.supplier.service.cmds.*;
+import com.homebase.ecom.supplier.service.event.SupplierEventHandler;
 import com.homebase.ecom.supplier.service.healthcheck.SupplierHealthChecker;
 import com.homebase.ecom.supplier.infrastructure.persistence.ChenileSupplierEntityStore;
 import com.homebase.ecom.supplier.infrastructure.persistence.adapter.SupplierJpaRepository;
@@ -27,11 +30,12 @@ import org.chenile.stm.State;
 import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
 import com.homebase.ecom.supplier.service.postSaveHooks.*;
+import com.homebase.ecom.supplier.service.validator.SupplierPolicyValidator;
 
 /**
  * Spring configuration for the Supplier bounded context.
  * Registers all STM components, transition actions, entry actions,
- * post-save hooks, and the event publisher.
+ * post-save hooks, event handler, and hexagonal port adapters.
  */
 @Configuration
 public class SupplierConfiguration {
@@ -81,7 +85,7 @@ public class SupplierConfiguration {
             @Qualifier("supplierEntityStm") STM<Supplier> stm,
             @Qualifier("supplierActionsInfoProvider") STMActionsInfoProvider supplierInfoProvider,
             @Qualifier("supplierEntityStore") EntityStore<Supplier> entityStore) {
-        return new StateEntityServiceImpl<>(stm, supplierInfoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, supplierInfoProvider, entityStore);
     }
 
     // --- Event Publisher ---
@@ -91,13 +95,24 @@ public class SupplierConfiguration {
         return new SupplierEventPublisherImpl(applicationEventPublisher);
     }
 
-    // --- STM Components ---
+    // --- OGNL Scripting for auto-states ---
+
+    @Bean
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
+
+    @Bean
+    IfAction ifAction() {
+        return new IfAction();
+    }
+
+    // --- STM Infrastructure Components ---
 
     @Bean
     DefaultPostSaveHook<Supplier> supplierDefaultPostSaveHook(
             @Qualifier("supplierTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver) {
-        DefaultPostSaveHook<Supplier> postSaveHook = new DefaultPostSaveHook<>(stmTransitionActionResolver);
-        return postSaveHook;
+        return new DefaultPostSaveHook<>(stmTransitionActionResolver);
     }
 
     @Bean
@@ -191,6 +206,11 @@ public class SupplierConfiguration {
     }
 
     @Bean
+    ReviewSupplierAction supplierReviewSupplierAction() {
+        return new ReviewSupplierAction();
+    }
+
+    @Bean
     ApproveSupplierAction supplierApproveSupplierAction() {
         return new ApproveSupplierAction();
     }
@@ -206,33 +226,40 @@ public class SupplierConfiguration {
     }
 
     @Bean
+    SuspendSupplierAction supplierSuspendSupplierAction() {
+        return new SuspendSupplierAction();
+    }
+
+    @Bean
+    TerminateSupplierAction supplierTerminateSupplierAction() {
+        return new TerminateSupplierAction();
+    }
+
+    @Bean
+    PutOnProbationAction supplierPutOnProbationAction() {
+        return new PutOnProbationAction();
+    }
+
+    @Bean
+    ReactivateSupplierAction supplierReactivateSupplierAction() {
+        return new ReactivateSupplierAction();
+    }
+
+    @Bean
+    ResolveFromProbationAction supplierResolveFromProbationAction() {
+        return new ResolveFromProbationAction();
+    }
+
+    // --- State Entry Actions ---
+
+    @Bean
     SupplierActiveAction supplierActiveAction() {
         return new SupplierActiveAction();
     }
 
     @Bean
-    SuspendSupplierSupplierAction supplierSuspendSupplierAction() {
-        return new SuspendSupplierSupplierAction();
-    }
-
-    @Bean
-    BlacklistSupplierSupplierAction supplierBlacklistSupplierAction() {
-        return new BlacklistSupplierSupplierAction();
-    }
-
-    @Bean
-    ReactivateSupplierSupplierAction supplierReactivateSupplierAction() {
-        return new ReactivateSupplierSupplierAction();
-    }
-
-    @Bean
-    PauseSupplierSupplierAction supplierPauseSupplierAction() {
-        return new PauseSupplierSupplierAction();
-    }
-
-    @Bean
-    SupplierInactiveAction supplierInactiveAction() {
-        return new SupplierInactiveAction();
+    SupplierApprovedEntryAction supplierApprovedEntryAction() {
+        return new SupplierApprovedEntryAction();
     }
 
     @Bean
@@ -241,13 +268,13 @@ public class SupplierConfiguration {
     }
 
     @Bean
-    SupplierBlacklistedAction supplierBlacklistedAction() {
-        return new SupplierBlacklistedAction();
+    SupplierTerminatedEntryAction supplierTerminatedEntryAction() {
+        return new SupplierTerminatedEntryAction();
     }
 
     @Bean
-    DisableAllProductsAction supplierDisableAllProductsAction() {
-        return new DisableAllProductsAction();
+    SupplierOnProbationEntryAction supplierOnProbationEntryAction() {
+        return new SupplierOnProbationEntryAction();
     }
 
     @Bean
@@ -266,15 +293,11 @@ public class SupplierConfiguration {
     }
 
     // --- Post-Save Hooks ---
+    // Named: supplier{STATE}PostSaveHook
 
     @Bean
-    ACTIVESupplierPostSaveHook supplierACTIVEPostSaveHook() {
-        return new ACTIVESupplierPostSaveHook();
-    }
-
-    @Bean
-    INACTIVESupplierPostSaveHook supplierINACTIVEPostSaveHook() {
-        return new INACTIVESupplierPostSaveHook();
+    APPROVEDSupplierPostSaveHook supplierAPPROVEDPostSaveHook() {
+        return new APPROVEDSupplierPostSaveHook();
     }
 
     @Bean
@@ -283,8 +306,39 @@ public class SupplierConfiguration {
     }
 
     @Bean
-    BLACKLISTEDSupplierPostSaveHook supplierBLACKLISTEDPostSaveHook() {
-        return new BLACKLISTEDSupplierPostSaveHook();
+    TERMINATEDSupplierPostSaveHook supplierTERMINATEDPostSaveHook() {
+        return new TERMINATEDSupplierPostSaveHook();
     }
 
+    @Bean
+    ON_PROBATIONSupplierPostSaveHook supplierON_PROBATIONPostSaveHook() {
+        return new ON_PROBATIONSupplierPostSaveHook();
+    }
+
+    // --- ACL / Security ---
+
+    @Bean
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> supplierEventAuthoritiesSupplier(
+            @Qualifier("supplierActionsInfoProvider") STMActionsInfoProvider supplierInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(supplierInfoProvider, false);
+        return builder.build();
+    }
+
+    // --- Policy Validator ---
+
+    @Bean
+    SupplierPolicyValidator supplierPolicyValidator() {
+        return new SupplierPolicyValidator();
+    }
+
+    // --- Kafka Event Handler ---
+
+    @Bean("supplierEventService")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
+    SupplierEventHandler supplierEventService(
+            @Qualifier("supplierEntityStore") EntityStore<Supplier> entityStore,
+            @Qualifier("supplierEntityStm") STM<Supplier> stm,
+            tools.jackson.databind.ObjectMapper objectMapper) {
+        return new SupplierEventHandler(entityStore, stm, objectMapper);
+    }
 }

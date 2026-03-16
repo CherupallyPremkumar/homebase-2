@@ -4,10 +4,11 @@ import org.chenile.workflow.param.MinimalPayload;
 
 public class CreateTicketPayload extends MinimalPayload {
     private String subject;
-    private String category;
-    private String priority;
+    private String category;    // ORDER, PAYMENT, SHIPPING, PRODUCT, ACCOUNT
+    private String priority;    // LOW, MEDIUM, HIGH, URGENT
     private String description;
     private String orderId;
+    private String customerId;
 
     public String getSubject() { return subject; }
     public void setSubject(String subject) { this.subject = subject; }
@@ -23,4 +24,7 @@ public class CreateTicketPayload extends MinimalPayload {
 
     public String getOrderId() { return orderId; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
+
+    public String getCustomerId() { return customerId; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
 }

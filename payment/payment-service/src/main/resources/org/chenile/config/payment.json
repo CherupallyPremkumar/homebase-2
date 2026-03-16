@@ -1,0 +1,43 @@
+{
+  "policies": {
+    "transaction": {
+      "minPaymentAmount": 1,
+      "maxPaymentAmount": 1000000,
+      "supportedMethods": ["CARD", "UPI", "NET_BANKING", "WALLET"],
+      "allowedGateways": ["STRIPE", "RAZORPAY"]
+    },
+    "retry": {
+      "maxRetryAttempts": 3,
+      "retryDelayMinutes": 5
+    },
+    "timeout": {
+      "paymentTimeoutMinutes": 30
+    },
+    "settlement": {
+      "autoSettleDays": 7
+    },
+    "refund": {
+      "processingDays": 5,
+      "partialRefundAllowed": true,
+      "requireRefundApprovalAboveInr": 5000
+    }
+  },
+  "rules": {
+    "fraud": {
+      "flagHighValueTransactionAboveInr": 50000,
+      "requireVerificationAboveInr": 100000
+    },
+    "retry": {
+      "maxPaymentRetries": 3,
+      "paymentRetryWindowMinutes": 30
+    },
+    "refund": {
+      "processingDays": 5,
+      "partialRefundAllowed": true
+    }
+  },
+  "policyEngine": {
+    "payment-initiate": "policy-pay-initiate-001",
+    "payment-refund": "policy-pay-refund-001"
+  }
+}

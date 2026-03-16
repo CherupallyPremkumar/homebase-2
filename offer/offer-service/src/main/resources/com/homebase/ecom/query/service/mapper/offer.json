@@ -1,0 +1,80 @@
+[
+	{
+		"id": "Offer.getAll",
+		"name": "offers",
+		"workflowName": "offer",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text", "sortable": true },
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text", "sortable": true },
+			"offerType": { "name": "offerType", "filterable": true, "columnType": "Text" },
+			"title": { "name": "title", "filterable": true, "columnType": "Text", "sortable": true },
+			"originalPrice": { "name": "originalPrice", "columnType": "Number", "sortable": true },
+			"offerPrice": { "name": "offerPrice", "columnType": "Number", "sortable": true },
+			"discountPercent": { "name": "discountPercent", "columnType": "Number", "sortable": true },
+			"startDate": { "name": "startDate", "columnType": "Date", "sortable": true },
+			"endDate": { "name": "endDate", "columnType": "Date", "sortable": true },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Offer.getById",
+		"name": "offer",
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Offer.getStateCounts",
+		"name": "offer-state-counts",
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Offer.getPendingApproval",
+		"name": "pending-approval",
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Offer.getExpiringOffers",
+		"name": "expiring-offers",
+		"columnMetadata": {
+			"daysUntilExpiry": { "name": "daysUntilExpiry", "filterable": true, "columnType": "Number" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Offer.getByProductId",
+		"name": "offers-by-product",
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Offer.getActiveOffers",
+		"name": "active-offers",
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Offer.getBestOffer",
+		"name": "best-offer",
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	}
+]

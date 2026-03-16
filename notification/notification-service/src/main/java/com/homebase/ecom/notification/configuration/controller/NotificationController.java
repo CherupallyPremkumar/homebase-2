@@ -20,9 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.chenile.workflow.dto.StateEntityServiceResponse;
 import com.homebase.ecom.notification.domain.model.Notification;
 import org.chenile.security.model.SecurityConfig;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @ChenileController(value = "notificationService", serviceName = "_notificationStateEntityService_", healthCheckerName = "notificationHealthChecker")
+@Tag(name = "Notification", description = "Notification delivery management — full lifecycle with channel adapters")
 public class NotificationController extends ControllerSupport {
 
 	@GetMapping("/notification/{id}")

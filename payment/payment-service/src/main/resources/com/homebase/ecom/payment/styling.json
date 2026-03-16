@@ -1,0 +1,15 @@
+{
+  "states": {
+    "INITIATED": { "color": "#3498db", "icon": "play-circle" },
+    "PROCESSING": { "color": "#f39c12", "icon": "spinner" },
+    "SUCCEEDED": { "color": "#2ecc71", "icon": "check-circle" },
+    "SETTLED": { "color": "#27ae60", "icon": "university" },
+    "FAILED": { "color": "#e74c3c", "icon": "times-circle" },
+    "RETRY": { "color": "#e67e22", "icon": "redo" },
+    "CHECK_RETRY": { "color": "#95a5a6", "icon": "cog" },
+    "ABANDONED": { "color": "#7f8c8d", "icon": "ban" },
+    "REFUND_INITIATED": { "color": "#9b59b6", "icon": "undo" },
+    "REFUND_PROCESSING": { "color": "#8e44ad", "icon": "spinner" },
+    "REFUNDED": { "color": "#1abc9c", "icon": "check-double" }
+  }
+}

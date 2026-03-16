@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order
+  namespace: homebase
+  labels:
+    app.kubernetes.io/name: order
+    app.kubernetes.io/part-of: homebase
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: order
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: order
+    spec:
+      containers:
+        - name: order
+          image: homebase/order-app:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: homebase-config
+            - secretRef:
+                name: homebase-secrets
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order
+  namespace: homebase
+  labels:
+    app.kubernetes.io/name: order
+    app.kubernetes.io/part-of: homebase
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: order
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

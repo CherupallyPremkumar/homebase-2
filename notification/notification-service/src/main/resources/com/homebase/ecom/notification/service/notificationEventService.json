@@ -1,0 +1,27 @@
+{
+	"name": "notificationEventService",
+	"id": "notificationEventService",
+	"serviceName": "notificationEventService",
+	"operations": [
+		{
+			"name": "handleOrderEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["order.events"]
+		},
+		{
+			"name": "handlePaymentEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["payment.events"]
+		},
+		{
+			"name": "handleReturnEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["return.events"]
+		},
+		{
+			"name": "handleReviewEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["review.events"]
+		}
+	]
+}

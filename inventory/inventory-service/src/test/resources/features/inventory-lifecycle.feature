@@ -1,10 +1,14 @@
 Feature: Inventory Lifecycle — tests the full inventory state machine through all paths.
-  Covers the happy path (STOCK_PENDING -> STOCK_INSPECTION -> STOCK_APPROVED -> IN_WAREHOUSE -> PARTIALLY_RESERVED),
+  Covers the happy path (STOCK_PENDING -> STOCK_INSPECTION -> STOCK_APPROVED -> IN_WAREHOUSE),
   the rejection flow, the damage flow, allocation/reservation, sell-all, restock, and error handling.
 
 # ===============================================================================
 # HAPPY PATH: Pending -> Inspect -> Approve -> Allocate -> Reserve -> Release
 # ===============================================================================
+
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
 
 Scenario: Create a new inventory record in STOCK_PENDING state
 Given that "flowName" equals "inventory-flow"
@@ -72,7 +76,7 @@ Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 
-Scenario: Reserve stock for an order (IN_WAREHOUSE -> PARTIALLY_RESERVED)
+Scenario: Reserve stock for an order (IN_WAREHOUSE -> IN_WAREHOUSE)
 Given that "comment" equals "Reserving 5 units for order ORD-001"
 And that "event" equals "reserveStock"
 When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
@@ -85,9 +89,9 @@ When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PARTIALLY_RESERVED"
+And the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 
-Scenario: Reserve more stock for another order (PARTIALLY_RESERVED -> PARTIALLY_RESERVED)
+Scenario: Reserve more stock for another order (IN_WAREHOUSE -> IN_WAREHOUSE)
 Given that "comment" equals "Reserving 3 more units for order ORD-002"
 And that "event" equals "reserveStock"
 When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
@@ -100,9 +104,9 @@ When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PARTIALLY_RESERVED"
+And the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 
-Scenario: Release reserved stock for cancelled order (PARTIALLY_RESERVED -> IN_WAREHOUSE)
+Scenario: Release reserved stock for cancelled order (IN_WAREHOUSE -> IN_WAREHOUSE)
 Given that "comment" equals "Order ORD-001 cancelled, releasing reserved stock"
 And that "event" equals "releaseReservedStock"
 When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
@@ -259,9 +263,9 @@ When I PATCH a REST request to URL "/inventory/${limitedId}/${event}" with paylo
     "orderId": "ORD-BULK-001"
 }
 """
-Then the REST response key "mutatedEntity.currentState.stateId" is "PARTIALLY_RESERVED"
+Then the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 
-Scenario: Mark all reserved as sold (PARTIALLY_RESERVED -> OUT_OF_STOCK)
+Scenario: Mark all reserved as sold (IN_WAREHOUSE -> OUT_OF_STOCK)
 Given that "event" equals "soldAllReserved"
 When I PATCH a REST request to URL "/inventory/${limitedId}/${event}" with payload
 """json
@@ -454,7 +458,7 @@ And the REST response key "mutatedEntity.id" is "${damageReturnId}"
 And the REST response key "mutatedEntity.currentState.stateId" is "RETURNED_TO_SUPPLIER"
 
 # ===============================================================================
-# PARTIAL_DAMAGE -> discardDamaged -> IN_WAREHOUSE
+# PARTIAL_DAMAGE -> discardDamaged -> STOCK_APPROVED
 # ===============================================================================
 
 Scenario: Create inventory for discard-from-partial-damage flow
@@ -490,7 +494,7 @@ When I PATCH a REST request to URL "/inventory/${discardPartialId}/${event}" wit
 """
 Then the REST response key "mutatedEntity.currentState.stateId" is "PARTIAL_DAMAGE"
 
-Scenario: Discard damaged tiles and move rest to warehouse (PARTIAL_DAMAGE -> IN_WAREHOUSE)
+Scenario: Discard damaged tiles and move rest to approved (PARTIAL_DAMAGE -> STOCK_APPROVED)
 Given that "event" equals "discardDamaged"
 When I PATCH a REST request to URL "/inventory/${discardPartialId}/${event}" with payload
 """json
@@ -500,7 +504,7 @@ When I PATCH a REST request to URL "/inventory/${discardPartialId}/${event}" wit
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${discardPartialId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
+And the REST response key "mutatedEntity.currentState.stateId" is "STOCK_APPROVED"
 
 # ===============================================================================
 # WAREHOUSE DAMAGE FLOW: IN_WAREHOUSE -> returnDamaged -> discard
@@ -551,26 +555,39 @@ When I PATCH a REST request to URL "/inventory/${whDamageId}/${event}" with payl
 """
 Then the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 
-Scenario: Report damage at warehouse (IN_WAREHOUSE -> DAMAGED_AT_WAREHOUSE)
+Scenario: Report partial damage at warehouse — good stock remains, stays IN_WAREHOUSE
 Given that "event" equals "returnDamaged"
 When I PATCH a REST request to URL "/inventory/${whDamageId}/${event}" with payload
 """json
 {
-    "comment": "Water leak damaged stored items",
+    "comment": "Water leak damaged some items",
     "damagedQuantity": 8
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${whDamageId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
+
+Scenario: Report all remaining stock damaged — available=0, moves to DAMAGED_AT_WAREHOUSE
+Given that "event" equals "returnDamaged"
+When I PATCH a REST request to URL "/inventory/${whDamageId}/${event}" with payload
+"""json
+{
+    "comment": "Water leak spread, all remaining stock damaged",
+    "damagedQuantity": 52
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${whDamageId}"
 And the REST response key "mutatedEntity.currentState.stateId" is "DAMAGED_AT_WAREHOUSE"
 
-Scenario: Repair warehouse damaged items (DAMAGED_AT_WAREHOUSE -> IN_WAREHOUSE)
+Scenario: Repair all warehouse damaged items (DAMAGED_AT_WAREHOUSE -> IN_WAREHOUSE)
 Given that "event" equals "repairDamaged"
 When I PATCH a REST request to URL "/inventory/${whDamageId}/${event}" with payload
 """json
 {
-    "comment": "Water-damaged items dried and restored",
-    "repairedQuantity": 8
+    "comment": "All water-damaged items dried and restored",
+    "repairedQuantity": 60
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -626,7 +643,7 @@ When I PATCH a REST request to URL "/inventory/${whDiscardId}/${event}" with pay
 """
 Then the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 
-Scenario: Spoilage discovered (IN_WAREHOUSE -> DAMAGED_AT_WAREHOUSE)
+Scenario: Spoilage discovered — partial damage, stays IN_WAREHOUSE (15 good units still sellable)
 Given that "event" equals "returnDamaged"
 When I PATCH a REST request to URL "/inventory/${whDiscardId}/${event}" with payload
 """json
@@ -635,9 +652,9 @@ When I PATCH a REST request to URL "/inventory/${whDiscardId}/${event}" with pay
     "damagedQuantity": 10
 }
 """
-Then the REST response key "mutatedEntity.currentState.stateId" is "DAMAGED_AT_WAREHOUSE"
+Then the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 
-Scenario: Discard spoiled items (DAMAGED_AT_WAREHOUSE -> DISCARDED)
+Scenario: Discard spoiled items from warehouse (IN_WAREHOUSE -> IN_WAREHOUSE, good stock remains)
 Given that "event" equals "discardDamaged"
 When I PATCH a REST request to URL "/inventory/${whDiscardId}/${event}" with payload
 """json
@@ -647,7 +664,7 @@ When I PATCH a REST request to URL "/inventory/${whDiscardId}/${event}" with pay
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${whDiscardId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "DISCARDED"
+And the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 
 # ===============================================================================
 # INVALID EVENT: Wrong event on wrong state

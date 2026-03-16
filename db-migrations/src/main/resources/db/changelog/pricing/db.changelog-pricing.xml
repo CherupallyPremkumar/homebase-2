@@ -5,8 +5,71 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
+    <!-- ================================================================== -->
+    <!-- V41: Pricing rules and price history                               -->
+    <!-- ================================================================== -->
     <changeSet id="V41__create_pricing_tables" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/pricing/V41__create_pricing_tables.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+        <createTable tableName="pricing_rules">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="INT" defaultValueNumeric="0"/>
+            <column name="conditions" type="JSONB"/>
+            <column name="discount_type" type="VARCHAR(50)"/>
+            <column name="discount_value" type="NUMERIC(10,2)"/>
+            <column name="active_from" type="TIMESTAMP"/>
+            <column name="active_to" type="TIMESTAMP"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="applicable_products" type="JSONB"/>
+            <column name="applicable_categories" type="JSONB"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+
+        <createTable tableName="price_history">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(36)">
+                <constraints nullable="false" foreignKeyName="fk_price_history_product" referencedTableName="products" referencedColumnNames="id"/>
+            </column>
+            <column name="old_price" type="NUMERIC(15,2)"/>
+            <column name="new_price" type="NUMERIC(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="change_reason" type="VARCHAR(255)"/>
+            <column name="changed_by" type="VARCHAR(100)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+
+        <createIndex indexName="idx_pricing_rules_type" tableName="pricing_rules">
+            <column name="rule_type"/>
+            <column name="active"/>
+        </createIndex>
+        <createIndex indexName="idx_pricing_rules_dates" tableName="pricing_rules">
+            <column name="active_from"/>
+            <column name="active_to"/>
+        </createIndex>
+        <createIndex indexName="idx_price_history_product" tableName="price_history">
+            <column name="product_id"/>
+        </createIndex>
     </changeSet>
 
 </databaseChangeLog>

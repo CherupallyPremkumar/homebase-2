@@ -16,18 +16,20 @@ public class ShippingMapper {
         Shipping model = new Shipping();
         model.setId(entity.getId());
         model.setOrderId(entity.getOrderId());
-        model.setCarrier(entity.getCarrier());
+        model.setCustomerId(entity.getCustomerId());
         model.setTrackingNumber(entity.getTrackingNumber());
-        model.setTrackingUrl(entity.getTrackingUrl());
-        model.setShippedAt(entity.getShippedAt());
-        model.setEstimatedDelivery(entity.getEstimatedDelivery());
-        model.setShippingAddress(entity.getShippingAddress());
-        model.setDeliveredAt(entity.getDeliveredAt());
-        model.description = entity.getDescription();
-        model.setDeliveryProof(entity.getDeliveryProof());
-        model.setReturnReason(entity.getReturnReason());
-        model.setReturnTrackingNumber(entity.getReturnTrackingNumber());
+        model.setCarrier(entity.getCarrier());
+        model.setShippingMethod(entity.getShippingMethod());
+        model.setFromAddress(entity.getFromAddress());
+        model.setToAddress(entity.getToAddress());
+        model.setWeight(entity.getWeight());
+        model.setDimensions(entity.getDimensions());
+        model.setEstimatedDeliveryDate(entity.getEstimatedDeliveryDate());
+        model.setActualDeliveryDate(entity.getActualDeliveryDate());
+        model.setDeliveryAttempts(entity.getDeliveryAttempts());
+        model.setDeliveryInstructions(entity.getDeliveryInstructions());
         model.setCurrentLocation(entity.getCurrentLocation());
+        model.description = entity.getDescription();
         model.setCurrentState(entity.getCurrentState());
 
         if (entity.getActivities() != null) {
@@ -45,18 +47,20 @@ public class ShippingMapper {
         ShippingEntity entity = new ShippingEntity();
         entity.setId(model.getId());
         entity.setOrderId(model.getOrderId());
-        entity.setCarrier(model.getCarrier());
+        entity.setCustomerId(model.getCustomerId());
         entity.setTrackingNumber(model.getTrackingNumber());
-        entity.setTrackingUrl(model.getTrackingUrl());
-        entity.setShippedAt(model.getShippedAt());
-        entity.setEstimatedDelivery(model.getEstimatedDelivery());
-        entity.setShippingAddress(model.getShippingAddress());
-        entity.setDeliveredAt(model.getDeliveredAt());
-        entity.setDescription(model.description);
-        entity.setDeliveryProof(model.getDeliveryProof());
-        entity.setReturnReason(model.getReturnReason());
-        entity.setReturnTrackingNumber(model.getReturnTrackingNumber());
+        entity.setCarrier(model.getCarrier());
+        entity.setShippingMethod(model.getShippingMethod());
+        entity.setFromAddress(model.getFromAddress());
+        entity.setToAddress(model.getToAddress());
+        entity.setWeight(model.getWeight());
+        entity.setDimensions(model.getDimensions());
+        entity.setEstimatedDeliveryDate(model.getEstimatedDeliveryDate());
+        entity.setActualDeliveryDate(model.getActualDeliveryDate());
+        entity.setDeliveryAttempts(model.getDeliveryAttempts());
+        entity.setDeliveryInstructions(model.getDeliveryInstructions());
         entity.setCurrentLocation(model.getCurrentLocation());
+        entity.setDescription(model.description);
         entity.setCurrentState(model.getCurrentState());
 
         if (model.obtainActivities() != null) {

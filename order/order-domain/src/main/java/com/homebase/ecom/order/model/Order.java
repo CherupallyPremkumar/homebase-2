@@ -1,36 +1,45 @@
 package com.homebase.ecom.order.model;
 
-import com.homebase.ecom.shared.Money;
 import org.chenile.workflow.activities.model.ActivityEnabledStateEntity;
 import org.chenile.workflow.activities.model.ActivityLog;
 import java.util.*;
 import org.chenile.workflow.model.*;
 import org.chenile.utils.entity.model.AbstractExtendedStateEntity;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Order aggregate root — domain model for the Order bounded context.
+ *
+ * Fields per spec item #11:
+ * - id, orderNumber, customerId, items, subtotal, taxAmount, shippingAmount,
+ *   totalAmount, currency, shippingAddressId, billingAddressId, paymentMethodId,
+ *   notes, cancelReason, stateId, flowId (from AbstractExtendedStateEntity)
+ *
+ * Removed: gateway fields, webhook fields, metadata, promo fields, retry fields,
+ *          delivery tracking, SLA fields — those belong in Payment/Shipping/Fulfillment BCs.
+ */
 public class Order extends AbstractExtendedStateEntity
         implements ActivityEnabledStateEntity,
         ContainsTransientMap {
 
-    private String user_Id;
-    private String gatewaySessionId;
-    private String gatewayTransactionId;
-    private OrderStatus status;
-    private Money totalAmount;
-    private Money taxAmount;
-    private Money shippingAmount;
-    private String idempotencyKey;
+    private String orderNumber;
+    private String customerId;
     private List<OrderItem> items = new ArrayList<>();
-    private String metadata;
-    private LocalDateTime webhookProcessedAt;
-    private String shippingAddress;
-    private String billingAddress;
-    private String appliedPromoCode;
-    private Double discountAmount;
-    private String cartId;
-    private Integer retryCount = 0;
-    private String previousFailedOrderId;
-    private LocalDateTime deliveryDate;
+    private BigDecimal subtotal;
+    private BigDecimal taxAmount;
+    private BigDecimal shippingAmount;
+    private BigDecimal totalAmount;
+    private String currency = "INR";
+    private String shippingAddressId;
+    private String billingAddressId;
+    private String paymentMethodId;
+    private String notes;
+    private String cancelReason;
+
+    /** Flag set by requestCancellation action for CHECK_CANCELLATION_WINDOW auto-state */
+    private boolean cancellationAllowed;
+
     public String description;
     private Date slaYellowDate;
     private Date slaRedDate;
@@ -38,85 +47,55 @@ public class Order extends AbstractExtendedStateEntity
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
 
-    public String getCartId() { return cartId; }
-    public void setCartId(String cartId) { this.cartId = cartId; }
+    // --- Getters & Setters ---
 
-    public Integer getRetryCount() { return retryCount; }
-    public void setRetryCount(Integer retryCount) { this.retryCount = retryCount; }
+    public String getOrderNumber() { return orderNumber; }
+    public void setOrderNumber(String orderNumber) { this.orderNumber = orderNumber; }
 
-    public String getPreviousFailedOrderId() { return previousFailedOrderId; }
-    public void setPreviousFailedOrderId(String previousFailedOrderId) { this.previousFailedOrderId = previousFailedOrderId; }
-
-    public String getUser_Id() { return user_Id; }
-    public void setUser_Id(String user_Id) { this.user_Id = user_Id; }
-
-    public String getGatewaySessionId() { return gatewaySessionId; }
-    public void setGatewaySessionId(String gatewaySessionId) { this.gatewaySessionId = gatewaySessionId; }
-
-    public String getGatewayTransactionId() { return gatewayTransactionId; }
-    public void setGatewayTransactionId(String gatewayTransactionId) { this.gatewayTransactionId = gatewayTransactionId; }
-
-    public OrderStatus getStatus() { return status; }
-    public void setStatus(OrderStatus status) { this.status = status; }
-
-    public Money getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(Money totalAmount) { this.totalAmount = totalAmount; }
-
-    public Money getTaxAmount() { return taxAmount; }
-    public void setTaxAmount(Money taxAmount) { this.taxAmount = taxAmount; }
-
-    public Money getShippingAmount() { return shippingAmount; }
-    public void setShippingAmount(Money shippingAmount) { this.shippingAmount = shippingAmount; }
-
-    public String getIdempotencyKey() { return idempotencyKey; }
-    public void setIdempotencyKey(String idempotencyKey) { this.idempotencyKey = idempotencyKey; }
+    public String getCustomerId() { return customerId; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
 
     public List<OrderItem> getItems() { return items; }
     public void setItems(List<OrderItem> items) { this.items = items; }
 
-    public String getMetadata() { return metadata; }
-    public void setMetadata(String metadata) { this.metadata = metadata; }
+    public BigDecimal getSubtotal() { return subtotal; }
+    public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
 
-    public LocalDateTime getWebhookProcessedAt() { return webhookProcessedAt; }
-    public void setWebhookProcessedAt(LocalDateTime webhookProcessedAt) { this.webhookProcessedAt = webhookProcessedAt; }
+    public BigDecimal getTaxAmount() { return taxAmount; }
+    public void setTaxAmount(BigDecimal taxAmount) { this.taxAmount = taxAmount; }
 
-    public String getShippingAddress() { return shippingAddress; }
-    public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
+    public BigDecimal getShippingAmount() { return shippingAmount; }
+    public void setShippingAmount(BigDecimal shippingAmount) { this.shippingAmount = shippingAmount; }
 
-    public String getBillingAddress() { return billingAddress; }
-    public void setBillingAddress(String billingAddress) { this.billingAddress = billingAddress; }
+    public BigDecimal getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
 
-    public String getAppliedPromoCode() { return appliedPromoCode; }
-    public void setAppliedPromoCode(String appliedPromoCode) { this.appliedPromoCode = appliedPromoCode; }
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
 
-    public Double getDiscountAmount() { return discountAmount; }
-    public void setDiscountAmount(Double discountAmount) { this.discountAmount = discountAmount; }
+    public String getShippingAddressId() { return shippingAddressId; }
+    public void setShippingAddressId(String shippingAddressId) { this.shippingAddressId = shippingAddressId; }
 
-    public LocalDateTime getDeliveryDate() { return deliveryDate; }
-    public void setDeliveryDate(LocalDateTime deliveryDate) { this.deliveryDate = deliveryDate; }
+    public String getBillingAddressId() { return billingAddressId; }
+    public void setBillingAddressId(String billingAddressId) { this.billingAddressId = billingAddressId; }
+
+    public String getPaymentMethodId() { return paymentMethodId; }
+    public void setPaymentMethodId(String paymentMethodId) { this.paymentMethodId = paymentMethodId; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
+
+    public String getCancelReason() { return cancelReason; }
+    public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
+
+    public boolean isCancellationAllowed() { return cancellationAllowed; }
+    public void setCancellationAllowed(boolean cancellationAllowed) { this.cancellationAllowed = cancellationAllowed; }
 
     public Date getSlaYellowDate() { return slaYellowDate; }
     public void setSlaYellowDate(Date slaYellowDate) { this.slaYellowDate = slaYellowDate; }
 
     public Date getSlaRedDate() { return slaRedDate; }
     public void setSlaRedDate(Date slaRedDate) { this.slaRedDate = slaRedDate; }
-
-    public void cancelItem(String orderItemId) {
-        OrderItem item = findItem(orderItemId);
-        item.requestCancellation();
-    }
-
-    public void refundItem(String orderItemId) {
-        OrderItem item = findItem(orderItemId);
-        item.requestRefund();
-    }
-
-    private OrderItem findItem(String orderItemId) {
-        return items.stream()
-                .filter(i -> i.getId().equals(orderItemId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("OrderItem not found: " + orderItemId));
-    }
 
     public TransientMap getTransientMap() { return this.transientMap; }
 

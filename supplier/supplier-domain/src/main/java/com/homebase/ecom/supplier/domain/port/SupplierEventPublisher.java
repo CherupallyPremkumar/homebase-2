@@ -1,18 +1,18 @@
 package com.homebase.ecom.supplier.domain.port;
 
-import com.homebase.ecom.shared.event.SupplierActivatedEvent;
+import com.homebase.ecom.shared.event.SupplierApprovedEvent;
 import com.homebase.ecom.shared.event.SupplierSuspendedEvent;
-import com.homebase.ecom.shared.event.SupplierBlacklistedEvent;
+import com.homebase.ecom.shared.event.SupplierTerminatedEvent;
 
 /**
- * Domain port for publishing supplier lifecycle events.
+ * Domain port for publishing supplier lifecycle events to supplier.events topic.
  * Infrastructure layer provides the actual Kafka/messaging implementation.
  */
 public interface SupplierEventPublisher {
 
-    void publishSupplierActivated(SupplierActivatedEvent event);
+    void publishSupplierApproved(SupplierApprovedEvent event);
 
     void publishSupplierSuspended(SupplierSuspendedEvent event);
 
-    void publishSupplierBlacklisted(SupplierBlacklistedEvent event);
+    void publishSupplierTerminated(SupplierTerminatedEvent event);
 }

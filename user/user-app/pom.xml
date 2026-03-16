@@ -18,12 +18,12 @@
         <dependency>
             <groupId>com.homebase.ecom.user</groupId>
             <artifactId>user-service</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom.user</groupId>
             <artifactId>user-infrastructure</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <!-- Spring Boot -->

@@ -25,7 +25,7 @@ public class ReturnRejectedStockInventoryItemAction extends AbstractSTMTransitio
 
         // Initiate return for the full rejected quantity
         int returnQty = inventory.getQuantity();
-        inventory.initiateSupplierReturn(returnQty);
+        inventory.initiateSupplierReturn(returnQty, null);
 
         log.info("Returning rejected stock to supplier for productId={}, qty={}",
                 inventory.getProductId(), returnQty);

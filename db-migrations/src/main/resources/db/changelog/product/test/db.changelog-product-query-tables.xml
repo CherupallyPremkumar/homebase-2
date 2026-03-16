@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Test-only: creates all product domain tables needed by product-query BDD tests.
+        Mirrors the production schema from common V1 + product V5/V46/V49/V60.
+        Uses preConditions so this is safe to run alongside production changelogs.
+    -->
+
+    <!-- Products: raw SQL to preserve camelCase "stateId"/"flowId" column names -->
+    <changeSet id="product-query-test-products" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="products"/></not>
+        </preConditions>
+        <sql>
+            CREATE TABLE products (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                name VARCHAR(255),
+                description VARCHAR(2000),
+                short_description VARCHAR(500),
+                brand VARCHAR(255),
+                category_id VARCHAR(255),
+                slug VARCHAR(300),
+                meta_title VARCHAR(200),
+                meta_description VARCHAR(500),
+                "stateId" VARCHAR(100),
+                "flowId" VARCHAR(100),
+                version BIGINT DEFAULT 0,
+                created_time TIMESTAMP,
+                last_modified_time TIMESTAMP,
+                created_by VARCHAR(255),
+                last_modified_by VARCHAR(255),
+                tenant VARCHAR(255),
+                state_entry_time TIMESTAMP,
+                sla_yellow_date TIMESTAMP,
+                sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0,
+                sla_late INT DEFAULT 0,
+                test_entity BOOLEAN DEFAULT FALSE
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Categories -->
+    <changeSet id="product-query-test-categories" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="categories"/></not>
+        </preConditions>
+        <createTable tableName="categories">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="slug" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_id" type="VARCHAR(255)"/>
+            <column name="path" type="VARCHAR(255)"/>
+            <column name="depth" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="display_order" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Attribute Definitions -->
+    <changeSet id="product-query-test-attribute-definitions" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="attribute_definitions"/></not>
+        </preConditions>
+        <createTable tableName="attribute_definitions">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="label" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="input_type" type="VARCHAR(50)"/>
+            <column name="filterable" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="searchable" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="required" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="display_order" type="INTEGER" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Attribute Options -->
+    <changeSet id="product-query-test-attribute-options" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="attribute_options"/></not>
+        </preConditions>
+        <createTable tableName="attribute_options">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="attribute_id" type="VARCHAR(255)"/>
+            <column name="value" type="VARCHAR(255)"/>
+            <column name="label" type="VARCHAR(255)"/>
+            <column name="color_swatch" type="VARCHAR(255)"/>
+            <column name="sort_order" type="INTEGER" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Category-Attribute mapping -->
+    <changeSet id="product-query-test-category-attributes" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="category_attributes"/></not>
+        </preConditions>
+        <createTable tableName="category_attributes">
+            <column name="category_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attribute_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Product Variants -->
+    <changeSet id="product-query-test-product-variants" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_variants"/></not>
+        </preConditions>
+        <createTable tableName="product_variants">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Variant Attributes -->
+    <changeSet id="product-query-test-variant-attributes" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="variant_attributes"/></not>
+        </preConditions>
+        <createTable tableName="variant_attributes">
+            <column name="variant_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attribute_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attribute_value" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Media Assets -->
+    <changeSet id="product-query-test-media-assets" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="media_assets"/></not>
+        </preConditions>
+        <createTable tableName="media_assets">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="original_url" type="VARCHAR(1000)"/>
+            <column name="cdn_url" type="VARCHAR(1000)"/>
+            <column name="thumbnail_url" type="VARCHAR(1000)"/>
+            <column name="medium_url" type="VARCHAR(1000)"/>
+            <column name="zoom_url" type="VARCHAR(1000)"/>
+            <column name="type" type="VARCHAR(50)"/>
+            <column name="mime_type" type="VARCHAR(255)"/>
+            <column name="file_size_bytes" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="width" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="height" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="alt_text" type="VARCHAR(255)"/>
+            <column name="processing_status" type="VARCHAR(50)" defaultValue="PENDING"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Product Attribute Values -->
+    <changeSet id="product-query-test-product-attribute-values" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_attribute_values"/></not>
+        </preConditions>
+        <createTable tableName="product_attribute_values">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="attribute_id" type="VARCHAR(255)"/>
+            <column name="option_id" type="VARCHAR(255)"/>
+            <column name="raw_value" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Product Media -->
+    <changeSet id="product-query-test-product-media" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_media"/></not>
+        </preConditions>
+        <createTable tableName="product_media">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="asset_id" type="VARCHAR(255)"/>
+            <column name="is_primary" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="sort_order" type="INTEGER" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Variant Media -->
+    <changeSet id="product-query-test-variant-media" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="variant_media"/></not>
+        </preConditions>
+        <createTable tableName="variant_media">
+            <column name="variant_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="asset_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_primary" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="sort_order" type="INTEGER" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Product Tags -->
+    <changeSet id="product-query-test-product-tags" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_tags"/></not>
+        </preConditions>
+        <createTable tableName="product_tags">
+            <column name="product_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tag" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Product Activity Log -->
+    <changeSet id="product-query-test-product-activity-log" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_activity_log"/></not>
+        </preConditions>
+        <createTable tableName="product_activity_log">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_comment" type="VARCHAR(2000)"/>
+            <column name="activity_success" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(255)"/>
+            <column name="last_modified_by" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Offers (cross-domain read model for offer queries) -->
+    <changeSet id="product-query-test-offers" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="offers"/></not>
+        </preConditions>
+        <createTable tableName="offers">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="seller_id" type="VARCHAR(255)"/>
+            <column name="price" type="DECIMAL(12,2)"/>
+            <column name="currency" type="VARCHAR(10)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

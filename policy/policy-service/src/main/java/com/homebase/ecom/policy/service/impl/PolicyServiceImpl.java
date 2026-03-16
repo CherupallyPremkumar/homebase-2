@@ -6,7 +6,7 @@ import com.homebase.ecom.policy.api.service.PolicyService;
 import com.homebase.ecom.policy.domain.model.Policy;
 import com.homebase.ecom.policy.domain.model.Rule;
 import com.homebase.ecom.policy.domain.repository.PolicyRepository;
-import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.homebase.ecom.policy.api.service.FactMetadataService;
@@ -21,12 +21,12 @@ import java.util.stream.Collectors;
 
 public class PolicyServiceImpl implements PolicyService {
     private final PolicyRepository policyRepository;
-    private final StateEntityServiceImpl<Policy> policyStateEntityService;
+    private final HmStateEntityServiceImpl<Policy> policyStateEntityService;
     private final FactMetadataService factMetadataService;
     private final ExpressionParser expressionParser = new SpelExpressionParser();
 
     public PolicyServiceImpl(PolicyRepository policyRepository, 
-                             StateEntityServiceImpl<Policy> policyStateEntityService,
+                             HmStateEntityServiceImpl<Policy> policyStateEntityService,
                              FactMetadataService factMetadataService) {
         this.policyRepository = policyRepository;
         this.policyStateEntityService = policyStateEntityService;

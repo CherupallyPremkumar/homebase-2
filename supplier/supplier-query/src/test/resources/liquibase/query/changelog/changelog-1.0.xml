@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+
+    <changeSet id="supplier-schema-v2" author="homebase">
+        <comment>
+            Supplier module production-readiness schema.
+            New entity fields: businessName, businessType, taxId, bankAccountId,
+            rating, totalOrders, totalReturns, fulfillmentRate, avgShippingDays,
+            commissionRate, probation/termination tracking.
+        </comment>
+
+        <createTable tableName="supplier">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="business_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="business_type" type="VARCHAR(50)"/>
+            <column name="tax_id" type="VARCHAR(100)"/>
+            <column name="bank_account_id" type="VARCHAR(100)"/>
+            <column name="contact_email" type="VARCHAR(255)"/>
+            <column name="contact_phone" type="VARCHAR(50)"/>
+            <column name="address" type="VARCHAR(2000)"/>
+
+            <!-- Performance Metrics -->
+            <column name="rating" type="DOUBLE" defaultValueNumeric="0"/>
+            <column name="total_orders" type="INT" defaultValueNumeric="0"/>
+            <column name="total_returns" type="INT" defaultValueNumeric="0"/>
+            <column name="fulfillment_rate" type="DOUBLE" defaultValueNumeric="100"/>
+            <column name="avg_shipping_days" type="DOUBLE" defaultValueNumeric="0"/>
+            <column name="commission_rate" type="DOUBLE" defaultValueNumeric="15"/>
+
+            <!-- Lifecycle Tracking -->
+            <column name="active_date" type="TIMESTAMP"/>
+            <column name="rejection_reason" type="VARCHAR(1000)"/>
+            <column name="suspension_reason" type="VARCHAR(1000)"/>
+            <column name="termination_reason" type="VARCHAR(1000)"/>
+            <column name="probation_reason" type="VARCHAR(1000)"/>
+            <column name="suspended_date" type="TIMESTAMP"/>
+            <column name="terminated_date" type="TIMESTAMP"/>
+            <column name="probation_date" type="TIMESTAMP"/>
+            <column name="products_disabled" type="BOOLEAN" defaultValueBoolean="false"/>
+
+            <!-- Chenile STM state -->
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+
+            <!-- Audit -->
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="version" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+
+        <createIndex tableName="supplier" indexName="idx_supplier_user_id">
+            <column name="user_id"/>
+        </createIndex>
+
+        <createIndex tableName="supplier" indexName="idx_supplier_state_id">
+            <column name="state_id"/>
+        </createIndex>
+
+        <createIndex tableName="supplier" indexName="idx_supplier_rating">
+            <column name="rating"/>
+        </createIndex>
+
+        <createIndex tableName="supplier" indexName="idx_supplier_fulfillment_rate">
+            <column name="fulfillment_rate"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

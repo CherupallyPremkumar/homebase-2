@@ -4,6 +4,13 @@
 
   <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
 
+  <event-information eventId='reserveInventory' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='createShipment' meta-acls="SYSTEM,WAREHOUSE" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='ship' meta-acls="WAREHOUSE" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='notifyCustomer' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='confirmDelivery' meta-acls="SYSTEM,CUSTOMER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='retry' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+
   <flow id='fulfillment-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="fulfillmentEntryAction" />
@@ -66,5 +73,8 @@
           newStateId='INITIATED'
           meta-acls="SYSTEM"/>
     </status>
+    <!-- __TERMINAL_STATE__ is used by BDD tests for mandatory activity completion checks -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
+    </manual-state>
   </flow>
 </states>

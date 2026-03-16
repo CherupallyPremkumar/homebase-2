@@ -10,6 +10,15 @@ chenile:
       enabled: true
     remote:
       base-url: http://localhost:8081
+  security:
+    client:
+      id: authz-servlet
+      secret: secret
+    keycloak:
+      host: \${KEYCLOAK_HOST:http://localhost:8180}
+      port: \${KEYCLOAK_PORT:8180}
+      base:
+        realm: \${KEYCLOAK_REALM:tenant0}
   base:
     url:
 

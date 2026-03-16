@@ -43,6 +43,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
+			<artifactId>service-registry-service</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
 			<artifactId>cucumber-utils</artifactId>
 			<scope>test</scope>
 		</dependency>
@@ -60,6 +64,11 @@
 			<groupId>org.chenile</groupId>
 			<artifactId>chenile-security-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-security</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<!-- Test dependencies for security -->
 		<dependency>
 			<groupId>org.chenile</groupId>
@@ -72,12 +81,28 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.chenile.cconfig</groupId>
+			<artifactId>cconfig-api</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>chenile-kafka</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.homebase.ecom.shared</groupId>
 			<artifactId>shared-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.dasniko</groupId>
+			<artifactId>testcontainers-keycloak</artifactId>
+			<version>3.4.0</version>
+			<scope>test</scope>
+		</dependency>
+			<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>db-migrations</artifactId>
+			<version>${revision}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -86,6 +111,7 @@
             <plugin>
                 <groupId>org.chenile</groupId>
                 <artifactId>stm-generate-puml</artifactId>
+                <version>${chenile.client.version}</version>
                 <executions>
                     <execution>
                         <goals>

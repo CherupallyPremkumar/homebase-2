@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OWIZ orchestration for the checkout saga.
+  Runs 7 steps in sequence via a Chain:
+  lockCart → lockPrice → reserveInventory → validateShipping → createOrder → commitPromo → initiatePayment
+
+  Each command is a Spring bean. If any command throws, the STM transition
+  fails and compensation should be triggered via the 'compensate' event.
+-->
+<flows>
+  <flow id='checkout-saga-flow' defaultFlow="true">
+
+    <chain id='checkoutSagaChain' componentName='org.chenile.owiz.impl.Chain' first='true'>
+    </chain>
+
+    <command id='lockCartCommand' componentName='lockCartCommand'>
+      <attach-to index="1" parentId="checkoutSagaChain"/>
+    </command>
+
+    <command id='lockPriceCommand' componentName='lockPriceCommand'>
+      <attach-to index="2" parentId="checkoutSagaChain"/>
+    </command>
+
+    <command id='reserveInventoryCommand' componentName='reserveInventoryCommand'>
+      <attach-to index="3" parentId="checkoutSagaChain"/>
+    </command>
+
+    <command id='validateShippingCommand' componentName='validateShippingCommand'>
+      <attach-to index="4" parentId="checkoutSagaChain"/>
+    </command>
+
+    <command id='createOrderCommand' componentName='createOrderCommand'>
+      <attach-to index="5" parentId="checkoutSagaChain"/>
+    </command>
+
+    <command id='commitPromoCommand' componentName='commitPromoCommand'>
+      <attach-to index="6" parentId="checkoutSagaChain"/>
+    </command>
+
+    <command id='initiatePaymentCommand' componentName='initiatePaymentCommand'>
+      <attach-to index="7" parentId="checkoutSagaChain"/>
+    </command>
+
+  </flow>
+</flows>

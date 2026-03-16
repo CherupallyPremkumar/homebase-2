@@ -1,30 +1,158 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
+
+  <!-- ================================================================ -->
+  <!-- Event definitions with ACLs and payload types                     -->
+  <!-- Item 15: ACL per event                                            -->
+  <!-- create/edit: MARKETING,ADMIN                                      -->
+  <!-- schedule: MARKETING,ADMIN                                         -->
+  <!-- activate: SYSTEM,ADMIN                                            -->
+  <!-- pause: MARKETING,ADMIN                                            -->
+  <!-- cancel: ADMIN                                                     -->
+  <!-- expire: SYSTEM                                                    -->
+  <!-- archive: ADMIN                                                    -->
+  <!-- ================================================================ -->
+  <event-information eventId='schedule' meta-acls="MARKETING,ADMIN" meta-bodyType="com.homebase.ecom.promo.dto.SchedulePromoPayload"/>
+  <event-information eventId='activate' meta-acls="SYSTEM,ADMIN" meta-bodyType="com.homebase.ecom.promo.dto.ActivatePromoPayload"/>
+  <event-information eventId='expire' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.promo.dto.ExpirePromoPayload"/>
+  <event-information eventId='pause' meta-acls="MARKETING,ADMIN" meta-bodyType="com.homebase.ecom.promo.dto.PausePromoPayload"/>
+  <event-information eventId='resume' meta-acls="MARKETING,ADMIN" meta-bodyType="com.homebase.ecom.promo.dto.ResumePromoPayload"/>
+  <event-information eventId='cancel' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.promo.dto.CancelPromoPayload"/>
+  <event-information eventId='archive' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.promo.dto.ArchivePromoPayload"/>
+  <event-information eventId='incrementUsage' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.promo.dto.IncrementUsagePayload"/>
+
   <flow id='promo-flow' default='true'>
-    <security-strategy componentName="promoSecurityStrategy"/>
+    <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="promoEntryAction"/>
     <exit-action componentName="promoExitAction"/>
 
-    <manual-state id='DRAFT' initialState='true' meta-mainPath="true" description="Promo created, not yet active">
-      <on eventId='activate' componentName='promoActivateAction' newStateId='ACTIVE' meta-mainPath="true" meta-acls="ADMIN"/>
+    <!-- ================================================================ -->
+    <!-- DRAFT: Promo created, not yet scheduled or active                -->
+    <!-- ================================================================ -->
+    <manual-state id='DRAFT' initialState='true' meta-mainPath="true"
+                  description="Promo created, pending review and scheduling">
+      <on eventId='schedule'
+          componentName='promoScheduleAction'
+          newStateId='SCHEDULED'
+          meta-mainPath="true" meta-acls="MARKETING,ADMIN"/>
+      <on eventId='cancel'
+          componentName='promoCancelAction'
+          newStateId='CANCELLED'
+          meta-acls="ADMIN"/>
     </manual-state>
 
-    <manual-state id='ACTIVE' meta-mainPath="true" description="Promo live and applicable to orders">
-      <on eventId='expire' componentName='promoExpireAction' newStateId='EXPIRED' meta-acls="SYSTEM"/>
-      <on eventId='close' componentName='promoCloseAction' newStateId='CLOSED' meta-acls="ADMIN"/>
-      <on eventId='pause' componentName='promoPauseAction' newStateId='PAUSED' meta-acls="ADMIN"/>
+    <!-- ================================================================ -->
+    <!-- SCHEDULED: Promo approved and scheduled for a future start date  -->
+    <!-- ================================================================ -->
+    <manual-state id='SCHEDULED' meta-mainPath="true"
+                  description="Promo scheduled, awaiting start date">
+      <on eventId='activate'
+          componentName='promoActivateAction'
+          newStateId='ACTIVE'
+          meta-mainPath="true" meta-acls="SYSTEM,ADMIN"/>
+      <on eventId='cancel'
+          componentName='promoCancelAction'
+          newStateId='CANCELLED'
+          meta-acls="ADMIN"/>
     </manual-state>
 
-    <manual-state id='PAUSED' description="Promo temporarily paused">
-      <on eventId='resume' componentName='promoResumeAction' newStateId='ACTIVE' meta-mainPath="true" meta-acls="ADMIN"/>
-      <on eventId='close' componentName='promoCloseAction' newStateId='CLOSED' meta-acls="ADMIN"/>
+    <!-- ================================================================ -->
+    <!-- ACTIVE: Promo live and applicable to orders                      -->
+    <!-- Usage tracking: self-transition on incrementUsage                 -->
+    <!-- ================================================================ -->
+    <manual-state id='ACTIVE' meta-mainPath="true"
+                  description="Promo live and applicable to orders">
+      <on eventId='incrementUsage'
+          componentName='promoIncrementUsageAction'
+          newStateId='CHECK_USAGE'
+          meta-acls="SYSTEM"/>
+      <on eventId='expire'
+          componentName='promoExpireAction'
+          newStateId='EXPIRED'
+          meta-acls="SYSTEM"/>
+      <on eventId='pause'
+          componentName='promoPauseAction'
+          newStateId='PAUSED'
+          meta-acls="MARKETING,ADMIN"/>
+      <on eventId='cancel'
+          componentName='promoCancelAction'
+          newStateId='CANCELLED'
+          meta-acls="ADMIN"/>
     </manual-state>
 
-    <manual-state id='EXPIRED' description="Promo past expiry date">
-      <on eventId='reactivate' componentName='promoReactivateAction' newStateId='ACTIVE' meta-acls="ADMIN"/>
-      <on eventId='close' componentName='promoCloseAction' newStateId='CLOSED' meta-acls="ADMIN"/>
+    <!-- ================================================================ -->
+    <!-- Auto-state: CHECK_USAGE                                          -->
+    <!-- After incrementing usage, check if usage limit reached           -->
+    <!-- usageCount >= usageLimit -> EXPIRED, else stay ACTIVE            -->
+    <!-- Item 16: Auto-states                                             -->
+    <!-- ================================================================ -->
+    <auto-state id='CHECK_USAGE'
+                componentName='ifAction'
+                condition='usageCount >= usageLimit and usageLimit > 0'
+                then='limitReached'
+                else='hasCapacity'>
+      <on eventId='limitReached' newStateId='EXPIRED'/>
+      <on eventId='hasCapacity' newStateId='ACTIVE'/>
+    </auto-state>
+
+    <!-- ================================================================ -->
+    <!-- Auto-state: CHECK_EXPIRATION                                     -->
+    <!-- Checks if endDate has passed; used by scheduled batch jobs       -->
+    <!-- Item 16: Auto-states                                             -->
+    <!-- ================================================================ -->
+    <auto-state id='CHECK_EXPIRATION'
+                componentName='ifAction'
+                condition='endDate != null and endDate.isBefore(T(java.time.LocalDateTime).now())'
+                then='dateExpired'
+                else='stillValid'>
+      <on eventId='dateExpired' newStateId='EXPIRED'/>
+      <on eventId='stillValid' newStateId='ACTIVE'/>
+    </auto-state>
+
+    <!-- ================================================================ -->
+    <!-- PAUSED: Temporarily suspended (from ACTIVE only)                 -->
+    <!-- ================================================================ -->
+    <manual-state id='PAUSED'
+                  description="Promo temporarily paused by marketing/admin">
+      <on eventId='resume'
+          componentName='promoResumeAction'
+          newStateId='ACTIVE'
+          meta-mainPath="true" meta-acls="MARKETING,ADMIN"/>
+      <on eventId='cancel'
+          componentName='promoCancelAction'
+          newStateId='CANCELLED'
+          meta-acls="ADMIN"/>
     </manual-state>
 
-    <manual-state id='CLOSED' description="Promo permanently closed"/>
+    <!-- ================================================================ -->
+    <!-- EXPIRED: Promo past end date or usage limit reached              -->
+    <!-- ================================================================ -->
+    <manual-state id='EXPIRED' meta-mainPath="true"
+                  description="Promo expired (date or usage limit)">
+      <on eventId='archive'
+          componentName='promoArchiveAction'
+          newStateId='ARCHIVED'
+          meta-mainPath="true" meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- CANCELLED: Promo permanently cancelled before completion         -->
+    <!-- ================================================================ -->
+    <manual-state id='CANCELLED'
+                  description="Promo cancelled by admin">
+      <on eventId='archive'
+          componentName='promoArchiveAction'
+          newStateId='ARCHIVED'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- ARCHIVED: Terminal state for historical record keeping            -->
+    <!-- ================================================================ -->
+    <manual-state id='ARCHIVED' description="Promo archived for historical records"/>
+
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing"/>
   </flow>
 </states>

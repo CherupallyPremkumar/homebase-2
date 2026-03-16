@@ -1,16 +1,18 @@
 package com.homebase.ecom.inventory.service.scheduler;
 
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
-import com.homebase.ecom.inventory.domain.port.InventoryItemRepository;
+import com.homebase.ecom.inventory.dto.ReleaseReservedStockInventoryPayload;
 import com.homebase.ecom.inventory.infrastructure.persistence.entity.InventoryItemEntity;
 import com.homebase.ecom.inventory.infrastructure.persistence.mapper.InventoryItemMapper;
 import com.homebase.ecom.inventory.service.validator.InventoryItemPolicyValidator;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import org.chenile.workflow.service.impl.StateEntityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +22,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
- * Scheduled job that automatically releases stale inventory reservations that
- * have exceeded the configured TTL using the InventoryItem aggregate.
+ * Scheduled job that releases stale inventory reservations via STM.
  */
 @Component
 public class InventoryReservationExpiryScheduler {
@@ -32,7 +33,8 @@ public class InventoryReservationExpiryScheduler {
     private InventoryItemPolicyValidator policyValidator;
 
     @Autowired
-    private InventoryItemRepository inventoryItemRepository;
+    @Qualifier("_inventoryStateEntityService_")
+    private StateEntityServiceImpl<InventoryItem> inventoryStateEntityService;
 
     @Autowired
     private InventoryItemMapper inventoryItemMapper;
@@ -40,10 +42,7 @@ public class InventoryReservationExpiryScheduler {
     @PersistenceContext
     private EntityManager entityManager;
 
-    /**
-     * Runs every 5 minutes. Finds InventoryItemEntities with expired reservations and releases them.
-     */
-    @Scheduled(fixedDelay = 5 * 60 * 1000) // every 5 minutes
+    @Scheduled(fixedDelay = 5 * 60 * 1000)
     @Transactional
     public void releaseExpiredReservations() {
         int ttlMinutes = policyValidator.getReservationTtlMinutes();
@@ -51,10 +50,8 @@ public class InventoryReservationExpiryScheduler {
 
         log.debug("Running reservation expiry check. TTL={} minutes, cutoff={}", ttlMinutes, cutoff);
 
-        // Fetch InventoryItemEntities that have at least one active reservation older than cutoff
-        // Note: Using HQL/JPQL to find items that have reservations with createdAt < cutoff
         TypedQuery<InventoryItemEntity> query = entityManager.createQuery(
-                "SELECT DISTINCT i FROM InventoryItemEntity i JOIN i.reservations r " +
+                "SELECT DISTINCT i FROM InventoryItemEntity i JOIN i.activeReservations r " +
                 "WHERE r.status = 'RESERVED' AND r.createdAt < :cutoff",
                 InventoryItemEntity.class);
         query.setParameter("cutoff", cutoff);
@@ -68,8 +65,12 @@ public class InventoryReservationExpiryScheduler {
 
         for (InventoryItemEntity entity : entities) {
             InventoryItem model = inventoryItemMapper.toModel(entity);
-            model.releaseExpiredReservations(cutoff);
-            inventoryItemRepository.save(model);
+            // Release each expired reservation through STM
+            model.getExpiredOrderIds(cutoff).forEach(orderId -> {
+                ReleaseReservedStockInventoryPayload payload = new ReleaseReservedStockInventoryPayload();
+                payload.setOrderId(orderId);
+                inventoryStateEntityService.processById(entity.getId(), "releaseReservedStock", payload);
+            });
         }
     }
 }

@@ -15,18 +15,8 @@
 				"columnType": "Text",
 				"filterable": true
 			},
-			"periodMonth": {
-				"name": "period_month",
-				"filterable": true,
-				"columnType": "Number"
-			},
-			"periodYear": {
-				"name": "period_year",
-				"filterable": true,
-				"columnType": "Number"
-			},
-			"status": {
-				"name": "status",
+			"orderId": {
+				"name": "order_id",
 				"filterable": true,
 				"columnType": "Text"
 			},
@@ -35,10 +25,146 @@
 				"filterable": true,
 				"columnType": "Text"
 			},
-			"netPayoutAmount": {
-				"name": "net_payout_amount",
+			"orderAmount": {
+				"name": "order_amount",
 				"filterable": true,
 				"columnType": "Number"
+			},
+			"commissionAmount": {
+				"name": "commission_amount",
+				"filterable": true,
+				"columnType": "Number"
+			},
+			"platformFee": {
+				"name": "platform_fee",
+				"filterable": true,
+				"columnType": "Number"
+			},
+			"netAmount": {
+				"name": "net_amount",
+				"filterable": true,
+				"columnType": "Number"
+			},
+			"currency": {
+				"name": "currency",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"settlementPeriodStart": {
+				"name": "settlement_period_start",
+				"filterable": true,
+				"columnType": "Date"
+			},
+			"settlementPeriodEnd": {
+				"name": "settlement_period_end",
+				"filterable": true,
+				"columnType": "Date"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Settlement.getById",
+		"name": "settlementById",
+		"workflowName": "settlement",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Settlement.getStateCounts",
+		"name": "settlementStateCounts",
+		"workflowName": "settlement",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Settlement.getBySupplier",
+		"name": "settlementsBySupplier",
+		"workflowName": "settlement",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"supplierId": {
+				"name": "supplier_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Settlement.getPendingSettlements",
+		"name": "pendingSettlements",
+		"workflowName": "settlement",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"supplierId": {
+				"name": "supplier_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Settlement.getSettlementSummary",
+		"name": "settlementSummary",
+		"workflowName": "settlement",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"supplierId": {
+				"name": "supplier_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Settlement.getByVendorId",
+		"name": "settlementsByVendor",
+		"workflowName": "settlement",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"supplierId": {
+				"name": "supplier_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
 			}
 		},
 		"flexiblePropnames": false,

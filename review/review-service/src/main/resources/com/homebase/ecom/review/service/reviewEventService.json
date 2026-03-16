@@ -1,0 +1,12 @@
+{
+	"name": "reviewEventService",
+	"id": "reviewEventService",
+	"serviceName": "reviewEventService",
+	"operations": [
+		{
+			"name": "handleOrderEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["order.events"]
+		}
+	]
+}

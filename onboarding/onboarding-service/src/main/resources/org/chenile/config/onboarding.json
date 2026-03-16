@@ -1,0 +1,25 @@
+{
+  "policies": {
+    "verification": {
+      "documentVerificationDays": 5,
+      "businessVerificationDays": 10
+    },
+    "training": {
+      "trainingModulesRequired": 3
+    },
+    "resubmission": {
+      "maxResubmissions": 3
+    },
+    "timeout": {
+      "autoRejectAfterDays": 30
+    },
+    "documents": {
+      "requiredDocuments": ["TAX_ID", "BUSINESS_LICENSE", "BANK_PROOF"]
+    }
+  },
+  "policyEngine": {
+    "onboarding-verify-documents": "policy-onb-verify-docs-001",
+    "onboarding-verify-business": "policy-onb-verify-biz-001",
+    "onboarding-reject": "policy-onb-reject-001"
+  }
+}

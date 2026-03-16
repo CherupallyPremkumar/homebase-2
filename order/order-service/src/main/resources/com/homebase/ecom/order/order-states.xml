@@ -1,128 +1,170 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
-  <flow id='order-flow' default='true'>
-    <security-strategy componentName="orderSecurityStrategy"/>
-    <entry-action componentName="orderEntryAction" />
-    <exit-action componentName="orderExitAction" />
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
 
-    <manual-state id='CREATED' initialState='true' meta-mainPath="true" description="Order created, awaiting payment">
-      <entry-action componentName="orderCreatedNotificationAction" />
-      <on eventId='processPayment'
-          componentName='orderProcessPaymentAction'
-          newStateId='PAYMENT_CONFIRMED'
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- Event definitions with ACLs and payload types                          -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <event-information eventId='paymentSucceeded' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.order.dto.PaymentSucceededOrderPayload"/>
+  <event-information eventId='paymentFailed' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.order.dto.PaymentFailedOrderPayload"/>
+  <event-information eventId='requestCancellation' meta-acls="CUSTOMER,ADMIN" meta-bodyType="com.homebase.ecom.order.dto.RequestCancellationOrderPayload"/>
+  <event-information eventId='confirmCancellation' meta-acls="ADMIN,SYSTEM" meta-bodyType="com.homebase.ecom.order.dto.ConfirmCancellationOrderPayload"/>
+  <event-information eventId='startProcessing' meta-acls="SYSTEM,WAREHOUSE" meta-bodyType="com.homebase.ecom.order.dto.StartProcessingOrderPayload"/>
+  <event-information eventId='markShipped' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.order.dto.MarkShippedOrderPayload"/>
+  <event-information eventId='markDelivered' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.order.dto.MarkDeliveredOrderPayload"/>
+  <event-information eventId='confirmDelivery' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.order.dto.ConfirmDeliveryOrderPayload"/>
+  <event-information eventId='requestRefund' meta-acls="CUSTOMER,ADMIN" meta-bodyType="com.homebase.ecom.order.dto.RequestRefundOrderPayload"/>
+  <event-information eventId='completeRefund' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.order.dto.CompleteRefundOrderPayload"/>
+
+  <flow id='order-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="orderEntryAction"/>
+    <exit-action componentName="orderExitAction"/>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- HAPPY PATH: CREATED -> PAYMENT_PENDING -> PAID -> PROCESSING       -->
+    <!--             -> SHIPPED -> DELIVERED -> COMPLETED                    -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <manual-state id='CREATED' initialState='true' meta-mainPath="true"
+                  description="Order created, awaiting payment initiation">
+      <on eventId='paymentSucceeded'
+          componentName='orderPaymentSucceededAction'
+          newStateId='PAID'
           meta-mainPath="true"
           meta-acls="SYSTEM"/>
       <on eventId='paymentFailed'
           componentName='orderPaymentFailedAction'
-          newStateId='FAILED'
+          newStateId='PAYMENT_FAILED'
           meta-acls="SYSTEM"/>
-      <on eventId='cancelOrder'
-          componentName='orderCancelOrderAction'
-          newStateId='CANCELLED'
-          meta-acls="CUSTOMER"/>
+      <on eventId='requestCancellation'
+          componentName='orderRequestCancellationAction'
+          newStateId='CHECK_CANCELLATION_WINDOW'
+          meta-acls="CUSTOMER,ADMIN"/>
     </manual-state>
 
-    <manual-state id='FAILED' description="Payment failed for the order">
-      <entry-action componentName="orderFailedNotificationAction" />
+    <manual-state id='PAYMENT_PENDING' meta-mainPath="true"
+                  description="Payment initiated, awaiting confirmation from payment gateway">
+      <on eventId='paymentSucceeded'
+          componentName='orderPaymentSucceededAction'
+          newStateId='PAID'
+          meta-mainPath="true"
+          meta-acls="SYSTEM"/>
+      <on eventId='paymentFailed'
+          componentName='orderPaymentFailedAction'
+          newStateId='PAYMENT_FAILED'
+          meta-acls="SYSTEM"/>
+      <on eventId='requestCancellation'
+          componentName='orderRequestCancellationAction'
+          newStateId='CHECK_CANCELLATION_WINDOW'
+          meta-acls="CUSTOMER,ADMIN"/>
     </manual-state>
 
-    <manual-state id='PAYMENT_CONFIRMED' meta-mainPath="true" description="Payment confirmed, awaiting warehouse processing">
-      <entry-action componentName="paymentConfirmedAction" />
+    <manual-state id='PAYMENT_FAILED' description="Payment failed — order cannot proceed">
+    </manual-state>
+
+    <manual-state id='PAID' meta-mainPath="true"
+                  description="Payment confirmed, awaiting warehouse processing">
       <on eventId='startProcessing'
           componentName='orderStartProcessingAction'
           newStateId='PROCESSING'
           meta-mainPath="true"
-          meta-acls="WAREHOUSE"/>
-      <on eventId='cancelOrderItem'
-          componentName='orderCancelOrderItemAction'
-          meta-acls="CUSTOMER"/>
-      <on eventId='refundOrderItem'
-          componentName='orderRefundOrderItemAction'
-          meta-acls="CUSTOMER"/>
+          meta-acls="SYSTEM,WAREHOUSE"/>
+      <on eventId='requestCancellation'
+          componentName='orderRequestCancellationAction'
+          newStateId='CHECK_CANCELLATION_WINDOW'
+          meta-acls="CUSTOMER,ADMIN"/>
     </manual-state>
 
-    <manual-state id='PROCESSING' meta-mainPath="true" description="Order being processed at warehouse">
-      <entry-action componentName="processingStartedAction" />
-      <on eventId='itemsPicked'
-          componentName='orderItemsPickedAction'
-          newStateId='PICKED'
-          meta-mainPath="true"
-          meta-acls="WAREHOUSE"/>
-      <on eventId='cancelOrderItem'
-          componentName='orderCancelOrderItemAction'
-          meta-acls="CUSTOMER"/>
-      <on eventId='refundOrderItem'
-          componentName='orderRefundOrderItemAction'
-          meta-acls="CUSTOMER"/>
-    </manual-state>
-
-    <manual-state id='PICKED' meta-mainPath="true" description="Items picked and packed, awaiting courier pickup">
-      <entry-action componentName="itemsPackedAction" />
-      <on eventId='courierPickup'
-          componentName='orderCourierPickupAction'
+    <manual-state id='PROCESSING' meta-mainPath="true"
+                  description="Order being processed at warehouse">
+      <on eventId='markShipped'
+          componentName='orderMarkShippedAction'
           newStateId='SHIPPED'
           meta-mainPath="true"
           meta-acls="WAREHOUSE"/>
+      <on eventId='requestCancellation'
+          componentName='orderRequestCancellationAction'
+          newStateId='CHECK_CANCELLATION_WINDOW'
+          meta-acls="CUSTOMER,ADMIN"/>
     </manual-state>
 
-    <manual-state id='SHIPPED' meta-mainPath="true" description="Order shipped, in transit to customer">
-      <entry-action componentName="shippedNotificationAction" />
-      <on eventId='deliverOrder'
-          componentName='orderDeliverOrderAction'
+    <manual-state id='SHIPPED' meta-mainPath="true"
+                  description="Order shipped, in transit to customer">
+      <on eventId='markDelivered'
+          componentName='orderMarkDeliveredAction'
           newStateId='DELIVERED'
           meta-mainPath="true"
           meta-acls="SYSTEM"/>
-      <on eventId='returnRequested'
-          componentName='orderReturnRequestedAction'
-          newStateId='RETURN_INITIATED'
-          meta-acls="CUSTOMER"/>
     </manual-state>
 
-    <manual-state id='DELIVERED' meta-mainPath="true" description="Order delivered to customer">
-      <entry-action componentName="deliveredNotificationAction" />
+    <manual-state id='DELIVERED' meta-mainPath="true"
+                  description="Order delivered to customer">
       <on eventId='confirmDelivery'
           componentName='orderConfirmDeliveryAction'
           newStateId='COMPLETED'
           meta-mainPath="true"
           meta-acls="CUSTOMER"/>
-      <on eventId='initiateReturn'
-          componentName='orderInitiateReturnAction'
-          newStateId='RETURN_INITIATED'
-          meta-acls="CUSTOMER"/>
+      <on eventId='requestRefund'
+          componentName='orderRequestRefundAction'
+          newStateId='REFUND_REQUESTED'
+          meta-acls="CUSTOMER,ADMIN"/>
     </manual-state>
 
     <manual-state id='COMPLETED' description="Order completed and confirmed by customer">
-      <entry-action componentName="orderCompletedAction" />
-      <exit-action componentName="triggerSettlementAction" />
+      <on eventId='requestRefund'
+          componentName='orderRequestRefundAction'
+          newStateId='REFUND_REQUESTED'
+          meta-acls="CUSTOMER,ADMIN"/>
     </manual-state>
 
-    <manual-state id='RETURN_INITIATED' description="Return requested by customer, awaiting review">
-      <entry-action componentName="returnInitiatedAction" />
-      <on eventId='approveReturn'
-          componentName='orderApproveReturnAction'
-          newStateId='REFUND_INITIATED'
-          meta-acls="ADMIN"/>
-      <on eventId='rejectReturn'
-          componentName='orderRejectReturnAction'
-          newStateId='COMPLETED'
-          meta-acls="ADMIN"/>
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- CANCELLATION FLOW                                                   -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <!--
+      OGNL auto-state: Check if the order is still within the cancellation window.
+      Uses cancellationWindowHours from order config. If the order was created
+      more than N hours ago, the cancellation is rejected (stays in current state).
+    -->
+    <auto-state id='CHECK_CANCELLATION_WINDOW'
+                componentName='ifAction'
+                condition='cancellationAllowed == true'
+                then='allowed'
+                else='denied'>
+      <on eventId='allowed' newStateId='CANCEL_REQUESTED'/>
+      <on eventId='denied' newStateId='CANCELLATION_DENIED'/>
+    </auto-state>
+
+    <manual-state id='CANCEL_REQUESTED' description="Cancellation requested, awaiting confirmation">
+      <on eventId='confirmCancellation'
+          componentName='orderConfirmCancellationAction'
+          newStateId='CANCELLED'
+          meta-acls="ADMIN,SYSTEM"/>
     </manual-state>
 
-    <manual-state id='REFUND_INITIATED' description="Refund being processed for the order">
-      <entry-action componentName="refundProcessingAction" />
-      <on eventId='refundComplete'
-          componentName='orderRefundCompleteAction'
+    <manual-state id='CANCELLATION_DENIED' description="Cancellation denied — window expired or not eligible">
+    </manual-state>
+
+    <manual-state id='CANCELLED' description="Order cancelled, inventory released">
+    </manual-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- REFUND FLOW                                                         -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <manual-state id='REFUND_REQUESTED' description="Refund requested by customer or admin">
+      <on eventId='completeRefund'
+          componentName='orderCompleteRefundAction'
           newStateId='REFUNDED'
-          meta-mainPath="true"
           meta-acls="SYSTEM"/>
     </manual-state>
 
     <manual-state id='REFUNDED' description="Refund completed for the order">
-      <exit-action componentName="adjustSettlementAction" />
     </manual-state>
 
-    <manual-state id='CANCELLED' description="Order cancelled">
-      <entry-action componentName="cancelledNotificationAction" />
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
     </manual-state>
   </flow>
 </states>

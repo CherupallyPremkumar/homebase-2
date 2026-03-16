@@ -11,18 +11,17 @@
     </parent>
 
     <artifactId>policy-client</artifactId>
-    <name>Policy Client</name>
+    <name>Policy Client — ProxyBuilder-based service client</name>
 
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom.policy</groupId>
             <artifactId>policy-api</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-            <version>4.1.0</version>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-proxy</artifactId>
         </dependency>
     </dependencies>
 </project>

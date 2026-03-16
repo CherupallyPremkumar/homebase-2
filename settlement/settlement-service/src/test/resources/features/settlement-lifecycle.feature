@@ -1,9 +1,12 @@
 Feature: Tests the full Settlement Lifecycle using Chenile STM.
-Covers the settlement flow: PENDING -> PROCESSING -> READY_FOR_PAYMENT -> SETTLED,
-and the failure/retry path: FAILED -> retrySettlement -> PROCESSING.
-Includes mandatory activity tracking for payout verification.
+Covers the settlement flow: PENDING -> CALCULATING -> CALCULATED -> APPROVED -> DISBURSED -> COMPLETED.
+Also covers dispute path and failure/retry path.
 
-Scenario: Create a new settlement for a supplier period
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
+Scenario: Create a new settlement for a supplier
 Given that "flowName" equals "settlement-flow"
 And that "initialState" equals "PENDING"
 When I POST a REST request to URL "/settlement" with payload
@@ -11,14 +14,16 @@ When I POST a REST request to URL "/settlement" with payload
 {
     "description": "March 2026 Settlement for Artisan Crafts Co.",
     "supplierId": "supplier-001",
-    "periodMonth": 3,
-    "periodYear": 2026
+    "orderId": "ORD-LIFECYCLE-001",
+    "orderAmount": {"amount": 10000, "currency": "INR"},
+    "currency": "INR",
+    "settlementPeriodStart": "2026-03-01",
+    "settlementPeriodEnd": "2026-03-15"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And store "$.payload.mutatedEntity.id" from response to "id"
 And the REST response key "mutatedEntity.currentState.stateId" is "${initialState}"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
 And the REST response key "mutatedEntity.description" is "March 2026 Settlement for Artisan Crafts Co."
 
 Scenario: Retrieve the settlement that was just created
@@ -27,170 +32,148 @@ Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "PENDING"
 
-Scenario: Trigger month end processing (PENDING -> PROCESSING)
-Given that "comment" equals "Month end reached, initiating settlement processing"
-And that "event" equals "monthEnd"
+Scenario: Calculate settlement (PENDING -> CALCULATING)
+Given that "event" equals "calculate"
 When I PATCH a REST request to URL "/settlement/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "Initiating settlement calculation"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PROCESSING"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
+And the REST response key "mutatedEntity.currentState.stateId" is "CALCULATING"
 
-Scenario: Calculate settlement amounts (PROCESSING -> READY_FOR_PAYMENT)
-Given that "comment" equals "Commission calculated: 10% platform fee deducted"
-And that "event" equals "calculateSettlement"
+Scenario: Calculate settlement amounts (CALCULATING -> CALCULATED)
+Given that "event" equals "calculate"
 When I PATCH a REST request to URL "/settlement/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "Commission calculated: 15% commission, 2% platform fee"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "READY_FOR_PAYMENT"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
+And the REST response key "mutatedEntity.currentState.stateId" is "CALCULATED"
 
-Scenario: Confirm payout to supplier (READY_FOR_PAYMENT -> SETTLED)
-Given that "comment" equals "Payout confirmed via bank transfer"
-And that "event" equals "confirmPayout"
+Scenario: Approve settlement (CALCULATED -> APPROVED via auto-approve)
+Given that "event" equals "approve"
 When I PATCH a REST request to URL "/settlement/${id}/${event}" with payload
 """json
 {
-    "paymentReference": "PAY-2026-03-001",
-    "notes": "Payout of net amount confirmed"
+    "comment": "Approving settlement"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "SETTLED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
+And the REST response key "mutatedEntity.currentState.stateId" is "APPROVED"
 
-Scenario: Verify settled state is terminal (no further transitions)
-When I PATCH a REST request to URL "/settlement/${id}/monthEnd" with payload
+Scenario: Disburse settlement (APPROVED -> DISBURSED)
+Given that "event" equals "disburse"
+When I PATCH a REST request to URL "/settlement/${id}/${event}" with payload
 """json
 {
-    "comment": "Attempting event on settled entity"
+    "comment": "Disbursing to supplier bank account"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${id}"
+And the REST response key "mutatedEntity.currentState.stateId" is "DISBURSED"
+
+Scenario: Complete settlement (DISBURSED -> COMPLETED)
+Given that "event" equals "approve"
+When I PATCH a REST request to URL "/settlement/${id}/${event}" with payload
+"""json
+{
+    "comment": "Settlement confirmed complete"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${id}"
+And the REST response key "mutatedEntity.currentState.stateId" is "COMPLETED"
+
+Scenario: Verify completed state is terminal
+When I PATCH a REST request to URL "/settlement/${id}/calculate" with payload
+"""json
+{
+    "comment": "Attempting event on completed entity"
 }
 """
 Then the REST response does not contain key "mutatedEntity"
 And the http status code is 422
 
-Scenario: Create a second settlement for failure/retry flow
+Scenario: Create second settlement for dispute flow
 When I POST a REST request to URL "/settlement" with payload
 """json
 {
-    "description": "April 2026 Settlement - Failure Test",
+    "description": "April 2026 Settlement - Dispute Test",
     "supplierId": "supplier-002",
-    "periodMonth": 4,
-    "periodYear": 2026
+    "orderId": "ORD-LIFECYCLE-002",
+    "orderAmount": {"amount": 8000, "currency": "INR"},
+    "currency": "INR",
+    "settlementPeriodStart": "2026-04-01",
+    "settlementPeriodEnd": "2026-04-15"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And store "$.payload.mutatedEntity.id" from response to "id2"
 And the REST response key "mutatedEntity.currentState.stateId" is "PENDING"
 
-Scenario: Move second settlement to PROCESSING
-Given that "comment" equals "Month end processing"
-And that "event" equals "monthEnd"
+Scenario: Move second settlement through calculate -> calculated -> approved
+Given that "event" equals "calculate"
 When I PATCH a REST request to URL "/settlement/${id2}/${event}" with payload
 """json
-{
-    "comment": "${comment}"
-}
+{ "comment": "Calculate step 1" }
 """
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.currentState.stateId" is "PROCESSING"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState2"
+Then the REST response key "mutatedEntity.currentState.stateId" is "CALCULATING"
 
-Scenario: Calculate settlement for second settlement
-Given that "comment" equals "Calculating settlement amounts"
-And that "event" equals "calculateSettlement"
+Scenario: Calculate second settlement
+Given that "event" equals "calculate"
 When I PATCH a REST request to URL "/settlement/${id2}/${event}" with payload
 """json
-{
-    "comment": "${comment}"
-}
+{ "comment": "Calculate step 2" }
 """
-Then the REST response contains key "mutatedEntity"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState2"
+Then the REST response key "mutatedEntity.currentState.stateId" is "CALCULATED"
 
-Scenario: Add mandatory activities for payout verification
-Given that "terminalState" equals "__TERMINAL_STATE__"
-And that config strategy is "settlementConfigProvider" with prefix "Settlement"
-And that a new mandatory activity "verifyBankDetails" is added from state "${currentState2}" to state "${currentState2}" in flow "${flowName}"
-And that a new mandatory activity "auditTrailCheck" is added from state "${currentState2}" to state "${currentState2}" in flow "${flowName}"
-And that a new state "${terminalState}" is added to flow "${flowName}"
-And that a new activity completion checker "finalizeSettlement" is added from state "${currentState2}" to state "${terminalState}" in flow "${flowName}"
-And that "comment" equals "Attempting finalize without completing mandatory activities"
-And that "event" equals "finalizeSettlement"
+Scenario: Approve second settlement
+Given that "event" equals "approve"
 When I PATCH a REST request to URL "/settlement/${id2}/${event}" with payload
 """json
-{
-    "comment": "${comment}"
-}
+{ "comment": "Approved" }
 """
-Then the REST response does not contain key "mutatedEntity"
-And success is false
-And the http status code is 400
-And the top level subErrorCode is 49000
+Then the REST response key "mutatedEntity.currentState.stateId" is "APPROVED"
 
-Scenario: Perform mandatory activity verifyBankDetails
-Given that "comment" equals "Supplier bank details verified against records"
-And that "event" equals "verifyBankDetails"
+Scenario: Dispute the approved settlement (APPROVED -> DISPUTED)
+Given that "event" equals "dispute"
 When I PATCH a REST request to URL "/settlement/${id2}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "disputeReason": "Commission rate seems incorrect for our contract",
+    "comment": "Supplier disputes settlement"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id2}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${currentState2}"
-And the REST response key "mutatedEntity.activities" collection has an item with keys and values:
-| key             | value                                          |
-| activityName    | ${event}                                       |
-| activityComment | ${comment}                                     |
+And the REST response key "mutatedEntity.currentState.stateId" is "DISPUTED"
 
-Scenario: Perform mandatory activity auditTrailCheck
-Given that "comment" equals "Audit trail reviewed, all transactions accounted for"
-And that "event" equals "auditTrailCheck"
+Scenario: Resolve the dispute (DISPUTED -> APPROVED)
+Given that "event" equals "resolve"
 When I PATCH a REST request to URL "/settlement/${id2}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "resolution": "Commission rate verified as per contract. No changes needed.",
+    "comment": "Dispute resolved by finance team"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id2}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${currentState2}"
-And the REST response key "mutatedEntity.activities" collection has an item with keys and values:
-| key             | value                                          |
-| activityName    | ${event}                                       |
-| activityComment | ${comment}                                     |
+And the REST response key "mutatedEntity.currentState.stateId" is "APPROVED"
 
-Scenario: Finalize settlement after all mandatory activities done
-Given that "comment" equals "All verification complete, finalizing settlement"
-And that "event" equals "finalizeSettlement"
-When I PATCH a REST request to URL "/settlement/${id2}/${event}" with payload
+Scenario: Send an invalid event to settlement
+When I PATCH a REST request to URL "/settlement/${id2}/invalidEvent" with payload
 """json
 {
-    "comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id2}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${terminalState}"
-
-Scenario: Send an invalid event to settlement. This will err out.
-When I PATCH a REST request to URL "/settlement/${id}/invalid" with payload
-"""json
-{
-    "comment": "invalid event"
+    "comment": "This should fail"
 }
 """
 Then the REST response does not contain key "mutatedEntity"

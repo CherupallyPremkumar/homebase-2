@@ -1,48 +1,48 @@
 Feature: Testcase ID 2
-Tests the shipping Workflow Service using a REST client. Shipping service exists and is under test.
-It helps to create a shipping and manages the state of the shipping as documented in states xml
+Tests the shipping failure-to-return flow and cancellation flow.
 
-Scenario: Create a new shipping
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
+Scenario: Create a new shipping for return test
 Given that "flowName" equals "shipping-flow"
-And that "initialState" equals "AWAITING_PICKUP"
+And that "initialState" equals "PENDING"
 When I POST a REST request to URL "/shipping" with payload
 """json
 {
     "description": "Description",
-    "orderId": "ORD-TEST2-001"
+    "orderId": "ORD-TEST2-001",
+    "carrier": "HOMEBASE-LOGISTICS"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And store "$.payload.mutatedEntity.id" from response to "id"
 And the REST response key "mutatedEntity.currentState.stateId" is "${initialState}"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
-And the REST response key "mutatedEntity.description" is "Description"
 
-Scenario: Retrieve the shipping that just got created
-When I GET a REST request to URL "/shipping/${id}"
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${currentState}"
-
-
-Scenario: Send the courierAssigned event to the shipping with comments
-Given that "comment" equals "Comment for courierAssigned"
-And that "event" equals "courierAssigned"
+Scenario: Create label
+Given that "comment" equals "Comment for createLabel"
+And that "event" equals "createLabel"
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
     "comment": "${comment}",
-    "carrier": "HOMEBASE-LOGISTICS"
+    "carrier": "DELHIVERY",
+    "trackingNumber": "DEL-TEST2-001",
+    "shippingMethod": "STANDARD",
+    "estimatedDeliveryDays": 5
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PICKED_UP"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
+And the REST response key "mutatedEntity.currentState.stateId" is "LABEL_CREATED"
+And the REST response key "mutatedEntity.carrier" is "DELHIVERY"
+And the REST response key "mutatedEntity.trackingNumber" is "DEL-TEST2-001"
+And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
 
-Scenario: Send the inTransit event to the shipping with comments
-Given that "comment" equals "Comment for inTransit"
-And that "event" equals "inTransit"
+Scenario: Pick up
+Given that "comment" equals "Comment for pickUp"
+And that "event" equals "pickUp"
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
@@ -50,54 +50,58 @@ When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "IN_TRANSIT"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
+And the REST response key "mutatedEntity.currentState.stateId" is "PICKED_UP"
 
-Scenario: Send the outForDelivery event to the shipping with comments
+Scenario: Transit
+Given that "comment" equals "Comment for updateTransit"
+And that "event" equals "updateTransit"
+When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
+"""json
+{
+    "comment": "${comment}",
+    "currentLocation": "Mumbai Sorting Hub"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.currentState.stateId" is "IN_TRANSIT"
+
+Scenario: Out for delivery
 Given that "comment" equals "Comment for outForDelivery"
 And that "event" equals "outForDelivery"
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "localHub": "Bangalore Koramangala Hub"
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "OUT_FOR_DELIVERY"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
-Scenario: Send the markDelivered event to the shipping with comments
-Given that "comment" equals "Comment for markDelivered"
-And that "event" equals "markDelivered"
+Scenario: Fail delivery
+Given that "comment" equals "Wrong address"
+And that "event" equals "failDelivery"
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
     "comment": "${comment}",
-    "deliveryProof": "photo-proof-001.jpg"
+    "failureReason": "Wrong address"
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "DELIVERED"
-And the REST response contains key "mutatedEntity.deliveredAt"
-And the REST response key "mutatedEntity.deliveryProof" is "photo-proof-001.jpg"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
+And the REST response key "mutatedEntity.currentState.stateId" is "DELIVERY_FAILED"
 
-Scenario: Send the returnRequested event to the shipping with comments
-Given that "comment" equals "Comment for returnRequested"
-And that "event" equals "returnRequested"
+Scenario: Return shipment directly (DELIVERY_FAILED -> RETURNED)
+Given that "comment" equals "Returning to warehouse"
+And that "event" equals "returnShipment"
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
     "comment": "${comment}",
-    "returnReason": "Wrong size received"
+    "returnReason": "Customer unreachable"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "RETURN_REQUESTED"
-And the REST response key "mutatedEntity.returnReason" is "Wrong size received"
-And the REST response contains key "mutatedEntity.returnTrackingNumber"
+And the REST response key "mutatedEntity.currentState.stateId" is "RETURNED"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"

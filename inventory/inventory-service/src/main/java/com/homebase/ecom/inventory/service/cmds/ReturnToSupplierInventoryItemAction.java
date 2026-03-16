@@ -26,7 +26,7 @@ public class ReturnToSupplierInventoryItemAction extends AbstractSTMTransitionAc
         int returnQty = payload.getReturnQuantity() != null ? payload.getReturnQuantity() : inventory.getDamagedQuantity();
 
         // Use domain method to initiate supplier return
-        inventory.initiateSupplierReturn(returnQty);
+        inventory.initiateSupplierReturn(returnQty, payload.getUnitIdentifiers());
 
         log.info("Initiated return to supplier for productId={}, returnQty={}, reason={}",
                 inventory.getProductId(), returnQty,

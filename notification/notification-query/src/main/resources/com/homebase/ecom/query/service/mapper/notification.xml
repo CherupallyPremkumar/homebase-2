@@ -3,25 +3,26 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="Notification">
 
+    <!-- Dashboard: getAll -->
     <select id="getAll" resultType="com.homebase.ecom.notification.dto.NotificationDto">
         SELECT
             id,
-            user_id as "userId",
+            customer_id as "customerId",
             channel,
-            template_code as "templateCode",
+            template_id as "templateId",
             subject,
-            reference_type as "referenceType",
-            reference_id as "referenceId",
+            recipient_address as "recipientAddress",
             sent_at as "sentAt",
-            read_at as "readAt",
+            delivered_at as "deliveredAt",
+            failure_reason as "failureReason",
             retry_count as "retryCount",
             state_id as "stateId"
         FROM notifications
         <where>
-            <if test="userId != null">AND user_id = #{userId}</if>
+            <if test="customerId != null">AND customer_id = #{customerId}</if>
             <if test="channel != null">AND channel = #{channel}</if>
-            <if test="referenceType != null">AND reference_type = #{referenceType}</if>
-            <if test="referenceId != null">AND reference_id = #{referenceId}</if>
+            <if test="templateId != null">AND template_id = #{templateId}</if>
+            <if test="recipientAddress != null">AND recipient_address = #{recipientAddress}</if>
             <if test="stateId != null">AND state_id = #{stateId}</if>
         </where>
     </select>
@@ -30,29 +31,151 @@
         SELECT count(*)
         FROM notifications
         <where>
-            <if test="userId != null">AND user_id = #{userId}</if>
+            <if test="customerId != null">AND customer_id = #{customerId}</if>
             <if test="channel != null">AND channel = #{channel}</if>
-            <if test="referenceType != null">AND reference_type = #{referenceType}</if>
-            <if test="referenceId != null">AND reference_id = #{referenceId}</if>
+            <if test="templateId != null">AND template_id = #{templateId}</if>
+            <if test="recipientAddress != null">AND recipient_address = #{recipientAddress}</if>
             <if test="stateId != null">AND state_id = #{stateId}</if>
         </where>
     </select>
 
+    <!-- Dashboard: getById -->
     <select id="getById" resultType="com.homebase.ecom.notification.dto.NotificationDto">
         SELECT
             id,
-            user_id as "userId",
+            customer_id as "customerId",
             channel,
-            template_code as "templateCode",
+            template_id as "templateId",
             subject,
-            reference_type as "referenceType",
-            reference_id as "referenceId",
+            body,
+            recipient_address as "recipientAddress",
             sent_at as "sentAt",
-            read_at as "readAt",
+            delivered_at as "deliveredAt",
+            failure_reason as "failureReason",
             retry_count as "retryCount",
             state_id as "stateId"
         FROM notifications
         WHERE id = #{id}
+    </select>
+
+    <!-- Dashboard: getStateCounts -->
+    <select id="getStateCounts" resultType="com.homebase.ecom.notification.dto.NotificationDto">
+        SELECT
+            state_id as "stateId",
+            count(*) as "retryCount"
+        FROM notifications
+        <where>
+            <if test="stateId != null">AND state_id = #{stateId}</if>
+        </where>
+        GROUP BY state_id
+    </select>
+
+    <!-- Dashboard: getFailedNotifications -->
+    <select id="getFailedNotifications" resultType="com.homebase.ecom.notification.dto.NotificationDto">
+        SELECT
+            id,
+            customer_id as "customerId",
+            channel,
+            template_id as "templateId",
+            subject,
+            failure_reason as "failureReason",
+            retry_count as "retryCount",
+            state_id as "stateId"
+        FROM notifications
+        WHERE state_id IN ('FAILED', 'BOUNCED')
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="channel != null">AND channel = #{channel}</if>
+    </select>
+
+    <select id="getFailedNotifications-count" resultType="int">
+        SELECT count(*)
+        FROM notifications
+        WHERE state_id IN ('FAILED', 'BOUNCED')
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="channel != null">AND channel = #{channel}</if>
+    </select>
+
+    <!-- Dashboard: getDeliveryStats -->
+    <select id="getDeliveryStats" resultType="com.homebase.ecom.notification.dto.NotificationDto">
+        SELECT
+            channel,
+            state_id as "stateId",
+            count(*) as "retryCount"
+        FROM notifications
+        <where>
+            <if test="channel != null">AND channel = #{channel}</if>
+        </where>
+        GROUP BY channel, state_id
+    </select>
+
+    <!-- Admin: getByCustomerId -->
+    <select id="getByCustomerId" resultType="com.homebase.ecom.notification.dto.NotificationDto">
+        SELECT
+            id,
+            customer_id as "customerId",
+            channel,
+            template_id as "templateId",
+            subject,
+            sent_at as "sentAt",
+            delivered_at as "deliveredAt",
+            retry_count as "retryCount",
+            state_id as "stateId"
+        FROM notifications
+        WHERE customer_id = #{customerId}
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+    </select>
+
+    <select id="getByCustomerId-count" resultType="int">
+        SELECT count(*)
+        FROM notifications
+        WHERE customer_id = #{customerId}
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+    </select>
+
+    <!-- Admin: getByChannel -->
+    <select id="getByChannel" resultType="com.homebase.ecom.notification.dto.NotificationDto">
+        SELECT
+            id,
+            customer_id as "customerId",
+            channel,
+            template_id as "templateId",
+            subject,
+            sent_at as "sentAt",
+            retry_count as "retryCount",
+            state_id as "stateId"
+        FROM notifications
+        WHERE channel = #{channel}
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+    </select>
+
+    <select id="getByChannel-count" resultType="int">
+        SELECT count(*)
+        FROM notifications
+        WHERE channel = #{channel}
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+    </select>
+
+    <!-- Admin: getByTemplate -->
+    <select id="getByTemplate" resultType="com.homebase.ecom.notification.dto.NotificationDto">
+        SELECT
+            id,
+            customer_id as "customerId",
+            channel,
+            template_id as "templateId",
+            subject,
+            sent_at as "sentAt",
+            retry_count as "retryCount",
+            state_id as "stateId"
+        FROM notifications
+        WHERE template_id = #{templateId}
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+    </select>
+
+    <select id="getByTemplate-count" resultType="int">
+        SELECT count(*)
+        FROM notifications
+        WHERE template_id = #{templateId}
+        <if test="stateId != null">AND state_id = #{stateId}</if>
     </select>
 
 </mapper>

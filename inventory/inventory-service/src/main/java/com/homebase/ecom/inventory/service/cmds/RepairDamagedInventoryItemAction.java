@@ -1,7 +1,6 @@
 package com.homebase.ecom.inventory.service.cmds;
 
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
-import com.homebase.ecom.inventory.domain.model.InventoryStatus;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
@@ -12,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * STM action for repairing damaged stock in the warehouse.
- * Moves repaired units back to available inventory.
+ * Moves repaired units back to available inventory and updates damage records.
  */
 public class RepairDamagedInventoryItemAction extends AbstractSTMTransitionAction<InventoryItem, RepairDamagedInventoryPayload> {
 
@@ -26,9 +25,7 @@ public class RepairDamagedInventoryItemAction extends AbstractSTMTransitionActio
 
         int repairedQty = payload.getRepairedQuantity() != null ? payload.getRepairedQuantity() : inventory.getDamagedQuantity();
 
-        // Use domain method to repair damaged units (adds back to available)
-        inventory.repairDamaged(repairedQty);
-        inventory.setStatus(InventoryStatus.AVAILABLE);
+        inventory.repairDamaged(repairedQty, payload.getUnitIdentifiers());
 
         log.info("Repaired {} damaged units for productId={}, remaining damaged={}",
                 repairedQty, inventory.getProductId(), inventory.getDamagedQuantity());

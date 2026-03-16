@@ -9,9 +9,9 @@
     </parent>
 
     <groupId>com.homebase.ecom</groupId>
-    <artifactId>handmade-catalog-api</artifactId>
+    <artifactId>catalog-api</artifactId>
     <packaging>jar</packaging>
-    <name>handmade-catalog-api</name>
+    <name>catalog-api</name>
 
     <dependencies>
         <dependency>

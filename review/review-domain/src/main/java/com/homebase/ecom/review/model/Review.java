@@ -6,31 +6,41 @@ import java.util.*;
 import org.chenile.workflow.model.*;
 import org.chenile.utils.entity.model.AbstractExtendedStateEntity;
 
+/**
+ * Domain model for a product review.
+ * Tracks the full lifecycle from submission through moderation to publication/archival.
+ */
 public class Review extends AbstractExtendedStateEntity
         implements ActivityEnabledStateEntity,
         ContainsTransientMap {
 
+    // Core review fields
     private String productId;
-    private String userId;
+    private String customerId;
     private String orderId;
     private int rating;
     private String title;
     private String body;
+
+    // Review metadata
+    private List<String> images = new ArrayList<>();
     private boolean verifiedPurchase;
     private int helpfulCount;
-    private int unhelpfulCount;
-    public String description;
+    private int reportCount;
 
-    private List<ReviewImage> images = new ArrayList<>();
+    // Moderation fields
+    private String moderatorNotes;
 
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
 
+    // --- Core getters/setters ---
+
     public String getProductId() { return productId; }
     public void setProductId(String productId) { this.productId = productId; }
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public String getCustomerId() { return customerId; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
 
     public String getOrderId() { return orderId; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
@@ -44,17 +54,22 @@ public class Review extends AbstractExtendedStateEntity
     public String getBody() { return body; }
     public void setBody(String body) { this.body = body; }
 
+    public List<String> getImages() { return images; }
+    public void setImages(List<String> images) { this.images = images; }
+
     public boolean isVerifiedPurchase() { return verifiedPurchase; }
     public void setVerifiedPurchase(boolean verifiedPurchase) { this.verifiedPurchase = verifiedPurchase; }
 
     public int getHelpfulCount() { return helpfulCount; }
     public void setHelpfulCount(int helpfulCount) { this.helpfulCount = helpfulCount; }
 
-    public int getUnhelpfulCount() { return unhelpfulCount; }
-    public void setUnhelpfulCount(int unhelpfulCount) { this.unhelpfulCount = unhelpfulCount; }
+    public int getReportCount() { return reportCount; }
+    public void setReportCount(int reportCount) { this.reportCount = reportCount; }
 
-    public List<ReviewImage> getImages() { return images; }
-    public void setImages(List<ReviewImage> images) { this.images = images; }
+    public String getModeratorNotes() { return moderatorNotes; }
+    public void setModeratorNotes(String moderatorNotes) { this.moderatorNotes = moderatorNotes; }
+
+    // --- Workflow support ---
 
     public TransientMap getTransientMap() { return this.transientMap; }
 

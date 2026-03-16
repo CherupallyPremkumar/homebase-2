@@ -1,28 +1,39 @@
 package com.homebase.ecom.promo.configuration;
 
-import com.homebase.ecom.promo.repository.*;
-import com.homebase.ecom.promo.service.*;
-import com.homebase.ecom.promo.service.impl.PromotionServiceImpl;
+import com.homebase.ecom.promo.model.Coupon;
+import com.homebase.ecom.promo.service.cmds.*;
+import com.homebase.ecom.promo.service.event.PromoEventHandler;
+import com.homebase.ecom.promo.service.postSaveHooks.*;
 import com.homebase.ecom.promo.service.store.PromoEntityStore;
+import com.homebase.ecom.promo.service.validator.PromoPolicyValidator;
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
+import org.chenile.stm.action.scriptsupport.IfAction;
 import org.chenile.stm.impl.*;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.api.WorkflowRegistry;
+import org.chenile.workflow.param.MinimalPayload;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
-import com.homebase.ecom.promo.model.Coupon;
-import com.homebase.ecom.promo.service.cmds.*;
-import com.homebase.ecom.promo.service.postSaveHooks.*;
-import org.chenile.workflow.param.MinimalPayload;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.chenile.workflow.service.stmcmds.StmBodyTypeSelector;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
+/**
+ * Promo module Spring configuration.
+ *
+ * STM flow: DRAFT -> SCHEDULED -> ACTIVE -> EXPIRED -> ARCHIVED
+ *           ACTIVE -> PAUSED (resume -> ACTIVE)
+ *           DRAFT/SCHEDULED/ACTIVE/PAUSED -> CANCELLED -> ARCHIVED
+ *
+ * Auto-states: CHECK_USAGE (usageCount >= usageLimit), CHECK_EXPIRATION (endDate past)
+ */
 @Configuration
 @ComponentScan(basePackages = "com.homebase.ecom.promo")
 @EnableJpaRepositories(basePackages = "com.homebase.ecom.promo.repository")
@@ -32,36 +43,7 @@ public class PromoConfiguration {
     public static final String PREFIX_FOR_PROPERTIES = "Promo";
     public static final String PREFIX_FOR_RESOLVER = "promo";
 
-    @Bean
-    public PromotionService promotionService(
-            PromotionRepository promotionRepository,
-            CouponRepository couponRepository,
-            CouponUsageTracker couponUsageTracker,
-            PricingCalculator pricingCalculator) {
-        return new PromotionServiceImpl(promotionRepository, couponRepository, couponUsageTracker, pricingCalculator);
-    }
-
-    @Bean
-    public PricingCalculator pricingCalculator(RuleEvaluator ruleEvaluator, ConflictResolver conflictResolver) {
-        return new PricingCalculator(ruleEvaluator, conflictResolver);
-    }
-
-    @Bean
-    public RuleEvaluator ruleEvaluator() {
-        return new RuleEvaluator();
-    }
-
-    @Bean
-    public ConflictResolver conflictResolver() {
-        return new ConflictResolver();
-    }
-
-    @Bean
-    public CouponUsageTracker couponUsageTracker(
-            CouponRepository couponRepository,
-            CouponUsageLogRepository usageLogRepository) {
-        return new CouponUsageTracker(couponRepository, usageLogRepository);
-    }
+    // ===================== STM Infrastructure =====================
 
     @Bean
     BeanFactoryAdapter promoBeanFactoryAdapter() {
@@ -100,69 +82,8 @@ public class PromoConfiguration {
             @Qualifier("promoEntityStm") STM<Coupon> stm,
             @Qualifier("promoActionsInfoProvider") STMActionsInfoProvider promoInfoProvider,
             @Qualifier("promoEntityStore") EntityStore<Coupon> entityStore) {
-        return new StateEntityServiceImpl<>(stm, promoInfoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, promoInfoProvider, entityStore);
     }
-
-    // STM Actions
-
-    @Bean
-    public ActivatePromoAction promoActivateAction() {
-        return new ActivatePromoAction();
-    }
-
-    @Bean
-    public PausePromoAction promoPauseAction() {
-        return new PausePromoAction();
-    }
-
-    @Bean
-    public ResumePromoAction promoResumeAction() {
-        return new ResumePromoAction();
-    }
-
-    @Bean
-    public ExpirePromoAction promoExpireAction() {
-        return new ExpirePromoAction();
-    }
-
-    @Bean
-    public ClosePromoAction promoCloseAction() {
-        return new ClosePromoAction();
-    }
-
-    @Bean
-    public ReactivatePromoAction promoReactivateAction() {
-        return new ReactivatePromoAction();
-    }
-
-    // PostSaveHooks
-
-    @Bean
-    DRAFTPromoPostSaveHook promoDRAFTPostSaveHook() {
-        return new DRAFTPromoPostSaveHook();
-    }
-
-    @Bean
-    ACTIVEPromoPostSaveHook promoACTIVEPostSaveHook() {
-        return new ACTIVEPromoPostSaveHook();
-    }
-
-    @Bean
-    PAUSEDPromoPostSaveHook promoPAUSEDPostSaveHook() {
-        return new PAUSEDPromoPostSaveHook();
-    }
-
-    @Bean
-    EXPIREDPromoPostSaveHook promoEXPIREDPostSaveHook() {
-        return new EXPIREDPromoPostSaveHook();
-    }
-
-    @Bean
-    CLOSEDPromoPostSaveHook promoCLOSEDPostSaveHook() {
-        return new CLOSEDPromoPostSaveHook();
-    }
-
-    // STM Infrastructure
 
     @Bean
     XmlFlowReader promoFlowReader(@Qualifier("promoFlowStore") STMFlowStoreImpl flowStore) throws Exception {
@@ -203,5 +124,153 @@ public class PromoConfiguration {
         GenericExitAction<Coupon> exitAction = new GenericExitAction<>();
         stmFlowStore.setExitAction(exitAction);
         return exitAction;
+    }
+
+    // OGNL scripting strategy for auto-states (Item 16)
+    @Bean
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
+
+    // IfAction for auto-states (CHECK_USAGE, CHECK_EXPIRATION)
+    @Bean
+    IfAction ifAction() {
+        return new IfAction();
+    }
+
+    @Bean
+    StmBodyTypeSelector promoBodyTypeSelector(
+            @Qualifier("promoActionsInfoProvider") STMActionsInfoProvider promoInfoProvider,
+            @Qualifier("promoTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver) {
+        return new StmBodyTypeSelector(promoInfoProvider, stmTransitionActionResolver);
+    }
+
+    @Bean
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> promoEventAuthoritiesSupplier(
+            @Qualifier("promoActionsInfoProvider") STMActionsInfoProvider promoInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(promoInfoProvider, false);
+        return builder.build();
+    }
+
+    // ===================== STM Actions =====================
+
+    @Bean
+    public SchedulePromoAction promoScheduleAction() {
+        return new SchedulePromoAction();
+    }
+
+    @Bean
+    public ActivatePromoAction promoActivateAction() {
+        return new ActivatePromoAction();
+    }
+
+    @Bean
+    public PausePromoAction promoPauseAction() {
+        return new PausePromoAction();
+    }
+
+    @Bean
+    public ResumePromoAction promoResumeAction() {
+        return new ResumePromoAction();
+    }
+
+    @Bean
+    public ExpirePromoAction promoExpireAction() {
+        return new ExpirePromoAction();
+    }
+
+    @Bean
+    public CancelPromoAction promoCancelAction() {
+        return new CancelPromoAction();
+    }
+
+    @Bean
+    public ArchivePromoAction promoArchiveAction() {
+        return new ArchivePromoAction();
+    }
+
+    @Bean
+    public IncrementUsageAction promoIncrementUsageAction() {
+        return new IncrementUsageAction();
+    }
+
+    // ===================== PostSaveHooks =====================
+
+    @Bean
+    DRAFTPromoPostSaveHook promoDRAFTPostSaveHook() {
+        return new DRAFTPromoPostSaveHook();
+    }
+
+    @Bean
+    SCHEDULEDPromoPostSaveHook promoSCHEDULEDPostSaveHook() {
+        return new SCHEDULEDPromoPostSaveHook();
+    }
+
+    @Bean
+    ACTIVEPromoPostSaveHook promoACTIVEPostSaveHook() {
+        return new ACTIVEPromoPostSaveHook();
+    }
+
+    @Bean
+    PAUSEDPromoPostSaveHook promoPAUSEDPostSaveHook() {
+        return new PAUSEDPromoPostSaveHook();
+    }
+
+    @Bean
+    EXPIREDPromoPostSaveHook promoEXPIREDPostSaveHook() {
+        return new EXPIREDPromoPostSaveHook();
+    }
+
+    @Bean
+    CANCELLEDPromoPostSaveHook promoCANCELLEDPostSaveHook() {
+        return new CANCELLEDPromoPostSaveHook();
+    }
+
+    @Bean
+    ARCHIVEDPromoPostSaveHook promoARCHIVEDPostSaveHook() {
+        return new ARCHIVEDPromoPostSaveHook();
+    }
+
+    // ===================== Domain Services =====================
+
+    @Bean
+    com.homebase.ecom.promo.service.RuleEvaluator promoRuleEvaluator() {
+        return new com.homebase.ecom.promo.service.RuleEvaluator();
+    }
+
+    @Bean
+    com.homebase.ecom.promo.service.ConflictResolver promoConflictResolver() {
+        return new com.homebase.ecom.promo.service.ConflictResolver();
+    }
+
+    @Bean
+    com.homebase.ecom.promo.service.PricingCalculator promoPricingCalculator(
+            com.homebase.ecom.promo.service.RuleEvaluator ruleEvaluator,
+            com.homebase.ecom.promo.service.ConflictResolver conflictResolver) {
+        return new com.homebase.ecom.promo.service.PricingCalculator(ruleEvaluator, conflictResolver);
+    }
+
+    @Bean
+    com.homebase.ecom.promo.service.CouponUsageTracker promoCouponUsageTracker(
+            com.homebase.ecom.promo.repository.CouponRepository couponRepository,
+            com.homebase.ecom.promo.repository.CouponUsageLogRepository usageLogRepository) {
+        return new com.homebase.ecom.promo.service.CouponUsageTracker(couponRepository, usageLogRepository);
+    }
+
+    // ===================== Validator =====================
+
+    @Bean
+    PromoPolicyValidator promoPolicyValidator() {
+        return new PromoPolicyValidator();
+    }
+
+    // ===================== Kafka Event Handler (Item 10, 14) =====================
+
+    @Bean("promoEventService")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
+    PromoEventHandler promoEventService(
+            @Qualifier("_promoStateEntityService_") StateEntityServiceImpl<Coupon> promoStateEntityService,
+            tools.jackson.databind.ObjectMapper objectMapper) {
+        return new PromoEventHandler(promoStateEntityService, objectMapper);
     }
 }

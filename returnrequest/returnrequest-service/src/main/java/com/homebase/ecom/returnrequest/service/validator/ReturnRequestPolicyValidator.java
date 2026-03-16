@@ -9,68 +9,121 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Central component enforcing all return request policies and rules.
  *
- * <h3>Policies (enforce constraints)</h3>
+ * <h3>Policies (cconfig: returnrequest.json)</h3>
  * <ul>
- * <li>Return window expiry check</li>
- * <li>Return reason validity</li>
- * <li>Hub inspection required flag</li>
- * <li>Approval threshold for auto-approve vs manual review</li>
+ * <li>returnWindowDays (30) - max days after delivery to request return</li>
+ * <li>maxReturnItemsPerOrder (10) - max items per return request</li>
+ * <li>autoApproveUnderValue (500) - auto-approve returns under this value</li>
+ * <li>inspectionRequiredAboveValue (5000) - mandatory inspection above this value</li>
+ * <li>restockingFeePercent (0) - restocking fee percentage</li>
  * </ul>
- *
- * <h3>Rules (return config values)</h3>
- * <ul>
- * <li>Auto refund on hub receipt</li>
- * <li>Refund processing days</li>
- * <li>Audit comment requirements</li>
- * </ul>
- *
- * All values sourced from {@code returnrequest.json} via {@code CconfigClient}.
  */
 @Component
 public class ReturnRequestPolicyValidator {
 
     private static final Logger log = LoggerFactory.getLogger(ReturnRequestPolicyValidator.class);
 
-    @Autowired
+    @Autowired(required = false)
     private CconfigClient cconfigClient;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
     private JsonNode getReturnConfig() {
         try {
-            Map<String, Object> map = cconfigClient.value("returnrequest", null);
+            java.util.Map<String, Object> map = cconfigClient.value("returnrequest", null);
             if (map != null)
                 return mapper.valueToTree(map);
         } catch (Exception e) {
-            log.warn("Failed to load returnrequest.json from cconfig, using defaults: {}", e.getMessage());
+            log.warn("Failed to load returnrequest config from cconfig, using defaults: {}", e.getMessage());
         }
         return mapper.createObjectNode();
     }
 
     // ===========================================================
-    // POLICY: Return window
+    // POLICY: Return window (default 30 days)
     // ===========================================================
 
-    /**
-     * Returns the max allowed return window in days.
-     * Controlled by: returnrequest.json → policies.return.maxReturnWindowDays
-     */
-    public int getMaxReturnWindowDays() {
-        JsonNode node = getReturnConfig().at("/policies/return/maxReturnWindowDays");
+    public int getReturnWindowDays() {
+        JsonNode node = getReturnConfig().at("/policies/return/returnWindowDays");
+        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 30;
+    }
+
+    public void validateReturnWindow(LocalDateTime orderDeliveryDate) {
+        if (orderDeliveryDate != null) {
+            long daysSinceDelivery = ChronoUnit.DAYS.between(orderDeliveryDate, LocalDateTime.now());
+            int maxWindow = getReturnWindowDays();
+            if (daysSinceDelivery > maxWindow) {
+                throw new IllegalArgumentException("Return window expired. Maximum " + maxWindow
+                        + " days allowed, but " + daysSinceDelivery + " days have passed since delivery.");
+            }
+        }
+    }
+
+    // ===========================================================
+    // POLICY: Max items per order (default 10)
+    // ===========================================================
+
+    public int getMaxReturnItemsPerOrder() {
+        JsonNode node = getReturnConfig().at("/policies/return/maxReturnItemsPerOrder");
         return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 10;
     }
 
-    /**
-     * Validates that the return reason is in the platform's allowed list.
-     * Controlled by: returnrequest.json → policies.return.allowedReturnReasons
-     */
+    public void validateItemCount(int itemCount) {
+        int max = getMaxReturnItemsPerOrder();
+        if (itemCount > max) {
+            throw new IllegalArgumentException("Maximum " + max + " items per return request, but " + itemCount + " requested.");
+        }
+    }
+
+    // ===========================================================
+    // POLICY: Auto-approve under value (default 500)
+    // ===========================================================
+
+    public double getAutoApproveUnderValue() {
+        JsonNode node = getReturnConfig().at("/policies/approval/autoApproveUnderValue");
+        return (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 500.0;
+    }
+
+    public boolean canAutoApprove(BigDecimal amount) {
+        double threshold = getAutoApproveUnderValue();
+        return amount != null && amount.doubleValue() <= threshold;
+    }
+
+    // ===========================================================
+    // POLICY: Inspection required above value (default 5000)
+    // ===========================================================
+
+    public double getInspectionRequiredAboveValue() {
+        JsonNode node = getReturnConfig().at("/policies/inspection/inspectionRequiredAboveValue");
+        return (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 5000.0;
+    }
+
+    public boolean isInspectionRequired(BigDecimal amount) {
+        double threshold = getInspectionRequiredAboveValue();
+        return amount != null && amount.doubleValue() > threshold;
+    }
+
+    // ===========================================================
+    // POLICY: Restocking fee percent (default 0)
+    // ===========================================================
+
+    public double getRestockingFeePercent() {
+        JsonNode node = getReturnConfig().at("/policies/fee/restockingFeePercent");
+        return (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 0.0;
+    }
+
+    // ===========================================================
+    // VALIDATION: Return reason
+    // ===========================================================
+
     public void validateReturnReason(String reason) {
         if (reason == null || reason.trim().isEmpty()) {
             JsonNode required = getReturnConfig().at("/policies/return/requireReturnReason");
@@ -88,65 +141,5 @@ public class ReturnRequestPolicyValidator {
             throw new IllegalArgumentException(
                     "Return reason '" + reason + "' is not valid. Allowed: " + allowed);
         }
-    }
-
-    /**
-     * Returns true if hub manager inspection is required before approving a return.
-     * Controlled by: returnrequest.json → policies.return.hubInspectionRequired
-     */
-    public boolean isHubInspectionRequired() {
-        JsonNode node = getReturnConfig().at("/policies/return/hubInspectionRequired");
-        return node.isMissingNode() || node.asBoolean(true);
-    }
-
-    /**
-     * Returns true if the return amount qualifies for auto-approval without hub
-     * manager review.
-     * Controlled by: returnrequest.json → policies.approval.autoApproveBelow
-     */
-    public boolean canAutoApprove(BigDecimal amount) {
-        JsonNode node = getReturnConfig().at("/policies/approval/autoApproveBelow");
-        double threshold = (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 500.0;
-        return amount != null && amount.doubleValue() <= threshold;
-    }
-
-    /**
-     * Returns true if Hub Manager approval is required for high-value returns.
-     * Controlled by: returnrequest.json →
-     * policies.approval.requireHubManagerApprovalAbove
-     */
-    public boolean requiresHubManagerApproval(BigDecimal amount) {
-        JsonNode node = getReturnConfig().at("/policies/approval/requireHubManagerApprovalAbove");
-        double threshold = (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 5000.0;
-        return amount != null && amount.doubleValue() > threshold;
-    }
-
-    // ===========================================================
-    // RULE: Refund
-    // ===========================================================
-
-    /**
-     * Returns true if refund should be auto-initiated when hub receives the
-     * returned item.
-     */
-    public boolean isAutoRefundOnHubReceipt() {
-        JsonNode node = getReturnConfig().at("/rules/refund/autoRefundOnHubReceipt");
-        return node.isMissingNode() || node.asBoolean(true);
-    }
-
-    /** Returns refund processing time in days. */
-    public int getRefundProcessingDays() {
-        JsonNode node = getReturnConfig().at("/rules/refund/refundProcessingDays");
-        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 3;
-    }
-
-    // ===========================================================
-    // RULE: Audit
-    // ===========================================================
-
-    /** Returns true if a comment is required when rejecting a return. */
-    public boolean isCommentRequiredOnReject() {
-        JsonNode node = getReturnConfig().at("/rules/audit/requireCommentOnReject");
-        return node.isMissingNode() || node.asBoolean(true);
     }
 }

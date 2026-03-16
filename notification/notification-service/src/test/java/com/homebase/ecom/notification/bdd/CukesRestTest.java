@@ -10,7 +10,8 @@ import org.junit.runner.RunWith;
 @CucumberOptions(features = "src/test/resources/features",
     glue = {"classpath:com/homebase/ecom/notification/bdd",
     "classpath:org/chenile/cucumber/workflow",
-    "classpath:org/chenile/cucumber/rest"},
+    "classpath:org/chenile/cucumber/rest",
+    "classpath:org/chenile/cucumber/security/rest"},
     plugin = {"pretty"}
 )
 @ActiveProfiles("unittest")

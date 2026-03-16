@@ -1,0 +1,17 @@
+{
+  "policies": {
+    "minRating": 1,
+    "maxRating": 5,
+    "minReviewLength": 20,
+    "maxReviewLength": 2000,
+    "autoPublishVerifiedPurchase": true,
+    "moderationRequired": true,
+    "maxImagesPerReview": 5
+  },
+  "rules": {
+    "moderation": {
+      "autoFlagOnHighReportCount": 3,
+      "profanityFilterEnabled": true
+    }
+  }
+}

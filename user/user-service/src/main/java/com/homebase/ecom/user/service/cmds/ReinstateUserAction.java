@@ -20,7 +20,7 @@ public class ReinstateUserAction implements STMTransitionAction<User> {
 
         // Clear suspension data
         user.setSuspendReason(null);
-        user.resetFailedLoginAttempts();
+        user.resetLoginAttempts();
         user.setLockReason(null);
 
         user.getTransientMap().put("event", "USER_REINSTATED");

@@ -4,7 +4,6 @@ import com.homebase.ecom.product.domain.model.AttributeDefinition;
 import com.homebase.ecom.product.domain.port.AttributeRepository;
 import com.homebase.ecom.product.infrastructure.persistence.entity.AttributeDefinitionEntity;
 import com.homebase.ecom.product.infrastructure.persistence.mapper.AttributeMapper;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,9 +57,5 @@ public class AttributeRepositoryImpl implements AttributeRepository {
     @Override
     public void deleteById(String id) {
         jpaRepository.deleteById(id);
-    }
-
-    public interface AttributeJpaRepository extends JpaRepository<AttributeDefinitionEntity, String> {
-        Optional<AttributeDefinitionEntity> findByCode(String code);
     }
 }

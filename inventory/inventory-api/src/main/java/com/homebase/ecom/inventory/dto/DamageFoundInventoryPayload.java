@@ -1,24 +1,22 @@
 package com.homebase.ecom.inventory.dto;
 
 import org.chenile.workflow.param.MinimalPayload;
+import java.util.List;
 
 /**
- * Customized Payload for the damageFound event.
- * Contains the count of damaged units found during warehouse inspection.
+ * Payload for the damageFound event — damage discovered during inbound QC.
  */
 public class DamageFoundInventoryPayload extends MinimalPayload {
 
-    /**
-     * Number of units found to be damaged.
-     * Used to evaluate policies.damage.autoDiscardOnSevereDamagePercent.
-     */
+    /** Number of units found to be damaged. */
     private Integer damagedQuantity;
 
-    public Integer getDamagedQuantity() {
-        return damagedQuantity;
-    }
+    /** Individual damaged unit details for unit-level traceability. */
+    private List<DamageUnit> damagedUnits;
 
-    public void setDamagedQuantity(Integer damagedQuantity) {
-        this.damagedQuantity = damagedQuantity;
-    }
+    public Integer getDamagedQuantity() { return damagedQuantity; }
+    public void setDamagedQuantity(Integer damagedQuantity) { this.damagedQuantity = damagedQuantity; }
+
+    public List<DamageUnit> getDamagedUnits() { return damagedUnits; }
+    public void setDamagedUnits(List<DamageUnit> damagedUnits) { this.damagedUnits = damagedUnits; }
 }

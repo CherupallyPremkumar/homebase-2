@@ -6,25 +6,27 @@ import java.time.LocalDateTime;
 
 /**
  * Event published when a return request is approved.
+ * Published to return.events topic.
  */
 public class ReturnApprovedEvent implements Serializable {
     private static final long serialVersionUID = 1L;
+    public static final String EVENT_TYPE = "RETURN_APPROVED";
 
     private String returnRequestId;
     private String orderId;
-    private String orderItemId;
-    private BigDecimal refundAmount;
+    private String customerId;
+    private BigDecimal totalRefundAmount;
     private String returnType;
     private LocalDateTime approvedAt;
 
     public ReturnApprovedEvent() {}
 
-    public ReturnApprovedEvent(String returnRequestId, String orderId, String orderItemId,
-                               BigDecimal refundAmount, String returnType) {
+    public ReturnApprovedEvent(String returnRequestId, String orderId, String customerId,
+                               BigDecimal totalRefundAmount, String returnType) {
         this.returnRequestId = returnRequestId;
         this.orderId = orderId;
-        this.orderItemId = orderItemId;
-        this.refundAmount = refundAmount;
+        this.customerId = customerId;
+        this.totalRefundAmount = totalRefundAmount;
         this.returnType = returnType;
         this.approvedAt = LocalDateTime.now();
     }
@@ -35,11 +37,11 @@ public class ReturnApprovedEvent implements Serializable {
     public String getOrderId() { return orderId; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
 
-    public String getOrderItemId() { return orderItemId; }
-    public void setOrderItemId(String orderItemId) { this.orderItemId = orderItemId; }
+    public String getCustomerId() { return customerId; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
 
-    public BigDecimal getRefundAmount() { return refundAmount; }
-    public void setRefundAmount(BigDecimal refundAmount) { this.refundAmount = refundAmount; }
+    public BigDecimal getTotalRefundAmount() { return totalRefundAmount; }
+    public void setTotalRefundAmount(BigDecimal totalRefundAmount) { this.totalRefundAmount = totalRefundAmount; }
 
     public String getReturnType() { return returnType; }
     public void setReturnType(String returnType) { this.returnType = returnType; }

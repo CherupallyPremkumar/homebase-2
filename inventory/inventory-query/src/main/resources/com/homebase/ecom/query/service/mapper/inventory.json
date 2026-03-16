@@ -1,63 +1,101 @@
 [
-    {
-        "id": "Inventory.getAll",
-        "name": "inventories",
-        "workflowName": "inventory",
-        "stateColumn": "stateId",
-        "columnMetadata": {
-            "id": {
-                "name": "id",
-                "filterable": true,
-                "columnType": "Text",
-                "sortable": true
-            },
-            "productId": {
-                "name": "productId",
-                "filterable": true,
-                "columnType": "Text",
-                "sortable": true
-            },
-            "quantity": {
-                "name": "quantity",
-                "columnType": "Number"
-            },
-            "reserved": {
-                "name": "reserved",
-                "columnType": "Number"
-            },
-            "lowStockThreshold": {
-                "name": "lowStockThreshold",
-                "columnType": "Number"
-            },
-            "status": {
-                "name": "status",
-                "filterable": true,
-                "columnType": "Text"
-            },
-            "stateId": {
-                "name": "stateId",
-                "filterable": true,
-                "columnType": "Text"
-            }
-        },
-        "paginated": true,
-        "sortable": true
-    },
-    {
-        "id": "Inventory.getByProductId",
-        "name": "inventory",
-        "columnMetadata": {
-            "id": {
-                "name": "id",
-                "filterable": true,
-                "columnType": "Text"
-            },
-            "productId": {
-                "name": "productId",
-                "filterable": true,
-                "columnType": "Text"
-            }
-        },
-        "paginated": false
-    }
+	{
+		"id": "Inventory.getAll",
+		"name": "inventories",
+		"workflowName": "inventory",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
+			"sku": { "name": "sku", "filterable": true, "columnType": "Text", "sortable": true },
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text", "sortable": true },
+			"variantId": { "name": "variantId", "filterable": true, "columnType": "Text" },
+			"quantity": { "name": "quantity", "columnType": "Number", "sortable": true },
+			"availableQuantity": { "name": "availableQuantity", "columnType": "Number", "sortable": true },
+			"reserved": { "name": "reserved", "columnType": "Number" },
+			"damagedQuantity": { "name": "damagedQuantity", "columnType": "Number" },
+			"inboundQuantity": { "name": "inboundQuantity", "columnType": "Number" },
+			"lowStockThreshold": { "name": "lowStockThreshold", "columnType": "Number" },
+			"status": { "name": "status", "filterable": true, "columnType": "Text" },
+			"primaryFc": { "name": "primaryFc", "filterable": true, "columnType": "Text", "sortable": true },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Inventory.getById",
+		"name": "inventory",
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Inventory.getByProductId",
+		"name": "inventory-by-product",
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Inventory.checkAvailability",
+		"name": "check-availability",
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
+			"variantId": { "name": "variantId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Inventory.getStateCounts",
+		"name": "inventory-state-counts",
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Inventory.getLowStock",
+		"name": "low-stock",
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Inventory.getOutOfStock",
+		"name": "out-of-stock",
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Inventory.getByFulfillmentCenter",
+		"name": "inventory-by-fc",
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Inventory.getDamageSummary",
+		"name": "damage-summary",
+		"columnMetadata": {
+			"primaryFc": { "name": "primaryFc", "filterable": true, "columnType": "Text" },
+			"status": { "name": "status", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Inventory.getActiveReservations",
+		"name": "active-reservations",
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Inventory.getRecentMovements",
+		"name": "recent-movements",
+		"columnMetadata": {
+			"type": { "name": "type", "filterable": true, "columnType": "Text" },
+			"inventoryItemId": { "name": "inventoryItemId", "filterable": true, "columnType": "Text" },
+			"fulfillmentCenterId": { "name": "fulfillmentCenterId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	}
 ]

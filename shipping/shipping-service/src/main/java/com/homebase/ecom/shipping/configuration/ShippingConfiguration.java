@@ -2,16 +2,18 @@ package com.homebase.ecom.shipping.configuration;
 
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
+import org.chenile.stm.action.scriptsupport.IfAction;
 import org.chenile.stm.impl.*;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.shipping.model.Shipping;
 import com.homebase.ecom.shipping.service.cmds.*;
@@ -20,20 +22,25 @@ import com.homebase.ecom.shipping.infrastructure.persistence.ChenileShippingEnti
 import com.homebase.ecom.shipping.infrastructure.persistence.adapter.ShippingJpaRepository;
 import com.homebase.ecom.shipping.infrastructure.persistence.mapper.ShippingMapper;
 import org.chenile.workflow.api.WorkflowRegistry;
-import org.chenile.stm.State;
 import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
 import com.homebase.ecom.shipping.service.postSaveHooks.*;
 import com.homebase.ecom.shipping.service.event.ShippingEventPublisher;
+import com.homebase.ecom.shipping.service.event.ShippingEventHandler;
+import com.homebase.ecom.shipping.service.validator.ShippingPolicyValidator;
 
 /**
- * This is where you will instantiate all the required classes in Spring
+ * Spring configuration for the Shipping bounded context.
+ * Wires STM, entity store, transition actions, post-save hooks,
+ * OGNL auto-states, policy validator, and chenile-kafka event handler.
  */
 @Configuration
 public class ShippingConfiguration {
     private static final String FLOW_DEFINITION_FILE = "com/homebase/ecom/shipping/shipping-states.xml";
     public static final String PREFIX_FOR_PROPERTIES = "Shipping";
     public static final String PREFIX_FOR_RESOLVER = "shipping";
+
+    // ── STM Core ──
 
     @Bean
     BeanFactoryAdapter shippingBeanFactoryAdapter() {
@@ -77,16 +84,15 @@ public class ShippingConfiguration {
             @Qualifier("shippingEntityStm") STM<Shipping> stm,
             @Qualifier("shippingActionsInfoProvider") STMActionsInfoProvider shippingInfoProvider,
             @Qualifier("shippingEntityStore") EntityStore<Shipping> entityStore) {
-        return new StateEntityServiceImpl<>(stm, shippingInfoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, shippingInfoProvider, entityStore);
     }
 
-    // Now we start constructing the STM Components
+    // ── STM Infrastructure ──
 
     @Bean
     DefaultPostSaveHook<Shipping> shippingDefaultPostSaveHook(
             @Qualifier("shippingTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver) {
-        DefaultPostSaveHook<Shipping> postSaveHook = new DefaultPostSaveHook<>(stmTransitionActionResolver);
-        return postSaveHook;
+        return new DefaultPostSaveHook<>(stmTransitionActionResolver);
     }
 
     @Bean
@@ -95,7 +101,7 @@ public class ShippingConfiguration {
             @Qualifier("shippingActionsInfoProvider") STMActionsInfoProvider shippingInfoProvider,
             @Qualifier("shippingFlowStore") STMFlowStoreImpl stmFlowStore,
             @Qualifier("shippingDefaultPostSaveHook") DefaultPostSaveHook<Shipping> postSaveHook) {
-        GenericEntryAction<Shipping> entryAction = new GenericEntryAction<Shipping>(entityStore, shippingInfoProvider,
+        GenericEntryAction<Shipping> entryAction = new GenericEntryAction<>(entityStore, shippingInfoProvider,
                 postSaveHook);
         stmFlowStore.setEntryAction(entryAction);
         return entryAction;
@@ -113,7 +119,7 @@ public class ShippingConfiguration {
 
     @Bean
     GenericExitAction<Shipping> shippingExitAction(@Qualifier("shippingFlowStore") STMFlowStoreImpl stmFlowStore) {
-        GenericExitAction<Shipping> exitAction = new GenericExitAction<Shipping>();
+        GenericExitAction<Shipping> exitAction = new GenericExitAction<>();
         stmFlowStore.setExitAction(exitAction);
         return exitAction;
     }
@@ -129,6 +135,20 @@ public class ShippingConfiguration {
     ShippingHealthChecker shippingHealthChecker() {
         return new ShippingHealthChecker();
     }
+
+    // ── OGNL support for auto-states ──
+
+    @Bean
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
+
+    @Bean
+    IfAction<Shipping> ifAction() {
+        return new IfAction<>();
+    }
+
+    // ── STM Transition resolution ──
 
     @Bean
     STMTransitionAction<Shipping> defaultshippingSTMTransitionAction() {
@@ -170,49 +190,6 @@ public class ShippingConfiguration {
         return new AreActivitiesComplete(activityChecker);
     }
 
-    // Create the specific transition actions here. Make sure that these actions are
-    // inheriting from
-    // AbstractSTMTransitionMachine (The sample classes provide an example of this).
-    // To automatically wire
-    // them into the STM use the convention of "shipping" + eventId + "Action" for
-    // the method name. (shipping is the
-    // prefix passed to the TransitionActionResolver above.)
-    // This will ensure that these are detected automatically by the Workflow
-    // system.
-    // The payload types will be detected as well so that there is no need to
-    // introduce an <event-information/>
-    // segment in src/main/resources/com/homebase/shipping/shipping-states.xml
-
-    @Bean
-    ReturnRequestedShippingAction shippingReturnRequestedAction() {
-        return new ReturnRequestedShippingAction();
-    }
-
-    @Bean
-    MarkDeliveredShippingAction shippingMarkDeliveredAction() {
-        return new MarkDeliveredShippingAction();
-    }
-
-    @Bean
-    OutForDeliveryShippingAction shippingOutForDeliveryAction() {
-        return new OutForDeliveryShippingAction();
-    }
-
-    @Bean
-    CourierAssignedShippingAction shippingCourierAssignedAction() {
-        return new CourierAssignedShippingAction();
-    }
-
-    @Bean
-    ReturnPickupShippingAction shippingReturnPickupAction() {
-        return new ReturnPickupShippingAction();
-    }
-
-    @Bean
-    InTransitShippingAction shippingInTransitAction() {
-        return new InTransitShippingAction();
-    }
-
     @Bean
     ConfigProviderImpl shippingConfigProvider() {
         return new ConfigProviderImpl();
@@ -228,24 +205,63 @@ public class ShippingConfiguration {
         return enablementStrategy;
     }
 
+    // ── Transition Actions (convention: "shipping" + eventId + "Action") ──
+
     @Bean
-    RETURN_REQUESTEDShippingPostSaveHook shippingRETURN_REQUESTEDPostSaveHook() {
-        return new RETURN_REQUESTEDShippingPostSaveHook();
+    CreateLabelShippingAction shippingCreateLabelAction() {
+        return new CreateLabelShippingAction();
     }
 
     @Bean
-    DELIVEREDShippingPostSaveHook shippingDELIVEREDPostSaveHook() {
-        return new DELIVEREDShippingPostSaveHook();
+    PickUpShippingAction shippingPickUpAction() {
+        return new PickUpShippingAction();
     }
 
     @Bean
-    IN_TRANSITShippingPostSaveHook shippingIN_TRANSITPostSaveHook() {
-        return new IN_TRANSITShippingPostSaveHook();
+    UpdateTransitShippingAction shippingUpdateTransitAction() {
+        return new UpdateTransitShippingAction();
     }
 
     @Bean
-    RETURNEDShippingPostSaveHook shippingRETURNEDPostSaveHook() {
-        return new RETURNEDShippingPostSaveHook();
+    OutForDeliveryShippingAction shippingOutForDeliveryAction() {
+        return new OutForDeliveryShippingAction();
+    }
+
+    @Bean
+    DeliverShippingAction shippingDeliverAction() {
+        return new DeliverShippingAction();
+    }
+
+    @Bean
+    FailDeliveryShippingAction shippingFailDeliveryAction() {
+        return new FailDeliveryShippingAction();
+    }
+
+    @Bean
+    RetryDeliveryShippingAction shippingRetryDeliveryAction() {
+        return new RetryDeliveryShippingAction();
+    }
+
+    @Bean
+    CancelShipmentShippingAction shippingCancelShipmentAction() {
+        return new CancelShipmentShippingAction();
+    }
+
+    @Bean
+    ReturnShipmentShippingAction shippingReturnShipmentAction() {
+        return new ReturnShipmentShippingAction();
+    }
+
+    // ── PostSaveHooks (convention: "shipping" + STATE + "PostSaveHook") ──
+
+    @Bean
+    PENDINGShippingPostSaveHook shippingPENDINGPostSaveHook() {
+        return new PENDINGShippingPostSaveHook();
+    }
+
+    @Bean
+    LABEL_CREATEDShippingPostSaveHook shippingLABEL_CREATEDPostSaveHook() {
+        return new LABEL_CREATEDShippingPostSaveHook();
     }
 
     @Bean
@@ -254,37 +270,61 @@ public class ShippingConfiguration {
     }
 
     @Bean
+    IN_TRANSITShippingPostSaveHook shippingIN_TRANSITPostSaveHook() {
+        return new IN_TRANSITShippingPostSaveHook();
+    }
+
+    @Bean
     OUT_FOR_DELIVERYShippingPostSaveHook shippingOUT_FOR_DELIVERYPostSaveHook() {
         return new OUT_FOR_DELIVERYShippingPostSaveHook();
     }
 
     @Bean
-    AWAITING_PICKUPShippingPostSaveHook shippingAWAITING_PICKUPPostSaveHook() {
-        return new AWAITING_PICKUPShippingPostSaveHook();
+    DELIVEREDShippingPostSaveHook shippingDELIVEREDPostSaveHook() {
+        return new DELIVEREDShippingPostSaveHook();
     }
+
+    @Bean
+    DELIVERY_FAILEDShippingPostSaveHook shippingDELIVERY_FAILEDPostSaveHook() {
+        return new DELIVERY_FAILEDShippingPostSaveHook();
+    }
+
+    @Bean
+    RETURNEDShippingPostSaveHook shippingRETURNEDPostSaveHook() {
+        return new RETURNEDShippingPostSaveHook();
+    }
+
+    // ── Event Publisher ──
 
     @Bean
     ShippingEventPublisher shippingEventPublisher() {
         return new ShippingEventPublisher();
     }
 
-    @Bean
-    public com.homebase.ecom.shipping.service.event.OrderCreatedEventConsumer orderCreatedEventConsumer() {
-        return new com.homebase.ecom.shipping.service.event.OrderCreatedEventConsumer();
+    // ── Chenile-Kafka Event Handler ──
+
+    @Bean("shippingEventService")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
+    ShippingEventHandler shippingEventService(
+            @Qualifier("_shippingStateEntityService_") StateEntityServiceImpl<Shipping> shippingStateEntityService,
+            org.chenile.pubsub.ChenilePub chenilePub,
+            tools.jackson.databind.ObjectMapper objectMapper) {
+        return new ShippingEventHandler(shippingStateEntityService, chenilePub, objectMapper);
     }
 
-    @Bean
-    public com.homebase.ecom.shipping.service.event.OrderItemEventConsumer orderItemEventConsumer() {
-        return new com.homebase.ecom.shipping.service.event.OrderItemEventConsumer();
-    }
-
-    // Entry-action beans referenced in shipping-states.xml
+    // ── Policy Validator ──
 
     @Bean
-    AwaitingPickupAction awaitingPickupAction() {
-        return new AwaitingPickupAction();
+    ShippingPolicyValidator shippingPolicyValidator() {
+        return new ShippingPolicyValidator();
     }
 
-    // PickedUpAction removed - courier assigned action handles pickup logic
+    // ── Security ACL ──
 
+    @Bean
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> shippingEventAuthoritiesSupplier(
+            @Qualifier("shippingActionsInfoProvider") STMActionsInfoProvider shippingInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(shippingInfoProvider, false);
+        return builder.build();
+    }
 }

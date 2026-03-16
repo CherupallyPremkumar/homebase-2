@@ -1,0 +1,17 @@
+{
+	"name": "supportEventService",
+	"id": "supportEventService",
+	"serviceName": "supportEventService",
+	"operations": [
+		{
+			"name": "handleOrderEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["order.events"]
+		},
+		{
+			"name": "handleReturnEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["return.events"]
+		}
+	]
+}

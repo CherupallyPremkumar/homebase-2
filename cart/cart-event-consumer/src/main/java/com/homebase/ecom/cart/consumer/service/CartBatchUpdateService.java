@@ -1,42 +1,28 @@
 package com.homebase.ecom.cart.consumer.service;
 
-import com.homebase.ecom.cart.repository.CartItemRepository;
-import com.homebase.ecom.cart.model.CartItemStatus;
-import com.homebase.ecom.shared.event.ProductPriceChangedEvent;
-import com.homebase.ecom.shared.event.ProductStockUpdatedEvent;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service for performing batch updates on cart items based on external events.
+ *
+ * In the refactored cart BC, inventory and pricing events are handled by
+ * CartEventHandler (chenile-kafka) which processes STOCK_RESERVED and
+ * STOCK_FAILED events from inventory.events topic. Direct cart item
+ * updates (price changes, stock status) are no longer done at the
+ * infrastructure level -- they flow through the STM.
  */
 @Service
 public class CartBatchUpdateService {
 
-    @Autowired
-    private CartItemRepository cartItemRepository;
+    private static final Logger log = LoggerFactory.getLogger(CartBatchUpdateService.class);
 
-    @Transactional
-    public void processPriceChange(ProductPriceChangedEvent event) {
-        cartItemRepository.updatePriceAndSeller(
-                event.getProductId(),
-                event.getNewPrice().getAmount(),
-                event.getNewPrice().getCurrency(),
-                event.getSellerId(),
-                CartItemStatus.PRICE_CHANGED);
-    }
-
-    @Transactional
-    public void processStockUpdate(ProductStockUpdatedEvent event) {
-        if (event.getStatus() == ProductStockUpdatedEvent.StockStatus.OUT_OF_STOCK
-                || event.getAvailableQuantity() <= 0) {
-            cartItemRepository.updateStatusByProductId(event.getProductId(), CartItemStatus.OUT_OF_STOCK);
-        } else {
-            // If it was out of stock, mark it back to available?
-            // Usually simpler to just mark available and let the next sync check validate
-            // everything.
-            cartItemRepository.updateStatusByProductId(event.getProductId(), CartItemStatus.AVAILABLE);
-        }
+    /**
+     * Placeholder for future batch operations that may be needed.
+     * Individual event handling is done by CartEventHandler via chenile-kafka.
+     */
+    public void logEventReceived(String eventType, String productId) {
+        log.info("Received {} event for product {}", eventType, productId);
     }
 }

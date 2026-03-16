@@ -8,16 +8,14 @@ import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.offer.domain.model.Offer;
 
 /**
-    This class is invoked if no specific transition action is specified
-    Extend this class to do generic things that are relevant for all actions in the workflow
-*/
-
+ * Default transition action invoked when no specific action is specified.
+ */
 public class DefaultSTMTransitionAction<PayloadType extends MinimalPayload>
     extends AbstractSTMTransitionAction<Offer, PayloadType> {
     @Override
     public void transitionTo(Offer offer, PayloadType payload,
                  State startState, String eventId, State endState, STMInternalTransitionInvoker<?> stm,
                  Transition transition) {
-
+        // No-op default
     }
 }

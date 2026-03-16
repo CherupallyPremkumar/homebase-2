@@ -1,7 +1,6 @@
 package com.homebase.ecom.inventory.service.cmds;
 
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
-import com.homebase.ecom.inventory.domain.model.InventoryStatus;
 import com.homebase.ecom.inventory.service.validator.InventoryItemPolicyValidator;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
@@ -39,9 +38,7 @@ public class ReserveStockInventoryItemAction extends AbstractSTMTransitionAction
             null, // sessionId
             policyValidator.getReservationTtlMinutes());
 
-        // Update status based on available quantity
         if (inventory.isLowStock()) {
-            inventory.setStatus(InventoryStatus.LOW_STOCK);
             inventory.getTransientMap().put("lowStockAlert", true);
         }
 

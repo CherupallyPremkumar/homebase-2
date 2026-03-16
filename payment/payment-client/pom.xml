@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>payment-client</artifactId>
-    <name>Payment Client — RestTemplate-based service client</name>
+    <name>Payment Client — ProxyBuilder-based service client</name>
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom</groupId>
@@ -19,11 +19,7 @@
         </dependency>
         <dependency>
             <groupId>org.chenile</groupId>
-            <artifactId>chenile-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
+            <artifactId>chenile-proxy</artifactId>
         </dependency>
     </dependencies>
 </project>

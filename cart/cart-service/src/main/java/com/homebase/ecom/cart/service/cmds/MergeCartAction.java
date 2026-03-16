@@ -1,65 +1,68 @@
 package com.homebase.ecom.cart.service.cmds;
 
 import com.homebase.ecom.cart.dto.MergeCartPayload;
-import com.homebase.ecom.cart.model.CartItem;
 import com.homebase.ecom.cart.model.Cart;
-import com.homebase.ecom.dto.OfferDto;
+import com.homebase.ecom.cart.model.CartItem;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.chenile.utils.entity.service.EntityStore;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
- * Action to merge guest cart items into a user cart.
+ * STM transition action for merge event.
+ * Fetches the source (guest) cart by sourceCartId, merges its items
+ * into the target (user) cart. Duplicate variantIds aggregate quantities.
+ * Then recalculates pricing.
  */
 public class MergeCartAction extends AbstractCartAction<MergeCartPayload> {
 
-    private static final Logger log = LoggerFactory.getLogger(MergeCartAction.class);
+    @Autowired
+    @Qualifier("cartEntityStore")
+    private EntityStore<Cart> entityStore;
 
     @Override
-    public void transitionTo(Cart cart,
-            MergeCartPayload payload,
+    public void transitionTo(Cart cart, MergeCartPayload payload,
             State startState, String eventId,
             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-        if (payload.items == null || payload.items.isEmpty()) {
+        if (payload.sourceCartId == null || payload.sourceCartId.isBlank()) {
+            throw new IllegalArgumentException("sourceCartId is required for merge");
+        }
+
+        Cart sourceCart = entityStore.retrieve(payload.sourceCartId);
+        if (sourceCart == null) {
+            throw new IllegalArgumentException("Source cart not found: " + payload.sourceCartId);
+        }
+
+        if (sourceCart.getItems() == null || sourceCart.getItems().isEmpty()) {
+            logActivity(cart, "merge", "Source cart " + payload.sourceCartId + " has no items, nothing to merge");
             return;
         }
 
-        for (MergeCartPayload.MergeItemPayload itemPayload : payload.items) {
-            try {
-                OfferDto offer = validateAndGetOffer(itemPayload.productId, itemPayload.quantity);
+        int mergedCount = 0;
+        for (CartItem sourceItem : sourceCart.getItems()) {
+            int existingQty = cart.getItems().stream()
+                    .filter(i -> i.getVariantId().equals(sourceItem.getVariantId()))
+                    .mapToInt(CartItem::getQuantity)
+                    .findFirst().orElse(0);
+            int totalQty = existingQty + sourceItem.getQuantity();
 
-                CartItem existingItem = cart.getItems().stream()
-                        .filter(item -> item.getProductId().equals(itemPayload.productId))
-                        .findFirst()
-                        .orElse(null);
+            cartPolicyValidator.validateQuantity(totalQty);
 
-                if (existingItem != null) {
-                    existingItem.setQuantity(existingItem.getQuantity() + itemPayload.quantity);
-                    // Update to latest price/seller
-                    existingItem.setPrice(offer.getPrice());
-                    existingItem.setSellerId(offer.getSellerId());
-                    log.debug("Merged existing item: productId={}, newQuantity={}", itemPayload.productId,
-                            existingItem.getQuantity());
-                } else {
-                    CartItem newItem = new CartItem();
-                    newItem.setProductId(itemPayload.productId);
-                    newItem.setQuantity(itemPayload.quantity);
-                    newItem.setPrice(offer.getPrice());
-                    newItem.setSellerId(offer.getSellerId());
-                    cart.addItem(newItem);
-                    log.debug("Added new item during merge: productId={}, quantity={}", itemPayload.productId,
-                            itemPayload.quantity);
-                }
-            } catch (Exception e) {
-                // Log and continue with other items if one fails validation
-                // Alternatively, we could fail the whole merge, but continuing might be better
-                // UX
-                log.error("Failed to merge item: productId={}. Reason: {}", itemPayload.productId, e.getMessage());
+            boolean isNewItem = existingQty == 0;
+            if (isNewItem) {
+                cartPolicyValidator.validateItemCount(cart);
             }
+
+            cart.addItem(sourceItem);
+            mergedCount++;
         }
-        cart.getTransientMap().previousPayload = payload;
+
+        recalculatePricingAndValidateValue(cart);
+
+        logActivity(cart, "merge",
+                "Merged " + mergedCount + " items from cart " + payload.sourceCartId + ", total: " + cart.getTotal());
     }
 }

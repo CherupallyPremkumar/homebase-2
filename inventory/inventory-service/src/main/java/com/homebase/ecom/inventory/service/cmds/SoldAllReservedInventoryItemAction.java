@@ -1,7 +1,6 @@
 package com.homebase.ecom.inventory.service.cmds;
 
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
-import com.homebase.ecom.inventory.domain.model.InventoryStatus;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
@@ -11,8 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * STM action when all reserved stock for an order is sold/fulfilled.
- * Confirms the reservation and transitions to OUT_OF_STOCK if inventory is depleted.
+ * STM action when reserved stock is confirmed sold (picked, shipped).
+ * Confirms the reservation which deducts from total quantity.
+ * Auto-state CHECK_DEPLETION routes to OUT_OF_STOCK or back to IN_WAREHOUSE.
  */
 public class SoldAllReservedInventoryItemAction extends AbstractSTMTransitionAction<InventoryItem, SoldAllReservedInventoryPayload> {
 
@@ -24,19 +24,14 @@ public class SoldAllReservedInventoryItemAction extends AbstractSTMTransitionAct
             State startState, String eventId,
             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-        // Use domain method to confirm reservation (marks as FULFILLED, deducts from quantity)
         if (payload.getOrderId() != null) {
             inventory.confirmReservation(payload.getOrderId());
         }
 
-        // Set status to out of stock
-        inventory.setAvailableQuantity(0);
-        inventory.setStatus(InventoryStatus.OUT_OF_STOCK);
-
-        log.info("All reserved stock sold for productId={}, orderId={}. Inventory is now OUT_OF_STOCK.",
-                inventory.getProductId(), payload.getOrderId());
+        log.info("Reservation confirmed as sold for productId={}, orderId={}, remainingQty={}, available={}",
+                inventory.getProductId(), payload.getOrderId(),
+                inventory.getQuantity(), inventory.getAvailableQuantity());
 
         inventory.getTransientMap().put("previousPayload", payload);
-        inventory.getTransientMap().put("stockDepleted", true);
     }
 }

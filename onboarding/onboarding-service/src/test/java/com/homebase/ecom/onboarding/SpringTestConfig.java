@@ -11,18 +11,18 @@ import org.springframework.boot.persistence.autoconfigure.EntityScan;
 @PropertySource("classpath:com/homebase/ecom/onboarding/TestService.properties")
 @SpringBootApplication(scanBasePackages = {
     "org.chenile.configuration",
+    "org.chenile.service.registry.configuration",
     "com.homebase.ecom.onboarding.configuration",
-    "com.homebase.ecom.supplier.configuration",
     "org.chenile.cconfig.**"
 })
 @EnableJpaRepositories(basePackages = {
     "com.homebase.ecom.onboarding",
-    "com.homebase.ecom.supplier",
+    "org.chenile.service.registry.configuration.dao",
     "org.chenile.cconfig.configuration.dao"
 })
 @EntityScan(basePackages = {
     "com.homebase.ecom.onboarding",
-    "com.homebase.ecom.supplier",
+    "org.chenile.service.registry.model",
     "org.chenile.cconfig.model"
 })
 @ActiveProfiles("unittest")

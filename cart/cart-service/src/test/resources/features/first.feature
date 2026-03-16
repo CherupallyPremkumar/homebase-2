@@ -1,9 +1,13 @@
 Feature: Tests the cart Workflow Service using a REST client. This is done only for the
 first testcase. Cart service exists and is under test.
 It helps to create a cart and manages the state of the cart as documented in states xml
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
 Scenario: Create a new cart
 Given that "flowName" equals "cart-flow"
-And that "initialState" equals "CREATED"
+And that "initialState" equals "ACTIVE"
 When I POST a REST request to URL "/cart" with payload
 """json
 {
@@ -28,7 +32,12 @@ And the REST response key "mutatedEntity.currentState.stateId" is "${currentStat
 When I PATCH a REST request to URL "/cart/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "productId": "prod-first-001",
+    "variantId": "var-first-001-default",
+    "productName": "Test Product",
+    "quantity": 1,
+    "unitPrice": 100
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -50,18 +59,19 @@ And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "CHECKOUT_INITIATED"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
- Scenario: Send the completePayment event to the cart with comments
- Given that "comment" equals "Comment for completePayment"
- And that "event" equals "completePayment"
+ Scenario: Send the completeCheckout event to the cart with comments
+ Given that "comment" equals "Comment for completeCheckout"
+ And that "event" equals "completeCheckout"
 When I PATCH a REST request to URL "/cart/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "orderId": "order-test-001"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "ORDER_CREATED"
+And the REST response key "mutatedEntity.currentState.stateId" is "CHECKOUT_COMPLETED"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
 
@@ -74,7 +84,7 @@ Given that "terminalState" equals "__TERMINAL_STATE__"
 And that config strategy is "cartConfigProvider" with prefix "Cart"
 And that a new mandatory activity "a1" is added from state "${finalState}" to state "${finalState}" in flow "${flowName}"
 And that a new mandatory activity "a2" is added from state "${finalState}" to state "${finalState}" in flow "${flowName}"
-And that a new state "${terminalState}" is added to flow "${flowName}"
+And that dynamic state "${terminalState}" is added to flow "${flowName}" with prefix "Cart"
 And that a new activity completion checker "cc" is added from state "${finalState}" to state "${terminalState}" in flow "${flowName}"
 And that "comment" equals "Attempting to send cc event without mandatory activities being completed."
 And that "event" equals "cc"

@@ -35,8 +35,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product update(String id, Product productDto) {
-        // Implementation
-        return null;
+        com.homebase.ecom.product.domain.model.Product existing = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + id));
+        if (productDto.getName() != null) existing.setName(productDto.getName());
+        if (productDto.getDescription() != null) existing.setDescription(productDto.getDescription());
+        if (productDto.getBrand() != null) existing.setBrand(productDto.getBrand());
+        if (productDto.getCategoryId() != null) existing.setCategoryId(productDto.getCategoryId());
+        productRepository.save(existing);
+        return toDto(existing);
     }
 
     @Override

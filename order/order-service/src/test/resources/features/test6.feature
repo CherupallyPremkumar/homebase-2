@@ -1,123 +1,36 @@
-Feature: Testcase ID 6
-Tests the order Workflow Service using a REST client. Order service exists and is under test.
-It helps to create a order and manages the state of the order as documented in states xml
+Feature: Testcase ID 6 — Invalid transitions and edge cases.
 
-Scenario: Create a new order
-Given that "flowName" equals "order-flow"
-And that "initialState" equals "CREATED"
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
+Scenario: Create an order
 When I POST a REST request to URL "/order" with payload
 """json
 {
-    "description": "Description"
+    "description": "Invalid transition test",
+    "customerId": "cust-test6",
+    "totalAmount": 500,
+    "currency": "INR"
 }
 """
-Then the REST response contains key "mutatedEntity"
-And store "$.payload.mutatedEntity.id" from response to "id"
-And the REST response key "mutatedEntity.currentState.stateId" is "${initialState}"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
-And the REST response key "mutatedEntity.description" is "Description"
+Then store "$.payload.mutatedEntity.id" from response to "id"
+And the REST response key "mutatedEntity.currentState.stateId" is "CREATED"
 
-Scenario: Retrieve the order that just got created
-When I GET a REST request to URL "/order/${id}"
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${currentState}"
-
-
-Scenario: Send the processPayment event to the order with comments
-Given that "comment" equals "Comment for processPayment"
-And that "event" equals "processPayment"
+Scenario: Cannot start processing from CREATED (need payment first)
+Given that "event" equals "startProcessing"
 When I PATCH a REST request to URL "/order/${id}/${event}" with payload
 """json
-{
-    "comment": "${comment}"
-}
+{ "comment": "Try processing before payment" }
 """
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PAYMENT_CONFIRMED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
+Then the REST response does not contain key "mutatedEntity"
+And the http status code is 422
 
-Scenario: Send the startProcessing event to the order with comments
-Given that "comment" equals "Comment for startProcessing"
-And that "event" equals "startProcessing"
+Scenario: Cannot mark shipped from CREATED
+Given that "event" equals "markShipped"
 When I PATCH a REST request to URL "/order/${id}/${event}" with payload
 """json
-{
-    "comment": "${comment}"
-}
+{ "comment": "Try shipping before payment" }
 """
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PROCESSING"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
-
-Scenario: Send the itemsPicked event to the order with comments
-Given that "comment" equals "Comment for itemsPicked"
-And that "event" equals "itemsPicked"
-When I PATCH a REST request to URL "/order/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PICKED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
-
-Scenario: Send the courierPickup event to the order with comments
-Given that "comment" equals "Comment for courierPickup"
-And that "event" equals "courierPickup"
-When I PATCH a REST request to URL "/order/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "SHIPPED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
-
-Scenario: Send the deliverOrder event to the order with comments
-Given that "comment" equals "Comment for deliverOrder"
-And that "event" equals "deliverOrder"
-When I PATCH a REST request to URL "/order/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "DELIVERED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
-
-Scenario: Send the initiateReturn event to the order with comments
-Given that "comment" equals "Comment for initiateReturn"
-And that "event" equals "initiateReturn"
-When I PATCH a REST request to URL "/order/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "RETURN_INITIATED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
-
-Scenario: Send the rejectReturn event to the order with comments
-Given that "comment" equals "Comment for rejectReturn"
-And that "event" equals "rejectReturn"
-When I PATCH a REST request to URL "/order/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "COMPLETED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
+Then the REST response does not contain key "mutatedEntity"
+And the http status code is 422

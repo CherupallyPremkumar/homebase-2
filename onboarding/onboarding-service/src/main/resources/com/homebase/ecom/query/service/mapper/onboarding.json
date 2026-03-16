@@ -1,0 +1,68 @@
+[
+	{
+		"id": "Onboarding.getAll",
+		"name": "onboardings",
+		"workflowName": "onboarding",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
+			"applicantName": { "name": "applicantName", "filterable": true, "columnType": "Text", "sortable": true },
+			"businessName": { "name": "businessName", "filterable": true, "columnType": "Text", "sortable": true },
+			"businessType": { "name": "businessType", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"submittedAt": { "name": "submittedAt", "filterable": true, "columnType": "DateTime", "sortable": true },
+			"trainingProgress": { "name": "trainingProgress", "columnType": "Number" },
+			"resubmissionCount": { "name": "resubmissionCount", "columnType": "Number" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Onboarding.getById",
+		"name": "onboarding",
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Onboarding.getStateCounts",
+		"name": "onboarding-state-counts",
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Onboarding.getPendingVerification",
+		"name": "pending-verification",
+		"columnMetadata": {
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Onboarding.getStuckApplications",
+		"name": "stuck-applications",
+		"columnMetadata": {
+			"daysSinceSubmission": { "name": "daysSinceSubmission", "filterable": true, "columnType": "Number" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Onboarding.getMyApplication",
+		"name": "my-application",
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Onboarding.getOnboardingProgress",
+		"name": "onboarding-progress",
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	}
+]

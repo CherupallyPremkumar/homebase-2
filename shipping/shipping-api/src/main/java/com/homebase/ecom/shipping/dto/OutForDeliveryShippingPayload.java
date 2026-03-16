@@ -3,7 +3,7 @@ package com.homebase.ecom.shipping.dto;
 import org.chenile.workflow.param.MinimalPayload;
 
 /**
- * Payload for the outForDelivery event.
+ * Payload for the outForDelivery event: IN_TRANSIT -> OUT_FOR_DELIVERY.
  * Contains delivery agent and hub information.
  */
 public class OutForDeliveryShippingPayload extends MinimalPayload {

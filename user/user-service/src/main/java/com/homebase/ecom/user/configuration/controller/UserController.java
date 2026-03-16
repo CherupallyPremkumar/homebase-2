@@ -21,9 +21,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.chenile.workflow.dto.StateEntityServiceResponse;
 import com.homebase.ecom.user.domain.model.User;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @ChenileController(value = "userService", serviceName = "_userStateEntityService_", healthCheckerName = "userHealthChecker")
+@Tag(name = "User", description = "User account management")
 public class UserController extends ControllerSupport {
 
 	@GetMapping("/user/{id}")

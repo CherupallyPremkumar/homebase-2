@@ -58,11 +58,13 @@
     <maven.compiler.release>25</maven.compiler.release>
     <maven.compiler.target>25</maven.compiler.target>
     <java.version>25</java.version>
+    <micrometer-tracing.version>1.6.1</micrometer-tracing.version>
     <maven.compiler.source>25</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <chenile.config.version>0.0.1-SNAPSHOT</chenile.config.version>
     <resilience4j.version>2.2.0</resilience4j.version>
     <chenile.client.version>2.1.12</chenile.client.version>
+    <opentelemetry.version>1.55.0</opentelemetry.version>
     <revision>0.0.1-SNAPSHOT</revision>
   </properties>
   <dependencyManagement>
@@ -77,6 +79,11 @@
       <dependency>
         <groupId>org.chenile</groupId>
         <artifactId>workflow-api</artifactId>
+        <version>${chenile.client.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.chenile</groupId>
+        <artifactId>workflow-service</artifactId>
         <version>${chenile.client.version}</version>
       </dependency>
       <dependency>
@@ -545,6 +552,21 @@
         <version>0.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
+        <groupId>net.logstash.logback</groupId>
+        <artifactId>logstash-logback-encoder</artifactId>
+        <version>7.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        <version>${springdoc.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.swagger.core.v3</groupId>
+        <artifactId>swagger-annotations-jakarta</artifactId>
+        <version>2.2.41</version>
+      </dependency>
+      <dependency>
         <groupId>com.stripe</groupId>
         <artifactId>stripe-java</artifactId>
         <version>24.0.0</version>
@@ -582,16 +604,6 @@
       <dependency>
         <groupId>org.chenile</groupId>
         <artifactId>chenile-core</artifactId>
-        <version>${chenile.client.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.chenile</groupId>
-        <artifactId>workflow-api</artifactId>
-        <version>${chenile.client.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.chenile</groupId>
-        <artifactId>jpa-utils</artifactId>
         <version>${chenile.client.version}</version>
       </dependency>
       <dependency>
@@ -642,9 +654,24 @@
       <dependency>
         <groupId>io.micrometer</groupId>
         <artifactId>micrometer-registry-prometheus</artifactId>
-        <version>${spring-boot.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        <version>${micrometer-tracing.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-exporter-otlp</artifactId>
+        <version>${opentelemetry.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-annotations-jakarta</artifactId>
+    </dependency>
+  </dependencies>
   <build />
 </project>

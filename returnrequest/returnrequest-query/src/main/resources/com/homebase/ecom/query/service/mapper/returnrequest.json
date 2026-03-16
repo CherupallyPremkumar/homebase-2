@@ -3,7 +3,7 @@
 		"id": "Returnrequest.getAll",
 		"name": "returnrequests",
 		"workflowName": "returnrequest",
-		"stateColumn": "stateId",
+		"stateColumn": "current_state",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -15,25 +15,123 @@
 				"columnType": "Text",
 				"filterable": true
 			},
-			"amount": {
-				"name": "amount",
+			"customerId": {
+				"name": "customer_id",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"reason": {
+				"name": "reason",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"returnType": {
+				"name": "return_type",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"totalRefundAmount": {
+				"name": "total_refund_amount",
 				"columnType": "Number",
 				"filterable": true
 			},
-			"status": {
-				"name": "status",
+			"currentState": {
+				"name": "current_state",
 				"filterable": true,
 				"columnType": "Text"
 			},
-			"stateId": {
-				"name": "stateId",
-				"filterable": true,
-				"columnType": "Text"
-			},
-			"createdAt": {
-				"name": "created_at",
+			"createdDate": {
+				"name": "created_date",
 				"columnType": "Date",
 				"sortable": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Returnrequest.getById",
+		"name": "returnrequestById",
+		"workflowName": "returnrequest",
+		"stateColumn": "current_state",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Returnrequest.getStateCounts",
+		"name": "returnrequestStateCounts",
+		"columnMetadata": {
+			"currentState": {
+				"name": "current_state",
+				"columnType": "Text",
+				"filterable": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Returnrequest.getPendingReturns",
+		"name": "pendingReturns",
+		"workflowName": "returnrequest",
+		"stateColumn": "current_state",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"orderId": {
+				"name": "order_id",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"currentState": {
+				"name": "current_state",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Returnrequest.getByCustomerId",
+		"name": "customerReturns",
+		"workflowName": "returnrequest",
+		"stateColumn": "current_state",
+		"columnMetadata": {
+			"customerId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Returnrequest.getByOrderId",
+		"name": "orderReturns",
+		"workflowName": "returnrequest",
+		"stateColumn": "current_state",
+		"columnMetadata": {
+			"orderId": {
+				"name": "order_id",
+				"filterable": true,
+				"columnType": "Text"
 			}
 		},
 		"flexiblePropnames": false,

@@ -4,7 +4,10 @@ import com.homebase.ecom.settlement.model.Settlement;
 import com.homebase.ecom.settlement.domain.port.SettlementRepository;
 import com.homebase.ecom.settlement.infrastructure.persistence.entity.SettlementEntity;
 import com.homebase.ecom.settlement.infrastructure.persistence.mapper.SettlementMapper;
+
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class SettlementRepositoryImpl implements SettlementRepository {
 
@@ -30,5 +33,17 @@ public class SettlementRepositoryImpl implements SettlementRepository {
     @Override
     public void delete(String id) {
         settlementJpaRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Settlement> findBySupplierId(String supplierId) {
+        return settlementJpaRepository.findBySupplierId(supplierId).stream()
+                .map(settlementMapper::toModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<Settlement> findByOrderId(String orderId) {
+        return settlementJpaRepository.findByOrderId(orderId).map(settlementMapper::toModel);
     }
 }

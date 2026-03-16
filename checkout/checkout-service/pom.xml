@@ -22,16 +22,125 @@
             <artifactId>checkout-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <groupId>com.homebase.ecom.checkout</groupId>
+            <artifactId>checkout-infrastructure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.shared</groupId>
+            <artifactId>shared-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>workflow-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>owiz</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-security-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
+            <groupId>org.chenile</groupId>
+            <artifactId>cucumber-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>cucumber-workflow-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>cucumber-sec-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-security</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.dasniko</groupId>
+            <artifactId>testcontainers-keycloak</artifactId>
+            <version>3.4.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom</groupId>
+            <artifactId>db-migrations</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>service-registry-service</artifactId>
+        </dependency>
+
+        <!-- Module clients: checkout saga calls these services directly -->
+        <dependency>
+            <groupId>com.homebase.ecom.cart</groupId>
+            <artifactId>cart-client</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.order</groupId>
+            <artifactId>order-client</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.inventory</groupId>
+            <artifactId>inventory-client</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.pricing</groupId>
+            <artifactId>pricing-client</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.shipping</groupId>
+            <artifactId>shipping-client</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.promo</groupId>
+            <artifactId>promo-client</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.payment</groupId>
+            <artifactId>payment-client</artifactId>
+            <version>${revision}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Dspring.classformat.ignore=true</argLine>
+                    <systemPropertyVariables>
+                        <DOCKER_API_VERSION>1.44</DOCKER_API_VERSION>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

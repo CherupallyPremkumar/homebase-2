@@ -1,90 +1,149 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
-  <default-transition-action componentName="onboardingBaseTransitionAction"/>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
 
-  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
+  <!-- ================================================================ -->
+  <!-- Event definitions with ACLs and payload types (Item 15: ACL)     -->
+  <!-- ================================================================ -->
+  <event-information eventId='submit' meta-acls="SELLER" meta-bodyType="com.homebase.ecom.onboarding.dto.SubmitApplicationPayload"/>
+  <event-information eventId='verifyDocuments' meta-acls="ADMIN,COMPLIANCE" meta-bodyType="com.homebase.ecom.onboarding.dto.VerifyDocumentsPayload"/>
+  <event-information eventId='requestDocuments' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.onboarding.dto.RequestDocumentsPayload"/>
+  <event-information eventId='resubmitDocuments' meta-acls="SELLER" meta-bodyType="com.homebase.ecom.onboarding.dto.SubmitDocumentsPayload"/>
+  <event-information eventId='verifyBusiness' meta-acls="ADMIN,COMPLIANCE" meta-bodyType="com.homebase.ecom.onboarding.dto.VerifyBusinessPayload"/>
+  <event-information eventId='startTraining' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='completeTraining' meta-acls="SELLER" meta-bodyType="com.homebase.ecom.onboarding.dto.CompleteTrainingPayload"/>
+  <event-information eventId='completeOnboarding' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='reject' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.onboarding.dto.RejectOnboardingPayload"/>
 
   <flow id='onboarding-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="onboardingEntryAction" />
     <exit-action componentName="onboardingExitAction" />
 
-    <!-- ========== INITIAL STATE ========== -->
-    <status id='APPLICATION_SUBMITTED' initialState='true' meta-mainPath="true" description="New supplier application submitted">
-      <on eventId='validateDocuments'
-          componentName='onboardingValidateDocumentsAction'
-          newStateId='DOCUMENTS_VERIFIED'
-          meta-mainPath="true"
-          meta-acls="SYSTEM"/>
-      <on eventId='rejectApplication'
-          componentName='onboardingRejectApplicationAction'
+    <!-- ================================================================ -->
+    <!-- APPLICATION_SUBMITTED: Initial state after seller submits        -->
+    <!-- ================================================================ -->
+    <manual-state id='APPLICATION_SUBMITTED' initialState='true' meta-mainPath="true"
+                  description="Supplier application submitted, awaiting document verification">
+      <on eventId='verifyDocuments'
+          componentName='onboardingVerifyDocumentsAction'
+          newStateId='DOCUMENT_VERIFICATION'
+          meta-mainPath="true" meta-acls="ADMIN,COMPLIANCE"/>
+      <on eventId='reject'
+          componentName='onboardingRejectAction'
           newStateId='REJECTED'
           meta-acls="ADMIN"/>
-    </status>
+    </manual-state>
 
-    <!-- ========== DOCUMENTS VERIFIED ========== -->
-    <status id='DOCUMENTS_VERIFIED' meta-mainPath="true" description="All required documents have been verified">
-      <on eventId='submitForReview'
-          componentName='onboardingSubmitForReviewAction'
-          newStateId='UNDER_REVIEW'
-          meta-mainPath="true"
-          meta-acls="SYSTEM"/>
-    </status>
-
-    <!-- ========== UNDER REVIEW ========== -->
-    <status id='UNDER_REVIEW' meta-mainPath="true" description="Application under admin review">
-      <on eventId='approve'
-          componentName='onboardingApproveAction'
-          newStateId='APPROVED'
-          meta-mainPath="true"
+    <!-- ================================================================ -->
+    <!-- DOCUMENT_VERIFICATION: Documents are being verified              -->
+    <!-- ================================================================ -->
+    <manual-state id='DOCUMENT_VERIFICATION' meta-mainPath="true"
+                  description="Documents under verification by compliance team">
+      <on eventId='verifyBusiness'
+          componentName='onboardingVerifyBusinessAction'
+          newStateId='BUSINESS_VERIFICATION'
+          meta-mainPath="true" meta-acls="ADMIN,COMPLIANCE"/>
+      <on eventId='requestDocuments'
+          componentName='onboardingRequestDocumentsAction'
+          newStateId='DOCUMENTS_REQUESTED'
           meta-acls="ADMIN"/>
       <on eventId='reject'
           componentName='onboardingRejectAction'
           newStateId='REJECTED'
           meta-acls="ADMIN"/>
-      <on eventId='requestMoreInfo'
-          componentName='onboardingRequestMoreInfoAction'
-          newStateId='PENDING_DOCUMENTS'
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- DOCUMENTS_REQUESTED: Awaiting resubmission from seller           -->
+    <!-- ================================================================ -->
+    <manual-state id='DOCUMENTS_REQUESTED'
+                  description="Additional documents requested from seller">
+      <on eventId='resubmitDocuments'
+          componentName='onboardingResubmitDocumentsAction'
+          newStateId='DOCUMENT_VERIFICATION'
+          meta-acls="SELLER"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- BUSINESS_VERIFICATION: Business details under verification       -->
+    <!-- ================================================================ -->
+    <manual-state id='BUSINESS_VERIFICATION' meta-mainPath="true"
+                  description="Business details and credentials being verified">
+      <on eventId='startTraining'
+          componentName='onboardingStartTrainingAction'
+          newStateId='TRAINING'
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='reject'
+          componentName='onboardingRejectAction'
+          newStateId='REJECTED'
           meta-acls="ADMIN"/>
-    </status>
+    </manual-state>
 
-    <!-- ========== PENDING DOCUMENTS ========== -->
-    <status id='PENDING_DOCUMENTS' description="Waiting for supplier to submit additional documents">
-      <on eventId='submitDocuments'
-          componentName='onboardingSubmitDocumentsAction'
-          newStateId='DOCUMENTS_VERIFIED'
-          meta-acls="SUPPLIER"/>
-    </status>
+    <!-- ================================================================ -->
+    <!-- TRAINING: Supplier completing required training modules           -->
+    <!-- ================================================================ -->
+    <manual-state id='TRAINING' meta-mainPath="true"
+                  description="Supplier completing required training modules">
+      <on eventId='completeTraining'
+          componentName='onboardingCompleteTrainingAction'
+          newStateId='CHECK_TRAINING_COMPLETE'
+          meta-acls="SELLER"/>
+      <on eventId='reject'
+          componentName='onboardingRejectAction'
+          newStateId='REJECTED'
+          meta-acls="ADMIN"/>
+    </manual-state>
 
-    <!-- ========== APPROVED ========== -->
-    <status id='APPROVED' meta-mainPath="true" description="Application approved, creating supplier record">
-      <on eventId='createSupplier'
-          componentName='onboardingCreateSupplierAction'
-          newStateId='SUPPLIER_CREATED'
-          meta-mainPath="true"
-          meta-acls="SYSTEM"/>
-    </status>
+    <!-- ================================================================ -->
+    <!-- Auto-state: Check if all required training modules are complete   -->
+    <!-- ================================================================ -->
+    <auto-state id='CHECK_TRAINING_COMPLETE'
+                componentName='ifAction'
+                condition='completedModuleCount &gt;= 3'
+                then='allComplete'
+                else='notYet'>
+      <on eventId='allComplete' newStateId='ONBOARDED'/>
+      <on eventId='notYet' newStateId='TRAINING'/>
+    </auto-state>
 
-    <!-- ========== SUPPLIER CREATED ========== -->
-    <status id='SUPPLIER_CREATED' meta-mainPath="true" description="Supplier record created in the system">
-      <on eventId='notifySupplier'
-          componentName='onboardingNotifySupplierAction'
-          newStateId='ACTIVE'
-          meta-mainPath="true"
-          meta-acls="SYSTEM"/>
-    </status>
+    <!-- ================================================================ -->
+    <!-- ONBOARDED: All training complete, ready for final activation      -->
+    <!-- ================================================================ -->
+    <manual-state id='ONBOARDED' meta-mainPath="true"
+                  description="Training complete, supplier onboarded and ready for activation">
+      <on eventId='completeOnboarding'
+          componentName='onboardingCompleteOnboardingAction'
+          newStateId='COMPLETED'
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
 
-    <!-- ========== ACTIVE (TERMINAL SUCCESS) ========== -->
-    <status id='ACTIVE' description="Supplier is fully onboarded and active">
-      <!-- Terminal state -->
-    </status>
+    <!-- ================================================================ -->
+    <!-- COMPLETED: Terminal success state                                 -->
+    <!-- ================================================================ -->
+    <manual-state id='COMPLETED' description="Supplier fully onboarded and activated">
+    </manual-state>
 
-    <!-- ========== REJECTED ========== -->
-    <status id='REJECTED' description="Application was rejected">
-      <on eventId='resubmit'
-          componentName='onboardingResubmitAction'
-          newStateId='APPLICATION_SUBMITTED'
-          meta-acls="SUPPLIER"/>
-    </status>
+    <!-- ================================================================ -->
+    <!-- REJECTED: Terminal failure state (with reason)                    -->
+    <!-- ================================================================ -->
+    <manual-state id='REJECTED' description="Application rejected">
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- Auto-state: Timeout check — reject if application exceeds days   -->
+    <!-- ================================================================ -->
+    <auto-state id='CHECK_TIMEOUT'
+                componentName='ifAction'
+                condition='daysSinceSubmission &gt;= 30'
+                then='timedOut'
+                else='withinTime'>
+      <on eventId='timedOut' newStateId='REJECTED'/>
+      <on eventId='withinTime' newStateId='APPLICATION_SUBMITTED'/>
+    </auto-state>
+
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
+    </manual-state>
   </flow>
 </states>

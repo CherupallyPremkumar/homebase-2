@@ -17,7 +17,7 @@
         <dependency>
             <groupId>com.homebase.ecom.promo</groupId>
             <artifactId>promo-domain</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

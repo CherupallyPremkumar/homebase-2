@@ -2,6 +2,10 @@ Feature: Testcase ID 10
 Tests the inventory Workflow Service using a REST client. Inventory service exists and is under test.
 It helps to create a inventory and manages the state of the inventory as documented in states xml
 
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
 Scenario: Create a new inventory
 Given that "flowName" equals "inventory-flow"
 And that "initialState" equals "STOCK_PENDING"
@@ -65,10 +69,26 @@ When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
+And the REST response key "mutatedEntity.currentState.stateId" is "STOCK_APPROVED"
+And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
+
+Scenario: Allocate to warehouse before returnDamaged
+Given that "comment" equals "Comment for allocateToWarehouse"
+And that "event" equals "allocateToWarehouse"
+When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
+"""json
+{
+    "comment": "${comment}",
+    "quantity": 95,
+    "warehouseId": "WH-01"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
-Scenario: Send the returnDamaged event to the inventory with comments
+Scenario: Report partial damage at warehouse (stays IN_WAREHOUSE — good stock still sellable)
 Given that "comment" equals "Comment for returnDamaged"
 And that "event" equals "returnDamaged"
 When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
@@ -80,19 +100,20 @@ When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "DAMAGED_AT_WAREHOUSE"
+And the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
-Scenario: Send the discardDamaged event to the inventory with comments
-Given that "comment" equals "Comment for discardDamaged"
-And that "event" equals "discardDamaged"
+Scenario: Report more damage — still has good stock, stays IN_WAREHOUSE
+Given that "comment" equals "Comment for returnDamaged"
+And that "event" equals "returnDamaged"
 When I PATCH a REST request to URL "/inventory/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "damagedQuantity": 5
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "DISCARDED"
+And the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"

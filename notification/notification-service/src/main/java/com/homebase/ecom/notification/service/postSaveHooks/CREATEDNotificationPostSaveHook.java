@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Post save hook for CREATED state.
- * Logs notification creation and prepares for dispatch.
+ * Logs notification creation.
  */
 public class CREATEDNotificationPostSaveHook implements PostSaveHook<Notification> {
 
@@ -17,13 +17,8 @@ public class CREATEDNotificationPostSaveHook implements PostSaveHook<Notificatio
 
     @Override
     public void execute(State startState, State endState, Notification notification, TransientMap map) {
-        if (startState == null) {
-            log.info("NotificationCreatedEvent: New notification {} created for user {}",
-                    notification.getId(), notification.getUserId());
-        } else {
-            log.info("NotificationRetryEvent: Notification {} queued for retry (from FAILED)",
-                    notification.getId());
-        }
-        map.put("eventType", startState == null ? "NotificationCreatedEvent" : "NotificationRetryEvent");
+        log.info("Notification {} created: customerId={}, channel={}, templateId={}",
+                notification.getId(), notification.getCustomerId(),
+                notification.getChannel(), notification.getTemplateId());
     }
 }

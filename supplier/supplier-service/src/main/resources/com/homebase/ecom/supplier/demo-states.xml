@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- An example states xml file that demonstrates the following features:
- 1. The progression of Supplier from OPENED to CLOSED  and ARCHIVED.
- 2. How to define and use a custom DSL to define the workflow.
- 3. How to use the activity framework to define mandatory and optional activities (along with a custom
- DSL that allows us to define these activities)
- 4. How to define an automatic "activity-checker" state that allows us to check if all the mandatory
- activities are completed before we proceed to the next status in the workflow.
+<!-- Demo states XML for Chenile workflow features demonstration.
+ Demonstrates activity framework, custom DSL, and enablement strategy.
+ NOT used in production — production flow is in supplier-states.xml.
 -->
 <states>
     <enablement-strategy componentName="supplierConfigBasedEnablementStrategy"/>
@@ -14,20 +10,10 @@
                          eventIdTag="id"/>
     <add-transition-tag tag="optional-activity" meta-activity="OPTIONAL"
                          eventIdTag="id"/>
-    <add-transition-tag tag="mandatory-post-closure-activity" meta-activity="MANDATORY"
-                         eventIdTag="id"
-                        newStateId="AreClosedActivitiesComplete"/>
-    <add-state-tag tag="post-closure-activities-completion-check"
-                   componentName="activitiesCompletionCheck"
-                   id="AreClosedActivitiesComplete"
-                   whichStateId="CLOSED" />
-    <add-transition-tag tag="on-completion" newStateIdTag="goto" eventId="yes"/>
-    <add-transition-tag tag="if-not-complete" newStateIdTag="stay-in" eventId="no"/>
     <add-state-tag tag="status" manualState="true"/>
-    <add-transition-tag tag="on-action" eventIdTag="id" newStateIdTag="move-to"
-                    />
+    <add-transition-tag tag="on-action" eventIdTag="id" newStateIdTag="move-to"/>
 
-	<flow id='SupplierFlow' default='true'>
+	<flow id='SupplierFlow' default='false'>
 		<entry-action componentName="supplierEntryAction"/>
 		<exit-action componentName="supplierExitAction"/>
 		<status id='OPENED' initialState='true'>
@@ -43,16 +29,8 @@
             <mandatory-activity id='doPerfTesting'/>
             <on-action id='close' move-to='CLOSED'/>
         </status>
-        <status id='CLOSED' >
-            <mandatory-post-closure-activity id='captureObservations'/>
-        </status>
-        <post-closure-activities-completion-check>
-            <on-completion goto="ARCHIVED"/>
-            <if-not-complete stay-in="CLOSED"/>
-        </post-closure-activities-completion-check>
-        <status id='ARCHIVED' />
-
+        <status id='CLOSED' />
 
 	</flow>
-	
+
 </states>

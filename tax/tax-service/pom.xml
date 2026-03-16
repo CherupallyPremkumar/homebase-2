@@ -17,17 +17,17 @@
         <dependency>
             <groupId>com.homebase.ecom.tax</groupId>
             <artifactId>tax-api</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom.tax</groupId>
             <artifactId>tax-domain</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom.tax</groupId>
             <artifactId>tax-infrastructure</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -44,6 +44,12 @@
         <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>chenile-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.dasniko</groupId>
+            <artifactId>testcontainers-keycloak</artifactId>
+            <version>3.4.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

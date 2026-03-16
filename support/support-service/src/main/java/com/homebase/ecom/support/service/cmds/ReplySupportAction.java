@@ -9,6 +9,9 @@ import com.homebase.ecom.support.model.SupportTicket;
 import com.homebase.ecom.support.model.TicketMessage;
 import com.homebase.ecom.support.dto.ReplyPayload;
 
+import java.util.Date;
+import java.util.UUID;
+
 public class ReplySupportAction extends AbstractSTMTransitionAction<SupportTicket, ReplyPayload> {
 
     @Override
@@ -22,20 +25,19 @@ public class ReplySupportAction extends AbstractSTMTransitionAction<SupportTicke
         }
 
         TicketMessage message = new TicketMessage();
-        message.setId(java.util.UUID.randomUUID().toString());
-        // Use sender type from payload if available, else default to AGENT
+        message.setId(UUID.randomUUID().toString());
+
         String senderType = payload.getSenderType();
         if (senderType == null || senderType.trim().isEmpty()) {
             senderType = (String) ticket.getTransientMap().get("senderType");
         }
         message.setSenderType(senderType != null ? senderType : "AGENT");
-        message.setSenderId(ticket.getAssignedTo());
+        message.setSenderId(ticket.getAssignedAgentId());
         message.setMessage(payload.getMessage());
+        message.setTimestamp(new Date());
         ticket.getMessages().add(message);
 
-        // Track last reply timestamp in transient map
-        ticket.getTransientMap().put("lastReplyAt", new java.util.Date());
-
+        ticket.getTransientMap().put("lastReplyAt", new Date());
         ticket.getTransientMap().previousPayload = payload;
     }
 }

@@ -8,14 +8,14 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>handmade-catalog-infrastructure</artifactId>
+    <artifactId>catalog-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>handmade-catalog-infrastructure</name>
+    <name>catalog-infrastructure</name>
 
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom</groupId>
-            <artifactId>handmade-catalog-domain</artifactId>
+            <artifactId>catalog-domain</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>

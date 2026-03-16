@@ -1,13 +1,11 @@
 package com.homebase.ecom.shipping.service.postSaveHooks;
 
 import com.homebase.ecom.shipping.model.Shipping;
-import com.homebase.ecom.shipping.service.event.ShippingEventPublisher;
 import org.chenile.stm.State;
 import org.chenile.workflow.model.TransientMap;
 import org.chenile.workflow.service.stmcmds.PostSaveHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * PostSaveHook for PICKED_UP state.

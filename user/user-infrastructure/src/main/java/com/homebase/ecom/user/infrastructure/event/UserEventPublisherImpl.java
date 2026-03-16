@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationEventPublisher;
 /**
  * Infrastructure implementation of UserEventPublisher.
  * Publishes domain events via Spring's ApplicationEventPublisher.
- * No @Component — wired explicitly in UserConfiguration.
+ * No @Component -- wired explicitly in UserConfiguration.
  */
 public class UserEventPublisherImpl implements UserEventPublisher {
 
@@ -78,6 +78,18 @@ public class UserEventPublisherImpl implements UserEventPublisher {
     @Override
     public void publishAddressRemoved(UserDomainEvents.AddressRemoved event) {
         log.info("Publishing AddressRemoved event for userId={}, addressId={}", event.userId(), event.addressId());
+        applicationEventPublisher.publishEvent(event);
+    }
+
+    @Override
+    public void publishKycSubmitted(UserDomainEvents.KycSubmitted event) {
+        log.info("Publishing KycSubmitted event for userId={}", event.userId());
+        applicationEventPublisher.publishEvent(event);
+    }
+
+    @Override
+    public void publishKycVerified(UserDomainEvents.KycVerified event) {
+        log.info("Publishing KycVerified event for userId={}", event.userId());
         applicationEventPublisher.publishEvent(event);
     }
 }

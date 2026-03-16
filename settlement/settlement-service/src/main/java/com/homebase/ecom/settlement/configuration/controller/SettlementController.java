@@ -20,9 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.chenile.workflow.dto.StateEntityServiceResponse;
 import com.homebase.ecom.settlement.model.Settlement;
 import org.chenile.security.model.SecurityConfig;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @ChenileController(value = "settlementService", serviceName = "_settlementStateEntityService_", healthCheckerName = "settlementHealthChecker")
+@Tag(name = "Settlement", description = "Supplier settlement and payout management")
 public class SettlementController extends ControllerSupport {
 
 	@GetMapping("/settlement/{id}")

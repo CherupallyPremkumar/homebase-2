@@ -1,25 +1,42 @@
 <configuration>
-    <!-- Console appender - text for dev, JSON for prod -->
+    <!-- Console appender - human-readable text for dev/test -->
     <springProfile name="!prod">
         <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
-                <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+                <pattern>%d{HH:mm:ss.SSS} [%thread] [%X{correlationId:-}] %-5level %logger{36} - %msg%n</pattern>
             </encoder>
         </appender>
     </springProfile>
 
+    <!-- Console appender - structured JSON for production -->
     <springProfile name="prod">
         <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
                 <providers>
-                    <timestamp/>
-                    <logLevel/>
-                    <loggerName/>
-                    <threadName/>
-                    <message/>
-                    <stackTrace/>
+                    <timestamp>
+                        <fieldName>timestamp</fieldName>
+                        <pattern>yyyy-MM-dd'T'HH:mm:ss.SSSZ</pattern>
+                    </timestamp>
+                    <logLevel>
+                        <fieldName>level</fieldName>
+                    </logLevel>
+                    <loggerName>
+                        <fieldName>logger</fieldName>
+                    </loggerName>
+                    <threadName>
+                        <fieldName>thread</fieldName>
+                    </threadName>
+                    <message>
+                        <fieldName>message</fieldName>
+                    </message>
+                    <stackTrace>
+                        <fieldName>stackTrace</fieldName>
+                    </stackTrace>
                     <mdc/>
                     <arguments/>
+                    <pattern>
+                        <pattern>{"service":"${spring.application.name:-homebase}"}</pattern>
+                    </pattern>
                 </providers>
             </encoder>
         </appender>
@@ -33,12 +50,13 @@
         </rollingPolicy>
         <encoder>
             <charset>utf-8</charset>
-            <Pattern>%d %-5level [%thread] %logger{0}: %msg%n</Pattern>
+            <Pattern>%d %-5level [%thread] [%X{correlationId:-}] %logger{0}: %msg%n</Pattern>
         </encoder>
     </appender>
 
     <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>512</queueSize>
+        <includeCallerData>false</includeCallerData>
         <appender-ref ref="FILE"/>
     </appender>
 

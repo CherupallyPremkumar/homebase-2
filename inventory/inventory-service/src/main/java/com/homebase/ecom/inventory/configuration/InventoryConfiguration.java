@@ -12,20 +12,26 @@ import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
 import com.homebase.ecom.inventory.infrastructure.persistence.mapper.InventoryItemMapper;
 import com.homebase.ecom.inventory.infrastructure.persistence.adapter.InventoryItemJpaRepository;
-import com.homebase.ecom.inventory.infrastructure.persistence.adapter.InventoryItemRepositoryImpl;
+import com.homebase.ecom.inventory.infrastructure.persistence.adapter.InventoryItemQueryAdapter;
 import com.homebase.ecom.inventory.infrastructure.persistence.ChenileInventoryItemEntityStore;
-import com.homebase.ecom.inventory.domain.port.InventoryItemRepository;
 import com.homebase.ecom.inventory.service.cmds.*;
+import com.homebase.ecom.inventory.service.event.InventoryEventHandler;
 import com.homebase.ecom.inventory.service.healthcheck.InventoryHealthChecker;
+import org.chenile.stm.action.scriptsupport.IfAction;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.stm.State;
 import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
 import com.homebase.ecom.inventory.service.postSaveHooks.*;
+import com.homebase.ecom.inventory.service.validator.InventoryItemPolicyValidator;
+import com.homebase.ecom.inventory.domain.port.InventoryPolicyPort;
+import com.homebase.ecom.inventory.infrastructure.adapter.InventoryPolicyDecisionAdapter;
 
 /**
  * This is where you will instantiate all the required classes in Spring
@@ -70,8 +76,8 @@ public class InventoryConfiguration {
     }
 
     @Bean
-    InventoryItemRepositoryImpl inventoryItemRepository(InventoryItemJpaRepository jpaRepository, InventoryItemMapper mapper) {
-        return new InventoryItemRepositoryImpl(jpaRepository, mapper);
+    InventoryItemQueryAdapter inventoryItemQueryAdapter(InventoryItemJpaRepository jpaRepository, InventoryItemMapper mapper) {
+        return new InventoryItemQueryAdapter(jpaRepository, mapper);
     }
 
     @Bean
@@ -84,7 +90,7 @@ public class InventoryConfiguration {
             @Qualifier("inventoryEntityStm") STM<InventoryItem> stm,
             @Qualifier("inventoryActionsInfoProvider") STMActionsInfoProvider inventoryInfoProvider,
             @Qualifier("inventoryEntityStore") EntityStore<InventoryItem> entityStore) {
-        return new StateEntityServiceImpl<>(stm, inventoryInfoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, inventoryInfoProvider, entityStore);
     }
 
     // Now we start constructing the STM Components
@@ -137,13 +143,24 @@ public class InventoryConfiguration {
         return new InventoryHealthChecker();
     }
 
+
     @Bean
-    AdjustSupplierPaymentAction AdjustSupplierPaymentAction() {
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
+
+    @Bean
+    IfAction<InventoryItem> ifAction() {
+        return new IfAction<>();
+    }
+
+    @Bean
+    AdjustSupplierPaymentAction inventoryAdjustSupplierPaymentAction() {
         return new AdjustSupplierPaymentAction();
     }
 
     @Bean
-    InventoryDiscardedCleanupAction InventoryDiscardedCleanupAction() {
+    InventoryDiscardedCleanupAction inventoryDiscardedCleanupAction() {
         return new InventoryDiscardedCleanupAction();
     }
 
@@ -256,6 +273,11 @@ public class InventoryConfiguration {
     }
 
     @Bean
+    ReturnStockInventoryItemAction inventoryReturnStockAction() {
+        return new ReturnStockInventoryItemAction();
+    }
+
+    @Bean
     ReturnToSupplierInventoryItemAction inventoryReturnToSupplierAction() {
         return new ReturnToSupplierInventoryItemAction();
     }
@@ -286,11 +308,6 @@ public class InventoryConfiguration {
     }
 
     @Bean
-    CheckInventoryItemStatusAction inventoryCheckStatusAction() {
-        return new CheckInventoryItemStatusAction();
-    }
-
-    @Bean
     ConfigProviderImpl inventoryConfigProvider() {
         return new ConfigProviderImpl();
     }
@@ -316,11 +333,6 @@ public class InventoryConfiguration {
     }
 
     @Bean
-    STOCK_APPROVEDInventoryItemPostSaveHook inventorySTOCK_APPROVEDPostSaveHook() {
-        return new STOCK_APPROVEDInventoryItemPostSaveHook();
-    }
-
-    @Bean
     IN_WAREHOUSEInventoryItemPostSaveHook inventoryIN_WAREHOUSEPostSaveHook() {
         return new IN_WAREHOUSEInventoryItemPostSaveHook();
     }
@@ -331,18 +343,8 @@ public class InventoryConfiguration {
     }
 
     @Bean
-    STOCK_INSPECTIONInventoryItemPostSaveHook inventorySTOCK_INSPECTIONPostSaveHook() {
-        return new STOCK_INSPECTIONInventoryItemPostSaveHook();
-    }
-
-    @Bean
     OUT_OF_STOCKInventoryItemPostSaveHook inventoryOUT_OF_STOCKPostSaveHook() {
         return new OUT_OF_STOCKInventoryItemPostSaveHook();
-    }
-
-    @Bean
-    RETURN_TO_SUPPLIERInventoryItemPostSaveHook inventoryRETURN_TO_SUPPLIERPostSaveHook() {
-        return new RETURN_TO_SUPPLIERInventoryItemPostSaveHook();
     }
 
     @Bean
@@ -360,9 +362,36 @@ public class InventoryConfiguration {
         return new PARTIAL_DAMAGEInventoryItemPostSaveHook();
     }
 
+
+
     @Bean
-    PARTIALLY_RESERVEDInventoryItemPostSaveHook inventoryPARTIALLY_RESERVEDPostSaveHook() {
-        return new PARTIALLY_RESERVEDInventoryItemPostSaveHook();
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> inventoryEventAuthoritiesSupplier(
+            @Qualifier("inventoryActionsInfoProvider") STMActionsInfoProvider inventoryInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(inventoryInfoProvider, false);
+        return builder.build();
     }
 
+    @Bean
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(com.homebase.ecom.policy.api.service.DecisionService.class)
+    public InventoryPolicyPort inventoryPolicyPort(com.homebase.ecom.policy.api.service.DecisionService decisionService) {
+        return new InventoryPolicyDecisionAdapter(decisionService);
+    }
+
+    @Bean
+    InventoryItemPolicyValidator inventoryItemPolicyValidator() {
+        return new InventoryItemPolicyValidator();
+    }
+
+    @Bean("inventoryEventService")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
+    InventoryEventHandler inventoryEventService(
+            com.homebase.ecom.inventory.service.InventoryService inventoryService,
+            InventoryItemQueryAdapter inventoryItemQueryAdapter,
+            @Qualifier("_inventoryStateEntityService_") StateEntityServiceImpl<InventoryItem> inventoryStateEntityService,
+            org.chenile.pubsub.ChenilePub chenilePub,
+            tools.jackson.databind.ObjectMapper objectMapper) {
+        return new InventoryEventHandler(
+                inventoryService, inventoryItemQueryAdapter,
+                inventoryStateEntityService, chenilePub, objectMapper);
+    }
 }

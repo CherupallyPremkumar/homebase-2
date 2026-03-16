@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * PostSaveHook for UNDER_REVIEW state.
- * Logs that the return request is now under quality review.
+ * Logs that the return request requires manual review.
  */
 public class UNDER_REVIEWReturnrequestPostSaveHook implements PostSaveHook<Returnrequest> {
 
@@ -17,7 +17,7 @@ public class UNDER_REVIEWReturnrequestPostSaveHook implements PostSaveHook<Retur
 
     @Override
     public void execute(State startState, State endState, Returnrequest returnrequest, TransientMap map) {
-        log.info("Return request {} is now under review by inspector {}",
-                returnrequest.getId(), returnrequest.inspectorId);
+        log.info("Return request {} requires manual review (value above auto-approve threshold)",
+                returnrequest.getId());
     }
 }

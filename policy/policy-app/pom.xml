@@ -17,12 +17,12 @@
         <dependency>
             <groupId>com.homebase.ecom.policy</groupId>
             <artifactId>policy-service</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom.policy</groupId>
             <artifactId>policy-infrastructure</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

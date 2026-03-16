@@ -2,6 +2,7 @@ package com.homebase.ecom.supplier.service.postSaveHooks;
 
 import com.homebase.ecom.supplier.model.Supplier;
 import com.homebase.ecom.supplier.domain.port.SupplierEventPublisher;
+import com.homebase.ecom.supplier.domain.port.NotificationPort;
 import com.homebase.ecom.shared.event.SupplierSuspendedEvent;
 import org.chenile.stm.State;
 import org.chenile.workflow.model.TransientMap;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 
 /**
  * Post-save hook for SUSPENDED state.
- * Publishes SupplierSuspendedEvent when a supplier is suspended.
+ * Publishes SUPPLIER_SUSPENDED event, disables products, and sends notification.
  */
 public class SUSPENDEDSupplierPostSaveHook implements PostSaveHook<Supplier> {
 
@@ -23,15 +24,25 @@ public class SUSPENDEDSupplierPostSaveHook implements PostSaveHook<Supplier> {
     @Autowired(required = false)
     private SupplierEventPublisher supplierEventPublisher;
 
+    @Autowired(required = false)
+    private NotificationPort notificationPort;
+
     @Override
     public void execute(State startState, State endState, Supplier supplier, TransientMap map) {
         log.info("PostSaveHook: Supplier '{}' (ID: {}) is now SUSPENDED. Reason: {}",
-                supplier.getName(), supplier.getId(), supplier.getSuspensionReason());
+                supplier.getBusinessName(), supplier.getId(), supplier.getSuspensionReason());
 
+        // Publish SUPPLIER_SUSPENDED event
         if (supplierEventPublisher != null) {
             SupplierSuspendedEvent event = new SupplierSuspendedEvent(
                     supplier.getId(), supplier.getSuspensionReason(), LocalDateTime.now());
             supplierEventPublisher.publishSupplierSuspended(event);
+        }
+
+        // Send notification
+        if (notificationPort != null) {
+            notificationPort.notifySupplierSuspended(
+                    supplier.getId(), supplier.getBusinessName(), supplier.getSuspensionReason());
         }
     }
 }

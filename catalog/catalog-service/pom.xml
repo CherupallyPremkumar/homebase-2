@@ -9,9 +9,9 @@
     </parent>
 
     <groupId>com.homebase.ecom</groupId>
-    <artifactId>handmade-catalog-service</artifactId>
+    <artifactId>catalog-service</artifactId>
     <packaging>jar</packaging>
-    <name>handmade-catalog-service</name>
+    <name>catalog-service</name>
 
     <dependencies>
         <dependency>
@@ -28,7 +28,7 @@
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom</groupId>
-            <artifactId>handmade-catalog-api</artifactId>
+            <artifactId>catalog-api</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>
@@ -38,12 +38,12 @@
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom</groupId>
-            <artifactId>handmade-catalog-infrastructure</artifactId>
+            <artifactId>catalog-infrastructure</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom</groupId>
-            <artifactId>handmade-catalog-domain</artifactId>
+            <artifactId>catalog-domain</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>
@@ -54,6 +54,10 @@
         <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>chenile-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>cucumber-utils</artifactId>
         </dependency>
         
         
@@ -72,6 +76,12 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
             <version>1.19.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.dasniko</groupId>
+            <artifactId>testcontainers-keycloak</artifactId>
+            <version>3.4.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

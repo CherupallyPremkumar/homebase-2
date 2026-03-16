@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
+
+  <!-- ================================================================ -->
+  <!-- Event definitions with ACLs and payload types (Item 15: ACL)     -->
+  <!-- ================================================================ -->
+  <event-information eventId='process'     meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.ProcessPaymentPayload"/>
+  <event-information eventId='succeed'     meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.ProcessPaymentPayload"/>
+  <event-information eventId='fail'        meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.FailPaymentPayload"/>
+  <event-information eventId='retry'       meta-acls="SYSTEM,ADMIN"     meta-bodyType="com.homebase.ecom.payment.dto.RetryPaymentPayload"/>
+  <event-information eventId='abandon'     meta-acls="SYSTEM,ADMIN"     meta-bodyType="com.homebase.ecom.payment.dto.AbandonPaymentPayload"/>
+  <event-information eventId='settle'      meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.SettlePaymentPayload"/>
+  <event-information eventId='initiateRefund'  meta-acls="ADMIN,SYSTEM" meta-bodyType="com.homebase.ecom.payment.dto.InitiateRefundPayload"/>
+  <event-information eventId='processRefund'   meta-acls="SYSTEM"       meta-bodyType="com.homebase.ecom.payment.dto.ProcessRefundPayload"/>
+  <event-information eventId='completeRefund'  meta-acls="SYSTEM"       meta-bodyType="com.homebase.ecom.payment.dto.ProcessRefundPayload"/>
+
+  <flow id='payment-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="paymentEntryAction" />
+    <exit-action componentName="paymentExitAction" />
+
+    <!-- ================================================================ -->
+    <!-- HAPPY PATH: INITIATED → PROCESSING → SUCCEEDED → SETTLED        -->
+    <!-- ================================================================ -->
+
+    <!-- Payment created, awaiting gateway submission -->
+    <manual-state id='INITIATED' initialState='true' meta-mainPath="true"
+                  description="Payment initiated, awaiting gateway processing">
+      <on eventId='process'
+          componentName='paymentProcessAction'
+          newStateId='PROCESSING'
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!-- Payment submitted to gateway, awaiting confirmation -->
+    <manual-state id='PROCESSING' meta-mainPath="true"
+                  description="Payment being processed by gateway">
+      <on eventId='succeed'
+          componentName='paymentSucceedAction'
+          newStateId='SUCCEEDED'
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='fail'
+          componentName='paymentFailAction'
+          newStateId='FAILED'
+          meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!-- Payment confirmed by gateway -->
+    <manual-state id='SUCCEEDED' meta-mainPath="true"
+                  description="Payment succeeded, awaiting settlement">
+      <on eventId='settle'
+          componentName='paymentSettleAction'
+          newStateId='SETTLED'
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='initiateRefund'
+          componentName='paymentInitiateRefundAction'
+          newStateId='REFUND_INITIATED'
+          meta-acls="ADMIN,SYSTEM"/>
+    </manual-state>
+
+    <!-- Payment settled (funds transferred) -->
+    <manual-state id='SETTLED' meta-mainPath="true"
+                  description="Payment settled, funds transferred">
+      <on eventId='initiateRefund'
+          componentName='paymentInitiateRefundAction'
+          newStateId='REFUND_INITIATED'
+          meta-acls="ADMIN,SYSTEM"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- FAILURE PATH: FAILED → CHECK_RETRY → RETRY or ABANDONED         -->
+    <!-- ================================================================ -->
+
+    <manual-state id='FAILED'
+                  description="Payment failed at gateway">
+      <on eventId='retry'
+          componentName='paymentRetryAction'
+          newStateId='CHECK_RETRY'
+          meta-acls="SYSTEM,ADMIN"/>
+      <on eventId='abandon'
+          componentName='paymentAbandonAction'
+          newStateId='ABANDONED'
+          meta-acls="SYSTEM,ADMIN"/>
+    </manual-state>
+
+    <!--
+      Item 16: Auto-state CHECK_RETRY
+      OGNL condition: retryCount >= maxRetryAttempts(3) → ABANDONED, else → RETRY
+      The retry action increments retryCount before reaching this auto-state.
+    -->
+    <auto-state id='CHECK_RETRY'
+                componentName='ifAction'
+                condition='retryCount &gt;= 3'
+                then='maxRetriesExceeded'
+                else='canRetry'>
+      <on eventId='maxRetriesExceeded' newStateId='ABANDONED'/>
+      <on eventId='canRetry' newStateId='RETRY'/>
+    </auto-state>
+
+    <!-- Retry state: payment will be re-submitted to gateway -->
+    <manual-state id='RETRY'
+                  description="Payment retry queued">
+      <on eventId='process'
+          componentName='paymentProcessAction'
+          newStateId='PROCESSING'
+          meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!-- Terminal: payment abandoned after max retries -->
+    <manual-state id='ABANDONED'
+                  description="Payment abandoned after max retries or manual abandonment">
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- REFUND PATH: REFUND_INITIATED → REFUND_PROCESSING → REFUNDED    -->
+    <!-- ================================================================ -->
+
+    <manual-state id='REFUND_INITIATED'
+                  description="Refund requested, awaiting gateway processing">
+      <on eventId='processRefund'
+          componentName='paymentProcessRefundAction'
+          newStateId='REFUND_PROCESSING'
+          meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='REFUND_PROCESSING'
+                  description="Refund being processed by gateway">
+      <on eventId='completeRefund'
+          componentName='paymentCompleteRefundAction'
+          newStateId='REFUNDED'
+          meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!-- Terminal: refund completed -->
+    <manual-state id='REFUNDED'
+                  description="Refund completed successfully">
+    </manual-state>
+
+  </flow>
+</states>

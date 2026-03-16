@@ -6,6 +6,7 @@ import org.chenile.http.annotation.ChenileController;
 import org.chenile.http.handler.ControllerSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import com.homebase.ecom.offer.api.dto.OfferDTO;
 import com.homebase.ecom.offer.api.dto.OfferSearchRequest;
@@ -13,6 +14,7 @@ import org.chenile.query.model.SearchResponse;
 
 @RestController
 @ChenileController(value = "offerService", serviceName = "offerService")
+@Tag(name = "Offer", description = "Product offer management")
 public class OfferController extends ControllerSupport {
 
     @PostMapping("/offer")

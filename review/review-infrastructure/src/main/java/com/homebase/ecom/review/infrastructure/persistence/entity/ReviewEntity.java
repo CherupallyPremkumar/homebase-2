@@ -19,8 +19,8 @@ public class ReviewEntity extends AbstractJpaStateEntity
     @Column(name = "product_id", nullable = false)
     private String productId;
 
-    @Column(name = "user_id", nullable = false)
-    private String userId;
+    @Column(name = "customer_id", nullable = false)
+    private String customerId;
 
     @Column(name = "order_id")
     private String orderId;
@@ -34,21 +34,20 @@ public class ReviewEntity extends AbstractJpaStateEntity
     @Column(columnDefinition = "TEXT")
     private String body;
 
+    @Column(name = "images", columnDefinition = "TEXT")
+    private String imagesJson;
+
     @Column(name = "verified_purchase")
     private boolean verifiedPurchase;
 
     @Column(name = "helpful_count")
     private int helpfulCount;
 
-    @Column(name = "unhelpful_count")
-    private int unhelpfulCount;
+    @Column(name = "report_count")
+    private int reportCount;
 
-    @Column(length = 2000)
-    private String description;
-
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    @JoinColumn(name = "review_id")
-    private List<ReviewImageEntity> images = new ArrayList<>();
+    @Column(name = "moderator_notes", columnDefinition = "TEXT")
+    private String moderatorNotes;
 
     @Transient
     private TransientMap transientMap = new TransientMap();
@@ -62,8 +61,8 @@ public class ReviewEntity extends AbstractJpaStateEntity
     public String getProductId() { return productId; }
     public void setProductId(String productId) { this.productId = productId; }
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public String getCustomerId() { return customerId; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
 
     public String getOrderId() { return orderId; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
@@ -77,20 +76,20 @@ public class ReviewEntity extends AbstractJpaStateEntity
     public String getBody() { return body; }
     public void setBody(String body) { this.body = body; }
 
+    public String getImagesJson() { return imagesJson; }
+    public void setImagesJson(String imagesJson) { this.imagesJson = imagesJson; }
+
     public boolean isVerifiedPurchase() { return verifiedPurchase; }
     public void setVerifiedPurchase(boolean verifiedPurchase) { this.verifiedPurchase = verifiedPurchase; }
 
     public int getHelpfulCount() { return helpfulCount; }
     public void setHelpfulCount(int helpfulCount) { this.helpfulCount = helpfulCount; }
 
-    public int getUnhelpfulCount() { return unhelpfulCount; }
-    public void setUnhelpfulCount(int unhelpfulCount) { this.unhelpfulCount = unhelpfulCount; }
+    public int getReportCount() { return reportCount; }
+    public void setReportCount(int reportCount) { this.reportCount = reportCount; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public List<ReviewImageEntity> getImages() { return images; }
-    public void setImages(List<ReviewImageEntity> images) { this.images = images; }
+    public String getModeratorNotes() { return moderatorNotes; }
+    public void setModeratorNotes(String moderatorNotes) { this.moderatorNotes = moderatorNotes; }
 
     public List<ReviewActivityLogEntity> getActivities() { return activities; }
     public void setActivities(List<ReviewActivityLogEntity> activities) { this.activities = activities; }

@@ -1,11 +1,19 @@
 package com.homebase.ecom.promo.service;
 
-import com.homebase.ecom.cart.model.Cart;
-
 /**
- * Interface for validating promo codes.
+ * Interface for validating promo codes at the API level.
+ * Item 11: Removed Cart dependency -- promo module should not depend on Cart BC.
+ * Callers pass cart total and product/category IDs instead.
  */
 public interface PromoCodeValidator {
-    double calculateDiscount(Cart cart, String promoCode);
-    boolean isValid(Cart cart, String promoCode);
+
+    /**
+     * Calculates the discount for a given order value and promo code.
+     */
+    double calculateDiscount(double orderValue, String promoCode);
+
+    /**
+     * Validates whether a promo code is valid for the given order value.
+     */
+    boolean isValid(double orderValue, String promoCode);
 }

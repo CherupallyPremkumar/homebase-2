@@ -1,13 +1,21 @@
-Feature: Tests the order Workflow Service using a REST client. This is done only for the
-first testcase. Order service exists and is under test.
-It helps to create a order and manages the state of the order as documented in states xml
+Feature: Tests the order Workflow Service using a REST client.
+Order service exists and is under test.
+It helps to create an order and manages the state of the order as documented in states xml.
+
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
 Scenario: Create a new order
 Given that "flowName" equals "order-flow"
 And that "initialState" equals "CREATED"
 When I POST a REST request to URL "/order" with payload
 """json
 {
-    "description": "Description"
+    "description": "Description",
+    "customerId": "cust-test",
+    "totalAmount": 500,
+    "currency": "INR"
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -22,20 +30,20 @@ Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "${currentState}"
 
- Scenario: Send the cancelOrder event to the order with comments
- Given that "comment" equals "Comment for cancelOrder"
- And that "event" equals "cancelOrder"
+Scenario: Send paymentFailed event to the order
+Given that "comment" equals "Payment declined"
+And that "event" equals "paymentFailed"
 When I PATCH a REST request to URL "/order/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "${comment}",
+    "errorCode": "DECLINED"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "CANCELLED"
+And the REST response key "mutatedEntity.currentState.stateId" is "PAYMENT_FAILED"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
-
 
 Scenario: Add new mandatory activities a1,a2 for the last state.
 Add a new state "__TERMINAL_STATE__"
@@ -61,13 +69,13 @@ And success is false
 And the http status code is 400
 And the top level subErrorCode is 49000
 
-Scenario: Retrieve the order that just got created
+Scenario: Retrieve the order
 When I GET a REST request to URL "/order/${id}"
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "${finalState}"
 
-Scenario: Perform mandatory activity (a1) on the  order with comments
+Scenario: Perform mandatory activity (a1) on the order
 Given that "comment" equals "Performed activity a1."
 And that "event" equals "a1"
 When I PATCH a REST request to URL "/order/${id}/${event}" with payload
@@ -84,7 +92,7 @@ And the REST response key "mutatedEntity.activities" collection has an item with
 | activityName    | ${event}      |
 | activityComment | ${comment}    |
 
-Scenario: Perform mandatory activity (a2) on the  order with comments
+Scenario: Perform mandatory activity (a2) on the order
 Given that "comment" equals "Performed activity a2."
 And that "event" equals "a2"
 When I PATCH a REST request to URL "/order/${id}/${event}" with payload
@@ -101,7 +109,7 @@ And the REST response key "mutatedEntity.activities" collection has an item with
 | activityName    | ${event}      |
 | activityComment | ${comment}    |
 
-Scenario: Perform mandatory activity (cc) on the  order with comments
+Scenario: Perform activity completion check (cc) on the order
 Given that "comment" equals "Performed activity cc after completing all activities."
 And that "event" equals "cc"
 When I PATCH a REST request to URL "/order/${id}/${event}" with payload
@@ -114,7 +122,7 @@ Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "${terminalState}"
 
-Scenario: Send an invalid event to order . This will err out.
+Scenario: Send an invalid event to order — should fail
 When I PATCH a REST request to URL "/order/${id}/invalid" with payload
 """json
 {
@@ -123,4 +131,3 @@ When I PATCH a REST request to URL "/order/${id}/invalid" with payload
 """
 Then the REST response does not contain key "mutatedEntity"
 And the http status code is 422
-

@@ -1,6 +1,7 @@
 package com.homebase.ecom.product.infrastructure.persistence.entity;
 
 import com.homebase.ecom.product.domain.model.MediaAsset.MediaType;
+import com.homebase.ecom.product.domain.model.MediaAsset.ProcessingStatus;
 import jakarta.persistence.*;
 
 @Entity
@@ -14,6 +15,15 @@ public class MediaAssetEntity {
 
     @Column(name = "cdn_url", length = 1000)
     private String cdnUrl;
+
+    @Column(name = "thumbnail_url", length = 1000)
+    private String thumbnailUrl;
+
+    @Column(name = "medium_url", length = 1000)
+    private String mediumUrl;
+
+    @Column(name = "zoom_url", length = 1000)
+    private String zoomUrl;
 
     @Enumerated(EnumType.STRING)
     private MediaType type;
@@ -30,6 +40,10 @@ public class MediaAssetEntity {
     @Column(name = "alt_text")
     private String altText;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "processing_status")
+    private ProcessingStatus processingStatus = ProcessingStatus.PENDING;
+
     // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -39,6 +53,15 @@ public class MediaAssetEntity {
 
     public String getCdnUrl() { return cdnUrl; }
     public void setCdnUrl(String cdnUrl) { this.cdnUrl = cdnUrl; }
+
+    public String getThumbnailUrl() { return thumbnailUrl; }
+    public void setThumbnailUrl(String thumbnailUrl) { this.thumbnailUrl = thumbnailUrl; }
+
+    public String getMediumUrl() { return mediumUrl; }
+    public void setMediumUrl(String mediumUrl) { this.mediumUrl = mediumUrl; }
+
+    public String getZoomUrl() { return zoomUrl; }
+    public void setZoomUrl(String zoomUrl) { this.zoomUrl = zoomUrl; }
 
     public MediaType getType() { return type; }
     public void setType(MediaType type) { this.type = type; }
@@ -57,4 +80,7 @@ public class MediaAssetEntity {
 
     public String getAltText() { return altText; }
     public void setAltText(String altText) { this.altText = altText; }
+
+    public ProcessingStatus getProcessingStatus() { return processingStatus; }
+    public void setProcessingStatus(ProcessingStatus processingStatus) { this.processingStatus = processingStatus; }
 }

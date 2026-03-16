@@ -9,11 +9,12 @@ public class ReturnRequestDto implements Serializable {
 
     private String id;
     private String orderId;
-    private BigDecimal amount;
+    private String customerId;
     private String reason;
-    private String status;
-    private String stateId;
-    private Date createdAt;
+    private String returnType;
+    private BigDecimal totalRefundAmount;
+    private String currentState;
+    private Date createdDate;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -21,18 +22,21 @@ public class ReturnRequestDto implements Serializable {
     public String getOrderId() { return orderId; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
 
-    public BigDecimal getAmount() { return amount; }
-    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public String getCustomerId() { return customerId; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
 
     public String getReason() { return reason; }
     public void setReason(String reason) { this.reason = reason; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getReturnType() { return returnType; }
+    public void setReturnType(String returnType) { this.returnType = returnType; }
 
-    public String getStateId() { return stateId; }
-    public void setStateId(String stateId) { this.stateId = stateId; }
+    public BigDecimal getTotalRefundAmount() { return totalRefundAmount; }
+    public void setTotalRefundAmount(BigDecimal totalRefundAmount) { this.totalRefundAmount = totalRefundAmount; }
 
-    public Date getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+    public String getCurrentState() { return currentState; }
+    public void setCurrentState(String currentState) { this.currentState = currentState; }
+
+    public Date getCreatedDate() { return createdDate; }
+    public void setCreatedDate(Date createdDate) { this.createdDate = createdDate; }
 }

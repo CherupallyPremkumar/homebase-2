@@ -6,59 +6,84 @@ import java.util.*;
 import org.chenile.workflow.model.*;
 import org.chenile.utils.entity.model.AbstractExtendedStateEntity;
 
+/**
+ * Shipping bounded context domain model.
+ * Tracks shipment lifecycle from label creation through delivery or return.
+ */
 public class Shipping extends AbstractExtendedStateEntity
         implements ActivityEnabledStateEntity,
         ContainsTransientMap {
 
+    // Core identifiers
     private String orderId;
-    private String carrier;
+    private String customerId;
     private String trackingNumber;
-    private String trackingUrl;
-    private Date shippedAt;
-    private Date estimatedDelivery;
-    private String shippingAddress;
-    private Date deliveredAt;
-    public String description;
-    private String deliveryProof;
-    private String returnReason;
-    private String returnTrackingNumber;
+    private String carrier;
+
+    // Shipping method
+    private String shippingMethod; // STANDARD, EXPRESS, OVERNIGHT
+
+    // Addresses (stored as JSON strings)
+    private String fromAddress;
+    private String toAddress;
+
+    // Package details
+    private String weight;
+    private String dimensions;
+
+    // Delivery tracking
+    private Date estimatedDeliveryDate;
+    private Date actualDeliveryDate;
+    private int deliveryAttempts;
+    private String deliveryInstructions;
     private String currentLocation;
+
+    // Description and general
+    public String description;
 
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
 
+    // ── Getters and Setters ──
+
     public String getOrderId() { return orderId; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
 
-    public String getCarrier() { return carrier; }
-    public void setCarrier(String carrier) { this.carrier = carrier; }
+    public String getCustomerId() { return customerId; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
 
     public String getTrackingNumber() { return trackingNumber; }
     public void setTrackingNumber(String trackingNumber) { this.trackingNumber = trackingNumber; }
 
-    public String getTrackingUrl() { return trackingUrl; }
-    public void setTrackingUrl(String trackingUrl) { this.trackingUrl = trackingUrl; }
+    public String getCarrier() { return carrier; }
+    public void setCarrier(String carrier) { this.carrier = carrier; }
 
-    public Date getShippedAt() { return shippedAt; }
-    public void setShippedAt(Date shippedAt) { this.shippedAt = shippedAt; }
+    public String getShippingMethod() { return shippingMethod; }
+    public void setShippingMethod(String shippingMethod) { this.shippingMethod = shippingMethod; }
 
-    public Date getEstimatedDelivery() { return estimatedDelivery; }
-    public void setEstimatedDelivery(Date estimatedDelivery) { this.estimatedDelivery = estimatedDelivery; }
+    public String getFromAddress() { return fromAddress; }
+    public void setFromAddress(String fromAddress) { this.fromAddress = fromAddress; }
 
-    public String getShippingAddress() { return shippingAddress; }
-    public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
+    public String getToAddress() { return toAddress; }
+    public void setToAddress(String toAddress) { this.toAddress = toAddress; }
 
-    public Date getDeliveredAt() { return deliveredAt; }
-    public void setDeliveredAt(Date deliveredAt) { this.deliveredAt = deliveredAt; }
+    public String getWeight() { return weight; }
+    public void setWeight(String weight) { this.weight = weight; }
 
-    public String getDeliveryProof() { return deliveryProof; }
-    public void setDeliveryProof(String deliveryProof) { this.deliveryProof = deliveryProof; }
+    public String getDimensions() { return dimensions; }
+    public void setDimensions(String dimensions) { this.dimensions = dimensions; }
 
-    public String getReturnReason() { return returnReason; }
-    public void setReturnReason(String returnReason) { this.returnReason = returnReason; }
+    public Date getEstimatedDeliveryDate() { return estimatedDeliveryDate; }
+    public void setEstimatedDeliveryDate(Date estimatedDeliveryDate) { this.estimatedDeliveryDate = estimatedDeliveryDate; }
 
-    public String getReturnTrackingNumber() { return returnTrackingNumber; }
-    public void setReturnTrackingNumber(String returnTrackingNumber) { this.returnTrackingNumber = returnTrackingNumber; }
+    public Date getActualDeliveryDate() { return actualDeliveryDate; }
+    public void setActualDeliveryDate(Date actualDeliveryDate) { this.actualDeliveryDate = actualDeliveryDate; }
+
+    public int getDeliveryAttempts() { return deliveryAttempts; }
+    public void setDeliveryAttempts(int deliveryAttempts) { this.deliveryAttempts = deliveryAttempts; }
+
+    public String getDeliveryInstructions() { return deliveryInstructions; }
+    public void setDeliveryInstructions(String deliveryInstructions) { this.deliveryInstructions = deliveryInstructions; }
 
     public String getCurrentLocation() { return currentLocation; }
     public void setCurrentLocation(String currentLocation) { this.currentLocation = currentLocation; }

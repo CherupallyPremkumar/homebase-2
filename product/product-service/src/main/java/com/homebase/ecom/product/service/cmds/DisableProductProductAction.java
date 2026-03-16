@@ -28,10 +28,8 @@ public class DisableProductProductAction extends AbstractSTMTransitionAction<Pro
         log.info("Disabling product '{}' (id={})", product.getName(), product.getId());
 
         product.getTransientMap().put("previousPayload", payload);
-        // Store the disable reason for the PostSaveHook event
-        String reason = payload.getComment() != null ? payload.getComment() : "No reason provided";
-        product.getTransientMap().put("disableReason", reason);
+        product.getTransientMap().put("disableReason", payload.getReason());
 
-        log.info("Product '{}' disabled. Reason: {}", product.getName(), reason);
+        log.info("Product '{}' disabled. Reason: {}", product.getName(), payload.getReason());
     }
 }

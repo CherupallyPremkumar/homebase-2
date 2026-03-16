@@ -8,16 +8,14 @@ import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.cart.model.Cart;
 
 /**
-    This class is invoked if no specific transition action is specified
-    Extend this class to do generic things that are relevant for all actions in the workflow
-*/
-
+ * Default transition action invoked when no specific transition action is specified.
+ * Extend this class to do generic things relevant for all cart workflow actions.
+ */
 public class DefaultSTMTransitionAction<PayloadType extends MinimalPayload>
     extends AbstractSTMTransitionAction<Cart, PayloadType> {
     @Override
     public void transitionTo(Cart cart, PayloadType payload,
                  State startState, String eventId, State endState, STMInternalTransitionInvoker<?> stm,
                  Transition transition) {
-
     }
 }

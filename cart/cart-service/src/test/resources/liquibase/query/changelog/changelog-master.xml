@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Product tables + test data (for variant-exists query) -->
+    <include file="db/changelog/product/test/db.changelog-product-query-tables.xml" />
+    <include file="db/changelog/product/test/db.changelog-product-testdata.xml" />
+
+    <!-- Inventory tables + test data (for check-availability query) -->
+    <include file="db/changelog/inventory/test/db.changelog-inventory-query-tables.xml" />
+    <include file="db/changelog/inventory/test/db.changelog-inventory-testdata.xml" />
+
+    <!-- Cart-specific: inventory entries for product variant IDs -->
+    <include file="db/changelog/cart/test/db.changelog-cart-integration-testdata.xml" />
+
+</databaseChangeLog>

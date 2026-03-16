@@ -26,15 +26,22 @@ public class ProductEntity extends AbstractJpaStateEntity
     @Column(name = "category_id")
     private String categoryId;
 
-    @Column(name = "sku", length = 100)
-    private String sku;
+    @Column(name = "short_description", length = 500)
+    private String shortDescription;
 
-    @Column(name = "weight", precision = 10, scale = 3)
-    private java.math.BigDecimal weight;
+    @Column(name = "slug", length = 300, unique = true)
+    private String slug;
 
-    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
-    @Column(name = "dimensions", columnDefinition = "jsonb")
-    private String dimensions;
+    @Column(name = "meta_title", length = 200)
+    private String metaTitle;
+
+    @Column(name = "meta_description", length = 500)
+    private String metaDescription;
+
+    @ElementCollection
+    @CollectionTable(name = "product_tags", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "tag")
+    private List<String> tags = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "product_id")
@@ -68,14 +75,20 @@ public class ProductEntity extends AbstractJpaStateEntity
     public String getCategoryId() { return categoryId; }
     public void setCategoryId(String categoryId) { this.categoryId = categoryId; }
 
-    public String getSku() { return sku; }
-    public void setSku(String sku) { this.sku = sku; }
+    public String getShortDescription() { return shortDescription; }
+    public void setShortDescription(String shortDescription) { this.shortDescription = shortDescription; }
 
-    public java.math.BigDecimal getWeight() { return weight; }
-    public void setWeight(java.math.BigDecimal weight) { this.weight = weight; }
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
 
-    public String getDimensions() { return dimensions; }
-    public void setDimensions(String dimensions) { this.dimensions = dimensions; }
+    public String getMetaTitle() { return metaTitle; }
+    public void setMetaTitle(String metaTitle) { this.metaTitle = metaTitle; }
+
+    public String getMetaDescription() { return metaDescription; }
+    public void setMetaDescription(String metaDescription) { this.metaDescription = metaDescription; }
+
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags; }
 
     public List<ProductAttributeValueEntity> getAttributes() { return attributes; }
     public void setAttributes(List<ProductAttributeValueEntity> attributes) { this.attributes = attributes; }

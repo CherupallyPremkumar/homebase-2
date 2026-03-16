@@ -6,6 +6,7 @@ import org.chenile.http.annotation.ChenileController;
 import org.chenile.http.handler.ControllerSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import com.homebase.ecom.catalog.model.Category;
 
@@ -13,6 +14,7 @@ import java.util.List;
 
 @RestController
 @ChenileController(value = "categoryService", serviceName = "categoryServiceImpl")
+@Tag(name = "Catalog - Category", description = "Product category management")
 public class CategoryController extends ControllerSupport {
 
     @PostMapping("/category")

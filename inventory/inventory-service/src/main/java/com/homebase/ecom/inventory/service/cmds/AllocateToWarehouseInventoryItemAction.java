@@ -1,7 +1,6 @@
 package com.homebase.ecom.inventory.service.cmds;
 
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
-import com.homebase.ecom.inventory.domain.model.InventoryStatus;
 import com.homebase.ecom.inventory.service.validator.InventoryItemPolicyValidator;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
@@ -45,7 +44,6 @@ public class AllocateToWarehouseInventoryItemAction
         inventory.addStock(allocateQty, null, "Warehouse allocation to " +
                 (payload.getWarehouseId() != null ? payload.getWarehouseId() : "default"));
         inventory.setInboundQuantity(0);
-        inventory.setStatus(InventoryStatus.AVAILABLE);
 
         log.info("Stock allocated to warehouse for productId={}, qty={}, warehouse={}",
                 inventory.getProductId(), allocateQty,

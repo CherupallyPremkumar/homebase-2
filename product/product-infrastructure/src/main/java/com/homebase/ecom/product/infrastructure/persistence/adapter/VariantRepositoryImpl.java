@@ -2,9 +2,7 @@ package com.homebase.ecom.product.infrastructure.persistence.adapter;
 
 import com.homebase.ecom.product.domain.model.Variant;
 import com.homebase.ecom.product.domain.port.VariantRepository;
-import com.homebase.ecom.product.infrastructure.persistence.entity.VariantEntity;
 import com.homebase.ecom.product.infrastructure.persistence.mapper.VariantMapper;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,9 +42,5 @@ public class VariantRepositoryImpl implements VariantRepository {
     @Override
     public void delete(String id) {
         jpaRepository.deleteById(id);
-    }
-
-    public interface VariantJpaRepository extends JpaRepository<VariantEntity, String> {
-        // List<VariantEntity> findByProductId(String productId); 
     }
 }

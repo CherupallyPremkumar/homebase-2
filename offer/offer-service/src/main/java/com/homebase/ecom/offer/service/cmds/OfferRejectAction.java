@@ -1,27 +1,26 @@
 package com.homebase.ecom.offer.service.cmds;
 
 import com.homebase.ecom.offer.domain.model.Offer;
-import com.homebase.ecom.offer.domain.model.OfferStatus;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
-import org.chenile.workflow.param.MinimalPayload;
 import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 
 /**
- * Admin rejects a supplier offer with a required reason.
+ * Catalog admin rejects an offer with a required reason.
  */
-public class OfferRejectAction extends AbstractSTMTransitionAction<Offer, MinimalPayload> {
+public class OfferRejectAction extends AbstractSTMTransitionAction<Offer, RejectOfferPayload> {
     @Override
-    public void transitionTo(Offer offer, MinimalPayload payload, State startState, String eventId,
+    public void transitionTo(Offer offer, RejectOfferPayload payload, State startState, String eventId,
             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-        String comment = (payload != null && payload.getComment() != null && !payload.getComment().trim().isEmpty())
-                ? payload.getComment() : null;
-        if (comment == null) {
+        String reason = null;
+        if (payload != null) {
+            reason = payload.getReason() != null ? payload.getReason() : payload.getComment();
+        }
+        if (reason == null || reason.trim().isEmpty()) {
             throw new IllegalArgumentException("Rejection reason is required when rejecting an offer");
         }
-        offer.setStatus(OfferStatus.REJECTED);
-        offer.addActivity("reject", "Offer rejected by Hub Manager. Reason: " + comment);
+        offer.addActivity("reject", "Offer rejected. Reason: " + reason);
         offer.getTransientMap().put("previousPayload", payload);
     }
 }

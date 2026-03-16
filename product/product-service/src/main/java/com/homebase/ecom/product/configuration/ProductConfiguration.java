@@ -5,18 +5,15 @@ import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.impl.*;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.product.domain.model.Product;
-import com.homebase.ecom.product.api.MediaService;
-import com.homebase.ecom.product.configuration.controller.MediaController;
-import com.homebase.ecom.product.service.impl.MediaServiceImpl;
 import com.homebase.ecom.product.domain.port.*;
 import com.homebase.ecom.product.infrastructure.persistence.adapter.*;
 import com.homebase.ecom.product.infrastructure.persistence.mapper.*;
@@ -27,12 +24,11 @@ import com.homebase.ecom.product.service.cmds.*;
 import com.homebase.ecom.product.service.healthcheck.ProductHealthChecker;
 import com.homebase.ecom.product.service.store.ProductEntityStore;
 import org.chenile.workflow.api.WorkflowRegistry;
-import org.chenile.stm.State;
 import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
 import com.homebase.ecom.product.service.postSaveHooks.*;
-import com.homebase.ecom.policy.client.PolicyClient;
 import com.homebase.ecom.product.infrastructure.adapter.PolicyDecisionAdapter;
+import com.homebase.ecom.product.service.validator.ProductPolicyValidator;
 
 /**
  * This is where you will instantiate all the required classes in Spring
@@ -78,25 +74,26 @@ public class ProductConfiguration {
     @Bean VariantMapper variantMapper() { return new VariantMapper(); }
 
     // Repositories & Adapters
-    @Bean ProductRepositoryImpl productRepository(ProductRepositoryImpl.ProductJpaRepository r, ProductMapper m) {
+    @Bean ProductRepositoryImpl productRepository(ProductJpaRepository r, ProductMapper m) {
         return new ProductRepositoryImpl(r, m);
     }
-    @Bean CategoryRepositoryImpl categoryRepository(CategoryRepositoryImpl.CategoryJpaRepository r, CategoryMapper m) {
+    @Bean CategoryRepositoryImpl categoryRepository(CategoryJpaRepository r, CategoryMapper m) {
         return new CategoryRepositoryImpl(r, m);
     }
-    @Bean AttributeRepositoryImpl attributeRepository(AttributeRepositoryImpl.AttributeJpaRepository r, AttributeMapper m) {
+    @Bean AttributeRepositoryImpl attributeRepository(AttributeJpaRepository r, AttributeMapper m) {
         return new AttributeRepositoryImpl(r, m);
     }
-    @Bean MediaRepositoryImpl mediaRepository(MediaRepositoryImpl.MediaJpaRepository r, MediaMapper m) {
+    @Bean MediaRepositoryImpl mediaRepository(MediaJpaRepository r, MediaMapper m) {
         return new MediaRepositoryImpl(r, m);
     }
-    @Bean VariantRepositoryImpl variantRepository(VariantRepositoryImpl.VariantJpaRepository r, VariantMapper m) {
+    @Bean VariantRepositoryImpl variantRepository(VariantJpaRepository r, VariantMapper m) {
         return new VariantRepositoryImpl(r, m);
     }
 
     @Bean
-    public PimPolicyPort pimPolicyPort(PolicyClient policyClient) {
-        return new PolicyDecisionAdapter(policyClient);
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(com.homebase.ecom.policy.api.service.DecisionService.class)
+    public PimPolicyPort pimPolicyPort(com.homebase.ecom.policy.api.service.DecisionService decisionService) {
+        return new PolicyDecisionAdapter(decisionService);
     }
 
     @Bean
@@ -109,7 +106,7 @@ public class ProductConfiguration {
             @Qualifier("productEntityStm") STM<Product> stm,
             @Qualifier("productActionsInfoProvider") STMActionsInfoProvider productInfoProvider,
             @Qualifier("productEntityStore") EntityStore<Product> entityStore) {
-        return new StateEntityServiceImpl<>(stm, productInfoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, productInfoProvider, entityStore);
     }
 
     // Now we start constructing the STM Components
@@ -235,18 +232,8 @@ public class ProductConfiguration {
     }
 
     @Bean
-    RestockProductProductAction productRestockProductAction() {
-        return new RestockProductProductAction();
-    }
-
-    @Bean
     EnableProductProductAction productEnableProductAction() {
         return new EnableProductProductAction();
-    }
-
-    @Bean
-    MarkOutOfStockProductAction productMarkOutOfStockAction() {
-        return new MarkOutOfStockProductAction();
     }
 
     @Bean
@@ -260,38 +247,48 @@ public class ProductConfiguration {
     }
 
     @Bean
-    ProductDeliveredProductAction productProductDeliveredAction() {
-        return new ProductDeliveredProductAction();
+    RequestUpdateProductAction productRequestUpdateAction() {
+        return new RequestUpdateProductAction();
     }
 
     @Bean
-    ApproveQualityProductAction productApproveQualityAction() {
-        return new ApproveQualityProductAction();
+    ApproveUpdateProductAction productApproveUpdateAction() {
+        return new ApproveUpdateProductAction();
     }
 
     @Bean
-    RejectQualityProductAction productRejectQualityAction() {
-        return new RejectQualityProductAction();
+    RejectUpdateProductAction productRejectUpdateAction() {
+        return new RejectUpdateProductAction();
     }
 
     @Bean
-    NeedsReworkProductAction productNeedsReworkAction() {
-        return new NeedsReworkProductAction();
+    ArchiveProductProductAction productArchiveProductAction() {
+        return new ArchiveProductProductAction();
     }
 
     @Bean
-    PublishProductProductAction productPublishProductAction() {
-        return new PublishProductProductAction();
+    UnarchiveProductProductAction productUnarchiveProductAction() {
+        return new UnarchiveProductProductAction();
     }
 
     @Bean
-    ListProductProductAction productListProductAction() {
-        return new ListProductProductAction();
+    RecallProductProductAction productRecallProductAction() {
+        return new RecallProductProductAction();
     }
 
     @Bean
-    public com.homebase.ecom.product.service.event.ProductReturnConsumer productReturnConsumer() {
-        return new com.homebase.ecom.product.service.event.ProductReturnConsumer();
+    ResolveRecallProductAction productResolveRecallAction() {
+        return new ResolveRecallProductAction();
+    }
+
+    @Bean("productEventService")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
+    com.homebase.ecom.product.service.event.ProductEventHandler productEventService(
+            @Qualifier("_productStateEntityService_") StateEntityServiceImpl<Product> productStateEntityService,
+            org.chenile.pubsub.ChenilePub chenilePub,
+            tools.jackson.databind.ObjectMapper objectMapper) {
+        return new com.homebase.ecom.product.service.event.ProductEventHandler(
+                productStateEntityService, chenilePub, objectMapper);
     }
 
     @Bean
@@ -325,11 +322,6 @@ public class ProductConfiguration {
     }
 
     @Bean
-    OUT_OF_STOCKProductPostSaveHook productOUT_OF_STOCKPostSaveHook() {
-        return new OUT_OF_STOCKProductPostSaveHook();
-    }
-
-    @Bean
     DISCONTINUEDProductPostSaveHook productDISCONTINUEDPostSaveHook() {
         return new DISCONTINUEDProductPostSaveHook();
     }
@@ -337,6 +329,21 @@ public class ProductConfiguration {
     @Bean
     UNDER_REVIEWProductPostSaveHook productUNDER_REVIEWPostSaveHook() {
         return new UNDER_REVIEWProductPostSaveHook();
+    }
+
+    @Bean
+    PENDING_UPDATEProductPostSaveHook productPENDING_UPDATEPostSaveHook() {
+        return new PENDING_UPDATEProductPostSaveHook();
+    }
+
+    @Bean
+    ARCHIVEDProductPostSaveHook productARCHIVEDPostSaveHook() {
+        return new ARCHIVEDProductPostSaveHook();
+    }
+
+    @Bean
+    RECALLEDProductPostSaveHook productRECALLEDPostSaveHook() {
+        return new RECALLEDProductPostSaveHook();
     }
 
     @Bean
@@ -350,13 +357,14 @@ public class ProductConfiguration {
     }
 
     @Bean
-    public MediaService mediaService(MediaRepository mediaRepository, ProductRepository productRepository, VariantRepository variantRepository) {
-        return new MediaServiceImpl(mediaRepository, productRepository, variantRepository);
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> productEventAuthoritiesSupplier(
+            @Qualifier("productActionsInfoProvider") STMActionsInfoProvider productInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(productInfoProvider, false);
+        return builder.build();
     }
 
     @Bean
-    public MediaController mediaController(MediaService mediaService) {
-        return new MediaController(mediaService);
+    ProductPolicyValidator productPolicyValidator() {
+        return new ProductPolicyValidator();
     }
-
 }

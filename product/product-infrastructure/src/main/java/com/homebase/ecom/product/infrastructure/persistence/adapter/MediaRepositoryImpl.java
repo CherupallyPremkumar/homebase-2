@@ -2,10 +2,9 @@ package com.homebase.ecom.product.infrastructure.persistence.adapter;
 
 import com.homebase.ecom.product.domain.model.MediaAsset;
 import com.homebase.ecom.product.domain.port.MediaRepository;
-import com.homebase.ecom.product.infrastructure.persistence.entity.MediaAssetEntity;
 import com.homebase.ecom.product.infrastructure.persistence.mapper.MediaMapper;
-import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public class MediaRepositoryImpl implements MediaRepository {
@@ -24,6 +23,12 @@ public class MediaRepositoryImpl implements MediaRepository {
     }
 
     @Override
+    public List<MediaAsset> findAllByIdIn(List<String> ids) {
+        if (ids == null || ids.isEmpty()) return List.of();
+        return jpaRepository.findAllById(ids).stream().map(mapper::toModel).toList();
+    }
+
+    @Override
     public void save(MediaAsset asset) {
         jpaRepository.save(mapper.toEntity(asset));
     }
@@ -31,8 +36,5 @@ public class MediaRepositoryImpl implements MediaRepository {
     @Override
     public void delete(String id) {
         jpaRepository.deleteById(id);
-    }
-
-    public interface MediaJpaRepository extends JpaRepository<MediaAssetEntity, String> {
     }
 }

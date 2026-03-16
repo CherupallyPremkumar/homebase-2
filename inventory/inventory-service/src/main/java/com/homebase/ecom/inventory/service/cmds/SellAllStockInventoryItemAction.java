@@ -1,7 +1,6 @@
 package com.homebase.ecom.inventory.service.cmds;
 
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
-import com.homebase.ecom.inventory.domain.model.InventoryStatus;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
@@ -25,7 +24,6 @@ public class SellAllStockInventoryItemAction extends AbstractSTMTransitionAction
 
         // Use domain method to sell all stock
         inventory.sellAllStock();
-        inventory.setStatus(InventoryStatus.OUT_OF_STOCK);
 
         log.info("All stock sold for productId={}. Inventory is now OUT_OF_STOCK.", inventory.getProductId());
 

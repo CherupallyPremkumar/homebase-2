@@ -13,8 +13,13 @@ public class Product extends AbstractExtendedStateEntity
 
     private String name;
     private String description;
+    private String shortDescription;
     private String brand;
     private String categoryId;
+    private String slug;
+    private String metaTitle;
+    private String metaDescription;
+    private List<String> tags = new ArrayList<>();
     private List<ProductAttributeValue> attributes = new ArrayList<>();
     private List<ProductMedia> media = new ArrayList<>();
     private List<Variant> variants = new ArrayList<>();
@@ -31,8 +36,23 @@ public class Product extends AbstractExtendedStateEntity
     public String getBrand() { return brand; }
     public void setBrand(String brand) { this.brand = brand; }
 
+    public String getShortDescription() { return shortDescription; }
+    public void setShortDescription(String shortDescription) { this.shortDescription = shortDescription; }
+
     public String getCategoryId() { return categoryId; }
     public void setCategoryId(String categoryId) { this.categoryId = categoryId; }
+
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
+
+    public String getMetaTitle() { return metaTitle; }
+    public void setMetaTitle(String metaTitle) { this.metaTitle = metaTitle; }
+
+    public String getMetaDescription() { return metaDescription; }
+    public void setMetaDescription(String metaDescription) { this.metaDescription = metaDescription; }
+
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags; }
 
     public List<ProductAttributeValue> getAttributes() { return attributes; }
     public void setAttributes(List<ProductAttributeValue> attributes) { this.attributes = attributes; }
@@ -46,6 +66,8 @@ public class Product extends AbstractExtendedStateEntity
     @Override
     public TransientMap getTransientMap() { return transientMap; }
     public void setTransientMap(TransientMap transientMap) { this.transientMap = transientMap; }
+
+    public List<ProductActivityLog> getActivities() { return activities; }
 
     @Override
     public Collection<ActivityLog> obtainActivities() {

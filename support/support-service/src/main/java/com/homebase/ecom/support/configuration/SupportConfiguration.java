@@ -11,10 +11,13 @@ import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.support.model.SupportTicket;
 import com.homebase.ecom.support.service.cmds.*;
 import com.homebase.ecom.support.service.healthcheck.SupportHealthChecker;
+import com.homebase.ecom.support.service.validator.SupportPolicyValidator;
+import com.homebase.ecom.support.service.event.SupportEventHandler;
 import com.homebase.ecom.support.infrastructure.persistence.ChenileSupportTicketEntityStore;
 import com.homebase.ecom.support.infrastructure.persistence.adapter.SupportTicketJpaRepository;
 import com.homebase.ecom.support.infrastructure.persistence.mapper.SupportTicketMapper;
@@ -74,7 +77,7 @@ public class SupportConfiguration {
             @Qualifier("supportEntityStm") STM<SupportTicket> stm,
             @Qualifier("supportActionsInfoProvider") STMActionsInfoProvider supportInfoProvider,
             @Qualifier("supportEntityStore") EntityStore<SupportTicket> entityStore) {
-        return new StateEntityServiceImpl<>(stm, supportInfoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, supportInfoProvider, entityStore);
     }
 
     // STM Components
@@ -181,11 +184,28 @@ public class SupportConfiguration {
         return enablementStrategy;
     }
 
+    // Policy Validator
+
+    @Bean
+    SupportPolicyValidator supportPolicyValidator() {
+        return new SupportPolicyValidator();
+    }
+
     // Transition Actions
 
     @Bean
     AssignAgentSupportAction supportAssignAgentAction() {
         return new AssignAgentSupportAction();
+    }
+
+    @Bean
+    StartWorkSupportAction supportStartWorkAction() {
+        return new StartWorkSupportAction();
+    }
+
+    @Bean
+    WaitOnCustomerSupportAction supportWaitOnCustomerAction() {
+        return new WaitOnCustomerSupportAction();
     }
 
     @Bean
@@ -226,6 +246,11 @@ public class SupportConfiguration {
     }
 
     @Bean
+    IN_PROGRESSSupportPostSaveHook supportIN_PROGRESSPostSaveHook() {
+        return new IN_PROGRESSSupportPostSaveHook();
+    }
+
+    @Bean
     RESOLVEDSupportPostSaveHook supportRESOLVEDPostSaveHook() {
         return new RESOLVEDSupportPostSaveHook();
     }
@@ -238,5 +263,28 @@ public class SupportConfiguration {
     @Bean
     CLOSEDSupportPostSaveHook supportCLOSEDPostSaveHook() {
         return new CLOSEDSupportPostSaveHook();
+    }
+
+    @Bean
+    REOPENEDSupportPostSaveHook supportREOPENEDPostSaveHook() {
+        return new REOPENEDSupportPostSaveHook();
+    }
+
+    // Chenile-Kafka Event Handler
+
+    @Bean("supportEventService")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
+    SupportEventHandler supportEventService(
+            @Qualifier("_supportStateEntityService_") StateEntityServiceImpl<SupportTicket> supportStateEntityService,
+            org.chenile.pubsub.ChenilePub chenilePub,
+            tools.jackson.databind.ObjectMapper objectMapper) {
+        return new SupportEventHandler(supportStateEntityService, chenilePub, objectMapper);
+    }
+
+    @Bean
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> supportEventAuthoritiesSupplier(
+            @Qualifier("supportActionsInfoProvider") STMActionsInfoProvider supportInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(supportInfoProvider, false);
+        return builder.build();
     }
 }

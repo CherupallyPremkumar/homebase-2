@@ -9,19 +9,17 @@ import com.homebase.ecom.review.model.Review;
 import com.homebase.ecom.review.dto.MarkHelpfulPayload;
 
 /**
- * Contains customized logic for the markHelpful transition (self-transition on APPROVED).
+ * STM action for marking a review as helpful (self-transition on PUBLISHED).
  */
 public class MarkHelpfulAction extends AbstractSTMTransitionAction<Review, MarkHelpfulPayload> {
 
-	@Override
-	public void transitionTo(Review review,
-            MarkHelpfulPayload payload,
+    @Override
+    public void transitionTo(Review review, MarkHelpfulPayload payload,
             State startState, String eventId,
-			State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-            // Increment helpful count (self-transition on APPROVED state)
-            review.setHelpfulCount(review.getHelpfulCount() + 1);
-            review.addActivity("markHelpful", "Review marked as helpful. Total helpful count: " + review.getHelpfulCount());
-            review.getTransientMap().previousPayload = payload;
-	}
+            State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
+        review.setHelpfulCount(review.getHelpfulCount() + 1);
+        review.addActivity("markHelpful", "Review marked as helpful. Total: " + review.getHelpfulCount());
+        review.getTransientMap().previousPayload = payload;
+    }
 }

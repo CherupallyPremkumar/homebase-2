@@ -1,16 +1,20 @@
 package com.homebase.ecom.order.model;
 
+/**
+ * Order lifecycle states — aligned with STM XML states.
+ */
 public enum OrderStatus {
-    PENDING,
+    CREATED,
+    PAYMENT_PENDING,
     PAID,
+    PAYMENT_FAILED,
     PROCESSING,
     SHIPPED,
-    COURIER_PICKUP,
     DELIVERED,
+    COMPLETED,
+    CANCEL_REQUESTED,
+    CANCELLATION_DENIED,
     CANCELLED,
-    RETURN_REQUESTED,
-    RETURN_APPROVED,
-    RETURN_REJECTED,
-    REFUND_INITIATED,
-    REFUND_COMPLETED
+    REFUND_REQUESTED,
+    REFUNDED
 }

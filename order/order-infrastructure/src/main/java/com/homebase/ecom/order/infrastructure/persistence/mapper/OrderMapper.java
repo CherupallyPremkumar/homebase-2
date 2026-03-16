@@ -11,30 +11,27 @@ import org.chenile.workflow.activities.model.ActivityLog;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+/**
+ * Bidirectional mapper between Order domain model and OrderEntity JPA entity.
+ */
 public class OrderMapper {
 
     public Order toModel(OrderEntity entity) {
         if (entity == null) return null;
         Order model = new Order();
         model.setId(entity.getId());
-        model.setUser_Id(entity.getUserId());
-        model.setGatewaySessionId(entity.getGatewaySessionId());
-        model.setGatewayTransactionId(entity.getGatewayTransactionId());
-        model.setStatus(entity.getStatus());
-        model.setTotalAmount(entity.getTotalAmount());
+        model.setOrderNumber(entity.getOrderNumber());
+        model.setCustomerId(entity.getCustomerId());
+        model.setSubtotal(entity.getSubtotal());
         model.setTaxAmount(entity.getTaxAmount());
         model.setShippingAmount(entity.getShippingAmount());
-        model.setIdempotencyKey(entity.getIdempotencyKey());
-        model.setMetadata(entity.getMetadata());
-        model.setWebhookProcessedAt(entity.getWebhookProcessedAt());
-        model.setShippingAddress(entity.getShippingAddress());
-        model.setBillingAddress(entity.getBillingAddress());
-        model.setAppliedPromoCode(entity.getAppliedPromoCode());
-        model.setDiscountAmount(entity.getDiscountAmount());
-        model.setCartId(entity.getCartId());
-        model.setRetryCount(entity.getRetryCount());
-        model.setPreviousFailedOrderId(entity.getPreviousFailedOrderId());
-        model.setDeliveryDate(entity.getDeliveryDate());
+        model.setTotalAmount(entity.getTotalAmount());
+        model.setCurrency(entity.getCurrency());
+        model.setShippingAddressId(entity.getShippingAddressId());
+        model.setBillingAddressId(entity.getBillingAddressId());
+        model.setPaymentMethodId(entity.getPaymentMethodId());
+        model.setNotes(entity.getNotes());
+        model.setCancelReason(entity.getCancelReason());
         model.description = entity.getDescription();
         model.setCurrentState(entity.getCurrentState());
 
@@ -57,24 +54,18 @@ public class OrderMapper {
         if (model == null) return null;
         OrderEntity entity = new OrderEntity();
         entity.setId(model.getId());
-        entity.setUserId(model.getUser_Id());
-        entity.setGatewaySessionId(model.getGatewaySessionId());
-        entity.setGatewayTransactionId(model.getGatewayTransactionId());
-        entity.setStatus(model.getStatus());
-        entity.setTotalAmount(model.getTotalAmount());
+        entity.setOrderNumber(model.getOrderNumber());
+        entity.setCustomerId(model.getCustomerId());
+        entity.setSubtotal(model.getSubtotal());
         entity.setTaxAmount(model.getTaxAmount());
         entity.setShippingAmount(model.getShippingAmount());
-        entity.setIdempotencyKey(model.getIdempotencyKey());
-        entity.setMetadata(model.getMetadata());
-        entity.setWebhookProcessedAt(model.getWebhookProcessedAt());
-        entity.setShippingAddress(model.getShippingAddress());
-        entity.setBillingAddress(model.getBillingAddress());
-        entity.setAppliedPromoCode(model.getAppliedPromoCode());
-        entity.setDiscountAmount(model.getDiscountAmount());
-        entity.setCartId(model.getCartId());
-        entity.setRetryCount(model.getRetryCount());
-        entity.setPreviousFailedOrderId(model.getPreviousFailedOrderId());
-        entity.setDeliveryDate(model.getDeliveryDate());
+        entity.setTotalAmount(model.getTotalAmount());
+        entity.setCurrency(model.getCurrency());
+        entity.setShippingAddressId(model.getShippingAddressId());
+        entity.setBillingAddressId(model.getBillingAddressId());
+        entity.setPaymentMethodId(model.getPaymentMethodId());
+        entity.setNotes(model.getNotes());
+        entity.setCancelReason(model.getCancelReason());
         entity.setDescription(model.description);
         entity.setCurrentState(model.getCurrentState());
 
@@ -108,17 +99,12 @@ public class OrderMapper {
         OrderItem model = new OrderItem();
         model.setId(entity.getId());
         model.setProductId(entity.getProductId());
-        model.setSupplierId(entity.getSupplierId());
+        model.setVariantId(entity.getVariantId());
+        model.setSku(entity.getSku());
         model.setProductName(entity.getProductName());
         model.setQuantity(entity.getQuantity());
         model.setUnitPrice(entity.getUnitPrice());
         model.setTotalPrice(entity.getTotalPrice());
-        model.setStatus(entity.getStatus());
-        model.setSettlementStatus(entity.getSettlementStatus());
-        // Set settlementId after settlementStatus to avoid auto-setting to SETTLED
-        if (entity.getSettlementId() != null) {
-            model.setSettlementId(entity.getSettlementId());
-        }
         return model;
     }
 
@@ -127,16 +113,12 @@ public class OrderMapper {
         OrderItemEntity entity = new OrderItemEntity();
         entity.setId(model.getId());
         entity.setProductId(model.getProductId());
-        entity.setSupplierId(model.getSupplierId());
+        entity.setVariantId(model.getVariantId());
+        entity.setSku(model.getSku());
         entity.setProductName(model.getProductName());
         entity.setQuantity(model.getQuantity());
         entity.setUnitPrice(model.getUnitPrice());
         entity.setTotalPrice(model.getTotalPrice());
-        entity.setStatus(model.getStatus());
-        entity.setSettlementStatus(model.getSettlementStatus());
-        if (model.getSettlementId() != null) {
-            entity.setSettlementId(model.getSettlementId());
-        }
         return entity;
     }
 }

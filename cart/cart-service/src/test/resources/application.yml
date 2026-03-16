@@ -7,6 +7,15 @@ logging:
 chenile:
   base:
     url:
+  security:
+    client:
+      id: authz-servlet
+      secret: secret
+    keycloak:
+      host: \${KEYCLOAK_HOST:http://localhost:8180}
+      port: \${KEYCLOAK_PORT:8180}
+      base:
+        realm: \${KEYCLOAK_REALM:tenant0}
 
 spring:
   banner:
@@ -16,25 +25,24 @@ spring:
       enabled: true
       additional-exclude: static/**,.h2.server.properties
     livereload:
-      enabled: false # we use Webpack dev server + BrowserSync for livereload
+      enabled: false
   jackson:
     serialization:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:mem:demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: demo
-    password: password
+    url: jdbc:h2:mem:demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    username: sa
+    password:
     hikari:
       poolName: Hikari
       auto-commit: false
 
   liquibase:
-    # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker
 
   messages:
-    cache-duration: PT1S # 1 second, see the ISO 8601 standard
+    cache-duration: PT1S
   thymeleaf:
     cache: false
 
@@ -43,5 +51,19 @@ server:
   error:
     whitelabel:
       enabled: false
+
+query:
+  defaultTenantId: homebase
+  datasources:
+    homebase:
+      maximumPoolSize: '10'
+      type: com.zaxxer.hikari.HikariDataSource
+      username: sa
+      password: ''
+      minimumIdle: '2'
+      idleTimeout: '5000'
+      jdbcUrl: jdbc:h2:mem:querydb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+  mapperFiles: classpath*:com/homebase/ecom/query/service/mapper/*.xml
+  definitionFiles: classpath*:com/homebase/ecom/query/service/mapper/*.json
 
 

@@ -1,16 +1,19 @@
 package com.homebase.ecom.review.infrastructure.persistence.mapper;
 
 import com.homebase.ecom.review.model.Review;
-import com.homebase.ecom.review.model.ReviewImage;
 import com.homebase.ecom.review.model.ReviewActivityLog;
 import com.homebase.ecom.review.infrastructure.persistence.entity.ReviewActivityLogEntity;
 import com.homebase.ecom.review.infrastructure.persistence.entity.ReviewEntity;
-import com.homebase.ecom.review.infrastructure.persistence.entity.ReviewImageEntity;
 import org.chenile.workflow.activities.model.ActivityLog;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Bidirectional mapper between Review domain model and ReviewEntity JPA entity.
+ */
 public class ReviewMapper {
 
     public Review toModel(ReviewEntity entity) {
@@ -18,21 +21,20 @@ public class ReviewMapper {
         Review model = new Review();
         model.setId(entity.getId());
         model.setProductId(entity.getProductId());
-        model.setUserId(entity.getUserId());
+        model.setCustomerId(entity.getCustomerId());
         model.setOrderId(entity.getOrderId());
         model.setRating(entity.getRating());
         model.setTitle(entity.getTitle());
         model.setBody(entity.getBody());
         model.setVerifiedPurchase(entity.isVerifiedPurchase());
         model.setHelpfulCount(entity.getHelpfulCount());
-        model.setUnhelpfulCount(entity.getUnhelpfulCount());
-        model.description = entity.getDescription();
+        model.setReportCount(entity.getReportCount());
+        model.setModeratorNotes(entity.getModeratorNotes());
         model.setCurrentState(entity.getCurrentState());
 
-        if (entity.getImages() != null) {
-            model.setImages(entity.getImages().stream()
-                    .map(this::toImageModel)
-                    .collect(Collectors.toList()));
+        // Deserialize images JSON to List<String>
+        if (entity.getImagesJson() != null && !entity.getImagesJson().isEmpty()) {
+            model.setImages(deserializeImages(entity.getImagesJson()));
         }
 
         if (entity.getActivities() != null) {
@@ -49,21 +51,20 @@ public class ReviewMapper {
         ReviewEntity entity = new ReviewEntity();
         entity.setId(model.getId());
         entity.setProductId(model.getProductId());
-        entity.setUserId(model.getUserId());
+        entity.setCustomerId(model.getCustomerId());
         entity.setOrderId(model.getOrderId());
         entity.setRating(model.getRating());
         entity.setTitle(model.getTitle());
         entity.setBody(model.getBody());
         entity.setVerifiedPurchase(model.isVerifiedPurchase());
         entity.setHelpfulCount(model.getHelpfulCount());
-        entity.setUnhelpfulCount(model.getUnhelpfulCount());
-        entity.setDescription(model.description);
+        entity.setReportCount(model.getReportCount());
+        entity.setModeratorNotes(model.getModeratorNotes());
         entity.setCurrentState(model.getCurrentState());
 
-        if (model.getImages() != null) {
-            entity.setImages(model.getImages().stream()
-                    .map(this::toImageEntity)
-                    .collect(Collectors.toList()));
+        // Serialize List<String> images to JSON
+        if (model.getImages() != null && !model.getImages().isEmpty()) {
+            entity.setImagesJson(serializeImages(model.getImages()));
         }
 
         if (model.obtainActivities() != null) {
@@ -81,23 +82,18 @@ public class ReviewMapper {
         return entity;
     }
 
-    public ReviewImage toImageModel(ReviewImageEntity entity) {
-        if (entity == null) return null;
-        ReviewImage model = new ReviewImage();
-        model.setId(entity.getId());
-        model.setUrl(entity.getUrl());
-        model.setAltText(entity.getAltText());
-        model.setDisplayOrder(entity.getDisplayOrder());
-        return model;
+    /**
+     * Simple JSON-like serialization for image URLs.
+     * Uses pipe-delimited format for simplicity (avoids Jackson dependency in mapper).
+     */
+    private String serializeImages(List<String> images) {
+        return String.join("|", images);
     }
 
-    public ReviewImageEntity toImageEntity(ReviewImage model) {
-        if (model == null) return null;
-        ReviewImageEntity entity = new ReviewImageEntity();
-        entity.setId(model.getId());
-        entity.setUrl(model.getUrl());
-        entity.setAltText(model.getAltText());
-        entity.setDisplayOrder(model.getDisplayOrder());
-        return entity;
+    private List<String> deserializeImages(String imagesJson) {
+        if (imagesJson == null || imagesJson.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(Arrays.asList(imagesJson.split("\\|")));
     }
 }

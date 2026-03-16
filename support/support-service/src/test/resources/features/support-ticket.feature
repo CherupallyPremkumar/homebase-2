@@ -1,10 +1,15 @@
-Feature: Support Ticket Management
-  Tests the support ticket lifecycle through the STM workflow.
-  Covers creation, assignment, replies, escalation, resolution, reopening, and closure.
+Feature: Support Ticket Lifecycle
+  Tests the full support ticket lifecycle through the STM workflow.
+  Covers creation, assignment, in-progress, waiting-on-customer, escalation,
+  resolution, reopening, and closure with security (Keycloak).
 
 # ====================================================================
-# HAPPY PATH: Create -> Assign -> Reply -> Resolve -> Close
+# HAPPY PATH: Create -> Assign -> StartWork -> Reply -> Resolve -> Close
 # ====================================================================
+
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
 
 Scenario: Create support ticket
 Given that "flowName" equals "support-flow"
@@ -14,9 +19,9 @@ When I POST a REST request to URL "/support" with payload
 {
     "description": "Cannot track my order",
     "subject": "Order tracking issue",
-    "category": "ORDER_SUPPORT",
+    "category": "ORDER",
     "priority": "MEDIUM",
-    "userId": "customer-001",
+    "customerId": "customer-001",
     "orderId": "order-123"
 }
 """
@@ -25,6 +30,8 @@ And store "$.payload.mutatedEntity.id" from response to "ticketId"
 And the REST response key "mutatedEntity.currentState.stateId" is "${initialState}"
 And the REST response key "mutatedEntity.subject" is "Order tracking issue"
 And the REST response key "mutatedEntity.priority" is "MEDIUM"
+And the REST response key "mutatedEntity.category" is "ORDER"
+And the REST response key "mutatedEntity.customerId" is "customer-001"
 
 Scenario: Assign agent to ticket
 Given that "event" equals "assignAgent"
@@ -38,7 +45,19 @@ When I PATCH a REST request to URL "/support/${ticketId}/${event}" with payload
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${ticketId}"
 And the REST response key "mutatedEntity.currentState.stateId" is "ASSIGNED"
-And the REST response key "mutatedEntity.assignedTo" is "agent-101"
+And the REST response key "mutatedEntity.assignedAgentId" is "agent-101"
+
+Scenario: Agent starts working on ticket
+Given that "event" equals "startWork"
+When I PATCH a REST request to URL "/support/${ticketId}/${event}" with payload
+"""json
+{
+    "comment": "Starting work"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${ticketId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "IN_PROGRESS"
 
 Scenario: Agent replies to ticket
 Given that "event" equals "reply"
@@ -51,20 +70,31 @@ When I PATCH a REST request to URL "/support/${ticketId}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${ticketId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "ASSIGNED"
+And the REST response key "mutatedEntity.currentState.stateId" is "IN_PROGRESS"
 
-Scenario: Customer replies to ticket
-Given that "event" equals "reply"
+Scenario: Agent waits on customer
+Given that "event" equals "waitOnCustomer"
 When I PATCH a REST request to URL "/support/${ticketId}/${event}" with payload
 """json
 {
-    "comment": "Customer reply",
-    "message": "Thank you for the update. I will wait."
+    "comment": "Need customer confirmation",
+    "waitReason": "Awaiting delivery confirmation from customer"
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${ticketId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "ASSIGNED"
+And the REST response key "mutatedEntity.currentState.stateId" is "WAITING_ON_CUSTOMER"
+
+Scenario: Customer responds and work resumes
+Given that "event" equals "resumeWork"
+When I PATCH a REST request to URL "/support/${ticketId}/${event}" with payload
+"""json
+{
+    "comment": "Customer replied",
+    "message": "Yes, I received the package. Thank you!"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.currentState.stateId" is "IN_PROGRESS"
 
 Scenario: Resolve ticket
 Given that "event" equals "resolve"
@@ -92,7 +122,7 @@ And the REST response key "mutatedEntity.id" is "${ticketId}"
 And the REST response key "mutatedEntity.currentState.stateId" is "CLOSED"
 
 # ====================================================================
-# ESCALATION PATH: Create -> Assign -> Escalate -> Assign -> Resolve
+# ESCALATION PATH: Create -> Assign -> StartWork -> Escalate -> Assign -> Resolve
 # ====================================================================
 
 Scenario: Create a ticket for escalation test
@@ -101,9 +131,9 @@ When I POST a REST request to URL "/support" with payload
 {
     "description": "Product arrived damaged",
     "subject": "Damaged product",
-    "category": "PRODUCT_ISSUE",
+    "category": "PRODUCT",
     "priority": "MEDIUM",
-    "userId": "customer-002"
+    "customerId": "customer-002"
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -121,6 +151,16 @@ When I PATCH a REST request to URL "/support/${escalateTicketId}/${event}" with 
 """
 Then the REST response key "mutatedEntity.currentState.stateId" is "ASSIGNED"
 
+Scenario: Start work then escalate ticket
+Given that "event" equals "startWork"
+When I PATCH a REST request to URL "/support/${escalateTicketId}/${event}" with payload
+"""json
+{
+    "comment": "Starting work"
+}
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "IN_PROGRESS"
+
 Scenario: Escalate ticket to senior agent
 Given that "event" equals "escalate"
 When I PATCH a REST request to URL "/support/${escalateTicketId}/${event}" with payload
@@ -135,7 +175,7 @@ Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${escalateTicketId}"
 And the REST response key "mutatedEntity.currentState.stateId" is "ESCALATED"
 And the REST response key "mutatedEntity.priority" is "HIGH"
-And the REST response key "mutatedEntity.assignedTo" is "senior-agent-201"
+And the REST response key "mutatedEntity.assignedAgentId" is "senior-agent-201"
 
 Scenario: Reassign escalated ticket
 Given that "event" equals "assignAgent"
@@ -160,7 +200,7 @@ When I PATCH a REST request to URL "/support/${escalateTicketId}/${event}" with 
 Then the REST response key "mutatedEntity.currentState.stateId" is "RESOLVED"
 
 # ====================================================================
-# REOPEN PATH: Create -> Assign -> Resolve -> Reopen -> Assign -> Resolve -> Close
+# REOPEN PATH: Create -> Assign -> StartWork -> Resolve -> Reopen -> Assign -> Resolve -> Close
 # ====================================================================
 
 Scenario: Create ticket for reopen test
@@ -169,15 +209,15 @@ When I POST a REST request to URL "/support" with payload
 {
     "description": "Billing discrepancy",
     "subject": "Wrong amount charged",
-    "category": "BILLING",
+    "category": "PAYMENT",
     "priority": "HIGH",
-    "userId": "customer-003"
+    "customerId": "customer-003"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And store "$.payload.mutatedEntity.id" from response to "reopenTicketId"
 
-Scenario: Assign and resolve for reopen test
+Scenario: Assign and start work for reopen test
 Given that "event" equals "assignAgent"
 When I PATCH a REST request to URL "/support/${reopenTicketId}/${event}" with payload
 """json
@@ -187,6 +227,16 @@ When I PATCH a REST request to URL "/support/${reopenTicketId}/${event}" with pa
 }
 """
 Then the REST response key "mutatedEntity.currentState.stateId" is "ASSIGNED"
+
+Scenario: Start work for reopen test
+Given that "event" equals "startWork"
+When I PATCH a REST request to URL "/support/${reopenTicketId}/${event}" with payload
+"""json
+{
+    "comment": "Starting"
+}
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "IN_PROGRESS"
 
 Scenario: Resolve before reopen
 Given that "event" equals "resolve"
@@ -210,24 +260,21 @@ When I PATCH a REST request to URL "/support/${reopenTicketId}/${event}" with pa
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${reopenTicketId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "OPEN"
+And the REST response key "mutatedEntity.currentState.stateId" is "REOPENED"
+And the REST response key "mutatedEntity.reopenCount" is "1"
 
-# ====================================================================
-# SLA BREACH: Verify SLA metadata is set on assignment
-# ====================================================================
-
-Scenario: SLA breach alert - verify SLA timer set on assignment
+Scenario: Reassign reopened ticket
 Given that "event" equals "assignAgent"
 When I PATCH a REST request to URL "/support/${reopenTicketId}/${event}" with payload
 """json
 {
-    "comment": "Reassigning after reopen for SLA check",
+    "comment": "Reassigning after reopen",
     "agentId": "agent-104"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.currentState.stateId" is "ASSIGNED"
-And the REST response key "mutatedEntity.assignedTo" is "agent-104"
+And the REST response key "mutatedEntity.assignedAgentId" is "agent-104"
 
 # ====================================================================
 # INVALID: Send invalid event to closed ticket

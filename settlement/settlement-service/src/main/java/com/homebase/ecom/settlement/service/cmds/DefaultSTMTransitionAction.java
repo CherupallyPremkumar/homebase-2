@@ -8,16 +8,13 @@ import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.settlement.model.Settlement;
 
 /**
-    This class is invoked if no specific transition action is specified
-    Extend this class to do generic things that are relevant for all actions in the workflow
-*/
-
+ * Default transition action invoked when no specific action is configured.
+ */
 public class DefaultSTMTransitionAction<PayloadType extends MinimalPayload>
     extends AbstractSTMTransitionAction<Settlement, PayloadType> {
     @Override
     public void transitionTo(Settlement settlement, PayloadType payload,
                  State startState, String eventId, State endState, STMInternalTransitionInvoker<?> stm,
                  Transition transition) {
-
     }
 }

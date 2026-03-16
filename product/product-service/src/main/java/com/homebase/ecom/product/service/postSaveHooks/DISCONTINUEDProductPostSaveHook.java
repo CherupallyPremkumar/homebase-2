@@ -1,7 +1,7 @@
 package com.homebase.ecom.product.service.postSaveHooks;
 
 import com.homebase.ecom.product.domain.model.Product;
-import com.homebase.ecom.product.service.event.ProductEventPublisher;
+import com.homebase.ecom.product.service.event.ProductEventHandler;
 import com.homebase.ecom.shared.event.ProductDiscontinuedEvent;
 import org.chenile.stm.State;
 import org.chenile.workflow.model.TransientMap;
@@ -20,7 +20,7 @@ public class DISCONTINUEDProductPostSaveHook implements PostSaveHook<Product> {
     private static final Logger log = LoggerFactory.getLogger(DISCONTINUEDProductPostSaveHook.class);
 
     @Autowired
-    private ProductEventPublisher productEventPublisher;
+    private ProductEventHandler productEventHandler;
 
     @Override
     public void execute(State startState, State endState, Product product, TransientMap map) {
@@ -33,7 +33,7 @@ public class DISCONTINUEDProductPostSaveHook implements PostSaveHook<Product> {
         ProductDiscontinuedEvent event = new ProductDiscontinuedEvent(
                 product.getId(),
                 reason);
-        productEventPublisher.publishProductDiscontinued(event);
+        productEventHandler.publishProductDiscontinued(event);
 
         log.info("ProductDiscontinuedEvent scheduled for product '{}'. Reason: {}", product.getName(), reason);
     }

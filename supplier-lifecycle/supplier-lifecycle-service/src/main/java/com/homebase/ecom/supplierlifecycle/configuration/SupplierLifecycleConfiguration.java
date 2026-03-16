@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.workflow.service.activities.ActivityChecker;
@@ -92,7 +93,7 @@ public class SupplierLifecycleConfiguration {
             @Qualifier("supplierLifecycleEntityStm") STM<SupplierLifecycleSaga> stm,
             @Qualifier("supplierLifecycleActionsInfoProvider") STMActionsInfoProvider infoProvider,
             @Qualifier("supplierLifecycleEntityStore") EntityStore<SupplierLifecycleSaga> entityStore) {
-        return new StateEntityServiceImpl<>(stm, infoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, infoProvider, entityStore);
     }
 
     // --- STM Transition Action Resolver ---
@@ -308,7 +309,7 @@ public class SupplierLifecycleConfiguration {
     @Bean
     java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> supplierLifecycleEventAuthoritiesSupplier(
             @Qualifier("supplierLifecycleActionsInfoProvider") STMActionsInfoProvider supplierLifecycleInfoProvider) throws Exception {
-        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(supplierLifecycleInfoProvider, true);
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(supplierLifecycleInfoProvider, false);
         return builder.build();
     }
 }

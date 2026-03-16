@@ -13,7 +13,7 @@ public class PausePromoAction extends AbstractPromoAction<PausePromoPayload> {
     @Override
     public void transitionTo(Coupon coupon, PausePromoPayload payload, State startState, String eventId,
             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-        coupon.addActivity("pause", "Promo temporarily paused by admin");
+        coupon.addActivity("pause", "Promo temporarily paused");
         super.transitionTo(coupon, payload, startState, eventId, endState, stm, transition);
     }
 }

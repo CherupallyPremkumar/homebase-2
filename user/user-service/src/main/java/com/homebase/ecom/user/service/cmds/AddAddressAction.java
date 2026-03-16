@@ -7,11 +7,11 @@ import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 
 /**
- * ACTIVE -> ACTIVE (self-transition).
+ * ACTIVE / KYC_VERIFIED -> ACTIVE / KYC_VERIFIED (self-transition).
  *
  * Adds a new address to the user's address book.
  * Business invariants enforced by the User aggregate:
- *   - Max 5 addresses per user
+ *   - Max 10 addresses per user
  *   - First address auto-becomes default
  *
  * Validates required address fields before delegating to domain.
@@ -30,11 +30,11 @@ public class AddAddressAction implements STMTransitionAction<User> {
             if (address.getCity() == null || address.getCity().isBlank()) {
                 throw new IllegalArgumentException("City is required");
             }
-            if (address.getZip() == null || address.getZip().isBlank()) {
-                throw new IllegalArgumentException("ZIP/Pin code is required");
+            if (address.getPostalCode() == null || address.getPostalCode().isBlank()) {
+                throw new IllegalArgumentException("Postal code is required");
             }
 
-            // Domain aggregate enforces max-5 invariant
+            // Domain aggregate enforces max-10 invariant
             user.addAddress(address);
 
             user.getTransientMap().put("event", "ADDRESS_ADDED");

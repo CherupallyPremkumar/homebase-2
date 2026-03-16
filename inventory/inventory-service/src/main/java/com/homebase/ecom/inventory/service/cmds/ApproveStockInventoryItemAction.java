@@ -1,7 +1,6 @@
 package com.homebase.ecom.inventory.service.cmds;
 
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
-import com.homebase.ecom.inventory.domain.model.InventoryStatus;
 import com.homebase.ecom.inventory.service.validator.InventoryItemPolicyValidator;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
@@ -33,12 +32,11 @@ public class ApproveStockInventoryItemAction extends AbstractSTMTransitionAction
         int qty = payload.getQuantity() != null ? payload.getQuantity() : inventory.getQuantity();
 
         // Policy enforcement: minimum quantity to approve
-        policyValidator.validateApprovalQuantity(qty);
+        policyValidator.validateApprovalQuantity(inventory, qty);
 
         // Update the inventory with approved quantity
         inventory.setQuantity(qty);
         inventory.setInboundQuantity(0);
-        inventory.setStatus(InventoryStatus.AVAILABLE);
 
         log.info("Stock approved for productId={}, approvedQty={}", inventory.getProductId(), qty);
 

@@ -2,13 +2,11 @@ package com.homebase.ecom.offer.infrastructure.persistence.adapter;
 
 import com.homebase.ecom.offer.domain.model.Offer;
 import com.homebase.ecom.offer.domain.port.OfferRepository;
-import com.homebase.ecom.offer.infrastructure.persistence.entity.OfferEntity;
 import com.homebase.ecom.offer.infrastructure.persistence.mapper.OfferMapper;
 
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class OfferRepositoryImpl implements OfferRepository {
 
@@ -22,8 +20,7 @@ public class OfferRepositoryImpl implements OfferRepository {
 
     @Override
     public void save(Offer offer) {
-        OfferEntity entity = offerMapper.toEntity(offer);
-        offerJpaRepository.save(entity);
+        offerJpaRepository.save(offerMapper.toEntity(offer));
     }
 
     @Override
@@ -37,8 +34,21 @@ public class OfferRepositoryImpl implements OfferRepository {
     }
 
     @Override
-    public List<Offer> findExpiredTrials(Date now) {
-        // TODO: implement query for expired trial offers
-        return Collections.emptyList();
+    public List<Offer> findByProductId(String productId) {
+        return offerJpaRepository.findByProductId(productId).stream()
+                .map(offerMapper::toModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Offer> findLiveOffersByProductId(String productId) {
+        return offerJpaRepository.findLiveOffersByProductId(productId).stream()
+                .map(offerMapper::toModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public int countActiveOffersByProductId(String productId) {
+        return offerJpaRepository.countActiveOffersByProductId(productId);
     }
 }

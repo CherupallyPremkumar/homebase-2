@@ -7,6 +7,7 @@ import org.chenile.workflow.activities.model.ActivityLog;
 import org.chenile.workflow.model.ContainsTransientMap;
 import org.chenile.workflow.model.TransientMap;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -35,17 +36,23 @@ public class UserJpaEntity extends AbstractJpaStateEntity implements ActivityEna
     @Column(name = "phone")
     private String phone;
 
-    @Column(name = "avatar_url")
-    private String avatarUrl;
+    @Column(name = "role")
+    private String role;
 
-    @Column(name = "display_name")
-    private String displayName;
+    @Column(name = "default_address_id")
+    private String defaultAddressId;
+
+    @Column(name = "kyc_status")
+    private String kycStatus;
 
     @Embedded
     private PreferencesJpaEntity preferences;
 
-    @Column(name = "failed_login_attempts")
-    private int failedLoginAttempts;
+    @Column(name = "login_attempts")
+    private int loginAttempts;
+
+    @Column(name = "last_login_at")
+    private Instant lastLoginAt;
 
     @Column(name = "lock_reason")
     private String lockReason;
@@ -63,7 +70,7 @@ public class UserJpaEntity extends AbstractJpaStateEntity implements ActivityEna
     @Transient
     private TransientMap transientMap = new TransientMap();
 
-    // ─── ActivityEnabledStateEntity ───────────────────────────────────────────
+    // --- ActivityEnabledStateEntity ---
 
     @Override
     public Collection<ActivityLog> obtainActivities() {
@@ -80,13 +87,13 @@ public class UserJpaEntity extends AbstractJpaStateEntity implements ActivityEna
         return log;
     }
 
-    // ─── ContainsTransientMap ─────────────────────────────────────────────────
+    // --- ContainsTransientMap ---
 
     @Override
     public TransientMap getTransientMap() { return transientMap; }
     public void setTransientMap(TransientMap transientMap) { this.transientMap = transientMap; }
 
-    // ─── Getters and Setters ─────────────────────────────────────────────────
+    // --- Getters and Setters ---
 
     public String getKeycloakId() { return keycloakId; }
     public void setKeycloakId(String keycloakId) { this.keycloakId = keycloakId; }
@@ -103,17 +110,23 @@ public class UserJpaEntity extends AbstractJpaStateEntity implements ActivityEna
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
 
-    public String getAvatarUrl() { return avatarUrl; }
-    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
-    public String getDisplayName() { return displayName; }
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public String getDefaultAddressId() { return defaultAddressId; }
+    public void setDefaultAddressId(String defaultAddressId) { this.defaultAddressId = defaultAddressId; }
+
+    public String getKycStatus() { return kycStatus; }
+    public void setKycStatus(String kycStatus) { this.kycStatus = kycStatus; }
 
     public PreferencesJpaEntity getPreferences() { return preferences; }
     public void setPreferences(PreferencesJpaEntity preferences) { this.preferences = preferences; }
 
-    public int getFailedLoginAttempts() { return failedLoginAttempts; }
-    public void setFailedLoginAttempts(int failedLoginAttempts) { this.failedLoginAttempts = failedLoginAttempts; }
+    public int getLoginAttempts() { return loginAttempts; }
+    public void setLoginAttempts(int loginAttempts) { this.loginAttempts = loginAttempts; }
+
+    public Instant getLastLoginAt() { return lastLoginAt; }
+    public void setLastLoginAt(Instant lastLoginAt) { this.lastLoginAt = lastLoginAt; }
 
     public String getLockReason() { return lockReason; }
     public void setLockReason(String lockReason) { this.lockReason = lockReason; }
@@ -126,4 +139,8 @@ public class UserJpaEntity extends AbstractJpaStateEntity implements ActivityEna
 
     public List<UserActivityLogEntity> getActivities() { return activities; }
     public void setActivities(List<UserActivityLogEntity> activities) { this.activities = activities; }
+
+    // Backward compatibility
+    public int getFailedLoginAttempts() { return loginAttempts; }
+    public void setFailedLoginAttempts(int f) { this.loginAttempts = f; }
 }

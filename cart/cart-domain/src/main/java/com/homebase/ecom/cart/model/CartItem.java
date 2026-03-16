@@ -2,17 +2,22 @@ package com.homebase.ecom.cart.model;
 
 import com.homebase.ecom.shared.Money;
 import org.chenile.utils.entity.model.BaseEntity;
-import java.io.Serializable;
-import java.util.Date;
 
+/**
+ * Cart item domain model.
+ * unitPrice is a Money value object (amount in smallest currency unit).
+ */
 public class CartItem extends BaseEntity {
 
     private String cartId;
     private String productId;
-    private Integer quantity;
-    private Money price;
-    private String sellerId;
-    private CartItemStatus status = CartItemStatus.AVAILABLE;
+    private String variantId;
+    private String sku;
+    private String productName;
+    private String supplierId;
+    private int quantity;
+    private Money unitPrice = Money.ZERO_INR;
+    private Money lineTotal = Money.ZERO_INR;
 
     public String getCartId() {
         return cartId;
@@ -30,35 +35,63 @@ public class CartItem extends BaseEntity {
         this.productId = productId;
     }
 
-    public Integer getQuantity() {
+    public String getVariantId() {
+        return variantId;
+    }
+
+    public void setVariantId(String variantId) {
+        this.variantId = variantId;
+    }
+
+    public String getSku() {
+        return sku;
+    }
+
+    public void setSku(String sku) {
+        this.sku = sku;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public int getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Integer quantity) {
+    public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
 
-    public Money getPrice() {
-        return price;
+    public Money getUnitPrice() {
+        return unitPrice;
     }
 
-    public void setPrice(Money price) {
-        this.price = price;
+    public void setUnitPrice(Money unitPrice) {
+        this.unitPrice = unitPrice;
     }
 
-    public String getSellerId() {
-        return sellerId;
+    public String getSupplierId() {
+        return supplierId;
     }
 
-    public void setSellerId(String sellerId) {
-        this.sellerId = sellerId;
+    public void setSupplierId(String supplierId) {
+        this.supplierId = supplierId;
     }
 
-    public CartItemStatus getStatus() {
-        return status;
+    public Money getLineTotal() {
+        return lineTotal;
     }
 
-    public void setStatus(CartItemStatus status) {
-        this.status = status;
+    public void setLineTotal(Money lineTotal) {
+        this.lineTotal = lineTotal;
+    }
+
+    public void recalculateLineTotal() {
+        this.lineTotal = unitPrice.multiply(quantity);
     }
 }

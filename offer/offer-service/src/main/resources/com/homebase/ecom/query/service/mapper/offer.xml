@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Offer">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- DASHBOARD QUERIES (Admin / Catalog Admin)                              -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- All offers (admin listing) -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM offer
+    <where>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+        <if test="offerType != null">AND offer_type = #{offerType}</if>
+        <if test="stateId != null">AND current_state = #{stateId}</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="map">
+    SELECT
+        id,
+        product_id as "productId",
+        supplier_id as "supplierId",
+        offer_type as "offerType",
+        title,
+        description,
+        original_price as "originalPrice",
+        offer_price as "offerPrice",
+        discount_percent as "discountPercent",
+        start_date as "startDate",
+        end_date as "endDate",
+        max_quantity as "maxQuantity",
+        sold_quantity as "soldQuantity",
+        seller_rating as "sellerRating",
+        current_state as "stateId"
+    FROM offer
+    <where>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+        <if test="offerType != null">AND offer_type = #{offerType}</if>
+        <if test="stateId != null">AND current_state = #{stateId}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Get offer by id (admin detail) -->
+<select id="getById" resultType="map">
+    SELECT
+        id,
+        product_id as "productId",
+        supplier_id as "supplierId",
+        offer_type as "offerType",
+        title,
+        description,
+        original_price as "originalPrice",
+        offer_price as "offerPrice",
+        discount_percent as "discountPercent",
+        start_date as "startDate",
+        end_date as "endDate",
+        max_quantity as "maxQuantity",
+        sold_quantity as "soldQuantity",
+        seller_rating as "sellerRating",
+        current_state as "stateId",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+    FROM offer
+    WHERE id = #{id}
+</select>
+
+<!-- Dashboard: offer state counts -->
+<select id="getStateCounts" resultType="map">
+    SELECT
+        current_state as "stateId",
+        COUNT(*) as "count"
+    FROM offer
+    GROUP BY current_state
+    ORDER BY "count" DESC
+</select>
+
+<!-- Dashboard: offers pending approval -->
+<select id="getPendingApproval-count" resultType="int">
+    SELECT count(*) FROM offer
+    WHERE current_state = 'PENDING_APPROVAL'
+    <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+</select>
+
+<select id="getPendingApproval" resultType="map">
+    SELECT
+        id,
+        product_id as "productId",
+        supplier_id as "supplierId",
+        offer_type as "offerType",
+        title,
+        original_price as "originalPrice",
+        offer_price as "offerPrice",
+        discount_percent as "discountPercent",
+        seller_rating as "sellerRating",
+        created_at as "createdAt"
+    FROM offer
+    WHERE current_state = 'PENDING_APPROVAL'
+    <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+    ORDER BY created_at ASC
+    ${pagination}
+</select>
+
+<!-- Dashboard: offers expiring soon -->
+<select id="getExpiringOffers-count" resultType="int">
+    SELECT count(*) FROM offer
+    WHERE current_state = 'LIVE'
+      AND end_date IS NOT NULL
+      AND end_date &lt;= DATEADD('DAY', COALESCE(#{daysUntilExpiry}, 7), CURRENT_TIMESTAMP)
+</select>
+
+<select id="getExpiringOffers" resultType="map">
+    SELECT
+        id,
+        product_id as "productId",
+        supplier_id as "supplierId",
+        title,
+        offer_type as "offerType",
+        offer_price as "offerPrice",
+        end_date as "endDate",
+        DATEDIFF('DAY', CURRENT_TIMESTAMP, end_date) as "daysRemaining"
+    FROM offer
+    WHERE current_state = 'LIVE'
+      AND end_date IS NOT NULL
+      AND end_date &lt;= DATEADD('DAY', COALESCE(#{daysUntilExpiry}, 7), CURRENT_TIMESTAMP)
+    ORDER BY end_date ASC
+    ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- STOREFRONT QUERIES (Customer-facing)                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- All offers for a product (storefront) -->
+<select id="getByProductId" resultType="map">
+    SELECT
+        id,
+        product_id as "productId",
+        supplier_id as "supplierId",
+        offer_type as "offerType",
+        title,
+        description,
+        original_price as "originalPrice",
+        offer_price as "offerPrice",
+        discount_percent as "discountPercent",
+        start_date as "startDate",
+        end_date as "endDate",
+        max_quantity as "maxQuantity",
+        sold_quantity as "soldQuantity",
+        current_state as "stateId"
+    FROM offer
+    WHERE product_id = #{productId}
+</select>
+
+<!-- Active (LIVE) offers for storefront -->
+<select id="getActiveOffers-count" resultType="int">
+    SELECT count(*) FROM offer
+    WHERE current_state = 'LIVE'
+    <if test="productId != null">AND product_id = #{productId}</if>
+</select>
+
+<select id="getActiveOffers" resultType="map">
+    SELECT
+        id,
+        product_id as "productId",
+        supplier_id as "supplierId",
+        offer_type as "offerType",
+        title,
+        description,
+        original_price as "originalPrice",
+        offer_price as "offerPrice",
+        discount_percent as "discountPercent",
+        start_date as "startDate",
+        end_date as "endDate",
+        max_quantity - sold_quantity as "remainingQuantity"
+    FROM offer
+    WHERE current_state = 'LIVE'
+    <if test="productId != null">AND product_id = #{productId}</if>
+    ORDER BY discount_percent DESC
+    ${pagination}
+</select>
+
+<!-- Best offer for a product (lowest price or highest discount) -->
+<select id="getBestOffer" resultType="map">
+    SELECT
+        id,
+        product_id as "productId",
+        supplier_id as "supplierId",
+        offer_type as "offerType",
+        title,
+        original_price as "originalPrice",
+        offer_price as "offerPrice",
+        discount_percent as "discountPercent",
+        start_date as "startDate",
+        end_date as "endDate"
+    FROM offer
+    WHERE current_state = 'LIVE'
+      AND product_id = #{productId}
+    ORDER BY offer_price ASC
+    LIMIT 1
+</select>
+
+</mapper>

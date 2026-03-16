@@ -16,13 +16,16 @@ public class CartDtoMapper {
 
         CartDto dto = new CartDto();
         dto.setId(cart.getId());
-        dto.setUserId(cart.getUserId());
-        dto.setTotalAmount(cart.getTotalAmount());
-        dto.setShippingAddress(cart.getShippingAddress());
-        dto.setBillingAddress(cart.getBillingAddress());
-        dto.setAppliedPromoCode(cart.getAppliedPromoCode());
-        dto.setDiscountAmount(cart.getDiscountAmount());
-        dto.setTaxAmount(cart.getTaxAmount());
+        dto.setCustomerId(cart.getCustomerId());
+        dto.setSessionId(cart.getSessionId());
+        dto.setSubtotal(cart.getSubtotal().getAmount());
+        dto.setCurrency(cart.getCurrency());
+        dto.setCouponCodes(cart.getCouponCodes());
+        dto.setDiscountAmount(cart.getDiscountAmount().getAmount());
+        dto.setTotal(cart.getTotal().getAmount());
+        dto.setExpiresAt(cart.getExpiresAt());
+        dto.setNotes(cart.getNotes());
+        dto.setDescription(cart.description);
         if (cart.getCurrentState() != null) {
             dto.setCurrentState(cart.getCurrentState().getStateId());
         }
@@ -40,12 +43,14 @@ public class CartDtoMapper {
         if (item == null) return null;
 
         CartItemDto dto = new CartItemDto();
-        dto.setCartId(item.getCartId());
         dto.setProductId(item.getProductId());
+        dto.setVariantId(item.getVariantId());
+        dto.setSku(item.getSku());
+        dto.setProductName(item.getProductName());
+        dto.setSupplierId(item.getSupplierId());
         dto.setQuantity(item.getQuantity());
-        dto.setPrice(item.getPrice());
-        dto.setSellerId(item.getSellerId());
-        dto.setStatus(item.getStatus());
+        dto.setUnitPrice(item.getUnitPrice().getAmount());
+        dto.setLineTotal(item.getLineTotal().getAmount());
 
         return dto;
     }

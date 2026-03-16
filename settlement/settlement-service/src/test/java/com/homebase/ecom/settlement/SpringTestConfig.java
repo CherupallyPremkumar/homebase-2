@@ -1,7 +1,5 @@
 package com.homebase.ecom.settlement;
 
-import com.homebase.ecom.settlement.service.client.InternalOrderClient;
-import com.homebase.ecom.settlement.service.client.StubInternalOrderClient;
 import com.homebase.ecom.shared.Currency;
 import com.homebase.ecom.shared.CurrencyResolver;
 import org.chenile.cconfig.sdk.CconfigClient;
@@ -10,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -20,18 +19,14 @@ import java.util.Map;
 @PropertySource("classpath:com/homebase/ecom/settlement/TestService.properties")
 @SpringBootApplication(scanBasePackages = {
         "org.chenile.configuration",
+        "org.chenile.service.registry.configuration",
         "com.homebase.ecom.settlement.configuration",
         "com.homebase.ecom.settlement.infrastructure"
 })
-@EnableJpaRepositories(basePackages = "com.homebase.ecom.settlement.infrastructure.persistence.adapter")
+@EnableJpaRepositories(basePackages = {"com.homebase.ecom.settlement.infrastructure.persistence.adapter", "org.chenile.service.registry.configuration.dao"})
+@EntityScan(basePackages = {"com.homebase.ecom.settlement", "org.chenile.service.registry.model"})
 @ActiveProfiles("unittest")
 public class SpringTestConfig {
-
-    @Bean
-    @Primary
-    public InternalOrderClient stubInternalOrderClient() {
-        return new StubInternalOrderClient();
-    }
 
     @Bean
     @Primary
@@ -67,26 +62,14 @@ public class SpringTestConfig {
             public Map<String, Object> value(String configName, String tenant) {
                 if ("settlement".equals(configName)) {
                     Map<String, Object> config = new HashMap<>();
-                    Map<String, Object> rules = new HashMap<>();
-                    Map<String, Object> payout = new HashMap<>();
-                    payout.put("minBalance", 1000);
-                    rules.put("payout", payout);
-                    config.put("rules", rules);
-
                     Map<String, Object> policies = new HashMap<>();
-                    Map<String, Object> payoutPolicies = new HashMap<>();
-                    payoutPolicies.put("minPayoutBalanceInr", 1000);
-                    policies.put("payout", payoutPolicies);
+                    policies.put("commissionRatePercent", 15);
+                    policies.put("platformFeePercent", 2);
+                    policies.put("settlementCycleDays", 14);
+                    policies.put("minSettlementAmount", 500);
+                    policies.put("maxAdjustmentPercent", 10);
+                    policies.put("autoApproveThreshold", 10000);
                     config.put("policies", policies);
-                    return config;
-                }
-                if ("on-boarding".equals(configName)) {
-                    Map<String, Object> config = new HashMap<>();
-                    Map<String, Object> rules = new HashMap<>();
-                    Map<String, Object> finances = new HashMap<>();
-                    finances.put("commissionDefault", 10); // 10% commission
-                    rules.put("finances", finances);
-                    config.put("rules", rules);
                     return config;
                 }
                 return new HashMap<>();

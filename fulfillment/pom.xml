@@ -20,6 +20,7 @@
         <module>fulfillment-domain</module>
         <module>fulfillment-infrastructure</module>
         <module>fulfillment-service</module>
+        <module>fulfillment-client</module>
     </modules>
 
     <dependencyManagement>

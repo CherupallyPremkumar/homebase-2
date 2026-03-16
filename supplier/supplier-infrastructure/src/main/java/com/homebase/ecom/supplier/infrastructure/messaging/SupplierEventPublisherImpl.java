@@ -1,8 +1,8 @@
 package com.homebase.ecom.supplier.infrastructure.messaging;
 
-import com.homebase.ecom.shared.event.SupplierActivatedEvent;
-import com.homebase.ecom.shared.event.SupplierBlacklistedEvent;
+import com.homebase.ecom.shared.event.SupplierApprovedEvent;
 import com.homebase.ecom.shared.event.SupplierSuspendedEvent;
+import com.homebase.ecom.shared.event.SupplierTerminatedEvent;
 import com.homebase.ecom.supplier.domain.port.SupplierEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +11,7 @@ import org.springframework.context.ApplicationEventPublisher;
 /**
  * Infrastructure adapter for publishing supplier events.
  * Uses Spring ApplicationEventPublisher for in-process event dispatch.
- * Can be extended to publish to Kafka via KafkaTemplate.
+ * Can be extended to publish to Kafka via ChenilePub to supplier.events topic.
  */
 public class SupplierEventPublisherImpl implements SupplierEventPublisher {
 
@@ -24,20 +24,20 @@ public class SupplierEventPublisherImpl implements SupplierEventPublisher {
     }
 
     @Override
-    public void publishSupplierActivated(SupplierActivatedEvent event) {
-        log.info("Publishing SupplierActivatedEvent for supplier: {}", event.getSupplierId());
+    public void publishSupplierApproved(SupplierApprovedEvent event) {
+        log.info("Publishing SUPPLIER_APPROVED event for supplier: {}", event.getSupplierId());
         applicationEventPublisher.publishEvent(event);
     }
 
     @Override
     public void publishSupplierSuspended(SupplierSuspendedEvent event) {
-        log.info("Publishing SupplierSuspendedEvent for supplier: {}", event.getSupplierId());
+        log.info("Publishing SUPPLIER_SUSPENDED event for supplier: {}", event.getSupplierId());
         applicationEventPublisher.publishEvent(event);
     }
 
     @Override
-    public void publishSupplierBlacklisted(SupplierBlacklistedEvent event) {
-        log.info("Publishing SupplierBlacklistedEvent for supplier: {}", event.getSupplierId());
+    public void publishSupplierTerminated(SupplierTerminatedEvent event) {
+        log.info("Publishing SUPPLIER_TERMINATED event for supplier: {}", event.getSupplierId());
         applicationEventPublisher.publishEvent(event);
     }
 }

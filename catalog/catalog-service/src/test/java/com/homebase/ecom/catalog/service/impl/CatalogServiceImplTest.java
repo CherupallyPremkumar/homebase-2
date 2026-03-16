@@ -181,6 +181,7 @@ class CatalogServiceImplTest {
 
                 when(catalogItemRepository.findByProductId("prod-001")).thenReturn(Optional.of(item));
                 when(catalogItemRepository.save(any(CatalogItem.class))).thenReturn(item);
+                when(policyValidator.shouldHideOutOfStockItems()).thenReturn(true);
 
                 // Act
                 catalogService.updateVisibility("prod-001", 0);

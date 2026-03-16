@@ -1,7 +1,5 @@
 package com.homebase.ecom.cart.infrastructure.persistence.entity;
 
-import com.homebase.ecom.cart.model.CartItemStatus;
-import com.homebase.ecom.shared.Money;
 import jakarta.persistence.*;
 import org.chenile.jpautils.entity.BaseJpaEntity;
 
@@ -16,22 +14,26 @@ public class CartItemEntity extends BaseJpaEntity {
     @Column(name = "product_id")
     private String productId;
 
+    @Column(name = "variant_id")
+    private String variantId;
+
+    @Column(name = "sku")
+    private String sku;
+
+    @Column(name = "product_name")
+    private String productName;
+
+    @Column(name = "supplier_id")
+    private String supplierId;
+
     @Column(name = "quantity")
-    private Integer quantity;
+    private int quantity;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "price_amount")),
-            @AttributeOverride(name = "currency", column = @Column(name = "price_currency"))
-    })
-    private Money price;
+    @Column(name = "unit_price")
+    private long unitPrice;
 
-    @Column(name = "seller_id")
-    private String sellerId;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private CartItemStatus status = CartItemStatus.AVAILABLE;
+    @Column(name = "line_total")
+    private long lineTotal;
 
     public CartEntity getCart() {
         return cart;
@@ -49,35 +51,59 @@ public class CartItemEntity extends BaseJpaEntity {
         this.productId = productId;
     }
 
-    public Integer getQuantity() {
+    public String getVariantId() {
+        return variantId;
+    }
+
+    public void setVariantId(String variantId) {
+        this.variantId = variantId;
+    }
+
+    public String getSku() {
+        return sku;
+    }
+
+    public void setSku(String sku) {
+        this.sku = sku;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public int getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Integer quantity) {
+    public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
 
-    public Money getPrice() {
-        return price;
+    public long getUnitPrice() {
+        return unitPrice;
     }
 
-    public void setPrice(Money price) {
-        this.price = price;
+    public void setUnitPrice(long unitPrice) {
+        this.unitPrice = unitPrice;
     }
 
-    public String getSellerId() {
-        return sellerId;
+    public String getSupplierId() {
+        return supplierId;
     }
 
-    public void setSellerId(String sellerId) {
-        this.sellerId = sellerId;
+    public void setSupplierId(String supplierId) {
+        this.supplierId = supplierId;
     }
 
-    public CartItemStatus getStatus() {
-        return status;
+    public long getLineTotal() {
+        return lineTotal;
     }
 
-    public void setStatus(CartItemStatus status) {
-        this.status = status;
+    public void setLineTotal(long lineTotal) {
+        this.lineTotal = lineTotal;
     }
 }

@@ -73,11 +73,24 @@
 			<groupId>com.homebase.ecom.build</groupId>
 			<artifactId>core</artifactId>
 			<version>${revision}</version>
-			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>workflow-service</artifactId>
 		</dependency>
 			<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>cucumber-sec-utils</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>db-migrations</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-liquibase</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

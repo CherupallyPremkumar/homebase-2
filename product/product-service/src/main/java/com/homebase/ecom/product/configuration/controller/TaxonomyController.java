@@ -5,11 +5,13 @@ import com.homebase.ecom.product.dto.AttributeDefinitionDto;
 import com.homebase.ecom.product.dto.CategoryDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/product/taxonomy")
+@Tag(name = "Product - Taxonomy", description = "Product taxonomy categories and attributes")
 public class TaxonomyController {
 
     private final TaxonomyService taxonomyService;

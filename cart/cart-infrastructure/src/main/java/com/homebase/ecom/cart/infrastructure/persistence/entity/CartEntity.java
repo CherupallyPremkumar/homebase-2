@@ -1,9 +1,9 @@
 package com.homebase.ecom.cart.infrastructure.persistence.entity;
 
-import com.homebase.ecom.shared.Money;
 import jakarta.persistence.*;
 import org.chenile.jpautils.entity.AbstractJpaStateEntity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,41 +11,35 @@ import java.util.List;
 @Table(name = "cart")
 public class CartEntity extends AbstractJpaStateEntity {
 
-    @Column(name = "user_id")
-    private String userId;
+    @Column(name = "customer_id")
+    private String customerId;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "cart")
+    @Column(name = "session_id")
+    private String sessionId;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "cart", orphanRemoval = true)
     private List<CartItemEntity> items = new ArrayList<>();
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "total_amount")),
-            @AttributeOverride(name = "currency", column = @Column(name = "total_currency"))
-    })
-    private Money totalAmount;
+    @Column(name = "subtotal")
+    private long subtotal;
 
-    @Column(name = "shipping_address")
-    private String shippingAddress;
+    @Column(name = "currency", length = 3)
+    private String currency = "INR";
 
-    @Column(name = "billing_address")
-    private String billingAddress;
+    @Column(name = "coupon_codes", length = 500)
+    private String couponCodes;
 
-    @Column(name = "applied_promo_code")
-    private String appliedPromoCode;
+    @Column(name = "discount_amount")
+    private long discountAmount;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "discount_amount")),
-            @AttributeOverride(name = "currency", column = @Column(name = "discount_currency"))
-    })
-    private Money discountAmount;
+    @Column(name = "total")
+    private long total;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "tax_amount")),
-            @AttributeOverride(name = "currency", column = @Column(name = "tax_currency"))
-    })
-    private Money taxAmount;
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+
+    @Column(name = "notes", length = 1000)
+    private String notes;
 
     @Column(name = "description")
     public String description;
@@ -54,12 +48,22 @@ public class CartEntity extends AbstractJpaStateEntity {
     @JoinColumn(name = "cart_id")
     private List<CartActivityLogEntity> activities = new ArrayList<>();
 
-    public String getUserId() {
-        return userId;
+    // ── Getters & Setters ──────────────────────────────────────────────
+
+    public String getCustomerId() {
+        return customerId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 
     public List<CartItemEntity> getItems() {
@@ -70,52 +74,60 @@ public class CartEntity extends AbstractJpaStateEntity {
         this.items = items;
     }
 
-    public Money getTotalAmount() {
-        return totalAmount;
+    public long getSubtotal() {
+        return subtotal;
     }
 
-    public void setTotalAmount(Money totalAmount) {
-        this.totalAmount = totalAmount;
+    public void setSubtotal(long subtotal) {
+        this.subtotal = subtotal;
     }
 
-    public String getShippingAddress() {
-        return shippingAddress;
+    public String getCurrency() {
+        return currency;
     }
 
-    public void setShippingAddress(String shippingAddress) {
-        this.shippingAddress = shippingAddress;
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 
-    public String getBillingAddress() {
-        return billingAddress;
+    public String getCouponCodes() {
+        return couponCodes;
     }
 
-    public void setBillingAddress(String billingAddress) {
-        this.billingAddress = billingAddress;
+    public void setCouponCodes(String couponCodes) {
+        this.couponCodes = couponCodes;
     }
 
-    public String getAppliedPromoCode() {
-        return appliedPromoCode;
-    }
-
-    public void setAppliedPromoCode(String appliedPromoCode) {
-        this.appliedPromoCode = appliedPromoCode;
-    }
-
-    public Money getDiscountAmount() {
+    public long getDiscountAmount() {
         return discountAmount;
     }
 
-    public void setDiscountAmount(Money discountAmount) {
+    public void setDiscountAmount(long discountAmount) {
         this.discountAmount = discountAmount;
     }
 
-    public Money getTaxAmount() {
-        return taxAmount;
+    public long getTotal() {
+        return total;
     }
 
-    public void setTaxAmount(Money taxAmount) {
-        this.taxAmount = taxAmount;
+    public void setTotal(long total) {
+        this.total = total;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(LocalDateTime expiresAt) {
+        this.expiresAt = expiresAt;
     }
 
     public List<CartActivityLogEntity> getActivities() {

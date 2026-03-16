@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>checkout-client</artifactId>
-    <name>Checkout Client — RestTemplate-based service client</name>
+    <name>Checkout Client — ProxyBuilder-based service client</name>
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom.checkout</groupId>
@@ -19,11 +19,7 @@
         </dependency>
         <dependency>
             <groupId>org.chenile</groupId>
-            <artifactId>chenile-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
+            <artifactId>chenile-proxy</artifactId>
         </dependency>
     </dependencies>
 </project>

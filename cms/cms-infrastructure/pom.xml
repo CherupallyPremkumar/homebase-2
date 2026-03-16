@@ -17,12 +17,12 @@
         <dependency>
             <groupId>com.homebase.ecom.cms</groupId>
             <artifactId>cms-domain</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom.cms</groupId>
             <artifactId>cms-api</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>org.chenile</groupId>

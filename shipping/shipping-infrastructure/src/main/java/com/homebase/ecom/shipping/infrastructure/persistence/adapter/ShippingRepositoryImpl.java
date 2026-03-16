@@ -24,6 +24,11 @@ public class ShippingRepositoryImpl implements ShippingRepository {
     }
 
     @Override
+    public Optional<Shipping> findByOrderId(String orderId) {
+        return shippingJpaRepository.findByOrderId(orderId).map(shippingMapper::toModel);
+    }
+
+    @Override
     public void save(Shipping shipping) {
         ShippingEntity entity = shippingMapper.toEntity(shipping);
         shippingJpaRepository.save(entity);

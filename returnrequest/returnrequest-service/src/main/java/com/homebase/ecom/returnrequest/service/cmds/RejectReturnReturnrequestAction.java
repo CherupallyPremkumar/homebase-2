@@ -32,11 +32,9 @@ public class RejectReturnReturnrequestAction extends AbstractSTMTransitionAction
                              State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
         // Enforce comment-required-on-reject policy
-        if (policyValidator.isCommentRequiredOnReject()) {
-            String comment = payload.getComment();
-            if (comment == null || comment.trim().isEmpty()) {
-                throw new IllegalArgumentException("Comment required when rejecting a return request.");
-            }
+        String comment = payload.getComment();
+        if (comment == null || comment.trim().isEmpty()) {
+            throw new IllegalArgumentException("Comment required when rejecting a return request.");
         }
 
         // Record rejection details

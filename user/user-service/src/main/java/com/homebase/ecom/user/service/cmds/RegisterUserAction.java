@@ -6,13 +6,13 @@ import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 
 /**
- * Initial create action — fired when a new User is created (POST /user).
+ * Initial create action -- fired when a new User is created (POST /user).
  *
- * Sets keycloakId and email from the incoming payload. The user starts in
- * PENDING_VERIFICATION state and must verify email to become ACTIVE.
+ * Sets identity fields from the incoming payload. User starts in REGISTERED
+ * state and must verify email to proceed.
  *
- * The PENDING_VERIFICATION post-save hook will publish an
- * EmailVerificationRequested event to trigger the verification email.
+ * The REGISTERED post-save hook publishes USER_REGISTERED event to user.events
+ * and triggers verification email via IdentityProviderPort.
  */
 public class RegisterUserAction implements STMTransitionAction<User> {
 
@@ -38,12 +38,18 @@ public class RegisterUserAction implements STMTransitionAction<User> {
             if (incoming.getPhone() != null) {
                 user.setPhone(incoming.getPhone());
             }
+            // Set role -- default to CUSTOMER if not specified
+            if (incoming.getRole() != null && !incoming.getRole().isBlank()) {
+                user.setRole(incoming.getRole());
+            } else {
+                user.setRole("CUSTOMER");
+            }
         }
 
         // Initialize security state
-        user.resetFailedLoginAttempts();
+        user.resetLoginAttempts();
 
-        // Signal to PENDING_VERIFICATION post-save hook
+        // Signal to REGISTERED post-save hook
         user.getTransientMap().put("event", "REGISTERED");
     }
 }

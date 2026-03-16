@@ -7,10 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
 
 @Repository
-public interface PromotionJpaRepository extends JpaRepository<Promotion, UUID>, PromotionRepository {
+public interface PromotionJpaRepository extends JpaRepository<Promotion, String>, PromotionRepository {
     
     @Override
     @Query("SELECT p FROM Promotion p WHERE p.active = true")

@@ -1,6 +1,8 @@
 package com.homebase.ecom.notification.infrastructure.persistence.adapter;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import com.homebase.ecom.notification.domain.model.Notification;
 import com.homebase.ecom.notification.domain.port.NotificationRepository;
 import com.homebase.ecom.notification.infrastructure.persistence.entity.NotificationEntity;
@@ -19,6 +21,13 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     @Override
     public Optional<Notification> findById(String id) {
         return jpaRepository.findById(id).map(mapper::toModel);
+    }
+
+    @Override
+    public List<Notification> findByCustomerId(String customerId) {
+        return jpaRepository.findByCustomerId(customerId).stream()
+                .map(mapper::toModel)
+                .collect(Collectors.toList());
     }
 
     @Override

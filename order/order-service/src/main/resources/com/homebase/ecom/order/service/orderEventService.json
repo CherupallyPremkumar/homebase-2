@@ -1,0 +1,22 @@
+{
+	"name": "orderEventService",
+	"id": "orderEventService",
+	"serviceName": "orderEventService",
+	"operations": [
+		{
+			"name": "handlePaymentEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["payment.events"]
+		},
+		{
+			"name": "handleShippingEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["shipping.events"]
+		},
+		{
+			"name": "handleCartEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["cart.events"]
+		}
+	]
+}

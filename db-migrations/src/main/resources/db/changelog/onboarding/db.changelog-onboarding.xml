@@ -5,8 +5,67 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
-    <changeSet id="V42__create_onboarding_tables" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/onboarding/V42__create_onboarding_tables.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    <changeSet id="001-create-supplier-onboarding" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="supplier_onboarding"/></not>
+        </preConditions>
+
+        <createTable tableName="supplier_onboarding">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="supplier_id" type="VARCHAR(36)"/>
+            <column name="applicant_name" type="VARCHAR(255)"/>
+            <column name="business_name" type="VARCHAR(255)"/>
+            <column name="business_type" type="VARCHAR(100)"/>
+            <column name="documents_json" type="TEXT"/>
+            <column name="verification_notes" type="TEXT"/>
+            <column name="training_progress" type="INT" defaultValueNumeric="0"/>
+            <column name="training_completed_modules_json" type="TEXT"/>
+            <column name="resubmission_count" type="INT" defaultValueNumeric="0"/>
+            <column name="submitted_at" type="TIMESTAMP"/>
+            <column name="rejection_reason" type="TEXT"/>
+            <column name="current_state" type="VARCHAR(50)"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="created_date" type="TIMESTAMP"/>
+            <column name="last_modified_date" type="TIMESTAMP"/>
+        </createTable>
+
+        <createIndex tableName="supplier_onboarding" indexName="idx_onboarding_supplier_id">
+            <column name="supplier_id"/>
+        </createIndex>
+        <createIndex tableName="supplier_onboarding" indexName="idx_onboarding_current_state">
+            <column name="current_state"/>
+        </createIndex>
+        <createIndex tableName="supplier_onboarding" indexName="idx_onboarding_submitted_at">
+            <column name="submitted_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="002-create-onboarding-activity-log" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="onboarding_activity_log"/></not>
+        </preConditions>
+
+        <createTable tableName="onboarding_activity_log">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="onboarding_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="activity_name" type="VARCHAR(100)"/>
+            <column name="activity_comment" type="TEXT"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="created_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+            constraintName="fk_activity_onboarding"
+            baseTableName="onboarding_activity_log"
+            baseColumnNames="onboarding_id"
+            referencedTableName="supplier_onboarding"
+            referencedColumnNames="id"/>
     </changeSet>
 
 </databaseChangeLog>

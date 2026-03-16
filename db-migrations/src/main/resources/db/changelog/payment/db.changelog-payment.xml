@@ -5,68 +5,66 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
-    <changeSet id="V8__add_reconciliation_columns" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V8__add_reconciliation_columns.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    <changeSet id="payment-001-create-payment-table" author="homebase">
+        <createTable tableName="payment">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="customer_id" type="VARCHAR(36)"/>
+            <column name="amount" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="payment_method" type="VARCHAR(20)"/>
+            <column name="gateway_transaction_id" type="VARCHAR(255)"/>
+            <column name="gateway_response" type="TEXT"/>
+            <column name="retry_count" type="INT" defaultValueNumeric="0"/>
+            <column name="failure_reason" type="TEXT"/>
+            <!-- Chenile STM fields -->
+            <column name="stateId" type="VARCHAR(50)"/>
+            <column name="flowId" type="VARCHAR(50)"/>
+            <!-- Audit fields from BaseJpaEntity -->
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+        </createTable>
+
+        <createIndex tableName="payment" indexName="idx_payment_order_id">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex tableName="payment" indexName="idx_payment_customer_id">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex tableName="payment" indexName="idx_payment_state">
+            <column name="stateId"/>
+        </createIndex>
+        <createIndex tableName="payment" indexName="idx_payment_method">
+            <column name="payment_method"/>
+        </createIndex>
+        <createIndex tableName="payment" indexName="idx_payment_gateway_txn">
+            <column name="gateway_transaction_id"/>
+        </createIndex>
     </changeSet>
 
-    <changeSet id="V9__create_refunds_table" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V9__create_refunds_table.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
+    <changeSet id="payment-002-create-activity-log-table" author="homebase">
+        <createTable tableName="payment_activity_log">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="payment_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_id" type="VARCHAR(100)"/>
+            <column name="comment" type="TEXT"/>
+            <column name="success" type="BOOLEAN"/>
+        </createTable>
 
-    <changeSet id="V10__create_ledger_tables" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V10__create_ledger_tables.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
-
-    <changeSet id="V11__create_reconciliation_mismatches_table" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V11__create_reconciliation_mismatches_table.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
-
-    <changeSet id="V13__add_stripe_event_id" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V13__add_stripe_event_id.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
-
-    <changeSet id="V15__update_ledger_accounts_and_currency" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V15__update_ledger_accounts_and_currency.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
-
-    <changeSet id="V16__create_refund_requests_table" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V16__create_refund_requests_table.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
-
-    <changeSet id="V20__add_gateway_type_to_payment_transactions" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V20__add_gateway_type_to_payment_transactions.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
-
-    <changeSet id="V21__rename_stripe_event_id_to_gateway_event_id" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V21__rename_stripe_event_id_to_gateway_event_id.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
-
-    <changeSet id="V23__create_provider_objects_table" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V23__create_provider_objects_table.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
-
-    <changeSet id="V24__create_payout_tables" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V24__create_payout_tables.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
-
-    <changeSet id="V25__create_reconciliation_run_tables" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V25__create_reconciliation_run_tables.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
-
-    <changeSet id="V26__gateway_agnostic_refunds_and_reconciliation" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V26__gateway_agnostic_refunds_and_reconciliation.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
-
-    <changeSet id="V27__add_resolved_by_index" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V27__add_resolved_by_index.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
-
-    <changeSet id="V28__gateway_agnostic_refund_requests" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V28__gateway_agnostic_refund_requests.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
-    </changeSet>
-
-    <changeSet id="V29__create_provider_balance_transactions_table" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/payment/V29__create_provider_balance_transactions_table.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+        <addForeignKeyConstraint constraintName="fk_payment_activity_payment"
+                                 baseTableName="payment_activity_log" baseColumnNames="payment_id"
+                                 referencedTableName="payment" referencedColumnNames="id"/>
     </changeSet>
 
 </databaseChangeLog>

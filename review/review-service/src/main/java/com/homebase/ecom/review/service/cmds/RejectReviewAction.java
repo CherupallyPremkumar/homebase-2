@@ -9,24 +9,22 @@ import com.homebase.ecom.review.model.Review;
 import com.homebase.ecom.review.dto.RejectReviewPayload;
 
 /**
- * Contains customized logic for the rejectReview transition.
+ * STM action for rejecting a review (UNDER_MODERATION/FLAGGED -> REJECTED).
+ * Requires a rejection reason.
  */
 public class RejectReviewAction extends AbstractSTMTransitionAction<Review, RejectReviewPayload> {
 
-	@Override
-	public void transitionTo(Review review,
-            RejectReviewPayload payload,
+    @Override
+    public void transitionTo(Review review, RejectReviewPayload payload,
             State startState, String eventId,
-			State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-            // Require a rejection reason
-            if (payload.getRejectionReason() == null || payload.getRejectionReason().trim().isEmpty()) {
-                throw new IllegalArgumentException("Rejection reason is required when rejecting a review");
-            }
-            review.description = payload.getRejectionReason();
-            review.addActivity("rejectReview", "Review rejected. Reason: " + payload.getRejectionReason());
+            State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-            // The reviewer notification is handled in the REJECTEDReviewPostSaveHook
-            review.getTransientMap().previousPayload = payload;
-	}
+        if (payload.getRejectionReason() == null || payload.getRejectionReason().trim().isEmpty()) {
+            throw new IllegalArgumentException("Rejection reason is required when rejecting a review");
+        }
 
+        review.setModeratorNotes(payload.getRejectionReason());
+        review.addActivity("rejectReview", "Review rejected. Reason: " + payload.getRejectionReason());
+        review.getTransientMap().previousPayload = payload;
+    }
 }

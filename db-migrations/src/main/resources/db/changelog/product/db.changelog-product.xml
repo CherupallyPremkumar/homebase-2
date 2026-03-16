@@ -5,8 +5,277 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
+    <!-- ================================================================== -->
+    <!-- V5: Add status column to products, remove old price/in_stock cols  -->
+    <!-- ================================================================== -->
     <changeSet id="V5__add_status_to_products" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/product/V5__add_status_to_products.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+        <addColumn tableName="products">
+            <column name="status" type="VARCHAR(50)" defaultValue="DRAFT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <dropColumn tableName="products" columnName="price"/>
+        <dropColumn tableName="products" columnName="in_stock"/>
+
+        <createIndex indexName="idx_products_status" tableName="products">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- V46: Product PIM schema                                            -->
+    <!-- ================================================================== -->
+    <changeSet id="V46__product_pim_schema" author="homebase" runOnChange="false">
+        <!-- 1. Add PIM columns to products -->
+        <addColumn tableName="products">
+            <column name="brand" type="VARCHAR(255)"/>
+            <column name="category_id" type="VARCHAR(255)"/>
+            <column name="short_description" type="VARCHAR(500)"/>
+            <column name="slug" type="VARCHAR(300)"/>
+            <column name="meta_title" type="VARCHAR(200)"/>
+            <column name="meta_description" type="VARCHAR(500)"/>
+        </addColumn>
+
+        <addUniqueConstraint tableName="products" columnNames="slug" constraintName="uk_products_slug"/>
+
+        <!-- Drop legacy columns -->
+        <dropColumn tableName="products" columnName="image_url"/>
+        <dropColumn tableName="products" columnName="category"/>
+
+        <!-- 2. Categories -->
+        <createTable tableName="categories">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="slug" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_categories_slug"/>
+            </column>
+            <column name="parent_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_categories_parent" referencedTableName="categories" referencedColumnNames="id"/>
+            </column>
+            <column name="path" type="VARCHAR(255)"/>
+            <column name="depth" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_order" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Category-attribute join table -->
+        <createTable tableName="category_attributes">
+            <column name="category_id" type="VARCHAR(255)">
+                <constraints nullable="false" foreignKeyName="fk_category_attributes_category" referencedTableName="categories" referencedColumnNames="id"/>
+            </column>
+            <column name="attribute_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 3. Attribute definitions -->
+        <createTable tableName="attribute_definitions">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_attribute_definitions_code"/>
+            </column>
+            <column name="label" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="input_type" type="VARCHAR(50)"/>
+            <column name="filterable" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="searchable" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="required" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_order" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 4. Attribute options -->
+        <createTable tableName="attribute_options">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="attribute_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_attribute_options_attribute" referencedTableName="attribute_definitions" referencedColumnNames="id"/>
+            </column>
+            <column name="value" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="label" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="color_swatch" type="VARCHAR(255)"/>
+            <column name="sort_order" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 5. Product variants -->
+        <createTable tableName="product_variants">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_product_variants_product" referencedTableName="products" referencedColumnNames="id"/>
+            </column>
+            <column name="sku" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Variant attributes map -->
+        <createTable tableName="variant_attributes">
+            <column name="variant_id" type="VARCHAR(255)">
+                <constraints nullable="false" foreignKeyName="fk_variant_attributes_variant" referencedTableName="product_variants" referencedColumnNames="id"/>
+            </column>
+            <column name="attribute_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attribute_value" type="VARCHAR(255)"/>
+        </createTable>
+
+        <!-- 6. Media assets -->
+        <createTable tableName="media_assets">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="original_url" type="VARCHAR(1000)"/>
+            <column name="cdn_url" type="VARCHAR(1000)"/>
+            <column name="thumbnail_url" type="VARCHAR(1000)"/>
+            <column name="medium_url" type="VARCHAR(1000)"/>
+            <column name="zoom_url" type="VARCHAR(1000)"/>
+            <column name="type" type="VARCHAR(50)"/>
+            <column name="mime_type" type="VARCHAR(255)"/>
+            <column name="file_size_bytes" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="width" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="height" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alt_text" type="VARCHAR(255)"/>
+            <column name="processing_status" type="VARCHAR(50)" defaultValue="PENDING"/>
+        </createTable>
+
+        <!-- 7. Product attribute values -->
+        <createTable tableName="product_attribute_values">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_pav_product" referencedTableName="products" referencedColumnNames="id"/>
+            </column>
+            <column name="attribute_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_pav_attribute" referencedTableName="attribute_definitions" referencedColumnNames="id"/>
+            </column>
+            <column name="option_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_pav_option" referencedTableName="attribute_options" referencedColumnNames="id"/>
+            </column>
+            <column name="raw_value" type="VARCHAR(255)"/>
+        </createTable>
+
+        <!-- 8. Product media -->
+        <createTable tableName="product_media">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_product_media_product" referencedTableName="products" referencedColumnNames="id"/>
+            </column>
+            <column name="asset_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_product_media_asset" referencedTableName="media_assets" referencedColumnNames="id"/>
+            </column>
+            <column name="is_primary" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 9. Variant media (composite PK) -->
+        <createTable tableName="variant_media">
+            <column name="variant_id" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="true" foreignKeyName="fk_variant_media_variant" referencedTableName="product_variants" referencedColumnNames="id"/>
+            </column>
+            <column name="asset_id" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="true" foreignKeyName="fk_variant_media_asset" referencedTableName="media_assets" referencedColumnNames="id"/>
+            </column>
+            <column name="is_primary" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- 10. Product tags -->
+        <createTable tableName="product_tags">
+            <column name="product_id" type="VARCHAR(255)">
+                <constraints nullable="false" foreignKeyName="fk_product_tags_product" referencedTableName="products" referencedColumnNames="id"/>
+            </column>
+            <column name="tag" type="VARCHAR(255)"/>
+        </createTable>
+
+        <!-- 11. Product activity log -->
+        <createTable tableName="product_activity_log">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_product_activity_log_product" referencedTableName="products" referencedColumnNames="id"/>
+            </column>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_comment" type="VARCHAR(2000)"/>
+            <column name="activity_success" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(255)"/>
+            <column name="last_modified_by" type="VARCHAR(255)"/>
+        </createTable>
+
+        <!-- 12. FK from products to categories -->
+        <addForeignKeyConstraint baseTableName="products" baseColumnNames="category_id"
+                                 referencedTableName="categories" referencedColumnNames="id"
+                                 constraintName="fk_products_category"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- V49: Drop legacy timestamp columns from products                   -->
+    <!-- ================================================================== -->
+    <changeSet id="V49__drop_legacy_product_timestamp_columns" author="homebase" runOnChange="false">
+        <dropColumn tableName="products" columnName="created_at"/>
+        <dropColumn tableName="products" columnName="updated_at"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- V60: Drop legacy status column — replaced by stateId (V31/STM)   -->
+    <!-- ================================================================== -->
+    <changeSet id="V60__drop_legacy_product_status_column" author="homebase" runOnChange="false">
+        <dropIndex tableName="products" indexName="idx_products_status"/>
+        <dropColumn tableName="products" columnName="status"/>
     </changeSet>
 
 </databaseChangeLog>

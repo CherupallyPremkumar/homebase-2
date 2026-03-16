@@ -1,6 +1,5 @@
 package com.homebase.ecom.order.service.postSaveHooks;
 
-import com.homebase.ecom.order.dto.CancelOrderOrderPayload;
 import com.homebase.ecom.order.model.Order;
 import com.homebase.ecom.order.service.event.OrderEventPublisher;
 import com.homebase.ecom.shared.event.OrderCancelledEvent;
@@ -18,7 +17,7 @@ import java.util.stream.Collectors;
 
 /**
  * PostSaveHook for CANCELLED state.
- * Publishes OrderCancelledEvent to trigger inventory release and payment refund.
+ * Publishes ORDER_CANCELLED event to trigger inventory release and payment refund.
  */
 public class CANCELLEDOrderPostSaveHook implements PostSaveHook<Order> {
 
@@ -39,21 +38,13 @@ public class CANCELLEDOrderPostSaveHook implements PostSaveHook<Order> {
 
         OrderCancelledEvent event = new OrderCancelledEvent(
                 order.getId(),
-                order.getUser_Id(),
+                order.getCustomerId(),
                 items,
                 LocalDateTime.now()
         );
 
-        log.info("Publishing OrderCancelledEvent for order: {}, reason: {}",
-                order.getId(), extractCancellationReason(map));
+        log.info("Publishing ORDER_CANCELLED event for order: {}, reason: {}",
+                order.getId(), order.getCancelReason());
         orderEventPublisher.publishOrderCancelled(event);
-    }
-
-    private String extractCancellationReason(TransientMap map) {
-        if (map != null && map.previousPayload != null
-                && map.previousPayload instanceof CancelOrderOrderPayload) {
-            return ((CancelOrderOrderPayload) map.previousPayload).getReason();
-        }
-        return "UNKNOWN";
     }
 }

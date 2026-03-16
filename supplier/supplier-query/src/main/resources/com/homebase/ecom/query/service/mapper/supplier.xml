@@ -2,20 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="Supplier">
 
-    <select id="getAll" resultType="com.homebase.ecom.dto.SupplierDto">
-        SELECT 
-            id, 
-            name, 
-            description, 
-            email, 
-            status, 
-            state_id as "stateId", 
-            created_at as "createdAt"
+    <!-- Dashboard: Get all suppliers with filtering -->
+    <select id="getAll" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+        SELECT
+            id,
+            business_name as "businessName",
+            business_type as "businessType",
+            contact_email as "contactEmail",
+            rating,
+            fulfillment_rate as "fulfillmentRate",
+            total_orders as "totalOrders",
+            commission_rate as "commissionRate",
+            state_id as "stateId",
+            created_time as "createdAt"
         FROM supplier
         <where>
-            <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
-            <if test="email != null">AND email LIKE CONCAT('%', #{email}, '%')</if>
-            <if test="status != null">AND status = #{status}</if>
+            <if test="businessName != null">AND business_name LIKE CONCAT('%', #{businessName}, '%')</if>
+            <if test="contactEmail != null">AND contact_email LIKE CONCAT('%', #{contactEmail}, '%')</if>
+            <if test="businessType != null">AND business_type = #{businessType}</if>
             <if test="stateId != null">AND state_id = #{stateId}</if>
         </where>
         ${orderby} ${pagination}
@@ -24,11 +28,156 @@
     <select id="getAll-count" resultType="int">
         SELECT count(*) FROM supplier
         <where>
-            <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
-            <if test="email != null">AND email LIKE CONCAT('%', #{email}, '%')</if>
-            <if test="status != null">AND status = #{status}</if>
+            <if test="businessName != null">AND business_name LIKE CONCAT('%', #{businessName}, '%')</if>
+            <if test="contactEmail != null">AND contact_email LIKE CONCAT('%', #{contactEmail}, '%')</if>
+            <if test="businessType != null">AND business_type = #{businessType}</if>
             <if test="stateId != null">AND state_id = #{stateId}</if>
         </where>
+    </select>
+
+    <!-- Dashboard: Get supplier by ID with full profile -->
+    <select id="getById" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+        SELECT
+            id,
+            business_name as "businessName",
+            business_type as "businessType",
+            tax_id as "taxId",
+            contact_email as "contactEmail",
+            contact_phone as "contactPhone",
+            address,
+            rating,
+            fulfillment_rate as "fulfillmentRate",
+            total_orders as "totalOrders",
+            total_returns as "totalReturns",
+            avg_shipping_days as "avgShippingDays",
+            commission_rate as "commissionRate",
+            state_id as "stateId",
+            created_time as "createdAt",
+            active_date as "activeDate"
+        FROM supplier
+        WHERE id = #{id}
+    </select>
+
+    <!-- Dashboard: State counts for overview -->
+    <select id="getStateCounts" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+        SELECT
+            state_id as "stateId",
+            count(*) as "totalOrders"
+        FROM supplier
+        GROUP BY state_id
+    </select>
+
+    <select id="getStateCounts-count" resultType="int">
+        SELECT count(DISTINCT state_id) FROM supplier
+    </select>
+
+    <!-- Dashboard: Suppliers pending approval -->
+    <select id="getPendingApproval" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+        SELECT
+            id,
+            business_name as "businessName",
+            business_type as "businessType",
+            contact_email as "contactEmail",
+            state_id as "stateId",
+            created_time as "createdAt"
+        FROM supplier
+        WHERE state_id IN ('APPLIED', 'UNDER_REVIEW')
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getPendingApproval-count" resultType="int">
+        SELECT count(*) FROM supplier
+        WHERE state_id IN ('APPLIED', 'UNDER_REVIEW')
+    </select>
+
+    <!-- Dashboard: Top performing suppliers -->
+    <select id="getTopSuppliers" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+        SELECT
+            id,
+            business_name as "businessName",
+            rating,
+            fulfillment_rate as "fulfillmentRate",
+            total_orders as "totalOrders",
+            state_id as "stateId"
+        FROM supplier
+        WHERE state_id = 'ACTIVE'
+        ORDER BY rating DESC, fulfillment_rate DESC
+        ${pagination}
+    </select>
+
+    <select id="getTopSuppliers-count" resultType="int">
+        SELECT count(*) FROM supplier
+        WHERE state_id = 'ACTIVE'
+    </select>
+
+    <!-- Dashboard: Underperforming suppliers -->
+    <select id="getUnderperforming" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+        SELECT
+            id,
+            business_name as "businessName",
+            rating,
+            fulfillment_rate as "fulfillmentRate",
+            total_orders as "totalOrders",
+            total_returns as "totalReturns",
+            state_id as "stateId"
+        FROM supplier
+        WHERE (rating &lt; 2.0 OR fulfillment_rate &lt; 85.0)
+          AND state_id IN ('ACTIVE', 'ON_PROBATION')
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getUnderperforming-count" resultType="int">
+        SELECT count(*) FROM supplier
+        WHERE (rating &lt; 2.0 OR fulfillment_rate &lt; 85.0)
+          AND state_id IN ('ACTIVE', 'ON_PROBATION')
+    </select>
+
+    <!-- Supplier: Get own profile -->
+    <select id="getProfile" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+        SELECT
+            id,
+            user_id as "userId",
+            business_name as "businessName",
+            business_type as "businessType",
+            tax_id as "taxId",
+            bank_account_id as "bankAccountId",
+            contact_email as "contactEmail",
+            contact_phone as "contactPhone",
+            address,
+            rating,
+            fulfillment_rate as "fulfillmentRate",
+            total_orders as "totalOrders",
+            total_returns as "totalReturns",
+            avg_shipping_days as "avgShippingDays",
+            commission_rate as "commissionRate",
+            state_id as "stateId",
+            created_time as "createdAt",
+            active_date as "activeDate"
+        FROM supplier
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="getProfile-count" resultType="int">
+        SELECT count(*) FROM supplier WHERE user_id = #{userId}
+    </select>
+
+    <!-- Supplier: Get performance metrics -->
+    <select id="getPerformanceMetrics" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+        SELECT
+            id,
+            business_name as "businessName",
+            rating,
+            fulfillment_rate as "fulfillmentRate",
+            total_orders as "totalOrders",
+            total_returns as "totalReturns",
+            avg_shipping_days as "avgShippingDays",
+            commission_rate as "commissionRate"
+        FROM supplier
+        WHERE id = #{id}
+    </select>
+
+    <select id="getPerformanceMetrics-count" resultType="int">
+        SELECT count(*) FROM supplier WHERE id = #{id}
     </select>
 
 </mapper>

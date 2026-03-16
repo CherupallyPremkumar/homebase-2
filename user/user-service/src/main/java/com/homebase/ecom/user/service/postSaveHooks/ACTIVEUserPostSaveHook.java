@@ -14,13 +14,11 @@ import java.time.Instant;
 /**
  * Triggered when user enters ACTIVE state.
  *
- * This can happen from multiple source states:
- *   - PENDING_VERIFICATION (email verified)  -> publishes UserActivated
- *   - LOCKED (account unlocked)              -> publishes AccountUnlocked
- *   - SUSPENDED (user reinstated)            -> publishes UserReinstated
- *
- * The event type is determined from the transient map's "event" key,
- * set by the corresponding transition action.
+ * This can happen from:
+ *   - EMAIL_VERIFIED (system activation) -> publishes UserActivated
+ *   - LOCKED (account unlocked)          -> publishes AccountUnlocked
+ *   - SUSPENDED (user reinstated)        -> publishes UserReinstated
+ *   - Self-transitions (profile, address) -> publishes appropriate events
  */
 public class ACTIVEUserPostSaveHook implements PostSaveHook<User> {
 
@@ -40,8 +38,8 @@ public class ACTIVEUserPostSaveHook implements PostSaveHook<User> {
         Instant now = Instant.now();
 
         switch (event) {
-            case "EMAIL_VERIFIED" -> {
-                log.info("User {} activated via email verification", user.getId());
+            case "USER_ACTIVATED" -> {
+                log.info("User {} activated", user.getId());
                 eventPublisher.publishUserActivated(
                         new UserDomainEvents.UserActivated(user.getId(), user.getKeycloakId(), now)
                 );

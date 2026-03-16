@@ -24,9 +24,23 @@ public class ProductMapper {
         product.setId(entity.getId());
         product.setName(entity.getName());
         product.setDescription(entity.getDescription());
+        product.setShortDescription(entity.getShortDescription());
         product.setBrand(entity.getBrand());
         product.setCategoryId(entity.getCategoryId());
+        product.setSlug(entity.getSlug());
+        product.setMetaTitle(entity.getMetaTitle());
+        product.setMetaDescription(entity.getMetaDescription());
+        product.setTags(entity.getTags() != null ? new ArrayList<>(entity.getTags()) : new ArrayList<>());
         product.setCurrentState(entity.getCurrentState());
+        // Base entity fields
+        product.setVersion(entity.getVersion());
+        product.setCreatedTime(entity.getCreatedTime());
+        product.setLastModifiedTime(entity.getLastModifiedTime());
+        product.setLastModifiedBy(entity.getLastModifiedBy());
+        product.setCreatedBy(entity.getCreatedBy());
+        product.setStateEntryTime(entity.getStateEntryTime());
+        product.setSlaLate(entity.getSlaLate());
+        product.setSlaTendingLate(entity.getSlaTendingLate());
 
         if (entity.getVariants() != null) {
             product.setVariants(entity.getVariants().stream()
@@ -46,6 +60,12 @@ public class ProductMapper {
                 .collect(Collectors.toList()));
         }
 
+        if (entity.getActivities() != null) {
+            for (ProductActivityLogEntity logEntity : entity.getActivities()) {
+                product.addActivity(logEntity.activityName, logEntity.activityComment);
+            }
+        }
+
         return product;
     }
 
@@ -55,9 +75,23 @@ public class ProductMapper {
         entity.setId(model.getId());
         entity.setName(model.getName());
         entity.setDescription(model.getDescription());
+        entity.setShortDescription(model.getShortDescription());
         entity.setBrand(model.getBrand());
         entity.setCategoryId(model.getCategoryId());
+        entity.setSlug(model.getSlug());
+        entity.setMetaTitle(model.getMetaTitle());
+        entity.setMetaDescription(model.getMetaDescription());
+        entity.setTags(model.getTags() != null ? new ArrayList<>(model.getTags()) : new ArrayList<>());
         entity.setCurrentState(model.getCurrentState());
+        // Base entity fields
+        if (model.getVersion() != null) entity.setVersion(model.getVersion());
+        entity.setCreatedTime(model.getCreatedTime());
+        entity.setLastModifiedTime(model.getLastModifiedTime());
+        entity.setLastModifiedBy(model.getLastModifiedBy());
+        entity.setCreatedBy(model.getCreatedBy());
+        entity.setStateEntryTime(model.getStateEntryTime());
+        entity.setSlaLate(model.getSlaLate());
+        entity.setSlaTendingLate(model.getSlaTendingLate());
 
         if (model.getVariants() != null) {
             entity.setVariants(model.getVariants().stream()
@@ -76,7 +110,19 @@ public class ProductMapper {
                 .map(this::productMediaToEntity)
                 .collect(Collectors.toList()));
         }
-        
+
+        if (model.obtainActivities() != null) {
+            var activityEntities = new ArrayList<ProductActivityLogEntity>();
+            for (var log : model.obtainActivities()) {
+                ProductActivityLogEntity logEntity = new ProductActivityLogEntity();
+                logEntity.setActivityName(log.getName());
+                logEntity.setActivityComment(log.getComment());
+                logEntity.setActivitySuccess(log.getSuccess());
+                activityEntities.add(logEntity);
+            }
+            entity.setActivities(activityEntities);
+        }
+
         return entity;
     }
 

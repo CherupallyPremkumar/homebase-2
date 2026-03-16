@@ -9,6 +9,9 @@ import com.homebase.ecom.support.model.SupportTicket;
 import com.homebase.ecom.support.model.TicketMessage;
 import com.homebase.ecom.support.dto.CloseTicketPayload;
 
+import java.util.Date;
+import java.util.UUID;
+
 /**
  * Closes a support ticket from RESOLVED to CLOSED.
  */
@@ -20,15 +23,14 @@ public class CloseSupportAction extends AbstractSTMTransitionAction<SupportTicke
             State startState, String eventId,
             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-        // Ensure the ticket was resolved before closing
         if (ticket.getResolvedAt() == null) {
             throw new IllegalStateException("Cannot close a ticket that has not been resolved");
         }
 
-        // Add system message about closure
         TicketMessage closeMsg = new TicketMessage();
-        closeMsg.setId(java.util.UUID.randomUUID().toString());
+        closeMsg.setId(UUID.randomUUID().toString());
         closeMsg.setSenderType("SYSTEM");
+        closeMsg.setTimestamp(new Date());
         closeMsg.setMessage("Ticket closed after resolution period.");
         ticket.getMessages().add(closeMsg);
 

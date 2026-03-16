@@ -1,0 +1,10 @@
+{
+  "policies": {
+    "commissionRatePercent": 15,
+    "platformFeePercent": 2,
+    "settlementCycleDays": 14,
+    "minSettlementAmount": 500,
+    "maxAdjustmentPercent": 10,
+    "autoApproveThreshold": 10000
+  }
+}

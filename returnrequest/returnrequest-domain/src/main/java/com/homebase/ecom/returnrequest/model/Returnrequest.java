@@ -12,27 +12,31 @@ public class Returnrequest extends AbstractExtendedStateEntity
         implements ActivityEnabledStateEntity,
         ContainsTransientMap {
 
+    // Core fields
     public String orderId;
-    public String orderItemId;
+    public String customerId;
+    public List<ReturnItem> items = new ArrayList<>();
     public String reason;
-    public Integer quantity = 1;
-    public BigDecimal refundAmount;
-    public String returnType;
+    public String returnType; // REFUND, EXCHANGE, STORE_CREDIT
+    public BigDecimal totalRefundAmount;
+    public BigDecimal restockingFee;
     public String description;
 
-    // Business fields for return processing
-    public BigDecimal itemPrice;
-    public LocalDateTime orderDeliveryDate;
-    public String inspectorId;
-    public String inspectorNotes;
+    // Review fields
+    public String reviewerId;
+    public String reviewNotes;
     public String rejectionReason;
     public String rejectionComment;
-    public String pickupTrackingNumber;
+
+    // Warehouse fields
     public String warehouseId;
     public String conditionOnReceipt;
-    public String refundMethod;
-    public String refundTransactionId;
-    public LocalDateTime refundProcessedAt;
+    public String inspectorId;
+    public String inspectorNotes;
+
+    // Order context (set from order.events)
+    public LocalDateTime orderDeliveryDate;
+    public BigDecimal orderTotalValue;
 
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();

@@ -3,22 +3,27 @@ package com.homebase.ecom.notification.infrastructure.persistence.mapper;
 import com.homebase.ecom.notification.domain.model.Notification;
 import com.homebase.ecom.notification.infrastructure.persistence.entity.NotificationEntity;
 
+import java.util.HashMap;
+
+/**
+ * Bidirectional mapper between Notification domain model and NotificationEntity JPA entity.
+ */
 public class NotificationMapper {
 
     public Notification toModel(NotificationEntity entity) {
         if (entity == null) return null;
         Notification model = new Notification();
         model.setId(entity.getId());
-        model.setUserId(entity.getUserId());
+        model.setCustomerId(entity.getCustomerId());
         model.setChannel(entity.getChannel());
-        model.setTemplateCode(entity.getTemplateCode());
+        model.setTemplateId(entity.getTemplateId());
         model.setSubject(entity.getSubject());
         model.setBody(entity.getBody());
-        model.setReferenceType(entity.getReferenceType());
-        model.setReferenceId(entity.getReferenceId());
-        model.setReadAt(entity.getReadAt());
+        model.setRecipientAddress(entity.getRecipientAddress());
+        model.setMetadata(entity.getMetadata() != null ? new HashMap<>(entity.getMetadata()) : new HashMap<>());
         model.setSentAt(entity.getSentAt());
-        model.setErrorMessage(entity.getErrorMessage());
+        model.setDeliveredAt(entity.getDeliveredAt());
+        model.setFailureReason(entity.getFailureReason());
         model.setRetryCount(entity.getRetryCount());
         // For STM state
         model.setCurrentState(entity.getCurrentState());
@@ -29,16 +34,16 @@ public class NotificationMapper {
         if (model == null) return null;
         NotificationEntity entity = new NotificationEntity();
         entity.setId(model.getId());
-        entity.setUserId(model.getUserId());
+        entity.setCustomerId(model.getCustomerId());
         entity.setChannel(model.getChannel());
-        entity.setTemplateCode(model.getTemplateCode());
+        entity.setTemplateId(model.getTemplateId());
         entity.setSubject(model.getSubject());
         entity.setBody(model.getBody());
-        entity.setReferenceType(model.getReferenceType());
-        entity.setReferenceId(model.getReferenceId());
-        entity.setReadAt(model.getReadAt());
+        entity.setRecipientAddress(model.getRecipientAddress());
+        entity.setMetadata(model.getMetadata() != null ? new HashMap<>(model.getMetadata()) : new HashMap<>());
         entity.setSentAt(model.getSentAt());
-        entity.setErrorMessage(model.getErrorMessage());
+        entity.setDeliveredAt(model.getDeliveredAt());
+        entity.setFailureReason(model.getFailureReason());
         entity.setRetryCount(model.getRetryCount());
         // For STM state
         entity.setCurrentState(model.getCurrentState());

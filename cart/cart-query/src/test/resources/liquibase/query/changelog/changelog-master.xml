@@ -3,10 +3,15 @@
 <databaseChangeLog
 	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd
-        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
-	<!--minclude file="liquibase/query/changelog/changelog-1.0.xml" / -->
-	
+	<!-- Cart schema (cart, cart_item, cart_activity_log) -->
+	<include file="db/changelog/cart/db.changelog-cart.xml" />
+
+	<!-- Product, catalog, inventory tables for storefront queries -->
+	<include file="db/changelog/cart/test/db.changelog-cart-query-tables.xml" />
+
+	<!-- Test data (carts, items, activities, products, variants, media, inventory) -->
+	<include file="db/changelog/cart/test/db.changelog-cart-testdata.xml" />
+
 </databaseChangeLog>

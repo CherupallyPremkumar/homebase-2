@@ -4,16 +4,16 @@
 
   <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
 
-  <event-information eventId='disableProducts' meta-acls="SYSTEM"/>
-  <event-information eventId='removeCatalog' meta-acls="SYSTEM"/>
-  <event-information eventId='freezeInventory' meta-acls="SYSTEM"/>
-  <event-information eventId='cancelOrders' meta-acls="SYSTEM"/>
-  <event-information eventId='notifyCustomers' meta-acls="SYSTEM"/>
-  <event-information eventId='enableProducts' meta-acls="SYSTEM"/>
-  <event-information eventId='restoreCatalog' meta-acls="SYSTEM"/>
-  <event-information eventId='unfreezeInventory' meta-acls="SYSTEM"/>
-  <event-information eventId='notifySupplier' meta-acls="SYSTEM"/>
-  <event-information eventId='retry' meta-acls="SYSTEM"/>
+  <event-information eventId='disableProducts' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='removeCatalog' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='freezeInventory' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='cancelOrders' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='notifyCustomers' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='enableProducts' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='restoreCatalog' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='unfreezeInventory' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='notifySupplier' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='retry' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
 
   <flow id='suspend-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
@@ -77,6 +77,9 @@
           newStateId='INITIATED'
           meta-acls="SYSTEM"/>
     </status>
+    <!-- __TERMINAL_STATE__ is used by BDD tests for mandatory activity completion checks -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
+    </manual-state>
   </flow>
 
   <flow id='reactivate-flow'>
@@ -132,5 +135,8 @@
           newStateId='INITIATED'
           meta-acls="SYSTEM"/>
     </status>
+    <!-- __TERMINAL_STATE__ is used by BDD tests for mandatory activity completion checks -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
+    </manual-state>
   </flow>
 </states>

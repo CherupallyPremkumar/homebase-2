@@ -64,5 +64,11 @@
 			<artifactId>cucumber-utils</artifactId>
 			<scope>test</scope>
 		</dependency>
+			<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>db-migrations</artifactId>
+			<version>${revision}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

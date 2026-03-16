@@ -18,11 +18,13 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.chenile.workflow.dto.StateEntityServiceResponse;
-import com.homebase.ecom.product.model.Product;
+import com.homebase.ecom.product.domain.model.Product;
 import org.chenile.security.model.SecurityConfig;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @ChenileController(value = "productService", serviceName = "_productStateEntityService_", healthCheckerName = "productHealthChecker")
+@Tag(name = "Product", description = "Product catalog management")
 public class ProductController extends ControllerSupport {
 
 	@GetMapping("/product/{id}")

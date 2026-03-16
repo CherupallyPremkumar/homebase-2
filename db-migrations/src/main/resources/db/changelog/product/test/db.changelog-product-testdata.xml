@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Product query test data:
+          6 categories (3 root, 2 sub, 1 inactive)
+          8 products across 5 states (PUBLISHED x3, UNDER_REVIEW x2, DRAFT x1, DISABLED x1, DISCONTINUED x1)
+          15 variants across all products
+          7 attribute definitions + 12 options
+          11 category-attribute mappings
+          18 variant attributes
+          10 product-level attribute values
+          6 media assets + 5 product media + 2 variant media
+          12 product tags
+          6 activity log entries
+          6 offers (buy box scenarios)
+    -->
+    <changeSet id="product-query-test-data" author="homebase-test">
+
+        <!-- ============================================================ -->
+        <!-- CATEGORIES                                                    -->
+        <!-- ============================================================ -->
+        <insert tableName="categories">
+            <column name="id" value="cat-electronics"/>
+            <column name="name" value="Electronics"/>
+            <column name="slug" value="electronics"/>
+            <column name="path" value="/electronics"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-phones"/>
+            <column name="name" value="Phones"/>
+            <column name="slug" value="phones"/>
+            <column name="parent_id" value="cat-electronics"/>
+            <column name="path" value="/electronics/phones"/>
+            <column name="depth" valueNumeric="1"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-audio"/>
+            <column name="name" value="Audio"/>
+            <column name="slug" value="audio"/>
+            <column name="parent_id" value="cat-electronics"/>
+            <column name="path" value="/electronics/audio"/>
+            <column name="depth" valueNumeric="1"/>
+            <column name="display_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-apparel"/>
+            <column name="name" value="Apparel"/>
+            <column name="slug" value="apparel"/>
+            <column name="path" value="/apparel"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-home"/>
+            <column name="name" value="Home &amp; Kitchen"/>
+            <column name="slug" value="home-kitchen"/>
+            <column name="path" value="/home-kitchen"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-inactive"/>
+            <column name="name" value="Seasonal"/>
+            <column name="slug" value="seasonal"/>
+            <column name="path" value="/seasonal"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="99"/>
+            <column name="active" valueBoolean="false"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- ATTRIBUTE DEFINITIONS                                         -->
+        <!-- ============================================================ -->
+        <insert tableName="attribute_definitions">
+            <column name="id" value="attr-color"/>
+            <column name="code" value="color"/>
+            <column name="label" value="Color"/>
+            <column name="input_type" value="COLOR"/>
+            <column name="filterable" valueBoolean="true"/>
+            <column name="searchable" valueBoolean="true"/>
+            <column name="display_order" valueNumeric="1"/>
+        </insert>
+        <insert tableName="attribute_definitions">
+            <column name="id" value="attr-size"/>
+            <column name="code" value="size"/>
+            <column name="label" value="Size"/>
+            <column name="input_type" value="SELECT"/>
+            <column name="filterable" valueBoolean="true"/>
+            <column name="required" valueBoolean="true"/>
+            <column name="display_order" valueNumeric="2"/>
+        </insert>
+        <insert tableName="attribute_definitions">
+            <column name="id" value="attr-material"/>
+            <column name="code" value="material"/>
+            <column name="label" value="Material"/>
+            <column name="input_type" value="TEXT"/>
+            <column name="filterable" valueBoolean="true"/>
+            <column name="searchable" valueBoolean="true"/>
+            <column name="display_order" valueNumeric="3"/>
+        </insert>
+        <insert tableName="attribute_definitions">
+            <column name="id" value="attr-weight"/>
+            <column name="code" value="weight"/>
+            <column name="label" value="Weight (grams)"/>
+            <column name="input_type" value="TEXT"/>
+            <column name="display_order" valueNumeric="4"/>
+        </insert>
+        <insert tableName="attribute_definitions">
+            <column name="id" value="attr-connectivity"/>
+            <column name="code" value="connectivity"/>
+            <column name="label" value="Connectivity"/>
+            <column name="input_type" value="SELECT"/>
+            <column name="filterable" valueBoolean="true"/>
+            <column name="display_order" valueNumeric="5"/>
+        </insert>
+        <insert tableName="attribute_definitions">
+            <column name="id" value="attr-battery"/>
+            <column name="code" value="battery_life"/>
+            <column name="label" value="Battery Life (hours)"/>
+            <column name="input_type" value="TEXT"/>
+            <column name="display_order" valueNumeric="6"/>
+        </insert>
+        <insert tableName="attribute_definitions">
+            <column name="id" value="attr-wattage"/>
+            <column name="code" value="wattage"/>
+            <column name="label" value="Wattage"/>
+            <column name="input_type" value="TEXT"/>
+            <column name="display_order" valueNumeric="7"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- ATTRIBUTE OPTIONS                                             -->
+        <!-- ============================================================ -->
+        <!-- Color options -->
+        <insert tableName="attribute_options">
+            <column name="id" value="opt-black"/>
+            <column name="attribute_id" value="attr-color"/>
+            <column name="value" value="black"/>
+            <column name="label" value="Black"/>
+            <column name="color_swatch" value="#000000"/>
+            <column name="sort_order" valueNumeric="1"/>
+        </insert>
+        <insert tableName="attribute_options">
+            <column name="id" value="opt-white"/>
+            <column name="attribute_id" value="attr-color"/>
+            <column name="value" value="white"/>
+            <column name="label" value="White"/>
+            <column name="color_swatch" value="#FFFFFF"/>
+            <column name="sort_order" valueNumeric="2"/>
+        </insert>
+        <insert tableName="attribute_options">
+            <column name="id" value="opt-red"/>
+            <column name="attribute_id" value="attr-color"/>
+            <column name="value" value="red"/>
+            <column name="label" value="Red"/>
+            <column name="color_swatch" value="#FF0000"/>
+            <column name="sort_order" valueNumeric="3"/>
+        </insert>
+        <insert tableName="attribute_options">
+            <column name="id" value="opt-blue"/>
+            <column name="attribute_id" value="attr-color"/>
+            <column name="value" value="blue"/>
+            <column name="label" value="Blue"/>
+            <column name="color_swatch" value="#0000FF"/>
+            <column name="sort_order" valueNumeric="4"/>
+        </insert>
+        <!-- Size options -->
+        <insert tableName="attribute_options">
+            <column name="id" value="opt-s"/>
+            <column name="attribute_id" value="attr-size"/>
+            <column name="value" value="S"/>
+            <column name="label" value="Small"/>
+            <column name="sort_order" valueNumeric="1"/>
+        </insert>
+        <insert tableName="attribute_options">
+            <column name="id" value="opt-m"/>
+            <column name="attribute_id" value="attr-size"/>
+            <column name="value" value="M"/>
+            <column name="label" value="Medium"/>
+            <column name="sort_order" valueNumeric="2"/>
+        </insert>
+        <insert tableName="attribute_options">
+            <column name="id" value="opt-l"/>
+            <column name="attribute_id" value="attr-size"/>
+            <column name="value" value="L"/>
+            <column name="label" value="Large"/>
+            <column name="sort_order" valueNumeric="3"/>
+        </insert>
+        <insert tableName="attribute_options">
+            <column name="id" value="opt-xl"/>
+            <column name="attribute_id" value="attr-size"/>
+            <column name="value" value="XL"/>
+            <column name="label" value="Extra Large"/>
+            <column name="sort_order" valueNumeric="4"/>
+        </insert>
+        <!-- Connectivity options -->
+        <insert tableName="attribute_options">
+            <column name="id" value="opt-bt5"/>
+            <column name="attribute_id" value="attr-connectivity"/>
+            <column name="value" value="bluetooth_5"/>
+            <column name="label" value="Bluetooth 5.0"/>
+            <column name="sort_order" valueNumeric="1"/>
+        </insert>
+        <insert tableName="attribute_options">
+            <column name="id" value="opt-bt53"/>
+            <column name="attribute_id" value="attr-connectivity"/>
+            <column name="value" value="bluetooth_53"/>
+            <column name="label" value="Bluetooth 5.3"/>
+            <column name="sort_order" valueNumeric="2"/>
+        </insert>
+        <insert tableName="attribute_options">
+            <column name="id" value="opt-wifi"/>
+            <column name="attribute_id" value="attr-connectivity"/>
+            <column name="value" value="wifi"/>
+            <column name="label" value="Wi-Fi"/>
+            <column name="sort_order" valueNumeric="3"/>
+        </insert>
+        <insert tableName="attribute_options">
+            <column name="id" value="opt-nfc"/>
+            <column name="attribute_id" value="attr-connectivity"/>
+            <column name="value" value="nfc"/>
+            <column name="label" value="NFC"/>
+            <column name="sort_order" valueNumeric="4"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- CATEGORY-ATTRIBUTE MAPPING                                    -->
+        <!-- ============================================================ -->
+        <!-- Audio: color, connectivity, battery_life, weight -->
+        <insert tableName="category_attributes"><column name="category_id" value="cat-audio"/><column name="attribute_id" value="attr-color"/></insert>
+        <insert tableName="category_attributes"><column name="category_id" value="cat-audio"/><column name="attribute_id" value="attr-connectivity"/></insert>
+        <insert tableName="category_attributes"><column name="category_id" value="cat-audio"/><column name="attribute_id" value="attr-battery"/></insert>
+        <insert tableName="category_attributes"><column name="category_id" value="cat-audio"/><column name="attribute_id" value="attr-weight"/></insert>
+        <!-- Phones: color, connectivity, battery_life, weight -->
+        <insert tableName="category_attributes"><column name="category_id" value="cat-phones"/><column name="attribute_id" value="attr-color"/></insert>
+        <insert tableName="category_attributes"><column name="category_id" value="cat-phones"/><column name="attribute_id" value="attr-connectivity"/></insert>
+        <insert tableName="category_attributes"><column name="category_id" value="cat-phones"/><column name="attribute_id" value="attr-battery"/></insert>
+        <!-- Apparel: color, size, material -->
+        <insert tableName="category_attributes"><column name="category_id" value="cat-apparel"/><column name="attribute_id" value="attr-color"/></insert>
+        <insert tableName="category_attributes"><column name="category_id" value="cat-apparel"/><column name="attribute_id" value="attr-size"/></insert>
+        <insert tableName="category_attributes"><column name="category_id" value="cat-apparel"/><column name="attribute_id" value="attr-material"/></insert>
+        <!-- Home: color, material, wattage, weight -->
+        <insert tableName="category_attributes"><column name="category_id" value="cat-home"/><column name="attribute_id" value="attr-color"/></insert>
+        <insert tableName="category_attributes"><column name="category_id" value="cat-home"/><column name="attribute_id" value="attr-material"/></insert>
+        <insert tableName="category_attributes"><column name="category_id" value="cat-home"/><column name="attribute_id" value="attr-wattage"/></insert>
+        <insert tableName="category_attributes"><column name="category_id" value="cat-home"/><column name="attribute_id" value="attr-weight"/></insert>
+
+        <!-- ============================================================ -->
+        <!-- PRODUCTS (8 across 5 states) — raw SQL for "stateId"/"flowId" quoting -->
+        <!-- ============================================================ -->
+        <sql>
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, meta_title, meta_description, "stateId", "flowId", created_by, tenant, created_time)
+            VALUES ('prod-1', 'Wireless Headphones', 'Premium wireless headphones with noise cancellation and 30hr battery life', 'Noise-cancelling headphones', 'SoundMax', 'cat-audio', 'wireless-headphones', 'Best Wireless Headphones', 'Buy premium wireless headphones', 'PUBLISHED', 'product-flow', 'admin', 'homebase', TIMESTAMP '2025-01-10 10:00:00');
+
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            VALUES ('prod-2', 'Cotton T-Shirt', 'Comfortable 100% cotton t-shirt available in multiple sizes', 'Cotton t-shirt', 'BasicWear', 'cat-apparel', 'cotton-tshirt', 'PUBLISHED', 'product-flow', 'admin', 'homebase', TIMESTAMP '2025-01-11 10:00:00');
+
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            VALUES ('prod-3', 'Stainless Steel Blender', 'High-power stainless steel kitchen blender with 5 speeds', 'Kitchen blender', 'HomeChef', 'cat-home', 'ss-blender', 'UNDER_REVIEW', 'product-flow', 'seller1', 'homebase', TIMESTAMP '2025-02-01 11:00:00');
+
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            VALUES ('prod-4', 'Smartphone X200', 'Latest smartphone with 6.7 inch OLED display', 'Flagship smartphone', 'TechBrand', 'cat-phones', 'smartphone-x200', 'DRAFT', 'product-flow', 'seller2', 'homebase', TIMESTAMP '2025-02-15 09:00:00');
+
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            VALUES ('prod-5', 'Bluetooth Speaker', 'Portable bluetooth speaker with waterproof design', 'Portable speaker', 'SoundMax', 'cat-audio', 'bluetooth-speaker', 'PUBLISHED', 'product-flow', 'admin', 'homebase', TIMESTAMP '2025-01-20 10:00:00');
+
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            VALUES ('prod-6', 'Yoga Mat', 'Premium non-slip yoga mat for home workouts', 'Yoga mat', 'FitLife', 'cat-home', 'yoga-mat', 'UNDER_REVIEW', 'product-flow', 'seller3', 'homebase', TIMESTAMP '2025-03-01 14:00:00');
+
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            VALUES ('prod-7', 'Desk Lamp', 'LED desk lamp with adjustable brightness', 'LED desk lamp', 'HomeChef', 'cat-home', 'desk-lamp', 'DISABLED', 'product-flow', 'admin', 'homebase', TIMESTAMP '2025-01-05 10:00:00');
+
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            VALUES ('prod-8', 'Running Shoes', 'Lightweight running shoes for daily training', 'Running shoes', 'FitLife', 'cat-apparel', 'running-shoes', 'DISCONTINUED', 'product-flow', 'admin', 'homebase', TIMESTAMP '2024-11-01 10:00:00');
+        </sql>
+
+        <!-- ============================================================ -->
+        <!-- PRODUCT VARIANTS (15 variants across 8 products)              -->
+        <!-- ============================================================ -->
+        <!-- prod-1 Headphones: Black and White -->
+        <insert tableName="product_variants"><column name="id" value="var-1a"/><column name="product_id" value="prod-1"/><column name="sku" value="WH-BLK-001"/></insert>
+        <insert tableName="product_variants"><column name="id" value="var-1b"/><column name="product_id" value="prod-1"/><column name="sku" value="WH-WHT-001"/></insert>
+        <!-- prod-2 T-Shirt: S/M/L Black + M White -->
+        <insert tableName="product_variants"><column name="id" value="var-2a"/><column name="product_id" value="prod-2"/><column name="sku" value="TS-BLK-S"/></insert>
+        <insert tableName="product_variants"><column name="id" value="var-2b"/><column name="product_id" value="prod-2"/><column name="sku" value="TS-BLK-M"/></insert>
+        <insert tableName="product_variants"><column name="id" value="var-2c"/><column name="product_id" value="prod-2"/><column name="sku" value="TS-BLK-L"/></insert>
+        <insert tableName="product_variants"><column name="id" value="var-2d"/><column name="product_id" value="prod-2"/><column name="sku" value="TS-WHT-M"/></insert>
+        <!-- prod-3 Blender: single variant (UNDER_REVIEW) -->
+        <insert tableName="product_variants"><column name="id" value="var-3a"/><column name="product_id" value="prod-3"/><column name="sku" value="BL-SS-001"/></insert>
+        <!-- prod-4 Smartphone: 128GB and 256GB (DRAFT) -->
+        <insert tableName="product_variants"><column name="id" value="var-4a"/><column name="product_id" value="prod-4"/><column name="sku" value="SP-X200-128"/></insert>
+        <insert tableName="product_variants"><column name="id" value="var-4b"/><column name="product_id" value="prod-4"/><column name="sku" value="SP-X200-256"/></insert>
+        <!-- prod-5 Speaker: Red and Blue -->
+        <insert tableName="product_variants"><column name="id" value="var-5a"/><column name="product_id" value="prod-5"/><column name="sku" value="BS-RED-001"/></insert>
+        <insert tableName="product_variants"><column name="id" value="var-5b"/><column name="product_id" value="prod-5"/><column name="sku" value="BS-BLU-001"/></insert>
+        <!-- prod-6 Yoga Mat: single variant (UNDER_REVIEW) -->
+        <insert tableName="product_variants"><column name="id" value="var-6a"/><column name="product_id" value="prod-6"/><column name="sku" value="YM-GRN-001"/></insert>
+        <!-- prod-7 Desk Lamp: single variant (DISABLED) -->
+        <insert tableName="product_variants"><column name="id" value="var-7a"/><column name="product_id" value="prod-7"/><column name="sku" value="DL-WHT-001"/></insert>
+        <!-- prod-8 Running Shoes: 2 sizes (DISCONTINUED) -->
+        <insert tableName="product_variants"><column name="id" value="var-8a"/><column name="product_id" value="prod-8"/><column name="sku" value="RS-BLK-42"/></insert>
+        <insert tableName="product_variants"><column name="id" value="var-8b"/><column name="product_id" value="prod-8"/><column name="sku" value="RS-BLK-43"/></insert>
+
+        <!-- ============================================================ -->
+        <!-- VARIANT ATTRIBUTES                                            -->
+        <!-- ============================================================ -->
+        <!-- Headphones: color -->
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-1a"/><column name="attribute_key" value="color"/><column name="attribute_value" value="black"/></insert>
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-1b"/><column name="attribute_key" value="color"/><column name="attribute_value" value="white"/></insert>
+        <!-- T-Shirt: color + size -->
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-2a"/><column name="attribute_key" value="color"/><column name="attribute_value" value="black"/></insert>
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-2a"/><column name="attribute_key" value="size"/><column name="attribute_value" value="S"/></insert>
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-2b"/><column name="attribute_key" value="color"/><column name="attribute_value" value="black"/></insert>
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-2b"/><column name="attribute_key" value="size"/><column name="attribute_value" value="M"/></insert>
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-2c"/><column name="attribute_key" value="color"/><column name="attribute_value" value="black"/></insert>
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-2c"/><column name="attribute_key" value="size"/><column name="attribute_value" value="L"/></insert>
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-2d"/><column name="attribute_key" value="color"/><column name="attribute_value" value="white"/></insert>
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-2d"/><column name="attribute_key" value="size"/><column name="attribute_value" value="M"/></insert>
+        <!-- Speaker: color -->
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-5a"/><column name="attribute_key" value="color"/><column name="attribute_value" value="red"/></insert>
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-5b"/><column name="attribute_key" value="color"/><column name="attribute_value" value="blue"/></insert>
+        <!-- Yoga mat: color -->
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-6a"/><column name="attribute_key" value="color"/><column name="attribute_value" value="green"/></insert>
+        <!-- Desk lamp: color -->
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-7a"/><column name="attribute_key" value="color"/><column name="attribute_value" value="white"/></insert>
+        <!-- Running shoes: size -->
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-8a"/><column name="attribute_key" value="size"/><column name="attribute_value" value="42"/></insert>
+        <insert tableName="variant_attributes"><column name="variant_id" value="var-8b"/><column name="attribute_key" value="size"/><column name="attribute_value" value="43"/></insert>
+
+        <!-- ============================================================ -->
+        <!-- PRODUCT ATTRIBUTE VALUES (product-level, not variant-level)   -->
+        <!-- ============================================================ -->
+        <!-- prod-1 Headphones: connectivity=BT5.3, battery=30h, weight=250g -->
+        <insert tableName="product_attribute_values"><column name="id" value="pav-1a"/><column name="product_id" value="prod-1"/><column name="attribute_id" value="attr-connectivity"/><column name="option_id" value="opt-bt53"/></insert>
+        <insert tableName="product_attribute_values"><column name="id" value="pav-1b"/><column name="product_id" value="prod-1"/><column name="attribute_id" value="attr-battery"/><column name="raw_value" value="30"/></insert>
+        <insert tableName="product_attribute_values"><column name="id" value="pav-1c"/><column name="product_id" value="prod-1"/><column name="attribute_id" value="attr-weight"/><column name="raw_value" value="250"/></insert>
+        <!-- prod-2 T-Shirt: material=100% Cotton -->
+        <insert tableName="product_attribute_values"><column name="id" value="pav-2a"/><column name="product_id" value="prod-2"/><column name="attribute_id" value="attr-material"/><column name="raw_value" value="100% Cotton"/></insert>
+        <!-- prod-3 Blender: material=Stainless Steel, wattage=1000, weight=3500g -->
+        <insert tableName="product_attribute_values"><column name="id" value="pav-3a"/><column name="product_id" value="prod-3"/><column name="attribute_id" value="attr-material"/><column name="raw_value" value="Stainless Steel"/></insert>
+        <insert tableName="product_attribute_values"><column name="id" value="pav-3b"/><column name="product_id" value="prod-3"/><column name="attribute_id" value="attr-wattage"/><column name="raw_value" value="1000"/></insert>
+        <insert tableName="product_attribute_values"><column name="id" value="pav-3c"/><column name="product_id" value="prod-3"/><column name="attribute_id" value="attr-weight"/><column name="raw_value" value="3500"/></insert>
+        <!-- prod-5 Speaker: connectivity=BT5.0, battery=12h, weight=540g -->
+        <insert tableName="product_attribute_values"><column name="id" value="pav-5a"/><column name="product_id" value="prod-5"/><column name="attribute_id" value="attr-connectivity"/><column name="option_id" value="opt-bt5"/></insert>
+        <insert tableName="product_attribute_values"><column name="id" value="pav-5b"/><column name="product_id" value="prod-5"/><column name="attribute_id" value="attr-battery"/><column name="raw_value" value="12"/></insert>
+        <insert tableName="product_attribute_values"><column name="id" value="pav-5c"/><column name="product_id" value="prod-5"/><column name="attribute_id" value="attr-weight"/><column name="raw_value" value="540"/></insert>
+
+        <!-- ============================================================ -->
+        <!-- MEDIA ASSETS                                                  -->
+        <!-- ============================================================ -->
+        <insert tableName="media_assets">
+            <column name="id" value="img-1a"/>
+            <column name="original_url" value="/uploads/headphones-front.jpg"/>
+            <column name="cdn_url" value="https://cdn.homebase.com/headphones-front.jpg"/>
+            <column name="thumbnail_url" value="https://cdn.homebase.com/headphones-front-100.jpg"/>
+            <column name="medium_url" value="https://cdn.homebase.com/headphones-front-400.jpg"/>
+            <column name="zoom_url" value="https://cdn.homebase.com/headphones-front-1200.jpg"/>
+            <column name="type" value="IMAGE"/>
+            <column name="mime_type" value="image/jpeg"/>
+            <column name="file_size_bytes" valueNumeric="245000"/>
+            <column name="width" valueNumeric="1200"/>
+            <column name="height" valueNumeric="1200"/>
+            <column name="alt_text" value="Wireless headphones front view"/>
+            <column name="processing_status" value="COMPLETED"/>
+        </insert>
+        <insert tableName="media_assets">
+            <column name="id" value="img-1b"/>
+            <column name="cdn_url" value="https://cdn.homebase.com/headphones-side.jpg"/>
+            <column name="type" value="IMAGE"/>
+            <column name="alt_text" value="Wireless headphones side view"/>
+            <column name="processing_status" value="COMPLETED"/>
+        </insert>
+        <insert tableName="media_assets">
+            <column name="id" value="img-2a"/>
+            <column name="cdn_url" value="https://cdn.homebase.com/tshirt-front.jpg"/>
+            <column name="type" value="IMAGE"/>
+            <column name="alt_text" value="Cotton t-shirt front view"/>
+            <column name="processing_status" value="COMPLETED"/>
+        </insert>
+        <insert tableName="media_assets">
+            <column name="id" value="img-5a"/>
+            <column name="cdn_url" value="https://cdn.homebase.com/speaker-red.jpg"/>
+            <column name="type" value="IMAGE"/>
+            <column name="alt_text" value="Bluetooth speaker in red"/>
+            <column name="processing_status" value="COMPLETED"/>
+        </insert>
+        <insert tableName="media_assets">
+            <column name="id" value="img-5b"/>
+            <column name="cdn_url" value="https://cdn.homebase.com/speaker-blue.jpg"/>
+            <column name="type" value="IMAGE"/>
+            <column name="alt_text" value="Bluetooth speaker in blue"/>
+            <column name="processing_status" value="COMPLETED"/>
+        </insert>
+        <insert tableName="media_assets">
+            <column name="id" value="img-pending"/>
+            <column name="original_url" value="/uploads/blender-main.jpg"/>
+            <column name="type" value="IMAGE"/>
+            <column name="alt_text" value="Blender main photo"/>
+            <column name="processing_status" value="PENDING"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- PRODUCT MEDIA                                                 -->
+        <!-- ============================================================ -->
+        <insert tableName="product_media"><column name="id" value="pm-1a"/><column name="product_id" value="prod-1"/><column name="asset_id" value="img-1a"/><column name="is_primary" valueBoolean="true"/><column name="sort_order" valueNumeric="1"/></insert>
+        <insert tableName="product_media"><column name="id" value="pm-1b"/><column name="product_id" value="prod-1"/><column name="asset_id" value="img-1b"/><column name="is_primary" valueBoolean="false"/><column name="sort_order" valueNumeric="2"/></insert>
+        <insert tableName="product_media"><column name="id" value="pm-2a"/><column name="product_id" value="prod-2"/><column name="asset_id" value="img-2a"/><column name="is_primary" valueBoolean="true"/><column name="sort_order" valueNumeric="1"/></insert>
+        <insert tableName="product_media"><column name="id" value="pm-5a"/><column name="product_id" value="prod-5"/><column name="asset_id" value="img-5a"/><column name="is_primary" valueBoolean="true"/><column name="sort_order" valueNumeric="1"/></insert>
+        <insert tableName="product_media"><column name="id" value="pm-5b"/><column name="product_id" value="prod-5"/><column name="asset_id" value="img-5b"/><column name="is_primary" valueBoolean="false"/><column name="sort_order" valueNumeric="2"/></insert>
+
+        <!-- ============================================================ -->
+        <!-- VARIANT MEDIA                                                 -->
+        <!-- ============================================================ -->
+        <insert tableName="variant_media"><column name="variant_id" value="var-5a"/><column name="asset_id" value="img-5a"/><column name="is_primary" valueBoolean="true"/><column name="sort_order" valueNumeric="1"/></insert>
+        <insert tableName="variant_media"><column name="variant_id" value="var-5b"/><column name="asset_id" value="img-5b"/><column name="is_primary" valueBoolean="true"/><column name="sort_order" valueNumeric="1"/></insert>
+
+        <!-- ============================================================ -->
+        <!-- PRODUCT TAGS                                                  -->
+        <!-- ============================================================ -->
+        <insert tableName="product_tags"><column name="product_id" value="prod-1"/><column name="tag" value="wireless"/></insert>
+        <insert tableName="product_tags"><column name="product_id" value="prod-1"/><column name="tag" value="noise-cancelling"/></insert>
+        <insert tableName="product_tags"><column name="product_id" value="prod-1"/><column name="tag" value="premium"/></insert>
+        <insert tableName="product_tags"><column name="product_id" value="prod-2"/><column name="tag" value="cotton"/></insert>
+        <insert tableName="product_tags"><column name="product_id" value="prod-2"/><column name="tag" value="basics"/></insert>
+        <insert tableName="product_tags"><column name="product_id" value="prod-3"/><column name="tag" value="kitchen"/></insert>
+        <insert tableName="product_tags"><column name="product_id" value="prod-3"/><column name="tag" value="blender"/></insert>
+        <insert tableName="product_tags"><column name="product_id" value="prod-4"/><column name="tag" value="smartphone"/></insert>
+        <insert tableName="product_tags"><column name="product_id" value="prod-4"/><column name="tag" value="oled"/></insert>
+        <insert tableName="product_tags"><column name="product_id" value="prod-5"/><column name="tag" value="bluetooth"/></insert>
+        <insert tableName="product_tags"><column name="product_id" value="prod-5"/><column name="tag" value="waterproof"/></insert>
+        <insert tableName="product_tags"><column name="product_id" value="prod-5"/><column name="tag" value="portable"/></insert>
+
+        <!-- ============================================================ -->
+        <!-- PRODUCT ACTIVITY LOG                                          -->
+        <!-- ============================================================ -->
+        <insert tableName="product_activity_log">
+            <column name="id" value="act-1a"/><column name="product_id" value="prod-1"/><column name="activity_name" value="CREATE"/><column name="activity_comment" value="Product created"/><column name="activity_success" valueBoolean="true"/><column name="created_time" valueDate="2025-01-10T10:00:00"/><column name="created_by" value="admin"/>
+        </insert>
+        <insert tableName="product_activity_log">
+            <column name="id" value="act-1b"/><column name="product_id" value="prod-1"/><column name="activity_name" value="SUBMIT_FOR_REVIEW"/><column name="activity_comment" value="Submitted for quality review"/><column name="activity_success" valueBoolean="true"/><column name="created_time" valueDate="2025-01-11T09:00:00"/><column name="created_by" value="admin"/>
+        </insert>
+        <insert tableName="product_activity_log">
+            <column name="id" value="act-1c"/><column name="product_id" value="prod-1"/><column name="activity_name" value="APPROVE"/><column name="activity_comment" value="Approved and published"/><column name="activity_success" valueBoolean="true"/><column name="created_time" valueDate="2025-01-12T14:00:00"/><column name="created_by" value="reviewer1"/>
+        </insert>
+        <insert tableName="product_activity_log">
+            <column name="id" value="act-3a"/><column name="product_id" value="prod-3"/><column name="activity_name" value="CREATE"/><column name="activity_comment" value="New blender listing"/><column name="activity_success" valueBoolean="true"/><column name="created_time" valueDate="2025-02-01T11:00:00"/><column name="created_by" value="seller1"/>
+        </insert>
+        <insert tableName="product_activity_log">
+            <column name="id" value="act-3b"/><column name="product_id" value="prod-3"/><column name="activity_name" value="SUBMIT_FOR_REVIEW"/><column name="activity_comment" value="Ready for review"/><column name="activity_success" valueBoolean="true"/><column name="created_time" valueDate="2025-02-02T08:00:00"/><column name="created_by" value="seller1"/>
+        </insert>
+        <insert tableName="product_activity_log">
+            <column name="id" value="act-7a"/><column name="product_id" value="prod-7"/><column name="activity_name" value="DISABLE"/><column name="activity_comment" value="Temporarily disabled for stock issues"/><column name="activity_success" valueBoolean="true"/><column name="created_time" valueDate="2025-03-01T16:00:00"/><column name="created_by" value="admin"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- OFFERS (buy box scenarios)                                    -->
+        <!-- ============================================================ -->
+        <!-- prod-1: 3 sellers, 1 inactive -->
+        <insert tableName="offers"><column name="id" value="offer-1a"/><column name="product_id" value="prod-1"/><column name="seller_id" value="seller-1"/><column name="price" valueNumeric="2499.00"/><column name="currency" value="INR"/><column name="active" valueBoolean="true"/></insert>
+        <insert tableName="offers"><column name="id" value="offer-1b"/><column name="product_id" value="prod-1"/><column name="seller_id" value="seller-2"/><column name="price" valueNumeric="2699.00"/><column name="currency" value="INR"/><column name="active" valueBoolean="true"/></insert>
+        <insert tableName="offers"><column name="id" value="offer-1c"/><column name="product_id" value="prod-1"/><column name="seller_id" value="seller-3"/><column name="price" valueNumeric="2399.00"/><column name="currency" value="INR"/><column name="active" valueBoolean="false"/></insert>
+        <!-- prod-2: single seller -->
+        <insert tableName="offers"><column name="id" value="offer-2a"/><column name="product_id" value="prod-2"/><column name="seller_id" value="seller-1"/><column name="price" valueNumeric="599.00"/><column name="currency" value="INR"/><column name="active" valueBoolean="true"/></insert>
+        <!-- prod-5: 2 sellers -->
+        <insert tableName="offers"><column name="id" value="offer-5a"/><column name="product_id" value="prod-5"/><column name="seller_id" value="seller-1"/><column name="price" valueNumeric="1999.00"/><column name="currency" value="INR"/><column name="active" valueBoolean="true"/></insert>
+        <insert tableName="offers"><column name="id" value="offer-5b"/><column name="product_id" value="prod-5"/><column name="seller_id" value="seller-2"/><column name="price" valueNumeric="2099.00"/><column name="currency" value="INR"/><column name="active" valueBoolean="true"/></insert>
+
+    </changeSet>
+
+</databaseChangeLog>

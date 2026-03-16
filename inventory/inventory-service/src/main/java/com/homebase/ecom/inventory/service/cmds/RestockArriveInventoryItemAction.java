@@ -1,7 +1,6 @@
 package com.homebase.ecom.inventory.service.cmds;
 
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
-import com.homebase.ecom.inventory.domain.model.InventoryStatus;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
@@ -28,7 +27,6 @@ public class RestockArriveInventoryItemAction extends AbstractSTMTransitionActio
 
         // Reset for new stock cycle
         inventory.resetForRestock(newQty);
-        inventory.setStatus(InventoryStatus.AVAILABLE);
 
         log.info("Restock arrived for productId={}, newQty={}. New stock cycle started.",
                 inventory.getProductId(), newQty);

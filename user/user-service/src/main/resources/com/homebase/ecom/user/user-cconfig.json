@@ -1,0 +1,8 @@
+{
+  "emailVerificationTimeoutHours": 48,
+  "maxLoginAttempts": 5,
+  "lockoutDurationMinutes": 30,
+  "passwordMinLength": 8,
+  "kycRequiredForSeller": true,
+  "maxAddressesPerUser": 10
+}

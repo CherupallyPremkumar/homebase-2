@@ -1,0 +1,12 @@
+{
+  "policies": {
+    "maxOpenTicketsPerCustomer": 10,
+    "maxReopens": 3
+  },
+  "sla": {
+    "slaResponseHours": 24,
+    "slaResolutionHours": 72,
+    "autoCloseAfterDays": 7,
+    "escalationAfterHours": 48
+  }
+}

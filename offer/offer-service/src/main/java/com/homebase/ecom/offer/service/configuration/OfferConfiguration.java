@@ -2,25 +2,31 @@ package com.homebase.ecom.offer.service.configuration;
 
 import com.homebase.ecom.offer.api.OfferService;
 import com.homebase.ecom.offer.domain.model.Offer;
+import com.homebase.ecom.offer.domain.port.NotificationPort;
 import com.homebase.ecom.offer.domain.port.OfferRepository;
+import com.homebase.ecom.offer.domain.port.PricingPort;
+import com.homebase.ecom.offer.infrastructure.adapter.NotificationAdapter;
+import com.homebase.ecom.offer.infrastructure.adapter.PricingAdapter;
 import com.homebase.ecom.offer.infrastructure.persistence.ChenileOfferEntityStore;
 import com.homebase.ecom.offer.infrastructure.persistence.adapter.OfferJpaRepository;
 import com.homebase.ecom.offer.infrastructure.persistence.adapter.OfferRepositoryImpl;
 import com.homebase.ecom.offer.infrastructure.persistence.mapper.OfferMapper;
-import com.homebase.ecom.offer.service.cmds.DefaultSTMTransitionAction;
-import com.homebase.ecom.offer.service.cmds.OfferApproveAction;
-import com.homebase.ecom.offer.service.cmds.OfferRejectAction;
-import com.homebase.ecom.offer.service.cmds.OfferLifecycleActions;
+import com.homebase.ecom.offer.service.cmds.*;
+import com.homebase.ecom.offer.service.event.OfferEventHandler;
 import com.homebase.ecom.offer.service.impl.OfferServiceImpl;
 import com.homebase.ecom.offer.service.postSaveHooks.*;
+import com.homebase.ecom.offer.service.validator.OfferPolicyValidator;
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
+import org.chenile.stm.action.scriptsupport.IfAction;
 import org.chenile.stm.impl.*;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.workflow.param.MinimalPayload;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +38,10 @@ public class OfferConfiguration {
     private static final String FLOW_DEFINITION_FILE = "com/homebase/ecom/offer/offer-states.xml";
     public static final String PREFIX_FOR_RESOLVER = "offer";
 
+    // ════════════════════════════════════════════════════════════════════════
     // Infrastructure
+    // ════════════════════════════════════════════════════════════════════════
+
     @Bean
     public OfferMapper offerMapper() {
         return new OfferMapper();
@@ -48,7 +57,21 @@ public class OfferConfiguration {
         return new ChenileOfferEntityStore(offerRepository);
     }
 
+    // Item 12: Hexagonal ports / adapters
+    @Bean
+    public PricingPort pricingPort() {
+        return new PricingAdapter();
+    }
+
+    @Bean
+    public NotificationPort notificationPort() {
+        return new NotificationAdapter();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
     // STM Infrastructure
+    // ════════════════════════════════════════════════════════════════════════
+
     @Bean
     BeanFactoryAdapter offerBeanFactoryAdapter() {
         return new SpringBeanFactoryAdapter();
@@ -99,68 +122,23 @@ public class OfferConfiguration {
             @Qualifier("offerEntityStm") STM<Offer> stm,
             @Qualifier("offerActionsInfoProvider") STMActionsInfoProvider infoProvider,
             @Qualifier("offerEntityStore") EntityStore<Offer> entityStore) {
-        return new StateEntityServiceImpl<>(stm, infoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, infoProvider, entityStore);
     }
 
-    // STM Actions
+    // Item 16: OGNL scripting for auto-states
     @Bean
-    public OfferApproveAction offerApproveAction() {
-        return new OfferApproveAction();
-    }
-
-    @Bean
-    public OfferRejectAction offerRejectAction() {
-        return new OfferRejectAction();
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
     }
 
     @Bean
-    public OfferLifecycleActions.ActivateAction offerActivateAction() {
-        return new OfferLifecycleActions.ActivateAction();
+    IfAction<Offer> ifAction() {
+        return new IfAction<>();
     }
 
-    @Bean
-    public OfferLifecycleActions.DeactivateAction offerDeactivateAction() {
-        return new OfferLifecycleActions.DeactivateAction();
-    }
-
-    @Bean
-    public OfferLifecycleActions.ReturnAction offerReturnAction() {
-        return new OfferLifecycleActions.ReturnAction();
-    }
-
-    @Bean
-    public OfferLifecycleActions.ResubmitAction offerResubmitAction() {
-        return new OfferLifecycleActions.ResubmitAction();
-    }
-
-    // PostSaveHooks
-
-    @Bean
-    PENDING_REVIEWOfferPostSaveHook offerPENDING_REVIEWPostSaveHook() {
-        return new PENDING_REVIEWOfferPostSaveHook();
-    }
-
-    @Bean
-    ACTIVEOfferPostSaveHook offerACTIVEPostSaveHook() {
-        return new ACTIVEOfferPostSaveHook();
-    }
-
-    @Bean
-    REJECTEDOfferPostSaveHook offerREJECTEDPostSaveHook() {
-        return new REJECTEDOfferPostSaveHook();
-    }
-
-    @Bean
-    RETURNEDOfferPostSaveHook offerRETURNEDPostSaveHook() {
-        return new RETURNEDOfferPostSaveHook();
-    }
-
-    @Bean
-    INACTIVEOfferPostSaveHook offerINACTIVEPostSaveHook() {
-        return new INACTIVEOfferPostSaveHook();
-    }
-
-    // STM Entry/Exit/PostSaveHook infrastructure
+    // ════════════════════════════════════════════════════════════════════════
+    // STM Entry/Exit/PostSaveHook/AutoState infrastructure
+    // ════════════════════════════════════════════════════════════════════════
 
     @Bean
     DefaultPostSaveHook<Offer> offerDefaultPostSaveHook(
@@ -179,16 +157,164 @@ public class OfferConfiguration {
     }
 
     @Bean
+    DefaultAutomaticStateComputation<Offer> offerDefaultAutoState(
+            @Qualifier("offerTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver,
+            @Qualifier("offerFlowStore") STMFlowStoreImpl stmFlowStore) {
+        DefaultAutomaticStateComputation<Offer> autoState = new DefaultAutomaticStateComputation<>(
+                stmTransitionActionResolver);
+        stmFlowStore.setDefaultAutomaticStateComputation(autoState);
+        return autoState;
+    }
+
+    @Bean
     GenericExitAction<Offer> offerExitAction(@Qualifier("offerFlowStore") STMFlowStoreImpl stmFlowStore) {
         GenericExitAction<Offer> exitAction = new GenericExitAction<>();
         stmFlowStore.setExitAction(exitAction);
         return exitAction;
     }
 
+    @Bean
+    StmBodyTypeSelector offerBodyTypeSelector(
+            @Qualifier("offerActionsInfoProvider") STMActionsInfoProvider offerInfoProvider,
+            @Qualifier("offerTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver) {
+        return new StmBodyTypeSelector(offerInfoProvider, stmTransitionActionResolver);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // STM Actions (Item 4)
+    // Convention: "offer" + eventId + "Action"
+    // ════════════════════════════════════════════════════════════════════════
+
+    @Bean
+    public OfferSubmitAction offerSubmitAction() {
+        return new OfferSubmitAction();
+    }
+
+    @Bean
+    public OfferApproveAction offerApproveAction() {
+        return new OfferApproveAction();
+    }
+
+    @Bean
+    public OfferRejectAction offerRejectAction() {
+        return new OfferRejectAction();
+    }
+
+    @Bean
+    public OfferGoLiveAction offerGoLiveAction() {
+        return new OfferGoLiveAction();
+    }
+
+    @Bean
+    public OfferExpireAction offerExpireAction() {
+        return new OfferExpireAction();
+    }
+
+    @Bean
+    public OfferSuspendAction offerSuspendAction() {
+        return new OfferSuspendAction();
+    }
+
+    @Bean
+    public OfferArchiveAction offerArchiveAction() {
+        return new OfferArchiveAction();
+    }
+
+    @Bean
+    public OfferResubmitAction offerResubmitAction() {
+        return new OfferResubmitAction();
+    }
+
+    @Bean
+    public OfferResumeAction offerResumeAction() {
+        return new OfferResumeAction();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // PostSaveHooks (Item 13)
+    // Convention: "offer" + STATE_NAME + "PostSaveHook"
+    // ════════════════════════════════════════════════════════════════════════
+
+    @Bean
+    DRAFTOfferPostSaveHook offerDRAFTPostSaveHook() {
+        return new DRAFTOfferPostSaveHook();
+    }
+
+    @Bean
+    PENDING_APPROVALOfferPostSaveHook offerPENDING_APPROVALPostSaveHook() {
+        return new PENDING_APPROVALOfferPostSaveHook();
+    }
+
+    @Bean
+    APPROVEDOfferPostSaveHook offerAPPROVEDPostSaveHook() {
+        return new APPROVEDOfferPostSaveHook();
+    }
+
+    @Bean
+    LIVEOfferPostSaveHook offerLIVEPostSaveHook() {
+        return new LIVEOfferPostSaveHook();
+    }
+
+    @Bean
+    EXPIREDOfferPostSaveHook offerEXPIREDPostSaveHook() {
+        return new EXPIREDOfferPostSaveHook();
+    }
+
+    @Bean
+    ARCHIVEDOfferPostSaveHook offerARCHIVEDPostSaveHook() {
+        return new ARCHIVEDOfferPostSaveHook();
+    }
+
+    @Bean
+    REJECTEDOfferPostSaveHook offerREJECTEDPostSaveHook() {
+        return new REJECTEDOfferPostSaveHook();
+    }
+
+    @Bean
+    SUSPENDEDOfferPostSaveHook offerSUSPENDEDPostSaveHook() {
+        return new SUSPENDEDOfferPostSaveHook();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Policy Validator (Item 3)
+    // ════════════════════════════════════════════════════════════════════════
+
+    @Bean
+    OfferPolicyValidator offerPolicyValidator() {
+        return new OfferPolicyValidator();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
     // Service
+    // ════════════════════════════════════════════════════════════════════════
+
     @Bean
     public OfferService offerService(OfferRepository offerRepository, OfferMapper offerMapper,
                                     @Qualifier("_offerStateEntityService_") StateEntityServiceImpl<Offer> stateEntityService) {
         return new OfferServiceImpl(offerRepository, offerMapper, stateEntityService);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // ACL (Item 15)
+    // ════════════════════════════════════════════════════════════════════════
+
+    @Bean
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> offerEventAuthoritiesSupplier(
+            @Qualifier("offerActionsInfoProvider") STMActionsInfoProvider offerInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(offerInfoProvider, false);
+        return builder.build();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Kafka Event Handler (Items 10, 14)
+    // ════════════════════════════════════════════════════════════════════════
+
+    @Bean("offerEventService")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
+    OfferEventHandler offerEventService(
+            OfferRepository offerRepository,
+            @Qualifier("_offerStateEntityService_") StateEntityServiceImpl<Offer> offerStateEntityService,
+            tools.jackson.databind.ObjectMapper objectMapper) {
+        return new OfferEventHandler(offerRepository, offerStateEntityService, objectMapper);
     }
 }

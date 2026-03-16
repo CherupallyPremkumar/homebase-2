@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Post Save Hook for the CLOSED state.
- * Logs final ticket closure and archives ticket data.
+ * Logs final ticket closure.
  */
 public class CLOSEDSupportPostSaveHook implements PostSaveHook<SupportTicket> {
 
@@ -17,8 +17,8 @@ public class CLOSEDSupportPostSaveHook implements PostSaveHook<SupportTicket> {
 
     @Override
     public void execute(State startState, State endState, SupportTicket ticket, TransientMap map) {
-        log.info("TicketClosedEvent: Ticket {} closed. Total messages: {}",
-                ticket.getId(), ticket.getMessages().size());
+        log.info("TicketClosedEvent: Ticket {} closed. Total messages: {}, Reopen count: {}",
+                ticket.getId(), ticket.getMessages().size(), ticket.getReopenCount());
         map.put("eventType", "TicketClosedEvent");
     }
 }

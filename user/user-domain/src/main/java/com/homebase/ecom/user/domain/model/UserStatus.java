@@ -1,20 +1,28 @@
 package com.homebase.ecom.user.domain.model;
 
 /**
- * UserStatus — the 5 business states of a User in the STM lifecycle.
+ * UserStatus -- the business states of a User in the STM lifecycle.
+ * Maps directly to states in user-states.xml.
  *
- * These map directly to states in user-states.xml.
- * Auth states (tokens, sessions) are owned by Keycloak — not here.
+ * Main path: REGISTERED -> EMAIL_VERIFIED -> ACTIVE -> SUSPENDED -> DEACTIVATED
+ * KYC path: KYC_PENDING -> KYC_VERIFIED
+ * Auto-state: CHECK_VERIFICATION_TIMEOUT
  */
 public enum UserStatus {
-    /** User registered but email not yet verified. Deleted after 7 days if not verified. */
-    PENDING_VERIFICATION,
-    /** Fully active — can shop, place orders, manage profile. */
+    /** Just registered, verification email sent. */
+    REGISTERED,
+    /** Email verified, profile completion in progress. */
+    EMAIL_VERIFIED,
+    /** Fully active user. */
     ACTIVE,
-    /** Locked after 3 consecutive failed logins. Unlocked by admin or timeout. */
+    /** Locked after too many failed login attempts. */
     LOCKED,
-    /** Suspended by admin action (e.g. fraud, policy violation). */
+    /** Suspended by admin action (fraud, policy violation). */
     SUSPENDED,
-    /** Permanently deleted — self-initiated or admin hard-delete. */
-    DELETED
+    /** Account deactivated (soft-delete). */
+    DEACTIVATED,
+    /** KYC pending -- seller must submit KYC docs. */
+    KYC_PENDING,
+    /** KYC verified by admin. */
+    KYC_VERIFIED
 }

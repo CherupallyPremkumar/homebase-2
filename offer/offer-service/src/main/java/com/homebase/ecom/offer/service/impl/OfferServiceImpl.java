@@ -11,6 +11,9 @@ import org.chenile.workflow.api.StateEntityService;
 
 import java.util.UUID;
 
+/**
+ * Offer service implementation. All state mutations go through STM via stateEntityService.
+ */
 public class OfferServiceImpl implements OfferService {
 
     private final OfferRepository offerRepository;
@@ -29,23 +32,30 @@ public class OfferServiceImpl implements OfferService {
         Offer offer = offerMapper.toModel(offerDTO);
         if (offer.getId() == null) offer.setId(UUID.randomUUID().toString());
         var response = stateEntityService.create(offer);
-        return toDTO(response.getMutatedEntity());
+        return offerMapper.toDTO(response.getMutatedEntity());
     }
 
     @Override
     public OfferDTO updateOffer(String id, OfferDTO offerDTO) {
         Offer existing = offerRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Offer not found: " + id));
-        existing.setPrice(offerDTO.getPrice());
-        existing.setMsrp(offerDTO.getMsrp());
+        // Only update mutable fields in DRAFT state
+        if (offerDTO.getTitle() != null) existing.setTitle(offerDTO.getTitle());
+        if (offerDTO.getDescription() != null) existing.setDescription(offerDTO.getDescription());
+        if (offerDTO.getOriginalPrice() != null) existing.setOriginalPrice(offerDTO.getOriginalPrice());
+        if (offerDTO.getOfferPrice() != null) existing.setOfferPrice(offerDTO.getOfferPrice());
+        if (offerDTO.getDiscountPercent() != null) existing.setDiscountPercent(offerDTO.getDiscountPercent());
+        if (offerDTO.getStartDate() != null) existing.setStartDate(offerDTO.getStartDate());
+        if (offerDTO.getEndDate() != null) existing.setEndDate(offerDTO.getEndDate());
+        if (offerDTO.getMaxQuantity() > 0) existing.setMaxQuantity(offerDTO.getMaxQuantity());
         offerRepository.save(existing);
-        return toDTO(existing);
+        return offerMapper.toDTO(existing);
     }
 
     @Override
     public OfferDTO getOffer(String id) {
         var response = stateEntityService.retrieve(id);
-        return toDTO(response.getMutatedEntity());
+        return offerMapper.toDTO(response.getMutatedEntity());
     }
 
     @Override
@@ -54,61 +64,7 @@ public class OfferServiceImpl implements OfferService {
     }
 
     @Override
-    public OfferDTO submitForReview(String id) {
-        var response = stateEntityService.processById(id, "submitForReview", null);
-        return toDTO(response.getMutatedEntity());
-    }
-
-    @Override
-    public OfferDTO approveOffer(String id) {
-        var response = stateEntityService.processById(id, "approveOffer", null);
-        return toDTO(response.getMutatedEntity());
-    }
-
-    @Override
-    public OfferDTO rejectOffer(String id, String reason) {
-        var response = stateEntityService.processById(id, "rejectOffer", reason);
-        return toDTO(response.getMutatedEntity());
-    }
-
-    @Override
-    public OfferDTO deactivateOffer(String id) {
-        var response = stateEntityService.processById(id, "deactivate", null);
-        return toDTO(response.getMutatedEntity());
-    }
-
-    @Override
-    public OfferDTO activateOffer(String id) {
-        var response = stateEntityService.processById(id, "activate", null);
-        return toDTO(response.getMutatedEntity());
-    }
-
-    @Override
-    public OfferDTO returnOffer(String id, String reason) {
-        var response = stateEntityService.processById(id, "returnOffer", reason);
-        return toDTO(response.getMutatedEntity());
-    }
-
-    @Override
-    public OfferDTO resubmitOffer(String id) {
-        var response = stateEntityService.processById(id, "resubmit", null);
-        return toDTO(response.getMutatedEntity());
-    }
-
-    @Override
     public SearchResponse searchOffers(OfferSearchRequest searchRequest) {
         return null; // Search via QueryController
-    }
-
-    private OfferDTO toDTO(Offer offer) {
-        if (offer == null) return null;
-        OfferDTO dto = new OfferDTO();
-        dto.setId(offer.getId());
-        dto.setVariantId(offer.getVariantId());
-        dto.setSupplierId(offer.getSupplierId());
-        dto.setPrice(offer.getPrice());
-        dto.setMsrp(offer.getMsrp());
-        dto.setStatus(offer.getCurrentState() != null ? offer.getCurrentState().getStateId() : null);
-        return dto;
     }
 }

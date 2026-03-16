@@ -21,6 +21,15 @@
 			<artifactId>product-infrastructure</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>product-media</artifactId>
+		</dependency>
+		<!-- Storage: include storage-local for dev, storage-s3 for prod -->
+		<dependency>
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>storage-local</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>

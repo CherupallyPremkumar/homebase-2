@@ -33,4 +33,9 @@ public class SupportTicketRepositoryImpl implements SupportTicketRepository {
     public void delete(String id) {
         jpaRepository.deleteById(id);
     }
+
+    @Override
+    public long countOpenTicketsByCustomerId(String customerId) {
+        return jpaRepository.countOpenTicketsByCustomerId(customerId);
+    }
 }

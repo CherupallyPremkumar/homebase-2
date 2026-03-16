@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Transition action for resubmitSupplier event (REJECTED -> PENDING_REVIEW).
+ * Transition action for resubmitSupplier event (REJECTED -> APPLIED).
  * Clears previous rejection data so the supplier starts a fresh review cycle.
  */
 public class ResubmitSupplierAction extends AbstractSTMTransitionAction<Supplier, ResubmitSupplierPayload> {
@@ -28,6 +28,6 @@ public class ResubmitSupplierAction extends AbstractSTMTransitionAction<Supplier
         supplier.getTransientMap().previousPayload = payload;
 
         log.info("Supplier '{}' (ID: {}) resubmitted for review after rejection",
-                supplier.getName(), supplier.getId());
+                supplier.getBusinessName(), supplier.getId());
     }
 }

@@ -7,12 +7,14 @@ import com.homebase.ecom.tax.service.TaxService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/tax")
+@Tag(name = "Tax", description = "Tax rate calculation")
 public class TaxController {
 
     @Autowired

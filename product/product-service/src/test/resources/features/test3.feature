@@ -2,12 +2,17 @@ Feature: Testcase ID 3
 Tests the product Workflow Service using a REST client. Product service exists and is under test.
 It helps to create a product and manages the state of the product as documented in states xml
 
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
 Scenario: Create a new product
 Given that "flowName" equals "product-flow"
 And that "initialState" equals "DRAFT"
 When I POST a REST request to URL "/product" with payload
 """json
 {
+    "name": "Test Product",
     "description": "Description"
 }
 """
@@ -52,9 +57,9 @@ And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "PUBLISHED"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
-Scenario: Send the markOutOfStock event to the product with comments
-Given that "comment" equals "Comment for markOutOfStock"
-And that "event" equals "markOutOfStock"
+Scenario: Send the disableProduct event to the product with comments
+Given that "comment" equals "Comment for disableProduct"
+And that "event" equals "disableProduct"
 When I PATCH a REST request to URL "/product/${id}/${event}" with payload
 """json
 {
@@ -63,7 +68,7 @@ When I PATCH a REST request to URL "/product/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "OUT_OF_STOCK"
+And the REST response key "mutatedEntity.currentState.stateId" is "DISABLED"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
 Scenario: Send the discontinueProduct event to the product with comments

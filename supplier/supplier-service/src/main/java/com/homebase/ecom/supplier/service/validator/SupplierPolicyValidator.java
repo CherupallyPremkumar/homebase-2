@@ -2,40 +2,32 @@ package com.homebase.ecom.supplier.service.validator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.homebase.ecom.supplier.model.Supplier;
 import org.chenile.cconfig.sdk.CconfigClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 /**
- * Central component enforcing all supplier onboarding and lifecycle policies.
+ * Central policy validator for supplier lifecycle.
+ * All thresholds sourced from supplier.json via CconfigClient.
  *
- * <h3>Policies (enforce constraints)</h3>
- * <ul>
- * <li>Bank account required before payout</li>
- * <li>Max products before identity verification</li>
- * <li>Dad approval required for new suppliers</li>
- * </ul>
- *
- * <h3>Rules (return config values)</h3>
- * <ul>
- * <li>Rating thresholds for featured products</li>
- * <li>Max active products per supplier</li>
- * <li>Platform commission percent</li>
- * </ul>
- *
- * All values sourced from {@code supplier.json} via {@code CconfigClient}.
+ * Cconfig keys:
+ *   minRatingForApproval (3.0)
+ *   maxProductsPerSupplier (500)
+ *   commissionRateDefault (15)
+ *   reviewPeriodDays (30)
+ *   performanceReviewIntervalDays (90)
+ *   autoSuspendBelowRating (2.0)
+ *   minFulfillmentRate (85)
  */
-@Component
 public class SupplierPolicyValidator {
 
     private static final Logger log = LoggerFactory.getLogger(SupplierPolicyValidator.class);
 
-    @Autowired
+    @Autowired(required = false)
     private CconfigClient cconfigClient;
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -52,93 +44,90 @@ public class SupplierPolicyValidator {
     }
 
     // ===========================================================
-    // POLICY: Bank account required for payout
+    // POLICY: Approval validation
     // ===========================================================
 
     /**
-     * Validates that a bank account is registered before initiating payout.
-     * Controlled by: supplier.json → policies.profile.requireBankAccount
+     * Validates supplier meets minimum criteria for approval.
+     * Checks rating threshold from cconfig (minRatingForApproval).
      */
-    public void validateBankAccountForPayout(boolean hasBankAccount) {
-        JsonNode node = getSupplierConfig().at("/policies/profile/requireBankAccount");
-        boolean required = node.isMissingNode() || node.asBoolean(true);
-        if (required && !hasBankAccount) {
+    public void validateForApproval(Supplier supplier) {
+        double minRating = getMinRatingForApproval();
+        if (supplier.getRating() > 0 && supplier.getRating() < minRating) {
             throw new IllegalStateException(
-                    "Supplier must register a bank account before initiating payout.");
+                    "Supplier rating " + supplier.getRating() + " is below minimum " + minRating + " for approval.");
         }
     }
 
     /**
-     * Validates that the supplier hasn't exceeded the product limit before identity
-     * verification.
-     * Controlled by: supplier.json → policies.profile.maxProductsBeforeVerification
+     * Validates that supplier hasn't exceeded product limit.
      */
-    public void validateProductCountBeforeVerification(int currentProductCount, boolean isVerified) {
-        if (isVerified)
-            return;
-        JsonNode node = getSupplierConfig().at("/policies/profile/maxProductsBeforeVerification");
-        int max = (!node.isMissingNode() && node.isInt()) ? node.asInt() : 10;
+    public void validateProductLimit(int currentProductCount) {
+        int max = getMaxProductsPerSupplier();
         if (currentProductCount >= max) {
             throw new IllegalStateException(
-                    "Supplier must complete identity verification before adding more products. Limit: " + max);
+                    "Supplier has reached maximum product limit of " + max);
         }
     }
 
     /**
-     * Returns true if Hub Manager (Dad) approval is required for new supplier
-     * activation.
-     * Controlled by: supplier.json → policies.onboarding.requireDadApproval
+     * Checks if supplier performance warrants probation.
+     * Returns true if rating < autoSuspendBelowRating OR fulfillmentRate < minFulfillmentRate.
      */
-    public boolean isDadApprovalRequired() {
-        JsonNode node = getSupplierConfig().at("/policies/onboarding/requireDadApproval");
-        return node.isMissingNode() || node.asBoolean(true);
-    }
+    public boolean isPerformanceBelowThreshold(Supplier supplier) {
+        double minRating = getAutoSuspendBelowRating();
+        double minFulfillment = getMinFulfillmentRate();
 
-    // ===========================================================
-    // RULE: Rating
-    // ===========================================================
-
-    /**
-     * Returns rating required for a supplier's products to appear in featured
-     * sections.
-     */
-    public double getMinRatingForFeaturedProducts() {
-        JsonNode node = getSupplierConfig().at("/rules/rating/minRatingForFeaturedProducts");
-        return (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 4.0;
+        return supplier.getRating() < minRating || supplier.getFulfillmentRate() < minFulfillment;
     }
 
     /**
-     * Returns rating below which a supplier account should be reviewed for
-     * suspension.
+     * Validates fulfillment rate meets minimum threshold.
      */
-    public double getSuspendBelowRating() {
-        JsonNode node = getSupplierConfig().at("/rules/rating/suspendBelowRating");
+    public void validateFulfillmentRate(double fulfillmentRate) {
+        double min = getMinFulfillmentRate();
+        if (fulfillmentRate < min) {
+            throw new IllegalStateException(
+                    "Fulfillment rate " + fulfillmentRate + "% is below minimum " + min + "%.");
+        }
+    }
+
+    // ===========================================================
+    // RULE: Config value getters
+    // ===========================================================
+
+    public double getMinRatingForApproval() {
+        JsonNode node = getSupplierConfig().at("/minRatingForApproval");
+        return (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 3.0;
+    }
+
+    public int getMaxProductsPerSupplier() {
+        JsonNode node = getSupplierConfig().at("/maxProductsPerSupplier");
+        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 500;
+    }
+
+    public double getCommissionRateDefault() {
+        JsonNode node = getSupplierConfig().at("/commissionRateDefault");
+        return (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 15.0;
+    }
+
+    public int getReviewPeriodDays() {
+        JsonNode node = getSupplierConfig().at("/reviewPeriodDays");
+        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 30;
+    }
+
+    public int getPerformanceReviewIntervalDays() {
+        JsonNode node = getSupplierConfig().at("/performanceReviewIntervalDays");
+        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 90;
+    }
+
+    public double getAutoSuspendBelowRating() {
+        JsonNode node = getSupplierConfig().at("/autoSuspendBelowRating");
         return (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 2.0;
     }
 
-    // ===========================================================
-    // RULE: Product limits
-    // ===========================================================
-
-    /** Returns maximum allowed active products per supplier. */
-    public int getMaxActiveProducts() {
-        JsonNode node = getSupplierConfig().at("/rules/product/maxActiveProducts");
-        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 100;
-    }
-
-    // ===========================================================
-    // RULE: Commission
-    // ===========================================================
-
-    /** Returns platform commission percentage. */
-    public double getPlatformCommissionPercent() {
-        JsonNode node = getSupplierConfig().at("/policies/commission/platformCommissionPercent");
-        return (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 10.0;
-    }
-
-    /** Returns number of hold days for new supplier payouts. */
-    public int getNewSupplierHoldDays() {
-        JsonNode node = getSupplierConfig().at("/policies/onboarding/holdPeriodDays");
-        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 15;
+    public double getMinFulfillmentRate() {
+        JsonNode node = getSupplierConfig().at("/minFulfillmentRate");
+        return (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 85.0;
     }
 }

@@ -20,6 +20,7 @@
         <module>supplier-lifecycle-domain</module>
         <module>supplier-lifecycle-infrastructure</module>
         <module>supplier-lifecycle-service</module>
+        <module>supplier-lifecycle-client</module>
     </modules>
 
     <dependencyManagement>

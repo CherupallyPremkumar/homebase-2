@@ -62,7 +62,7 @@ public class PromotionServiceImpl implements PromotionService {
                 com.homebase.ecom.promo.model.Coupon coupon = couponOpt.get();
                 if (coupon.isValid()) {
                     // Find the associated promotion
-                    promotionRepository.findById(coupon.getPromotionId())
+                    promotionRepository.findById(coupon.getId())
                             .ifPresent(context::addEligiblePromotion);
                 }
             }

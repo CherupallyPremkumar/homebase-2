@@ -20,6 +20,7 @@
         <module>return-processing-api</module>
         <module>return-processing-infrastructure</module>
         <module>return-processing-service</module>
+        <module>return-processing-client</module>
     </modules>
 
     <dependencyManagement>

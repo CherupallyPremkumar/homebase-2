@@ -11,8 +11,8 @@
 				"columnType": "Text",
 				"sortable": true
 			},
-			"userId": {
-				"name": "userId",
+			"customerId": {
+				"name": "customerId",
 				"columnType": "Text",
 				"filterable": true
 			},
@@ -37,8 +37,8 @@
 				"filterable": true,
 				"columnType": "Text"
 			},
-			"assignedTo": {
-				"name": "assignedTo",
+			"assignedAgentId": {
+				"name": "assignedAgentId",
 				"columnType": "Text",
 				"filterable": true
 			},
@@ -63,5 +63,69 @@
 			}
 		},
 		"paginated": false
+	},
+	{
+		"id": "Support.getStateCounts",
+		"name": "supportTicketStateCounts",
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Support.getOverdueTickets",
+		"name": "supportOverdueTickets",
+		"workflowName": "support",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"slaHours": {
+				"name": "slaHours",
+				"columnType": "Number",
+				"filterable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Support.getByAgent",
+		"name": "supportTicketsByAgent",
+		"workflowName": "support",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"assignedAgentId": {
+				"name": "assignedAgentId",
+				"columnType": "Text",
+				"filterable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Support.getByPriority",
+		"name": "supportTicketsByPriority",
+		"workflowName": "support",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"priority": {
+				"name": "priority",
+				"columnType": "Text",
+				"filterable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Support.getByCustomerId",
+		"name": "supportTicketsByCustomer",
+		"columnMetadata": {
+			"customerId": {
+				"name": "customerId",
+				"columnType": "Text",
+				"filterable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
 	}
 ]

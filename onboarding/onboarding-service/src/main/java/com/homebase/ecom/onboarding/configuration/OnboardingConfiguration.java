@@ -4,6 +4,8 @@ import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.impl.*;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
+import org.chenile.stm.action.scriptsupport.IfAction;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.workflow.param.MinimalPayload;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -11,23 +13,32 @@ import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
+import org.chenile.workflow.api.WorkflowRegistry;
+import org.chenile.workflow.service.activities.ActivityChecker;
+import org.chenile.workflow.service.activities.AreActivitiesComplete;
 import com.homebase.ecom.onboarding.model.OnboardingSaga;
 import com.homebase.ecom.onboarding.infrastructure.persistence.ChenileOnboardingSagaEntityStore;
 import com.homebase.ecom.onboarding.infrastructure.persistence.adapter.OnboardingSagaJpaRepository;
 import com.homebase.ecom.onboarding.infrastructure.persistence.adapter.OnboardingSagaRepositoryImpl;
 import com.homebase.ecom.onboarding.infrastructure.persistence.mapper.OnboardingSagaMapper;
-import com.homebase.ecom.onboarding.port.OnboardingSagaRepository;
+import com.homebase.ecom.onboarding.infrastructure.adapter.DocumentVerificationAdapter;
+import com.homebase.ecom.onboarding.infrastructure.adapter.TrainingAdapter;
+import com.homebase.ecom.onboarding.infrastructure.adapter.NotificationAdapter;
+import com.homebase.ecom.onboarding.port.DocumentVerificationPort;
+import com.homebase.ecom.onboarding.port.TrainingPort;
+import com.homebase.ecom.onboarding.port.NotificationPort;
 import com.homebase.ecom.onboarding.service.cmds.*;
+import com.homebase.ecom.onboarding.service.event.OnboardingEventHandler;
 import com.homebase.ecom.onboarding.service.healthcheck.OnboardingHealthChecker;
 import com.homebase.ecom.onboarding.service.postSaveHooks.*;
-import org.chenile.workflow.api.WorkflowRegistry;
-import org.chenile.workflow.service.activities.ActivityChecker;
-import org.chenile.workflow.service.activities.AreActivitiesComplete;
+import com.homebase.ecom.onboarding.service.validator.OnboardingPolicyValidator;
 
 /**
  * Full STM+OWIZ configuration for the Onboarding module.
- * Replaces the previous pure OWIZ configuration.
+ * States: APPLICATION_SUBMITTED -> DOCUMENT_VERIFICATION -> BUSINESS_VERIFICATION -> TRAINING -> ONBOARDED -> COMPLETED
+ * With REJECTED and DOCUMENTS_REQUESTED side states.
  */
 @Configuration
 public class OnboardingConfiguration {
@@ -82,6 +93,23 @@ public class OnboardingConfiguration {
         return new ChenileOnboardingSagaEntityStore(repository, mapper);
     }
 
+    // ========== Hexagonal Port Adapters (Item 12) ==========
+
+    @Bean
+    DocumentVerificationPort documentVerificationPort() {
+        return new DocumentVerificationAdapter();
+    }
+
+    @Bean
+    TrainingPort trainingPort() {
+        return new TrainingAdapter();
+    }
+
+    @Bean
+    NotificationPort onboardingNotificationPort() {
+        return new NotificationAdapter();
+    }
+
     // ========== State Entity Service ==========
 
     @Bean
@@ -89,7 +117,7 @@ public class OnboardingConfiguration {
             @Qualifier("onboardingEntityStm") STM<OnboardingSaga> stm,
             @Qualifier("onboardingActionsInfoProvider") STMActionsInfoProvider onboardingInfoProvider,
             @Qualifier("onboardingEntityStore") EntityStore<OnboardingSaga> entityStore) {
-        return new StateEntityServiceImpl<>(stm, onboardingInfoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, onboardingInfoProvider, entityStore);
     }
 
     // ========== STM Components ==========
@@ -138,6 +166,20 @@ public class OnboardingConfiguration {
     OnboardingHealthChecker onboardingHealthChecker() {
         return new OnboardingHealthChecker();
     }
+
+    // ========== OGNL + Auto-state support ==========
+
+    @Bean
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
+
+    @Bean
+    IfAction<OnboardingSaga> ifAction() {
+        return new IfAction<>();
+    }
+
+    // ========== Default + Resolver ==========
 
     @Bean
     STMTransitionAction<OnboardingSaga> defaultonboardingSTMTransitionAction() {
@@ -193,27 +235,42 @@ public class OnboardingConfiguration {
         return enablementStrategy;
     }
 
-    // ========== Transition Actions ==========
-    // Convention: "onboarding" + eventId + "Action" for automatic STM wiring
+    // ========== Transition Actions (Item 4) ==========
+    // Convention: "onboarding" + eventId + "Action"
 
     @Bean
-    ValidateDocumentsAction onboardingValidateDocumentsAction() {
-        return new ValidateDocumentsAction();
+    VerifyDocumentsAction onboardingVerifyDocumentsAction() {
+        return new VerifyDocumentsAction();
     }
 
     @Bean
-    RejectApplicationAction onboardingRejectApplicationAction() {
-        return new RejectApplicationAction();
+    RequestDocumentsAction onboardingRequestDocumentsAction() {
+        return new RequestDocumentsAction();
     }
 
     @Bean
-    SubmitForReviewAction onboardingSubmitForReviewAction() {
-        return new SubmitForReviewAction();
+    ResubmitDocumentsAction onboardingResubmitDocumentsAction() {
+        return new ResubmitDocumentsAction();
     }
 
     @Bean
-    ApproveAction onboardingApproveAction() {
-        return new ApproveAction();
+    VerifyBusinessAction onboardingVerifyBusinessAction() {
+        return new VerifyBusinessAction();
+    }
+
+    @Bean
+    StartTrainingAction onboardingStartTrainingAction() {
+        return new StartTrainingAction();
+    }
+
+    @Bean
+    CompleteTrainingAction onboardingCompleteTrainingAction() {
+        return new CompleteTrainingAction();
+    }
+
+    @Bean
+    CompleteOnboardingAction onboardingCompleteOnboardingAction() {
+        return new CompleteOnboardingAction();
     }
 
     @Bean
@@ -221,37 +278,14 @@ public class OnboardingConfiguration {
         return new RejectAction();
     }
 
-    @Bean
-    RequestMoreInfoAction onboardingRequestMoreInfoAction() {
-        return new RequestMoreInfoAction();
-    }
+    // ========== Policy Validator (Item 3) ==========
 
     @Bean
-    SubmitDocumentsAction onboardingSubmitDocumentsAction() {
-        return new SubmitDocumentsAction();
+    OnboardingPolicyValidator onboardingPolicyValidator() {
+        return new OnboardingPolicyValidator();
     }
 
-    @Bean
-    CreateSupplierAction onboardingCreateSupplierAction() {
-        return new CreateSupplierAction();
-    }
-
-    @Bean
-    NotifyDadAction onboardingNotifyDadAction() {
-        return new NotifyDadAction();
-    }
-
-    @Bean
-    NotifySupplierAction onboardingNotifySupplierAction() {
-        return new NotifySupplierAction();
-    }
-
-    @Bean
-    ResubmitAction onboardingResubmitAction() {
-        return new ResubmitAction();
-    }
-
-    // ========== Post-Save Hooks ==========
+    // ========== Post-Save Hooks (Item 13) ==========
 
     @Bean
     APPLICATION_SUBMITTEDOnboardingSagaPostSaveHook onboardingAPPLICATION_SUBMITTEDPostSaveHook() {
@@ -259,37 +293,56 @@ public class OnboardingConfiguration {
     }
 
     @Bean
-    DOCUMENTS_VERIFIEDOnboardingSagaPostSaveHook onboardingDOCUMENTS_VERIFIEDPostSaveHook() {
-        return new DOCUMENTS_VERIFIEDOnboardingSagaPostSaveHook();
+    DOCUMENT_VERIFICATIONOnboardingSagaPostSaveHook onboardingDOCUMENT_VERIFICATIONPostSaveHook() {
+        return new DOCUMENT_VERIFICATIONOnboardingSagaPostSaveHook();
     }
 
     @Bean
-    UNDER_REVIEWOnboardingSagaPostSaveHook onboardingUNDER_REVIEWPostSaveHook() {
-        return new UNDER_REVIEWOnboardingSagaPostSaveHook();
+    DOCUMENTS_REQUESTEDOnboardingSagaPostSaveHook onboardingDOCUMENTS_REQUESTEDPostSaveHook() {
+        return new DOCUMENTS_REQUESTEDOnboardingSagaPostSaveHook();
     }
 
     @Bean
-    PENDING_DOCUMENTSOnboardingSagaPostSaveHook onboardingPENDING_DOCUMENTSPostSaveHook() {
-        return new PENDING_DOCUMENTSOnboardingSagaPostSaveHook();
+    BUSINESS_VERIFICATIONOnboardingSagaPostSaveHook onboardingBUSINESS_VERIFICATIONPostSaveHook() {
+        return new BUSINESS_VERIFICATIONOnboardingSagaPostSaveHook();
     }
 
     @Bean
-    APPROVEDOnboardingSagaPostSaveHook onboardingAPPROVEDPostSaveHook() {
-        return new APPROVEDOnboardingSagaPostSaveHook();
+    TRAININGOnboardingSagaPostSaveHook onboardingTRAININGPostSaveHook() {
+        return new TRAININGOnboardingSagaPostSaveHook();
     }
 
     @Bean
-    SUPPLIER_CREATEDOnboardingSagaPostSaveHook onboardingSUPPLIER_CREATEDPostSaveHook() {
-        return new SUPPLIER_CREATEDOnboardingSagaPostSaveHook();
+    ONBOARDEDOnboardingSagaPostSaveHook onboardingONBOARDEDPostSaveHook() {
+        return new ONBOARDEDOnboardingSagaPostSaveHook();
     }
 
     @Bean
-    ACTIVEOnboardingSagaPostSaveHook onboardingACTIVEPostSaveHook() {
-        return new ACTIVEOnboardingSagaPostSaveHook();
+    COMPLETEDOnboardingSagaPostSaveHook onboardingCOMPLETEDPostSaveHook() {
+        return new COMPLETEDOnboardingSagaPostSaveHook();
     }
 
     @Bean
     REJECTEDOnboardingSagaPostSaveHook onboardingREJECTEDPostSaveHook() {
         return new REJECTEDOnboardingSagaPostSaveHook();
+    }
+
+    // ========== ACL / Security (Item 15) ==========
+
+    @Bean
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> onboardingEventAuthoritiesSupplier(
+            @Qualifier("onboardingActionsInfoProvider") STMActionsInfoProvider onboardingInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(onboardingInfoProvider, false);
+        return builder.build();
+    }
+
+    // ========== Kafka Event Handler (Item 10+14) ==========
+
+    @Bean("onboardingEventService")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
+    OnboardingEventHandler onboardingEventService(
+            @Qualifier("_onboardingStateEntityService_") StateEntityServiceImpl<OnboardingSaga> onboardingStateEntityService,
+            tools.jackson.databind.ObjectMapper objectMapper) {
+        return new OnboardingEventHandler(onboardingStateEntityService, objectMapper);
     }
 }

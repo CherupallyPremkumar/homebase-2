@@ -2,6 +2,7 @@ package com.homebase.ecom.onboarding.infrastructure.persistence.entity;
 
 import org.chenile.jpautils.entity.AbstractJpaStateEntity;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,32 +13,35 @@ public class OnboardingSagaEntity extends AbstractJpaStateEntity {
     @Column(name = "supplier_id")
     private String supplierId;
 
-    @Column(name = "supplier_name")
-    private String supplierName;
+    @Column(name = "applicant_name")
+    private String applicantName;
 
-    @Column(name = "email")
-    private String email;
+    @Column(name = "business_name")
+    private String businessName;
 
-    @Column(name = "phone")
-    private String phone;
+    @Column(name = "business_type")
+    private String businessType;
 
-    @Column(name = "upi_id")
-    private String upiId;
+    @Column(name = "documents_json", columnDefinition = "TEXT")
+    private String documentsJson;
 
-    @Column(name = "address")
-    private String address;
+    @Column(name = "verification_notes", columnDefinition = "TEXT")
+    private String verificationNotes;
 
-    @Column(name = "commission_percentage")
-    private Double commissionPercentage;
+    @Column(name = "training_progress")
+    private int trainingProgress;
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "training_completed_modules_json", columnDefinition = "TEXT")
+    private String trainingCompletedModulesJson;
 
-    @Column(name = "error_message")
-    private String errorMessage;
+    @Column(name = "resubmission_count")
+    private int resubmissionCount;
 
-    @Column(name = "retry_count")
-    private int retryCount;
+    @Column(name = "submitted_at")
+    private LocalDateTime submittedAt;
+
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "onboarding_id")
@@ -47,32 +51,35 @@ public class OnboardingSagaEntity extends AbstractJpaStateEntity {
     public String getSupplierId() { return supplierId; }
     public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
 
-    public String getSupplierName() { return supplierName; }
-    public void setSupplierName(String supplierName) { this.supplierName = supplierName; }
+    public String getApplicantName() { return applicantName; }
+    public void setApplicantName(String applicantName) { this.applicantName = applicantName; }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getBusinessName() { return businessName; }
+    public void setBusinessName(String businessName) { this.businessName = businessName; }
 
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
+    public String getBusinessType() { return businessType; }
+    public void setBusinessType(String businessType) { this.businessType = businessType; }
 
-    public String getUpiId() { return upiId; }
-    public void setUpiId(String upiId) { this.upiId = upiId; }
+    public String getDocumentsJson() { return documentsJson; }
+    public void setDocumentsJson(String documentsJson) { this.documentsJson = documentsJson; }
 
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
+    public String getVerificationNotes() { return verificationNotes; }
+    public void setVerificationNotes(String verificationNotes) { this.verificationNotes = verificationNotes; }
 
-    public Double getCommissionPercentage() { return commissionPercentage; }
-    public void setCommissionPercentage(Double commissionPercentage) { this.commissionPercentage = commissionPercentage; }
+    public int getTrainingProgress() { return trainingProgress; }
+    public void setTrainingProgress(int trainingProgress) { this.trainingProgress = trainingProgress; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getTrainingCompletedModulesJson() { return trainingCompletedModulesJson; }
+    public void setTrainingCompletedModulesJson(String trainingCompletedModulesJson) { this.trainingCompletedModulesJson = trainingCompletedModulesJson; }
 
-    public String getErrorMessage() { return errorMessage; }
-    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+    public int getResubmissionCount() { return resubmissionCount; }
+    public void setResubmissionCount(int resubmissionCount) { this.resubmissionCount = resubmissionCount; }
 
-    public int getRetryCount() { return retryCount; }
-    public void setRetryCount(int retryCount) { this.retryCount = retryCount; }
+    public LocalDateTime getSubmittedAt() { return submittedAt; }
+    public void setSubmittedAt(LocalDateTime submittedAt) { this.submittedAt = submittedAt; }
+
+    public String getRejectionReason() { return rejectionReason; }
+    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
 
     public List<OnboardingSagaActivityLogEntity> getActivities() { return activities; }
     public void setActivities(List<OnboardingSagaActivityLogEntity> activities) { this.activities = activities; }

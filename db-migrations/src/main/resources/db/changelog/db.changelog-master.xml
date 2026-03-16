@@ -14,7 +14,7 @@
     <!-- Order (V4, V19, V33, V35) -->
     <include file="db/changelog/order/db.changelog-order.xml"/>
 
-    <!-- Product (V5) -->
+    <!-- Product (V5, V46, V49) -->
     <include file="db/changelog/product/db.changelog-product.xml"/>
 
     <!-- User (V7, V34) -->
@@ -26,7 +26,7 @@
     <!-- Shipping (V17) -->
     <include file="db/changelog/shipping/db.changelog-shipping.xml"/>
 
-    <!-- Inventory (V22) -->
+    <!-- Inventory (V22, V48, V47) -->
     <include file="db/changelog/inventory/db.changelog-inventory.xml"/>
 
     <!-- Settlement (V32) -->
@@ -55,5 +55,14 @@
 
     <!-- Analytics (V45) -->
     <include file="db/changelog/analytics/db.changelog-analytics.xml"/>
+
+    <!-- Cart -->
+    <include file="db/changelog/cart/db.changelog-cart.xml"/>
+
+    <!-- Promo -->
+    <include file="db/changelog/promo/db.changelog-promo.xml"/>
+
+    <!-- Saga orchestrators (fulfillment, return-processing, supplier-lifecycle) -->
+    <include file="db/changelog/saga/db.changelog-saga.xml"/>
 
 </databaseChangeLog>

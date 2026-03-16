@@ -7,6 +7,60 @@
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd
         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-	<!--minclude file="liquibase/query/changelog/changelog-1.0.xml" / -->
-	
+	<changeSet id="1" author="homebase">
+		<createTable tableName="returnrequest">
+			<column name="id" type="VARCHAR(255)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="order_id" type="VARCHAR(255)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="customer_id" type="VARCHAR(255)"/>
+			<column name="items_json" type="VARCHAR(4000)"/>
+			<column name="reason" type="VARCHAR(1000)"/>
+			<column name="return_type" type="VARCHAR(50)"/>
+			<column name="total_refund_amount" type="DECIMAL(19,2)"/>
+			<column name="restocking_fee" type="DECIMAL(19,2)"/>
+			<column name="description" type="VARCHAR(2000)"/>
+			<column name="reviewer_id" type="VARCHAR(255)"/>
+			<column name="review_notes" type="VARCHAR(2000)"/>
+			<column name="rejection_reason" type="VARCHAR(1000)"/>
+			<column name="rejection_comment" type="VARCHAR(2000)"/>
+			<column name="warehouse_id" type="VARCHAR(255)"/>
+			<column name="condition_on_receipt" type="VARCHAR(255)"/>
+			<column name="inspector_id" type="VARCHAR(255)"/>
+			<column name="inspector_notes" type="VARCHAR(2000)"/>
+			<column name="order_delivery_date" type="TIMESTAMP"/>
+			<column name="order_total_value" type="DECIMAL(19,2)"/>
+			<column name="current_state" type="VARCHAR(100)"/>
+			<column name="flow_id" type="VARCHAR(255)"/>
+			<column name="created_date" type="TIMESTAMP"/>
+			<column name="last_modified_date" type="TIMESTAMP"/>
+		</createTable>
+
+		<createTable tableName="returnrequest_activity">
+			<column name="id" type="VARCHAR(255)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="returnrequest_id" type="VARCHAR(255)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="event_id" type="VARCHAR(255)"/>
+			<column name="comment" type="VARCHAR(2000)"/>
+			<column name="success" type="BOOLEAN" defaultValueBoolean="true"/>
+		</createTable>
+
+		<createIndex tableName="returnrequest" indexName="idx_returnrequest_order_id">
+			<column name="order_id"/>
+		</createIndex>
+
+		<createIndex tableName="returnrequest" indexName="idx_returnrequest_customer_id">
+			<column name="customer_id"/>
+		</createIndex>
+
+		<createIndex tableName="returnrequest" indexName="idx_returnrequest_current_state">
+			<column name="current_state"/>
+		</createIndex>
+	</changeSet>
+
 </databaseChangeLog>

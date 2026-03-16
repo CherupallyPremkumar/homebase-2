@@ -33,13 +33,13 @@
 				"filterable": true,
 				"columnType": "Text"
 			},
-			"percentage": {
-				"name": "percentage",
-				"filterable": true,
-				"columnType": "Number"
-			},
 			"phone": {
 				"name": "phone",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateId",
 				"filterable": true,
 				"columnType": "Text"
 			}
@@ -56,32 +56,58 @@
 				"name": "userId",
 				"filterable": true,
 				"columnType": "Text"
-			},
-			"firstName": {
-				"name": "firstName",
-				"columnType": "Text"
-			},
-			"lastName": {
-				"name": "lastName",
-				"columnType": "Text"
-			},
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "User.getStateCounts",
+		"name": "userStateCounts",
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "User.getRecentRegistrations",
+		"name": "recentRegistrations",
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "User.getSuspendedUsers",
+		"name": "suspendedUsers",
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "User.getByEmail",
+		"name": "userByEmail",
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {
 			"email": {
 				"name": "email",
-				"columnType": "Text"
-			},
-			"role": {
-				"name": "role",
-				"columnType": "Text"
-			},
-			"percentage": {
-				"name": "percentage",
-				"columnType": "Number"
-			},
-			"phone": {
-				"name": "phone",
+				"filterable": true,
 				"columnType": "Text"
 			}
 		},
 		"paginated": false
+	},
+	{
+		"id": "User.getByRole",
+		"name": "usersByRole",
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {
+			"role": {
+				"name": "role",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": true
 	}
 ]

@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
  */
 public class SupplierProductReturnedEvent implements Serializable {
     private static final long serialVersionUID = 1L;
+    public static final String EVENT_TYPE = "SUPPLIER_PRODUCT_RETURNED";
 
+    private String eventType = EVENT_TYPE;
     private String supplierProductId;
     private String productId; // The Master Product ID
     private String supplierId;
@@ -28,6 +30,9 @@ public class SupplierProductReturnedEvent implements Serializable {
         this.reason = reason;
         this.returnedAt = returnedAt;
     }
+
+    public String getEventType() { return eventType; }
+    public void setEventType(String eventType) { this.eventType = eventType; }
 
     public String getSupplierProductId() {
         return supplierProductId;

@@ -1,7 +1,6 @@
 package com.homebase.ecom.supplierlifecycle.bdd;
 
 import org.springframework.test.context.ActiveProfiles;
-import org.chenile.security.test.BaseSecurityTest;
 
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
@@ -16,5 +15,5 @@ import org.junit.runner.RunWith;
     plugin = {"pretty"}
 )
 @ActiveProfiles("unittest")
-public class CukesRestTest extends BaseSecurityTest {
+public class CukesRestTest {
 }

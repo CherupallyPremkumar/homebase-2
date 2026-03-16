@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user
+  namespace: homebase
+  labels:
+    app.kubernetes.io/name: user
+    app.kubernetes.io/part-of: homebase
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: user
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: user
+    spec:
+      containers:
+        - name: user
+          image: homebase/user-app:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: homebase-config
+            - secretRef:
+                name: homebase-secrets
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user
+  namespace: homebase
+  labels:
+    app.kubernetes.io/name: user
+    app.kubernetes.io/part-of: homebase
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: user
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

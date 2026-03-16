@@ -1,0 +1,12 @@
+{
+	"name": "productEventService",
+	"id": "productEventService",
+	"serviceName": "productEventService",
+	"operations": [
+		{
+			"name": "handleSupplierEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["supplier.events"]
+		}
+	]
+}

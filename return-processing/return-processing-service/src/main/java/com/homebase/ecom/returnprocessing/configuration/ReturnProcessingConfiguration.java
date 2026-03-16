@@ -11,7 +11,7 @@ import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.workflow.param.MinimalPayload;
-import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -65,11 +65,11 @@ public class ReturnProcessingConfiguration {
     }
 
     @Bean
-    StateEntityServiceImpl<ReturnProcessingSaga> _returnProcessingStateEntityService_(
+    HmStateEntityServiceImpl<ReturnProcessingSaga> _returnProcessingStateEntityService_(
             @Qualifier("returnProcessingEntityStm") STM<ReturnProcessingSaga> stm,
             @Qualifier("returnProcessingActionsInfoProvider") STMActionsInfoProvider infoProvider,
             @Qualifier("returnProcessingEntityStore") EntityStore<ReturnProcessingSaga> entityStore) {
-        return new StateEntityServiceImpl<>(stm, infoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, infoProvider, entityStore);
     }
 
     // ==================== STM Transition Action Resolution ====================
@@ -219,5 +219,12 @@ public class ReturnProcessingConfiguration {
     @Bean
     FAILEDReturnProcessingPostSaveHook returnProcessingFAILEDPostSaveHook() {
         return new FAILEDReturnProcessingPostSaveHook();
+    }
+
+    @Bean
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> returnProcessingEventAuthoritiesSupplier(
+            @Qualifier("returnProcessingActionsInfoProvider") STMActionsInfoProvider returnProcessingInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(returnProcessingInfoProvider, false);
+        return builder.build();
     }
 }

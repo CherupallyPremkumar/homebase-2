@@ -1,0 +1,12 @@
+{
+	"name": "returnrequestEventService",
+	"id": "returnrequestEventService",
+	"serviceName": "returnrequestEventService",
+	"operations": [
+		{
+			"name": "handleOrderEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["order.events"]
+		}
+	]
+}

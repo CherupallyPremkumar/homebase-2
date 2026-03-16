@@ -4,6 +4,8 @@ import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.impl.*;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
+import org.chenile.stm.action.scriptsupport.IfAction;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.workflow.param.MinimalPayload;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -11,28 +13,44 @@ import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
+import org.chenile.workflow.api.WorkflowRegistry;
+import org.chenile.workflow.service.activities.ActivityChecker;
+import org.chenile.workflow.service.activities.AreActivitiesComplete;
+
 import com.homebase.ecom.notification.domain.model.Notification;
+import com.homebase.ecom.notification.domain.port.EmailPort;
+import com.homebase.ecom.notification.domain.port.SmsPort;
+import com.homebase.ecom.notification.domain.port.PushPort;
+import com.homebase.ecom.notification.infrastructure.adapter.EmailAdapter;
+import com.homebase.ecom.notification.infrastructure.adapter.SmsAdapter;
+import com.homebase.ecom.notification.infrastructure.adapter.PushAdapter;
 import com.homebase.ecom.notification.infrastructure.persistence.mapper.NotificationMapper;
 import com.homebase.ecom.notification.infrastructure.persistence.adapter.NotificationJpaRepository;
 import com.homebase.ecom.notification.infrastructure.persistence.adapter.NotificationRepositoryImpl;
 import com.homebase.ecom.notification.infrastructure.persistence.ChenileNotificationEntityStore;
 import com.homebase.ecom.notification.domain.port.NotificationRepository;
 import com.homebase.ecom.notification.service.cmds.*;
+import com.homebase.ecom.notification.service.event.NotificationEventHandler;
 import com.homebase.ecom.notification.service.healthcheck.NotificationHealthChecker;
-import org.chenile.workflow.api.WorkflowRegistry;
-import org.chenile.workflow.service.activities.ActivityChecker;
-import org.chenile.workflow.service.activities.AreActivitiesComplete;
+import com.homebase.ecom.notification.service.validator.NotificationPolicyValidator;
 import com.homebase.ecom.notification.service.postSaveHooks.*;
 
 /**
  * Spring configuration for the Notification STM module.
+ * Production-ready: full state machine, policy validation, channel adapters,
+ * Kafka event handling, post-save hooks with event publishing.
  */
 @Configuration
 public class NotificationConfiguration {
     private static final String FLOW_DEFINITION_FILE = "com/homebase/ecom/notification/notification-states.xml";
     public static final String PREFIX_FOR_PROPERTIES = "Notification";
     public static final String PREFIX_FOR_RESOLVER = "notification";
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // STM Infrastructure
+    // ═══════════════════════════════════════════════════════════════════════
 
     @Bean
     BeanFactoryAdapter notificationBeanFactoryAdapter() {
@@ -62,6 +80,10 @@ public class NotificationConfiguration {
         return provider;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // Persistence
+    // ═══════════════════════════════════════════════════════════════════════
+
     @Bean
     NotificationMapper notificationMapper() {
         return new NotificationMapper();
@@ -82,10 +104,12 @@ public class NotificationConfiguration {
             @Qualifier("notificationEntityStm") STM<Notification> stm,
             @Qualifier("notificationActionsInfoProvider") STMActionsInfoProvider notificationInfoProvider,
             @Qualifier("notificationEntityStore") EntityStore<Notification> entityStore) {
-        return new StateEntityServiceImpl<>(stm, notificationInfoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, notificationInfoProvider, entityStore);
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
     // STM Components
+    // ═══════════════════════════════════════════════════════════════════════
 
     @Bean
     DefaultPostSaveHook<Notification> notificationDefaultPostSaveHook(
@@ -133,6 +157,24 @@ public class NotificationConfiguration {
     NotificationHealthChecker notificationHealthChecker() {
         return new NotificationHealthChecker();
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // OGNL Scripting (for auto-states)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    @Bean
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
+
+    @Bean
+    IfAction<Notification> ifAction() {
+        return new IfAction<>();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Transition Action Resolution
+    // ═══════════════════════════════════════════════════════════════════════
 
     @Bean
     STMTransitionAction<Notification> defaultnotificationSTMTransitionAction() {
@@ -189,7 +231,14 @@ public class NotificationConfiguration {
         return enablementStrategy;
     }
 
-    // Transition Actions
+    // ═══════════════════════════════════════════════════════════════════════
+    // STM Transition Actions (convention: "notification" + eventId + "Action")
+    // ═══════════════════════════════════════════════════════════════════════
+
+    @Bean
+    QueueNotificationAction notificationQueueAction() {
+        return new QueueNotificationAction();
+    }
 
     @Bean
     SendNotificationAction notificationSendAction() {
@@ -197,13 +246,8 @@ public class NotificationConfiguration {
     }
 
     @Bean
-    MarkReadAction notificationMarkReadAction() {
-        return new MarkReadAction();
-    }
-
-    @Bean
-    RetryNotificationAction notificationRetryAction() {
-        return new RetryNotificationAction();
+    MarkDeliveredNotificationAction notificationMarkDeliveredAction() {
+        return new MarkDeliveredNotificationAction();
     }
 
     @Bean
@@ -211,11 +255,56 @@ public class NotificationConfiguration {
         return new FailNotificationAction();
     }
 
-    // Post Save Hooks
+    @Bean
+    RetryNotificationAction notificationRetryAction() {
+        return new RetryNotificationAction();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Policy Validator
+    // ═══════════════════════════════════════════════════════════════════════
+
+    @Bean
+    NotificationPolicyValidator notificationPolicyValidator() {
+        return new NotificationPolicyValidator();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Hexagonal Ports — Channel Adapters
+    // ═══════════════════════════════════════════════════════════════════════
+
+    @Bean
+    EmailPort emailPort() {
+        return new EmailAdapter();
+    }
+
+    @Bean
+    SmsPort smsPort() {
+        return new SmsAdapter();
+    }
+
+    @Bean
+    PushPort pushPort() {
+        return new PushAdapter();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Post Save Hooks (convention: "notification" + STATE_NAME + "PostSaveHook")
+    // ═══════════════════════════════════════════════════════════════════════
 
     @Bean
     CREATEDNotificationPostSaveHook notificationCREATEDPostSaveHook() {
         return new CREATEDNotificationPostSaveHook();
+    }
+
+    @Bean
+    QUEUEDNotificationPostSaveHook notificationQUEUEDPostSaveHook() {
+        return new QUEUEDNotificationPostSaveHook();
+    }
+
+    @Bean
+    SENDINGNotificationPostSaveHook notificationSENDINGPostSaveHook() {
+        return new SENDINGNotificationPostSaveHook();
     }
 
     @Bean
@@ -224,12 +313,51 @@ public class NotificationConfiguration {
     }
 
     @Bean
+    DELIVEREDNotificationPostSaveHook notificationDELIVEREDPostSaveHook() {
+        return new DELIVEREDNotificationPostSaveHook();
+    }
+
+    @Bean
     FAILEDNotificationPostSaveHook notificationFAILEDPostSaveHook() {
         return new FAILEDNotificationPostSaveHook();
     }
 
     @Bean
-    READNotificationPostSaveHook notificationREADPostSaveHook() {
-        return new READNotificationPostSaveHook();
+    RETRYNotificationPostSaveHook notificationRETRYPostSaveHook() {
+        return new RETRYNotificationPostSaveHook();
+    }
+
+    @Bean
+    BOUNCEDNotificationPostSaveHook notificationBOUNCEDPostSaveHook() {
+        return new BOUNCEDNotificationPostSaveHook();
+    }
+
+    @Bean
+    UNSUBSCRIBEDNotificationPostSaveHook notificationUNSUBSCRIBEDPostSaveHook() {
+        return new UNSUBSCRIBEDNotificationPostSaveHook();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ACL / Security
+    // ═══════════════════════════════════════════════════════════════════════
+
+    @Bean
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> notificationEventAuthoritiesSupplier(
+            @Qualifier("notificationActionsInfoProvider") STMActionsInfoProvider notificationInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(notificationInfoProvider, false);
+        return builder.build();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Kafka Event Handler (chenile-kafka integration)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    @Bean("notificationEventService")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
+    NotificationEventHandler notificationEventService(
+            @Qualifier("_notificationStateEntityService_") StateEntityServiceImpl<Notification> notificationStateEntityService,
+            org.chenile.pubsub.ChenilePub chenilePub,
+            tools.jackson.databind.ObjectMapper objectMapper) {
+        return new NotificationEventHandler(notificationStateEntityService, chenilePub, objectMapper);
     }
 }

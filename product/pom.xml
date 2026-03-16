@@ -12,6 +12,9 @@
 		<module>product-client</module>
 		<module>product-query-api</module>
 		<module>product-query</module>
+		<module>product-media</module>
+		<module>storage-local</module>
+		<module>storage-s3</module>
 	</modules>
 	<parent>
 		<groupId>com.homebase.ecom</groupId>
@@ -67,9 +70,19 @@
 			<version>${revision}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-openfeign</artifactId>
-			<version>4.1.0</version> <!-- Should match Spring Boot 3.2.x/3.3.x compatibility -->
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>product-media</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>storage-local</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.product</groupId>
+			<artifactId>storage-s3</artifactId>
+			<version>${revision}</version>
 		</dependency>
 	</dependencies>
 	</dependencyManagement>

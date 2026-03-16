@@ -1,0 +1,32 @@
+{
+	"name": "inventoryEventService",
+	"id": "inventoryEventService",
+	"serviceName": "inventoryEventService",
+	"operations": [
+		{
+			"name": "handleOrderEvent",
+			"input": "com.homebase.ecom.shared.event.OrderCreatedEvent",
+			"eventSubscribedTo": ["order.events"]
+		},
+		{
+			"name": "handlePaymentEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["payment.events"]
+		},
+		{
+			"name": "handleCartEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["cart.events"]
+		},
+		{
+			"name": "handleInventoryEvent",
+			"input": "com.homebase.ecom.shared.event.InventoryEvent",
+			"eventSubscribedTo": ["inventory.events"]
+		},
+		{
+			"name": "handleProductEvent",
+			"input": "com.homebase.ecom.shared.event.ProductCreatedEvent",
+			"eventSubscribedTo": ["product.events"]
+		}
+	]
+}

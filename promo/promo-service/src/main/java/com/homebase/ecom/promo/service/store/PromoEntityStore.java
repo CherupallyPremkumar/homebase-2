@@ -6,8 +6,10 @@ import org.chenile.utils.entity.service.EntityStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
+/**
+ * Chenile EntityStore implementation for Coupon.
+ * Uses String id from BaseJpaEntity.
+ */
 @Component
 public class PromoEntityStore implements EntityStore<Coupon> {
 
@@ -21,6 +23,6 @@ public class PromoEntityStore implements EntityStore<Coupon> {
 
     @Override
     public Coupon retrieve(String id) {
-        return couponRepository.findById(UUID.fromString(id)).orElse(null);
+        return couponRepository.findById(id).orElse(null);
     }
 }

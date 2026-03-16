@@ -1,26 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
+
+  <!-- Event definitions with ACLs and payload types -->
+  <event-information eventId='inspectStock' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.InspectStockInventoryPayload"/>
+  <event-information eventId='approveStock' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.ApproveStockInventoryPayload"/>
+  <event-information eventId='rejectStock' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.RejectStockInventoryPayload"/>
+  <event-information eventId='damageFound' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.DamageFoundInventoryPayload"/>
+  <event-information eventId='allocateToWarehouse' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.AllocateToWarehouseInventoryPayload"/>
+  <event-information eventId='reserveStock' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.inventory.dto.ReserveStockInventoryPayload"/>
+  <event-information eventId='releaseReservedStock' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.inventory.dto.ReleaseReservedStockInventoryPayload"/>
+  <event-information eventId='soldAllReserved' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.inventory.dto.SoldAllReservedInventoryPayload"/>
+  <event-information eventId='sellAllStock' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.inventory.dto.SellAllStockInventoryPayload"/>
+  <event-information eventId='returnStock' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.inventory.dto.ReturnStockInventoryPayload"/>
+  <event-information eventId='returnDamaged' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.ReturnDamagedInventoryPayload"/>
+  <event-information eventId='restockArrive' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.inventory.dto.RestockArriveInventoryPayload"/>
+  <event-information eventId='repairDamageds' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.RepairDamagedsInventoryPayload"/>
+  <event-information eventId='discardDamaged' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.DiscardDamagedInventoryPayload"/>
+  <event-information eventId='returnToSupplier' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.ReturnToSupplierInventoryPayload"/>
+  <event-information eventId='repairDamaged' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.RepairDamagedInventoryPayload"/>
+  <event-information eventId='returnCompleted' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.ReturnCompletedInventoryPayload"/>
+  <event-information eventId='returnRejectedStock' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.ReturnRejectedStockInventoryPayload"/>
+
  <flow id='inventory-flow' default='true'>
-    <security-strategy componentName="inventorySecurityStrategy"/>
+    <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="inventoryEntryAction" />
     <exit-action componentName="inventoryExitAction" />
 
-    <!-- STOCK_PENDING State: Product delivered, waiting for stock inspection -->
-    <manual-state id='STOCK_PENDING' initialState='true' meta-mainPath="true" description="Product delivered, waiting for stock inspection">
+    <!-- ================================================================ -->
+    <!-- INBOUND: Receive → QC → Approve/Reject/Damage → Putaway          -->
+    <!-- ================================================================ -->
+
+    <!-- Shipment received at dock, awaiting quality check -->
+    <manual-state id='STOCK_PENDING' initialState='true' meta-mainPath="true"
+                  description="Shipment received at dock, awaiting quality check">
       <on eventId='inspectStock'
           componentName='inventoryInspectStockAction'
           newStateId='STOCK_INSPECTION'
-          meta-mainPath="true"
-          meta-acls="WAREHOUSE"/>
+          meta-mainPath="true" meta-acls="WAREHOUSE"/>
     </manual-state>
 
-    <!-- STOCK_INSPECTION State: Checking quality and quantity at warehouse -->
-    <manual-state id='STOCK_INSPECTION' meta-mainPath="true" description="Checking quality and quantity at warehouse">
+    <!-- QC in progress -->
+    <manual-state id='STOCK_INSPECTION' meta-mainPath="true"
+                  description="Quality check in progress">
       <on eventId='approveStock'
           componentName='inventoryApproveStockAction'
           newStateId='STOCK_APPROVED'
-          meta-mainPath="true"
-          meta-acls="WAREHOUSE"/>
+          meta-mainPath="true" meta-acls="WAREHOUSE"/>
       <on eventId='rejectStock'
           componentName='inventoryRejectStockAction'
           newStateId='STOCK_REJECTED'
@@ -31,108 +57,201 @@
           meta-acls="WAREHOUSE"/>
     </manual-state>
 
-    <!-- STOCK_APPROVED State: Stock quality good, ready for warehouse allocation -->
-    <manual-state id='STOCK_APPROVED' meta-mainPath="true" description="Stock quality approved, ready for warehouse allocation">
+    <!-- QC passed, ready for warehouse putaway -->
+    <manual-state id='STOCK_APPROVED' meta-mainPath="true"
+                  description="QC passed, ready for warehouse putaway">
       <on eventId='allocateToWarehouse'
           componentName='inventoryAllocateToWarehouseAction'
           newStateId='IN_WAREHOUSE'
-          meta-mainPath="true"
-          meta-acls="WAREHOUSE"/>
+          meta-mainPath="true" meta-acls="WAREHOUSE"/>
     </manual-state>
 
-    <!-- IN_WAREHOUSE State: Stock stored in warehouse, available for orders -->
-    <manual-state id='IN_WAREHOUSE' meta-mainPath="true" description="Stock stored in warehouse, available for orders">
-      <on eventId='reserveStock'
-          componentName='inventoryReserveStockAction'
-          newStateId='PARTIALLY_RESERVED'
-          meta-acls="SYSTEM"/>
-      <on eventId='sellAllStock'
-          componentName='inventorySellAllStockAction'
-          newStateId='OUT_OF_STOCK'
-          meta-acls="SYSTEM"/>
-      <on eventId='returnDamaged'
-          componentName='inventoryReturnDamagedAction'
-          newStateId='DAMAGED_AT_WAREHOUSE'
-          meta-acls="WAREHOUSE"/>
-    </manual-state>
+    <!-- ================================================================ -->
+    <!-- WAREHOUSE: Stowed, available for orders                           -->
+    <!-- Reservations are quantity bookkeeping — stock stays IN_WAREHOUSE  -->
+    <!-- ================================================================ -->
 
-    <!-- PARTIALLY_RESERVED State: Some stock reserved, rest available -->
-    <manual-state id='PARTIALLY_RESERVED' meta-mainPath="true" description="Some stock reserved for orders, rest available">
+    <manual-state id='IN_WAREHOUSE' meta-mainPath="true"
+                  description="Stock stowed in warehouse, available for orders">
+      <!-- Reserve: quantity bookkeeping, stays in warehouse -->
       <on eventId='reserveStock'
           componentName='inventoryReserveStockAction'
-          newStateId='PARTIALLY_RESERVED'
+          newStateId='IN_WAREHOUSE'
           meta-acls="SYSTEM"/>
+      <!-- Release reservation: quantity bookkeeping, stays in warehouse -->
       <on eventId='releaseReservedStock'
           componentName='inventoryReleaseReservedStockAction'
           newStateId='IN_WAREHOUSE'
           meta-acls="SYSTEM"/>
+      <!-- Confirm sale: deducts qty, check if depleted -->
       <on eventId='soldAllReserved'
           componentName='inventorySoldAllReservedAction'
+          newStateId='CHECK_DEPLETION'
+          meta-acls="SYSTEM"/>
+      <!-- Flash sale: sell everything at once -->
+      <on eventId='sellAllStock'
+          componentName='inventorySellAllStockAction'
           newStateId='OUT_OF_STOCK'
           meta-acls="SYSTEM"/>
+      <!-- Order return: stock comes back to warehouse -->
+      <on eventId='returnStock'
+          componentName='inventoryReturnStockAction'
+          newStateId='IN_WAREHOUSE'
+          meta-acls="SYSTEM"/>
+      <!-- Damage discovered post-stow: quantity bookkeeping, auto-state decides next -->
+      <on eventId='returnDamaged'
+          componentName='inventoryReturnDamagedAction'
+          newStateId='CHECK_DAMAGE_SEVERITY'
+          meta-acls="WAREHOUSE"/>
+      <!-- Discard damaged units while good stock remains sellable -->
+      <on eventId='discardDamaged'
+          componentName='inventoryDiscardDamagedAction'
+          newStateId='CHECK_AFTER_DISCARD'
+          meta-acls="WAREHOUSE"/>
+      <!-- Repair damaged units at warehouse -->
+      <on eventId='repairDamaged'
+          componentName='inventoryRepairDamagedAction'
+          newStateId='IN_WAREHOUSE'
+          meta-acls="WAREHOUSE"/>
     </manual-state>
 
-    <!-- OUT_OF_STOCK State: All inventory sold -->
-    <manual-state id='OUT_OF_STOCK' description="All inventory sold, no stock remaining">
+    <!--
+      OGNL auto-state: after confirming sale, check if inventory is depleted.
+      If available=0 AND reserved=0 → OUT_OF_STOCK
+      Else → back to IN_WAREHOUSE (still has stock)
+    -->
+    <auto-state id='CHECK_DEPLETION'
+                componentName='ifAction'
+                condition='availableQuantity &lt;= 0 and reservedQuantity &lt;= 0'
+                then='depleted'
+                else='hasStock'>
+      <on eventId='depleted' newStateId='OUT_OF_STOCK'/>
+      <on eventId='hasStock' newStateId='IN_WAREHOUSE'/>
+    </auto-state>
+
+    <!--
+      OGNL auto-state: after warehouse damage, check if any sellable stock remains.
+      availableQuantity <= 0 → DAMAGED_AT_WAREHOUSE (no sellable stock, needs intervention)
+      else → IN_WAREHOUSE (good stock remains sellable, damage is just quantity bookkeeping)
+    -->
+    <auto-state id='CHECK_DAMAGE_SEVERITY'
+                componentName='ifAction'
+                condition='availableQuantity &lt;= 0'
+                then='allDamaged'
+                else='hasGoodStock'>
+      <on eventId='allDamaged' newStateId='DAMAGED_AT_WAREHOUSE'/>
+      <on eventId='hasGoodStock' newStateId='IN_WAREHOUSE'/>
+    </auto-state>
+
+    <!-- ================================================================ -->
+    <!-- OUT_OF_STOCK: All inventory depleted                              -->
+    <!-- ================================================================ -->
+
+    <manual-state id='OUT_OF_STOCK'
+                  description="All inventory depleted, awaiting replenishment">
+      <!-- Replenishment shipment arrives -->
       <on eventId='restockArrive'
           componentName='inventoryRestockArriveAction'
           newStateId='STOCK_PENDING'
-          meta-mainPath="true"
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+      <!-- Order return brings stock back -->
+      <on eventId='returnStock'
+          componentName='inventoryReturnStockAction'
+          newStateId='IN_WAREHOUSE'
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <!-- PARTIAL_DAMAGE State: Some items damaged during delivery -->
-    <manual-state id='PARTIAL_DAMAGE' description="Some items found damaged during inspection">
+    <!-- ================================================================ -->
+    <!-- DAMAGE HANDLING                                                   -->
+    <!-- ================================================================ -->
+
+    <!-- Damage found during inbound QC (pre-putaway) -->
+    <manual-state id='PARTIAL_DAMAGE'
+                  description="Damage found during inbound inspection">
+      <!-- Repair damaged → back to approved for putaway -->
       <on eventId='repairDamageds'
           componentName='inventoryRepairDamagedsAction'
           newStateId='STOCK_APPROVED'
           meta-acls="WAREHOUSE"/>
+      <!-- Discard damaged, keep good stock → back to approved for putaway -->
       <on eventId='discardDamaged'
           componentName='inventoryDiscardDamagedAction'
-          newStateId='IN_WAREHOUSE'
+          newStateId='STOCK_APPROVED'
           meta-acls="WAREHOUSE"/>
+      <!-- Return entire batch to supplier -->
       <on eventId='returnToSupplier'
           componentName='inventoryReturnToSupplierAction'
           newStateId='RETURN_TO_SUPPLIER'
           meta-acls="WAREHOUSE"/>
     </manual-state>
 
-    <!-- DAMAGED_AT_WAREHOUSE State: Items damaged while stored -->
-    <manual-state id='DAMAGED_AT_WAREHOUSE' description="Items damaged while stored in warehouse">
+    <!-- Damage discovered while stowed in warehouse -->
+    <manual-state id='DAMAGED_AT_WAREHOUSE'
+                  description="Damage discovered while stowed in warehouse">
+      <!-- Repair → back to warehouse -->
       <on eventId='repairDamaged'
           componentName='inventoryRepairDamagedAction'
           newStateId='IN_WAREHOUSE'
           meta-acls="WAREHOUSE"/>
+      <!-- Discard → check if any stock remains -->
       <on eventId='discardDamaged'
           componentName='inventoryDiscardDamagedAction'
-          newStateId='DISCARDED'
+          newStateId='CHECK_AFTER_DISCARD'
           meta-acls="WAREHOUSE"/>
     </manual-state>
 
-    <!-- RETURN_TO_SUPPLIER State: Stock being returned to supplier -->
-    <manual-state id='RETURN_TO_SUPPLIER' description="Stock being returned to supplier">
+    <!--
+      OGNL auto-state: after discarding damaged warehouse stock,
+      check if anything remains.
+      If quantity=0 → DISCARDED (full write-off)
+      Else → back to IN_WAREHOUSE (still has good stock)
+    -->
+    <auto-state id='CHECK_AFTER_DISCARD'
+                componentName='ifAction'
+                condition='quantity &lt;= 0'
+                then='allGone'
+                else='hasStock'>
+      <on eventId='allGone' newStateId='DISCARDED'/>
+      <on eventId='hasStock' newStateId='IN_WAREHOUSE'/>
+    </auto-state>
+
+    <!-- ================================================================ -->
+    <!-- SUPPLIER RETURNS                                                  -->
+    <!-- ================================================================ -->
+
+    <manual-state id='RETURN_TO_SUPPLIER'
+                  description="Stock in transit back to supplier">
       <on eventId='returnCompleted'
           componentName='inventoryReturnCompletedAction'
           newStateId='RETURNED_TO_SUPPLIER'
           meta-acls="WAREHOUSE"/>
     </manual-state>
 
-    <!-- RETURNED_TO_SUPPLIER State: Stock successfully returned to supplier -->
-    <manual-state id='RETURNED_TO_SUPPLIER' description="Stock successfully returned to supplier">
+    <!-- Supplier acknowledged return — trigger payment adjustment -->
+    <manual-state id='RETURNED_TO_SUPPLIER'
+                  description="Supplier acknowledged return, payment adjusted">
       <exit-action componentName="inventoryAdjustSupplierPaymentAction" />
     </manual-state>
 
-    <!-- STOCK_REJECTED State: Stock quality issues, rejected -->
-    <manual-state id='STOCK_REJECTED' description="Stock rejected due to quality issues">
+    <!-- ================================================================ -->
+    <!-- REJECTION / WRITE-OFF                                             -->
+    <!-- ================================================================ -->
+
+    <manual-state id='STOCK_REJECTED'
+                  description="Stock failed QC, awaiting return to supplier">
       <on eventId='returnRejectedStock'
           componentName='inventoryReturnRejectedStockAction'
           newStateId='RETURN_TO_SUPPLIER'
           meta-acls="WAREHOUSE"/>
     </manual-state>
 
-    <!-- DISCARDED State: Damaged stock discarded -->
-    <manual-state id='DISCARDED' description="Damaged stock discarded">
+    <!-- Full write-off — all stock discarded -->
+    <manual-state id='DISCARDED' description="All stock written off">
       <exit-action componentName="inventoryDiscardedCleanupAction" />
+    </manual-state>
+
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
     </manual-state>
   </flow>
 </states>

@@ -143,6 +143,108 @@
       "transientMap": {}
     },
     {
+      "id": "policy-pim-submit-001",
+      "name": "PIM Submit for Review Policy",
+      "description": "Validates product data completeness before submission for review",
+      "active": true,
+      "targetModule": "PRODUCT",
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "rule-pim-submit-001",
+          "name": "Product Name Required",
+          "expression": "#productName != null && #productNameLength >= 3",
+          "effect": "ALLOW",
+          "priority": 10,
+          "active": true
+        },
+        {
+          "id": "rule-pim-submit-002",
+          "name": "Product Name Too Short",
+          "expression": "#productName != null && #productNameLength < 3",
+          "effect": "DENY",
+          "priority": 0,
+          "active": true
+        },
+        {
+          "id": "rule-pim-submit-003",
+          "name": "Description Required",
+          "expression": "#productDescription == null || #productDescriptionLength < 20",
+          "effect": "DENY",
+          "priority": 0,
+          "active": true
+        },
+        {
+          "id": "rule-pim-submit-004",
+          "name": "Category Required",
+          "expression": "#productCategoryId == null || #productCategoryId.isEmpty()",
+          "effect": "DENY",
+          "priority": 0,
+          "active": true
+        },
+        {
+          "id": "rule-pim-submit-005",
+          "name": "All Submit Checks Pass",
+          "expression": "#productName != null && #productNameLength >= 3 && #productDescription != null && #productDescriptionLength >= 20 && #productCategoryId != null && !#productCategoryId.isEmpty()",
+          "effect": "ALLOW",
+          "priority": 1,
+          "active": true
+        }
+      ],
+      "transientMap": {}
+    },
+    {
+      "id": "policy-pim-publish-001",
+      "name": "PIM Publish Approval Policy",
+      "description": "Validates product readiness for catalog publication",
+      "active": true,
+      "targetModule": "PRODUCT",
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "rule-pim-publish-001",
+          "name": "At Least One Image Required",
+          "expression": "#productMediaCount == null || #productMediaCount < 1",
+          "effect": "DENY",
+          "priority": 0,
+          "active": true
+        },
+        {
+          "id": "rule-pim-publish-002",
+          "name": "Description Too Short for Publish",
+          "expression": "#productDescription == null || #productDescriptionLength < 50",
+          "effect": "DENY",
+          "priority": 0,
+          "active": true
+        },
+        {
+          "id": "rule-pim-publish-003",
+          "name": "Brand Required for Publish",
+          "expression": "#productBrand == null || #productBrand.isEmpty()",
+          "effect": "DENY",
+          "priority": 0,
+          "active": true
+        },
+        {
+          "id": "rule-pim-publish-004",
+          "name": "At Least One Variant Required",
+          "expression": "#productVariantCount == null || #productVariantCount < 1",
+          "effect": "DENY",
+          "priority": 0,
+          "active": true
+        },
+        {
+          "id": "rule-pim-publish-005",
+          "name": "All Publish Checks Pass",
+          "expression": "#productMediaCount != null && #productMediaCount >= 1 && #productDescription != null && #productDescriptionLength >= 50 && #productBrand != null && !#productBrand.isEmpty() && #productVariantCount != null && #productVariantCount >= 1",
+          "effect": "ALLOW",
+          "priority": 1,
+          "active": true
+        }
+      ],
+      "transientMap": {}
+    },
+    {
       "id": "policy-discount-001",
       "name": "Discount & Coupon Policy",
       "description": "Controls which discounts and coupons can be applied",

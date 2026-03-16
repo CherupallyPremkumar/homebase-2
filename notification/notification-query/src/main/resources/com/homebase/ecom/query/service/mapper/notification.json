@@ -11,8 +11,8 @@
                 "columnType": "Text",
                 "sortable": true
             },
-            "userId": {
-                "name": "userId",
+            "customerId": {
+                "name": "customerId",
                 "filterable": true,
                 "columnType": "Text",
                 "sortable": true
@@ -22,17 +22,17 @@
                 "filterable": true,
                 "columnType": "Text"
             },
+            "templateId": {
+                "name": "templateId",
+                "filterable": true,
+                "columnType": "Text"
+            },
             "subject": {
                 "name": "subject",
                 "columnType": "Text"
             },
-            "referenceType": {
-                "name": "referenceType",
-                "filterable": true,
-                "columnType": "Text"
-            },
-            "referenceId": {
-                "name": "referenceId",
+            "recipientAddress": {
+                "name": "recipientAddress",
                 "filterable": true,
                 "columnType": "Text"
             },
@@ -53,13 +53,112 @@
                 "name": "id",
                 "filterable": true,
                 "columnType": "Text"
-            },
-            "userId": {
-                "name": "userId",
+            }
+        },
+        "paginated": false
+    },
+    {
+        "id": "Notification.getStateCounts",
+        "name": "notificationStateCounts",
+        "columnMetadata": {
+            "stateId": {
+                "name": "stateId",
                 "filterable": true,
                 "columnType": "Text"
             }
         },
         "paginated": false
+    },
+    {
+        "id": "Notification.getFailedNotifications",
+        "name": "failedNotifications",
+        "workflowName": "notification",
+        "stateColumn": "stateId",
+        "columnMetadata": {
+            "customerId": {
+                "name": "customerId",
+                "filterable": true,
+                "columnType": "Text"
+            },
+            "channel": {
+                "name": "channel",
+                "filterable": true,
+                "columnType": "Text"
+            }
+        },
+        "paginated": true,
+        "sortable": true
+    },
+    {
+        "id": "Notification.getDeliveryStats",
+        "name": "notificationDeliveryStats",
+        "columnMetadata": {
+            "channel": {
+                "name": "channel",
+                "filterable": true,
+                "columnType": "Text"
+            }
+        },
+        "paginated": false
+    },
+    {
+        "id": "Notification.getByCustomerId",
+        "name": "notificationsByCustomer",
+        "workflowName": "notification",
+        "stateColumn": "stateId",
+        "columnMetadata": {
+            "customerId": {
+                "name": "customerId",
+                "filterable": true,
+                "columnType": "Text"
+            },
+            "stateId": {
+                "name": "stateId",
+                "filterable": true,
+                "columnType": "Text"
+            }
+        },
+        "paginated": true,
+        "sortable": true
+    },
+    {
+        "id": "Notification.getByChannel",
+        "name": "notificationsByChannel",
+        "workflowName": "notification",
+        "stateColumn": "stateId",
+        "columnMetadata": {
+            "channel": {
+                "name": "channel",
+                "filterable": true,
+                "columnType": "Text"
+            },
+            "stateId": {
+                "name": "stateId",
+                "filterable": true,
+                "columnType": "Text"
+            }
+        },
+        "paginated": true,
+        "sortable": true
+    },
+    {
+        "id": "Notification.getByTemplate",
+        "name": "notificationsByTemplate",
+        "workflowName": "notification",
+        "stateColumn": "stateId",
+        "columnMetadata": {
+            "templateId": {
+                "name": "templateId",
+                "filterable": true,
+                "columnType": "Text"
+            },
+            "stateId": {
+                "name": "stateId",
+                "filterable": true,
+                "columnType": "Text"
+            }
+        },
+        "paginated": true,
+        "sortable": true
     }
 ]

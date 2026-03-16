@@ -22,30 +22,54 @@ import java.util.List;
 public class SupplierEntity extends AbstractJpaStateEntity
         implements ActivityEnabledStateEntity, ContainsTransientMap {
 
-    @Column(nullable = false)
-    private String name;
+    // --- Identity & Business Info ---
 
     @Column(name = "user_id")
     private String userId;
 
-    private String email;
+    @Column(name = "business_name", nullable = false)
+    private String businessName;
 
-    @Column(length = 1000)
-    private String description;
+    @Column(name = "business_type")
+    private String businessType;
 
-    @Column(name = "phone_number")
-    private String phone;
+    @Column(name = "tax_id")
+    private String taxId;
 
-    @Column(name = "upi_id")
-    private String upiId;
+    @Column(name = "bank_account_id")
+    private String bankAccountId;
+
+    @Column(name = "contact_email")
+    private String contactEmail;
+
+    @Column(name = "contact_phone")
+    private String contactPhone;
 
     @Column(length = 2000)
     private String address;
 
-    @Column(name = "commission_percentage")
-    private Double commissionPercentage;
+    // --- Performance Metrics ---
 
-    // Lifecycle tracking fields
+    @Column(name = "rating")
+    private double rating;
+
+    @Column(name = "total_orders")
+    private int totalOrders;
+
+    @Column(name = "total_returns")
+    private int totalReturns;
+
+    @Column(name = "fulfillment_rate")
+    private double fulfillmentRate;
+
+    @Column(name = "avg_shipping_days")
+    private double avgShippingDays;
+
+    @Column(name = "commission_rate")
+    private double commissionRate;
+
+    // --- Lifecycle Tracking ---
+
     @Column(name = "active_date")
     private LocalDateTime activeDate;
 
@@ -55,14 +79,20 @@ public class SupplierEntity extends AbstractJpaStateEntity
     @Column(name = "suspension_reason", length = 1000)
     private String suspensionReason;
 
-    @Column(name = "blacklist_reason", length = 1000)
-    private String blacklistReason;
+    @Column(name = "termination_reason", length = 1000)
+    private String terminationReason;
+
+    @Column(name = "probation_reason", length = 1000)
+    private String probationReason;
 
     @Column(name = "suspended_date")
     private LocalDateTime suspendedDate;
 
-    @Column(name = "blacklisted_date")
-    private LocalDateTime blacklistedDate;
+    @Column(name = "terminated_date")
+    private LocalDateTime terminatedDate;
+
+    @Column(name = "probation_date")
+    private LocalDateTime probationDate;
 
     @Column(name = "products_disabled")
     private boolean productsDisabled;
@@ -99,29 +129,47 @@ public class SupplierEntity extends AbstractJpaStateEntity
 
     // --- Getters / Setters ---
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getBusinessName() { return businessName; }
+    public void setBusinessName(String businessName) { this.businessName = businessName; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getBusinessType() { return businessType; }
+    public void setBusinessType(String businessType) { this.businessType = businessType; }
 
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
+    public String getTaxId() { return taxId; }
+    public void setTaxId(String taxId) { this.taxId = taxId; }
 
-    public String getUpiId() { return upiId; }
-    public void setUpiId(String upiId) { this.upiId = upiId; }
+    public String getBankAccountId() { return bankAccountId; }
+    public void setBankAccountId(String bankAccountId) { this.bankAccountId = bankAccountId; }
+
+    public String getContactEmail() { return contactEmail; }
+    public void setContactEmail(String contactEmail) { this.contactEmail = contactEmail; }
+
+    public String getContactPhone() { return contactPhone; }
+    public void setContactPhone(String contactPhone) { this.contactPhone = contactPhone; }
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
 
-    public Double getCommissionPercentage() { return commissionPercentage; }
-    public void setCommissionPercentage(Double commissionPercentage) { this.commissionPercentage = commissionPercentage; }
+    public double getRating() { return rating; }
+    public void setRating(double rating) { this.rating = rating; }
+
+    public int getTotalOrders() { return totalOrders; }
+    public void setTotalOrders(int totalOrders) { this.totalOrders = totalOrders; }
+
+    public int getTotalReturns() { return totalReturns; }
+    public void setTotalReturns(int totalReturns) { this.totalReturns = totalReturns; }
+
+    public double getFulfillmentRate() { return fulfillmentRate; }
+    public void setFulfillmentRate(double fulfillmentRate) { this.fulfillmentRate = fulfillmentRate; }
+
+    public double getAvgShippingDays() { return avgShippingDays; }
+    public void setAvgShippingDays(double avgShippingDays) { this.avgShippingDays = avgShippingDays; }
+
+    public double getCommissionRate() { return commissionRate; }
+    public void setCommissionRate(double commissionRate) { this.commissionRate = commissionRate; }
 
     public LocalDateTime getActiveDate() { return activeDate; }
     public void setActiveDate(LocalDateTime activeDate) { this.activeDate = activeDate; }
@@ -132,14 +180,20 @@ public class SupplierEntity extends AbstractJpaStateEntity
     public String getSuspensionReason() { return suspensionReason; }
     public void setSuspensionReason(String suspensionReason) { this.suspensionReason = suspensionReason; }
 
-    public String getBlacklistReason() { return blacklistReason; }
-    public void setBlacklistReason(String blacklistReason) { this.blacklistReason = blacklistReason; }
+    public String getTerminationReason() { return terminationReason; }
+    public void setTerminationReason(String terminationReason) { this.terminationReason = terminationReason; }
+
+    public String getProbationReason() { return probationReason; }
+    public void setProbationReason(String probationReason) { this.probationReason = probationReason; }
 
     public LocalDateTime getSuspendedDate() { return suspendedDate; }
     public void setSuspendedDate(LocalDateTime suspendedDate) { this.suspendedDate = suspendedDate; }
 
-    public LocalDateTime getBlacklistedDate() { return blacklistedDate; }
-    public void setBlacklistedDate(LocalDateTime blacklistedDate) { this.blacklistedDate = blacklistedDate; }
+    public LocalDateTime getTerminatedDate() { return terminatedDate; }
+    public void setTerminatedDate(LocalDateTime terminatedDate) { this.terminatedDate = terminatedDate; }
+
+    public LocalDateTime getProbationDate() { return probationDate; }
+    public void setProbationDate(LocalDateTime probationDate) { this.probationDate = probationDate; }
 
     public boolean isProductsDisabled() { return productsDisabled; }
     public void setProductsDisabled(boolean productsDisabled) { this.productsDisabled = productsDisabled; }

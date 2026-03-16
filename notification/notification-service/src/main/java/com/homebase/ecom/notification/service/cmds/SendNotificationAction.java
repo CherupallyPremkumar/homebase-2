@@ -1,6 +1,9 @@
 package com.homebase.ecom.notification.service.cmds;
 
 import com.homebase.ecom.notification.domain.model.Notification;
+import com.homebase.ecom.notification.domain.port.EmailPort;
+import com.homebase.ecom.notification.domain.port.PushPort;
+import com.homebase.ecom.notification.domain.port.SmsPort;
 import com.homebase.ecom.notification.dto.SendNotificationPayload;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
@@ -8,64 +11,57 @@ import org.chenile.stm.model.Transition;
 import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
-import java.util.Arrays;
-import java.util.List;
 
 /**
- * STM action for sending a notification.
- * Selects template, renders content, and dispatches to the specified channel.
+ * STM action for sending a notification (QUEUED -> SENDING or RETRY -> SENDING).
+ * Dispatches to the appropriate channel adapter (EmailPort, SmsPort, PushPort).
+ * IN_APP notifications are handled internally without an external adapter.
  */
 public class SendNotificationAction extends AbstractSTMTransitionAction<Notification, SendNotificationPayload> {
 
     private static final Logger log = LoggerFactory.getLogger(SendNotificationAction.class);
-    private static final List<String> VALID_CHANNELS = Arrays.asList("EMAIL", "SMS", "PUSH", "IN_APP");
+
+    @Autowired(required = false)
+    private EmailPort emailPort;
+
+    @Autowired(required = false)
+    private SmsPort smsPort;
+
+    @Autowired(required = false)
+    private PushPort pushPort;
 
     @Override
     public void transitionTo(Notification notification, SendNotificationPayload payload, State startState,
             String eventId, State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-        // Validate channel
-        String channel = payload.getChannel();
-        if (channel == null || channel.trim().isEmpty()) {
-            throw new IllegalArgumentException("Notification channel is required");
-        }
-        if (!VALID_CHANNELS.contains(channel.toUpperCase())) {
-            throw new IllegalArgumentException("Invalid notification channel: " + channel
-                    + ". Supported channels: " + VALID_CHANNELS);
-        }
-
-        // Validate that we have content to send
-        if ((payload.getBody() == null || payload.getBody().trim().isEmpty())
-                && (payload.getTemplateCode() == null || payload.getTemplateCode().trim().isEmpty())) {
-            throw new IllegalArgumentException("Either body or templateCode must be provided");
-        }
-
-        notification.setChannel(channel.toUpperCase());
-        notification.setTemplateCode(payload.getTemplateCode());
-
-        // Render content - if templateCode provided, use it as basis; otherwise use payload body
-        if (payload.getTemplateCode() != null && !payload.getTemplateCode().trim().isEmpty()) {
-            // Template-based rendering (simplified - in production would use a template engine)
-            String renderedSubject = payload.getSubject() != null ? payload.getSubject()
-                    : "Notification: " + payload.getTemplateCode();
-            String renderedBody = payload.getBody() != null ? payload.getBody()
-                    : "Template " + payload.getTemplateCode() + " rendered content";
-            notification.setSubject(renderedSubject);
-            notification.setBody(renderedBody);
-        } else {
-            notification.setSubject(payload.getSubject());
-            notification.setBody(payload.getBody());
-        }
-
-        notification.setReferenceType(payload.getReferenceType());
-        notification.setReferenceId(payload.getReferenceId());
         notification.setSentAt(new Date());
-        notification.setErrorMessage(null);
+        notification.setFailureReason(null);
 
-        log.info("Notification dispatched via {}: userId={}, subject={}",
-                notification.getChannel(), notification.getUserId(), notification.getSubject());
+        // Dispatch to channel adapter
+        String channel = notification.getChannel();
+        switch (channel) {
+            case "EMAIL":
+                if (emailPort != null) emailPort.send(notification);
+                break;
+            case "SMS":
+                if (smsPort != null) smsPort.send(notification);
+                break;
+            case "PUSH":
+                if (pushPort != null) pushPort.send(notification);
+                break;
+            case "IN_APP":
+                // IN_APP notifications are stored and queried — no external dispatch needed
+                break;
+            default:
+                log.warn("Unknown channel {} for notification {}, treating as IN_APP",
+                        channel, notification.getId());
+        }
+
+        log.info("Notification {} dispatched via {}: customerId={}, subject={}",
+                notification.getId(), channel, notification.getCustomerId(), notification.getSubject());
 
         notification.getTransientMap().put("previousPayload", payload);
     }

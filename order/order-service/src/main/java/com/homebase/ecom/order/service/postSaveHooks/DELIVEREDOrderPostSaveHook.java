@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 
 /**
  * PostSaveHook for DELIVERED state.
- * Publishes OrderDeliveredEvent after the order is delivered to the customer.
+ * Publishes ORDER_DELIVERED event — notifies customer.
  */
 public class DELIVEREDOrderPostSaveHook implements PostSaveHook<Order> {
 
@@ -25,17 +25,13 @@ public class DELIVEREDOrderPostSaveHook implements PostSaveHook<Order> {
 
     @Override
     public void execute(State startState, State endState, Order order, TransientMap map) {
-        LocalDateTime deliveredAt = (order.getDeliveryDate() != null)
-                ? order.getDeliveryDate()
-                : LocalDateTime.now();
-
         OrderDeliveredEvent event = new OrderDeliveredEvent(
                 order.getId(),
-                order.getUser_Id(),
-                deliveredAt
+                order.getCustomerId(),
+                LocalDateTime.now()
         );
 
-        log.info("Publishing OrderDeliveredEvent for order: {}, deliveredAt: {}", order.getId(), deliveredAt);
+        log.info("Publishing ORDER_DELIVERED event for order: {}", order.getId());
         orderEventPublisher.publishOrderDelivered(event);
     }
 }

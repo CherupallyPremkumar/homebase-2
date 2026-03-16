@@ -17,12 +17,12 @@
         <dependency>
             <groupId>com.homebase.ecom.tax</groupId>
             <artifactId>tax-domain</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom.tax</groupId>
             <artifactId>tax-api</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>org.chenile</groupId>

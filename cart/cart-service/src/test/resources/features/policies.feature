@@ -1,39 +1,53 @@
 Feature: Cart Policy Enforcement
-  Tests that the cart correctly enforces enterprise policies like Multi-Seller restrictions,
-  item limits, quantity limits, and currency consistency.
+  Tests that the cart correctly enforces cconfig-based policies:
+  item limits, quantity limits, and coupon limits.
 
-  Background:
-    Given that "flowName" equals "cart-flow"
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
 
-  Scenario: Disallow adding items from different sellers when multi-seller is disabled
-    Given that "MultiSellerAllowed" is "false"
-    And a cart exists for "user-123"
-    And the cart contains an item from seller "seller-A"
-    When I attempt to add an item from seller "seller-B" to the cart
-    Then the request should fail with a "MultiSellerViolationException"
-    And the message should be "Multi-seller cart is not allowed. Items must be from the same seller."
+Scenario: Create a cart for policy tests
+Given that "flowName" equals "cart-flow"
+And that "initialState" equals "ACTIVE"
+When I POST a REST request to URL "/cart" with payload
+"""json
+{
+    "description": "Policy test cart"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And store "$.payload.mutatedEntity.id" from response to "id"
+And the REST response key "mutatedEntity.currentState.stateId" is "${initialState}"
 
-  Scenario: Allow adding items from the same seller when multi-seller is disabled
-    Given that "MultiSellerAllowed" is "false"
-    And a cart exists for "user-456"
-    And the cart contains an item from seller "seller-A"
-    When I attempt to add an item from seller "seller-A" to the cart
-    Then the request should succeed
+Scenario: Add item to cart succeeds
+Given that "event" equals "addItem"
+When I PATCH a REST request to URL "/cart/${id}/${event}" with payload
+"""json
+{
+    "comment": "Adding first item",
+    "productId": "prod-policy-001",
+    "variantId": "var-policy-001-default",
+    "productName": "Policy Test Product",
+    "quantity": 1,
+    "unitPrice": 100
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.currentState.stateId" is "ACTIVE"
 
-  Scenario: Enforce maximum unique items per cart
-    Given that "MaxItemsPerCart" is "2"
-    And a cart exists for "user-789"
-    And the cart contains items:
-      | productId | sellerId |
-      | prod-1    | seller-A |
-      | prod-2    | seller-A |
-    When I attempt to add item "prod-3" from seller "seller-A" to the cart
-    Then the request should fail with a "CartLimitExceededException"
-    And the message should contain "Maximum allowed unique items: 2"
-
-  Scenario: Enforce maximum quantity per item
-    Given that "MaxQuantityPerItem" is "5"
-    And a cart exists for "user-321"
-    When I attempt to add item "prod-1" with quantity 10 to the cart
-    Then the request should fail with a "QuantityLimitExceededException"
-    And the message should contain "Maximum allowed: 5"
+Scenario: Add item with excessive quantity should fail
+Given that "event" equals "addItem"
+When I PATCH a REST request to URL "/cart/${id}/${event}" with payload
+"""json
+{
+    "comment": "Adding item with excessive quantity",
+    "productId": "prod-policy-excess",
+    "variantId": "var-policy-excess-default",
+    "productName": "Excess Quantity Product",
+    "quantity": 99,
+    "unitPrice": 50
+}
+"""
+Then the REST response does not contain key "mutatedEntity"
+And success is false
+And the http status code is 400

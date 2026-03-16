@@ -1,7 +1,6 @@
 package com.homebase.ecom.supplierlifecycle.consumer;
 
 import com.homebase.ecom.supplierlifecycle.domain.model.SupplierLifecycleSaga;
-import org.chenile.stm.STM;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +76,9 @@ public class SupplierStateChangeEventConsumer {
 
             log.info("{} saga created for supplier: {}", action, supplierId);
 
+        } catch (RuntimeException e) {
+            log.warn("Idempotency: supplier lifecycle saga for supplier {} / state {} already created (possible replay). Skipping. Detail: {}",
+                    supplierId, newState, e.getMessage());
         } catch (Exception e) {
             log.error("Error processing supplier state change for supplier: {}, newState: {}",
                     supplierId, newState, e);

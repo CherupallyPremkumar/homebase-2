@@ -1,0 +1,22 @@
+{
+	"name": "supplierEventService",
+	"id": "supplierEventService",
+	"serviceName": "supplierEventService",
+	"operations": [
+		{
+			"name": "handleOrderEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["order.events"]
+		},
+		{
+			"name": "handleReviewEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["review.events"]
+		},
+		{
+			"name": "handleReturnEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["return.events"]
+		}
+	]
+}

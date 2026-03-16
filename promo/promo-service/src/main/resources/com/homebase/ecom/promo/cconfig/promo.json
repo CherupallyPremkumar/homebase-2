@@ -1,0 +1,25 @@
+{
+  "policies": {
+    "discount": {
+      "maxDiscountPercent": 50,
+      "maxFlatDiscount": 10000,
+      "stackablePromosAllowed": false
+    },
+    "usage": {
+      "maxUsagePerPromo": 10000,
+      "maxUsagePerCustomer": 5
+    },
+    "order": {
+      "minOrderValueForPromo": 200
+    },
+    "limits": {
+      "maxActivePromos": 100
+    }
+  },
+  "rules": {
+    "computation": {
+      "applyOnGrossAmount": true,
+      "roundingStrategy": "HALF_UP"
+    }
+  }
+}

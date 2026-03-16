@@ -1,1 +1,2 @@
 com.homebase.ecom.shared.security.HomeBaseSecurityAutoConfiguration
+com.homebase.ecom.shared.logging.LoggingAutoConfiguration

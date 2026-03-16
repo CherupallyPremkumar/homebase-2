@@ -2,7 +2,9 @@ package com.homebase.ecom.review.configuration;
 
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
+import org.chenile.stm.action.scriptsupport.IfAction;
 import org.chenile.stm.impl.*;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,20 +13,33 @@ import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
+import org.chenile.workflow.api.WorkflowRegistry;
+import org.chenile.workflow.service.activities.ActivityChecker;
+import org.chenile.workflow.service.activities.AreActivitiesComplete;
 import com.homebase.ecom.review.model.Review;
 import com.homebase.ecom.review.service.cmds.*;
 import com.homebase.ecom.review.service.healthcheck.ReviewHealthChecker;
+import com.homebase.ecom.review.service.event.ReviewEventHandler;
+import com.homebase.ecom.review.service.validator.ReviewPolicyValidator;
+import com.homebase.ecom.review.service.postSaveHooks.*;
 import com.homebase.ecom.review.infrastructure.persistence.ChenileReviewEntityStore;
 import com.homebase.ecom.review.infrastructure.persistence.adapter.ReviewJpaRepository;
 import com.homebase.ecom.review.infrastructure.persistence.mapper.ReviewMapper;
-import org.chenile.workflow.api.WorkflowRegistry;
-import com.homebase.ecom.review.service.postSaveHooks.*;
-import org.chenile.workflow.service.activities.ActivityChecker;
-import org.chenile.workflow.service.activities.AreActivitiesComplete;
+import com.homebase.ecom.review.domain.port.ModerationPort;
+import com.homebase.ecom.review.domain.port.NotificationPort;
+import com.homebase.ecom.review.infrastructure.adapter.LoggingModerationAdapter;
+import com.homebase.ecom.review.infrastructure.adapter.LoggingNotificationAdapter;
 
 /**
  * Full Chenile STM configuration for the Review module.
+ *
+ * States: SUBMITTED -> CHECK_AUTO_PUBLISH -> PUBLISHED/UNDER_MODERATION
+ *         UNDER_MODERATION -> PUBLISHED/REJECTED/EDIT_REQUESTED
+ *         PUBLISHED -> FLAGGED/ARCHIVED
+ *         FLAGGED -> UNDER_MODERATION/PUBLISHED/REJECTED
+ *         EDIT_REQUESTED -> UNDER_MODERATION
  */
 @Configuration
 public class ReviewConfiguration {
@@ -74,16 +89,17 @@ public class ReviewConfiguration {
             @Qualifier("reviewEntityStm") STM<Review> stm,
             @Qualifier("reviewActionsInfoProvider") STMActionsInfoProvider reviewInfoProvider,
             @Qualifier("reviewEntityStore") EntityStore<Review> entityStore) {
-        return new StateEntityServiceImpl<>(stm, reviewInfoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, reviewInfoProvider, entityStore);
     }
 
-    // Now we start constructing the STM Components
+    // ================================================================
+    // STM Infrastructure
+    // ================================================================
 
     @Bean
     DefaultPostSaveHook<Review> reviewDefaultPostSaveHook(
             @Qualifier("reviewTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver) {
-        DefaultPostSaveHook<Review> postSaveHook = new DefaultPostSaveHook<>(stmTransitionActionResolver);
-        return postSaveHook;
+        return new DefaultPostSaveHook<>(stmTransitionActionResolver);
     }
 
     @Bean
@@ -91,8 +107,7 @@ public class ReviewConfiguration {
             @Qualifier("reviewActionsInfoProvider") STMActionsInfoProvider reviewInfoProvider,
             @Qualifier("reviewFlowStore") STMFlowStoreImpl stmFlowStore,
             @Qualifier("reviewDefaultPostSaveHook") DefaultPostSaveHook<Review> postSaveHook) {
-        GenericEntryAction<Review> entryAction = new GenericEntryAction<Review>(entityStore, reviewInfoProvider,
-                postSaveHook);
+        GenericEntryAction<Review> entryAction = new GenericEntryAction<>(entityStore, reviewInfoProvider, postSaveHook);
         stmFlowStore.setEntryAction(entryAction);
         return entryAction;
     }
@@ -109,7 +124,7 @@ public class ReviewConfiguration {
 
     @Bean
     GenericExitAction<Review> reviewExitAction(@Qualifier("reviewFlowStore") STMFlowStoreImpl stmFlowStore) {
-        GenericExitAction<Review> exitAction = new GenericExitAction<Review>();
+        GenericExitAction<Review> exitAction = new GenericExitAction<>();
         stmFlowStore.setExitAction(exitAction);
         return exitAction;
     }
@@ -124,6 +139,17 @@ public class ReviewConfiguration {
     @Bean
     ReviewHealthChecker reviewHealthChecker() {
         return new ReviewHealthChecker();
+    }
+
+    // OGNL scripting for auto-states (CHECK_AUTO_PUBLISH)
+    @Bean
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
+
+    @Bean
+    IfAction<Review> ifAction() {
+        return new IfAction<>();
     }
 
     @Bean
@@ -181,11 +207,18 @@ public class ReviewConfiguration {
         return enablementStrategy;
     }
 
-    // Transition Actions - naming convention: "review" + eventId + "Action"
+    // ================================================================
+    // Transition Actions (naming: "review" + eventId + "Action")
+    // ================================================================
 
     @Bean
-    ApproveReviewAction reviewApproveReviewAction() {
-        return new ApproveReviewAction();
+    SubmitReviewAction reviewSubmitReviewAction() {
+        return new SubmitReviewAction();
+    }
+
+    @Bean
+    PublishReviewAction reviewPublishReviewAction() {
+        return new PublishReviewAction();
     }
 
     @Bean
@@ -194,25 +227,62 @@ public class ReviewConfiguration {
     }
 
     @Bean
+    FlagReviewAction reviewFlagReviewAction() {
+        return new FlagReviewAction();
+    }
+
+    @Bean
+    ModerateReviewAction reviewModerateReviewAction() {
+        return new ModerateReviewAction();
+    }
+
+    @Bean
+    RequestEditAction reviewRequestEditAction() {
+        return new RequestEditAction();
+    }
+
+    @Bean
+    ResubmitReviewAction reviewResubmitReviewAction() {
+        return new ResubmitReviewAction();
+    }
+
+    @Bean
+    ArchiveReviewAction reviewArchiveReviewAction() {
+        return new ArchiveReviewAction();
+    }
+
+    @Bean
     MarkHelpfulAction reviewMarkHelpfulAction() {
         return new MarkHelpfulAction();
     }
 
     @Bean
-    FlagReviewAction reviewFlagReviewAction() {
-        return new FlagReviewAction();
+    ReportReviewAction reviewReportReviewAction() {
+        return new ReportReviewAction();
     }
 
-    // Post Save Hooks - naming convention: "review" + STATE + "PostSaveHook"
+    // ================================================================
+    // Post Save Hooks (naming: "review" + STATE + "PostSaveHook")
+    // ================================================================
 
     @Bean
-    PENDINGReviewPostSaveHook reviewPENDINGPostSaveHook() {
-        return new PENDINGReviewPostSaveHook();
+    SUBMITTEDReviewPostSaveHook reviewSUBMITTEDPostSaveHook() {
+        return new SUBMITTEDReviewPostSaveHook();
     }
 
     @Bean
-    APPROVEDReviewPostSaveHook reviewAPPROVEDPostSaveHook() {
-        return new APPROVEDReviewPostSaveHook();
+    UNDER_MODERATIONReviewPostSaveHook reviewUNDER_MODERATIONPostSaveHook() {
+        return new UNDER_MODERATIONReviewPostSaveHook();
+    }
+
+    @Bean
+    PUBLISHEDReviewPostSaveHook reviewPUBLISHEDPostSaveHook() {
+        return new PUBLISHEDReviewPostSaveHook();
+    }
+
+    @Bean
+    FLAGGEDReviewPostSaveHook reviewFLAGGEDPostSaveHook() {
+        return new FLAGGEDReviewPostSaveHook();
     }
 
     @Bean
@@ -221,7 +291,58 @@ public class ReviewConfiguration {
     }
 
     @Bean
-    FLAGGEDReviewPostSaveHook reviewFLAGGEDPostSaveHook() {
-        return new FLAGGEDReviewPostSaveHook();
+    EDIT_REQUESTEDReviewPostSaveHook reviewEDIT_REQUESTEDPostSaveHook() {
+        return new EDIT_REQUESTEDReviewPostSaveHook();
+    }
+
+    @Bean
+    ARCHIVEDReviewPostSaveHook reviewARCHIVEDPostSaveHook() {
+        return new ARCHIVEDReviewPostSaveHook();
+    }
+
+    // ================================================================
+    // Security: ACL authorities supplier for STM events
+    // ================================================================
+
+    @Bean
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> reviewEventAuthoritiesSupplier(
+            @Qualifier("reviewActionsInfoProvider") STMActionsInfoProvider reviewInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(reviewInfoProvider, false);
+        return builder.build();
+    }
+
+    // ================================================================
+    // Policy Validator
+    // ================================================================
+
+    @Bean
+    ReviewPolicyValidator reviewPolicyValidator() {
+        return new ReviewPolicyValidator();
+    }
+
+    // ================================================================
+    // Hexagonal Ports (default adapters)
+    // ================================================================
+
+    @Bean
+    ModerationPort moderationPort() {
+        return new LoggingModerationAdapter();
+    }
+
+    @Bean
+    NotificationPort notificationPort() {
+        return new LoggingNotificationAdapter();
+    }
+
+    // ================================================================
+    // Kafka Event Handler (conditional on Kafka being available)
+    // ================================================================
+
+    @Bean("reviewEventService")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
+    ReviewEventHandler reviewEventService(
+            org.chenile.pubsub.ChenilePub chenilePub,
+            tools.jackson.databind.ObjectMapper objectMapper) {
+        return new ReviewEventHandler(chenilePub, objectMapper);
     }
 }

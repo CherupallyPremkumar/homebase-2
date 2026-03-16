@@ -6,71 +6,76 @@ import org.chenile.workflow.activities.model.ActivityLog;
 import org.chenile.workflow.model.ContainsTransientMap;
 import org.chenile.workflow.model.TransientMap;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * User — Domain Aggregate Root (DDD).
+ * User -- Domain Aggregate Root (DDD).
  *
- * Follows the same pattern as Policy and Cart:
- *   extends AbstractExtendedStateEntity  ← non-JPA STM (chenile-corefork/utils)
- *   implements ActivityEnabledStateEntity ← audit trail of lifecycle events
- *   implements ContainsTransientMap       ← per-request scratchpad: actions → post-save hooks
- *
- * Composes:
- *   - Address (List, max 5)    ← extends BaseEntity (own id, createdTime)
- *   - Preferences (embedded)  ← pure value object, no separate identity
- *   - UserActivityLog          ← extends BaseEntity (own id, createdTime)
- *
- * NO JPA annotations here — those live in UserJpaEntity in user-infrastructure.
+ * Entity fields:
+ *   id, email, firstName, lastName, phone, role (CUSTOMER/SELLER/ADMIN/SUPPORT_AGENT),
+ *   addresses (List), defaultAddressId, kycStatus, loginAttempts, lastLoginAt,
+ *   stateId, flowId.
  *
  * Lifecycle states (user-states.xml):
- *   PENDING_VERIFICATION → ACTIVE ↔ LOCKED / SUSPENDED → DELETED
+ *   REGISTERED -> EMAIL_VERIFIED -> ACTIVE -> SUSPENDED -> DEACTIVATED
+ *   KYC: KYC_PENDING -> KYC_VERIFIED
+ *
+ * NO JPA annotations -- those live in UserJpaEntity in user-infrastructure.
  */
 public class User extends AbstractExtendedStateEntity
         implements ActivityEnabledStateEntity, ContainsTransientMap {
 
-    // ─── Identity ─────────────────────────────────────────────────────────────
-    /** Keycloak `sub` claim — canonical, immutable identity bridge. */
+    // --- Identity ---
+    /** Keycloak `sub` claim -- canonical, immutable identity bridge. */
     private String keycloakId;
     private String email;
 
-    // ─── Profile ──────────────────────────────────────────────────────────────
+    // --- Profile ---
     private String firstName;
     private String lastName;
     private String phone;
-    private String avatarUrl;
 
-    // ─── Address book (max 5) ─────────────────────────────────────────────────
+    // --- Role ---
+    private String role; // CUSTOMER, SELLER, ADMIN, SUPPORT_AGENT
+
+    // --- Address book (max 10) ---
     private List<Address> addresses = new ArrayList<>();
+    private String defaultAddressId;
 
-    private static final int MAX_ADDRESSES = 5;
+    private static final int MAX_ADDRESSES = 10;
 
-    // ─── Preferences (embedded value object) ─────────────────────────────────
+    // --- KYC ---
+    private String kycStatus; // KYC_PENDING, KYC_VERIFIED
+
+    // --- Preferences ---
     private Preferences preferences;
 
-    // ─── Account security ─────────────────────────────────────────────────────
-    /** Consecutive failed logins. Resets on success. STM locks at 3. */
-    private int failedLoginAttempts;
+    // --- Account security ---
+    /** Consecutive failed logins. Resets on success. STM locks at configurable threshold. */
+    private int loginAttempts;
+    private Instant lastLoginAt;
     private String lockReason;
     private String suspendReason;
 
-    // ─── Chenile STM: Activity log ────────────────────────────────────────────
+    // --- Chenile STM: Activity log ---
     private List<UserActivityLog> activities = new ArrayList<>();
 
-    // ─── Chenile STM: Transient map (per-request scratchpad) ─────────────────
+    // --- Chenile STM: Transient map (per-request scratchpad) ---
     private TransientMap transientMap = new TransientMap();
 
-    // ─── Address book business logic ──────────────────────────────────────────
+    // --- Address book business logic ---
 
     public void addAddress(Address address) {
         if (addresses.size() >= MAX_ADDRESSES) {
             throw new IllegalStateException("Max " + MAX_ADDRESSES + " addresses allowed");
         }
         if (addresses.isEmpty()) {
-            address.markAsDefault(); // first address auto-becomes default
+            address.markAsDefault();
+            this.defaultAddressId = address.getId();
         }
         addresses.add(address);
     }
@@ -80,13 +85,18 @@ public class User extends AbstractExtendedStateEntity
         boolean wasDefault = toRemove.isDefault();
         addresses.remove(toRemove);
         if (wasDefault && !addresses.isEmpty()) {
-            addresses.get(0).markAsDefault(); // promote first remaining
+            addresses.get(0).markAsDefault();
+            this.defaultAddressId = addresses.get(0).getId();
+        } else if (addresses.isEmpty()) {
+            this.defaultAddressId = null;
         }
     }
 
     public void setDefaultAddress(String addressId) {
         addresses.forEach(Address::clearDefault);
-        findAddressById(addressId).markAsDefault();
+        Address addr = findAddressById(addressId);
+        addr.markAsDefault();
+        this.defaultAddressId = addressId;
     }
 
     private Address findAddressById(String addressId) {
@@ -96,19 +106,29 @@ public class User extends AbstractExtendedStateEntity
                 .orElseThrow(() -> new IllegalArgumentException("Address not found: " + addressId));
     }
 
-    // ─── Security business logic ──────────────────────────────────────────────
+    // --- Security business logic ---
 
-    /** @return true if threshold reached — action should trigger lockAccount */
+    /** @return true if threshold reached -- action should trigger lockAccount */
     public boolean recordFailedLogin() {
-        this.failedLoginAttempts++;
-        return this.failedLoginAttempts >= 3;
+        this.loginAttempts++;
+        return this.loginAttempts >= 5; // default; overridden by cconfig
     }
 
-    public void resetFailedLoginAttempts() {
-        this.failedLoginAttempts = 0;
+    public boolean recordFailedLogin(int maxAttempts) {
+        this.loginAttempts++;
+        return this.loginAttempts >= maxAttempts;
     }
 
-    // ─── ActivityEnabledStateEntity ───────────────────────────────────────────
+    public void resetLoginAttempts() {
+        this.loginAttempts = 0;
+    }
+
+    public void recordSuccessfulLogin() {
+        this.loginAttempts = 0;
+        this.lastLoginAt = Instant.now();
+    }
+
+    // --- ActivityEnabledStateEntity ---
 
     @Override
     public Collection<ActivityLog> obtainActivities() {
@@ -125,13 +145,13 @@ public class User extends AbstractExtendedStateEntity
         return log;
     }
 
-    // ─── ContainsTransientMap ─────────────────────────────────────────────────
+    // --- ContainsTransientMap ---
 
     @Override
     public TransientMap getTransientMap() { return transientMap; }
     public void setTransientMap(TransientMap tm) { this.transientMap = tm; }
 
-    // ─── Getters / Setters ────────────────────────────────────────────────────
+    // --- Getters / Setters ---
 
     public String getKeycloakId() { return keycloakId; }
     public void setKeycloakId(String keycloakId) { this.keycloakId = keycloakId; }
@@ -148,17 +168,23 @@ public class User extends AbstractExtendedStateEntity
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
 
-    public String getAvatarUrl() { return avatarUrl; }
-    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
     public List<Address> getAddresses() { return Collections.unmodifiableList(addresses); }
     public void setAddresses(List<Address> addresses) { this.addresses = addresses; }
 
-    public Preferences getPreferences() { return preferences; }
-    public void setPreferences(Preferences preferences) { this.preferences = preferences; }
+    public String getDefaultAddressId() { return defaultAddressId; }
+    public void setDefaultAddressId(String defaultAddressId) { this.defaultAddressId = defaultAddressId; }
 
-    public int getFailedLoginAttempts() { return failedLoginAttempts; }
-    public void setFailedLoginAttempts(int f) { this.failedLoginAttempts = f; }
+    public String getKycStatus() { return kycStatus; }
+    public void setKycStatus(String kycStatus) { this.kycStatus = kycStatus; }
+
+    public int getLoginAttempts() { return loginAttempts; }
+    public void setLoginAttempts(int loginAttempts) { this.loginAttempts = loginAttempts; }
+
+    public Instant getLastLoginAt() { return lastLoginAt; }
+    public void setLastLoginAt(Instant lastLoginAt) { this.lastLoginAt = lastLoginAt; }
 
     public String getLockReason() { return lockReason; }
     public void setLockReason(String lockReason) { this.lockReason = lockReason; }
@@ -168,4 +194,12 @@ public class User extends AbstractExtendedStateEntity
 
     public List<UserActivityLog> getActivities() { return activities; }
     public void setActivities(List<UserActivityLog> activities) { this.activities = activities; }
+
+    public Preferences getPreferences() { return preferences; }
+    public void setPreferences(Preferences preferences) { this.preferences = preferences; }
+
+    // Backward compatibility for existing code referencing failedLoginAttempts
+    public int getFailedLoginAttempts() { return loginAttempts; }
+    public void setFailedLoginAttempts(int f) { this.loginAttempts = f; }
+    public void resetFailedLoginAttempts() { this.loginAttempts = 0; }
 }

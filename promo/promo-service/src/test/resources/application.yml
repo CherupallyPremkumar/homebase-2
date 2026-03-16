@@ -10,6 +10,15 @@ chenile:
       enabled: true
     remote:
       base-url: http://localhost:8081
+  security:
+    client:
+      id: authz-servlet
+      secret: secret
+    keycloak:
+      host: \${KEYCLOAK_HOST:http://localhost:8180}
+      port: \${KEYCLOAK_PORT:8180}
+      base:
+        realm: \${KEYCLOAK_REALM:tenant0}
   base:
     url:
 
@@ -23,7 +32,7 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:mem:promotest;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:promotest;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
     username: demo
     password: password
     hikari:

@@ -12,13 +12,23 @@ public class PricingEventListener {
 
     @KafkaListener(topics = "cart-events", groupId = "pricing-service-group")
     public void onCartUpdated(CartUpdatedEvent event) {
-        log.info("Received CartUpdatedEvent for cart: {}. Invalidating evaluation cache.", event.getCartId());
-        // Logic to invalidate internal pricing caches for this cart
+        try {
+            log.info("Received CartUpdatedEvent for cart: {}. Invalidating evaluation cache.", event.getCartId());
+            // Logic to invalidate internal pricing caches for this cart
+        } catch (Exception e) {
+            log.warn("Idempotency: error processing CartUpdatedEvent for cart {} (possible replay). Skipping. Detail: {}",
+                    event.getCartId(), e.getMessage());
+        }
     }
 
     @KafkaListener(topics = "promo-events", groupId = "pricing-service-group")
     public void onCouponUsed(CouponUsedEvent event) {
-        log.info("Received CouponUsedEvent for order: {}. Recording discount for reporting.", event.getOrderId());
-        // Logic to record discount usage for financial reporting
+        try {
+            log.info("Received CouponUsedEvent for order: {}. Recording discount for reporting.", event.getOrderId());
+            // Logic to record discount usage for financial reporting
+        } catch (Exception e) {
+            log.warn("Idempotency: error processing CouponUsedEvent for order {} (possible replay). Skipping. Detail: {}",
+                    event.getOrderId(), e.getMessage());
+        }
     }
 }

@@ -9,21 +9,20 @@ import com.homebase.ecom.review.model.Review;
 import com.homebase.ecom.review.dto.FlagReviewPayload;
 
 /**
- * Transitions a review to FLAGGED state (from PENDING or APPROVED).
+ * STM action for flagging a review (PUBLISHED -> FLAGGED).
+ * Can be triggered by CUSTOMER or SYSTEM.
  */
 public class FlagReviewAction extends AbstractSTMTransitionAction<Review, FlagReviewPayload> {
 
-	@Override
-	public void transitionTo(Review review,
-            FlagReviewPayload payload,
+    @Override
+    public void transitionTo(Review review, FlagReviewPayload payload,
             State startState, String eventId,
-			State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-            // Flag the review for re-moderation (spam, inappropriate content, etc.)
-            String reason = (payload.getFlagReason() != null && !payload.getFlagReason().trim().isEmpty())
-                    ? payload.getFlagReason() : "Flagged for re-moderation";
-            review.description = reason;
-            review.addActivity("flagReview", "Review flagged from " + startState.getStateId() + ". Reason: " + reason);
+            State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-            review.getTransientMap().previousPayload = payload;
-	}
+        String reason = (payload.getFlagReason() != null && !payload.getFlagReason().trim().isEmpty())
+                ? payload.getFlagReason() : "Flagged for re-moderation";
+        review.setModeratorNotes(reason);
+        review.addActivity("flagReview", "Review flagged from " + startState.getStateId() + ". Reason: " + reason);
+        review.getTransientMap().previousPayload = payload;
+    }
 }

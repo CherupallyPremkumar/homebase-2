@@ -1,81 +1,150 @@
 package com.homebase.ecom.cart.service.validator;
 
-import com.homebase.ecom.cart.configuration.CartConfig;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.homebase.ecom.cart.model.Cart;
 import com.homebase.ecom.cart.model.CartItem;
-import com.homebase.ecom.cart.model.spec.*;
 import com.homebase.ecom.cart.exception.CartLimitExceededException;
-import com.homebase.ecom.cart.exception.CurrencyMismatchException;
-import com.homebase.ecom.cart.exception.MultiSellerViolationException;
 import com.homebase.ecom.cart.exception.QuantityLimitExceededException;
-import com.homebase.ecom.dto.OfferDto;
-import com.homebase.ecom.shared.CurrencyResolver;
 import org.chenile.cconfig.sdk.CconfigClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 /**
- * Enterprise policies enforcement layer for the Cart system.
- * Rules are delegated to Domain Specifications using context configurations.
+ * Central policy validator for the Cart bounded context.
+ *
+ * Two-layer validation:
+ * 1. Cconfig thresholds: reads from org/chenile/config/cart.json
+ * 2. Policy engine: delegates complex cross-cutting rules (optional)
  */
 @Component
 public class CartPolicyValidator {
 
-    private final CconfigClient cconfigClient;
-    private final CurrencyResolver currencyResolver;
+    private static final Logger log = LoggerFactory.getLogger(CartPolicyValidator.class);
 
-    public CartPolicyValidator(CconfigClient cconfigClient, CurrencyResolver currencyResolver) {
-        this.cconfigClient = cconfigClient;
-        this.currencyResolver = currencyResolver;
+    @Autowired(required = false)
+    private CconfigClient cconfigClient;
+
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    // ═══════════════════════════════════════════════════════════════════
+    // POLICY: Item count
+    // ═══════════════════════════════════════════════════════════════════
+
+    public void validateItemCount(Cart cart) {
+        JsonNode config = getCartConfig();
+        int maxItems = configInt(config, "/policies/limits/maxItemsPerCart", 30);
+        if (cart.getItems().size() >= maxItems) {
+            throw new CartLimitExceededException(
+                    "Cart item limit exceeded. Maximum allowed unique items: " + maxItems);
+        }
     }
 
-    private CartConfig getCartConfig() {
+    // ═══════════════════════════════════════════════════════════════════
+    // POLICY: Quantity per item
+    // ═══════════════════════════════════════════════════════════════════
+
+    public void validateQuantity(int quantity) {
+        JsonNode config = getCartConfig();
+        int maxQty = configInt(config, "/policies/limits/maxQuantityPerItem", 10);
+        if (quantity > maxQty) {
+            throw new QuantityLimitExceededException(
+                    "Quantity limit exceeded. Maximum allowed per item: " + maxQty);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // POLICY: Coupon count
+    // ═══════════════════════════════════════════════════════════════════
+
+    public void validateCouponCount(Cart cart) {
+        JsonNode config = getCartConfig();
+        int maxCoupons = configInt(config, "/policies/limits/maxCouponsPerCart", 3);
+        if (cart.getCouponCodes().size() >= maxCoupons) {
+            throw new IllegalArgumentException(
+                    "Coupon limit exceeded. Maximum coupons per cart: " + maxCoupons);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // POLICY: Minimum checkout amount (in smallest currency unit)
+    // ═══════════════════════════════════════════════════════════════════
+
+    public long getMinCheckoutAmount() {
+        JsonNode config = getCartConfig();
+        JsonNode node = config.at("/policies/limits/minCheckoutAmount");
+        return (!node.isMissingNode() && node.isNumber()) ? node.asLong() : 100L;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // POLICY: Max cart value (in smallest currency unit)
+    // ═══════════════════════════════════════════════════════════════════
+
+    public void validateCartValue(Cart cart) {
+        if (cart.getTotal() == null) return;
+        JsonNode config = getCartConfig();
+        JsonNode node = config.at("/policies/limits/maxCartValue");
+        long maxValue = (!node.isMissingNode() && node.isNumber()) ? node.asLong() : 10_000_000L;
+        if (cart.getTotal().getAmount() > maxValue) {
+            throw new IllegalStateException(
+                    "Cart value " + cart.getTotal().toDisplayString()
+                    + " exceeds maximum allowed value of " + maxValue + " " + cart.getCurrency());
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RULES: Expiration
+    // ═══════════════════════════════════════════════════════════════════
+
+    public int getCartExpirationHours() {
+        JsonNode config = getCartConfig();
+        return configInt(config, "/policies/expiration/cartExpirationHours", 72);
+    }
+
+    public int getAbandonmentThresholdHours() {
+        JsonNode config = getCartConfig();
+        return configInt(config, "/policies/expiration/abandonmentThresholdHours", 24);
+    }
+
+    public int getCheckoutReservationMinutes() {
+        JsonNode config = getCartConfig();
+        return configInt(config, "/policies/expiration/checkoutReservationMinutes", 15);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RULES: Checkout
+    // ═══════════════════════════════════════════════════════════════════
+
+    public boolean isGuestCheckoutAllowed() {
+        JsonNode config = getCartConfig();
+        JsonNode node = config.at("/policies/checkout/allowGuestCheckout");
+        return node.isMissingNode() || !node.isBoolean() || node.asBoolean();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // INTERNAL: Config helpers
+    // ═══════════════════════════════════════════════════════════════════
+
+    private JsonNode getCartConfig() {
         try {
-            java.util.Map<String, Object> map = cconfigClient.value("cart", null);
-            if (map != null) {
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-                        false);
-                return mapper.convertValue(map, CartConfig.class);
+            if (cconfigClient != null) {
+                Map<String, Object> map = cconfigClient.value("cart", null);
+                if (map != null) {
+                    return mapper.valueToTree(map);
+                }
             }
         } catch (Exception e) {
-            // Fallback to default
+            log.warn("Failed to load cart.json from cconfig, using defaults: {}", e.getMessage());
         }
-        return new CartConfig();
+        return mapper.createObjectNode();
     }
 
-    public void validate(Cart cart, CartItem newItem, OfferDto offer) {
-        CartConfig config = getCartConfig();
-
-        // 1. Multi-Seller Policy
-        if (!new MultiSellerSpecification(config.getPolicies().getMulti_seller().isAllowed(), newItem.getSellerId())
-                .isSatisfiedBy(cart)) {
-            throw new MultiSellerViolationException(
-                    "Multi-seller cart is not allowed. Items must be from the same seller.");
-        }
-
-        // 2. Max Items Policy
-        if (!new MaxItemsSpecification(config.getPolicies().getLimits().getMaxItemsPerCart(), newItem.getProductId())
-                .isSatisfiedBy(cart)) {
-            throw new CartLimitExceededException("Cart limit exceeded. Maximum allowed unique items: " +
-                    config.getPolicies().getLimits().getMaxItemsPerCart());
-        }
-
-        // 3. Max Quantity Policy
-        if (!new MaxQuantitySpecification(config.getPolicies().getLimits().getMaxQuantityPerItem(),
-                newItem.getQuantity())
-                .isSatisfiedBy(cart)) {
-            throw new QuantityLimitExceededException("Quantity limit exceeded for product " + newItem.getProductId() +
-                    ". Maximum allowed: " + config.getPolicies().getLimits().getMaxQuantityPerItem());
-        }
-
-        // 4. Currency Policy
-        String baseCurrency = currencyResolver.resolve().code();
-        String offerCurrency = offer.getPrice().getCurrency();
-        if (!new CurrencySpecification(config.getPolicies().getCurrency().isEnforceSingle(), baseCurrency,
-                offerCurrency)
-                .isSatisfiedBy(cart)) {
-            throw new CurrencyMismatchException(
-                    "Currency mismatch in cart. All items must share the same currency: " + baseCurrency);
-        }
+    private int configInt(JsonNode config, String path, int defaultVal) {
+        JsonNode node = config.at(path);
+        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : defaultVal;
     }
 }

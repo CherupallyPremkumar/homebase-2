@@ -1,9 +1,13 @@
 package com.homebase.ecom.catalog.infrastructure.integration;
 
 import com.homebase.ecom.catalog.domain.port.in.EvaluateDynamicCollectionUseCase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 
 public class DynamicCollectionEventListener {
+
+    private static final Logger log = LoggerFactory.getLogger(DynamicCollectionEventListener.class);
 
     private final EvaluateDynamicCollectionUseCase useCase;
 
@@ -16,7 +20,12 @@ public class DynamicCollectionEventListener {
      */
     @EventListener
     public void onCollectionRulesUpdated(CollectionRulesUpdatedEvent event) {
-        useCase.evaluateCollectionForAllItems(event.getCollectionId());
+        try {
+            useCase.evaluateCollectionForAllItems(event.getCollectionId());
+        } catch (Exception e) {
+            log.warn("Idempotency: error processing CollectionRulesUpdatedEvent for collection {} (possible replay). Skipping. Detail: {}",
+                    event.getCollectionId(), e.getMessage());
+        }
     }
 
     /**
@@ -24,7 +33,12 @@ public class DynamicCollectionEventListener {
      */
     @EventListener
     public void onProductMetadataUpdated(ProductMetadataUpdatedEvent event) {
-        useCase.evaluateItemForAllCollections(event.getProductId());
+        try {
+            useCase.evaluateItemForAllCollections(event.getProductId());
+        } catch (Exception e) {
+            log.warn("Idempotency: error processing ProductMetadataUpdatedEvent for product {} (possible replay). Skipping. Detail: {}",
+                    event.getProductId(), e.getMessage());
+        }
     }
 
     // Temporary internal event DTOs until cross-module event bus is formalized

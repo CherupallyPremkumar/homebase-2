@@ -47,6 +47,9 @@ public class OrderPaidEventConsumer {
             fulfillmentStateEntityService.create(saga);
 
             log.info("Fulfillment saga created for order: {}, sagaId: {}", orderId, saga.getId());
+        } catch (RuntimeException e) {
+            log.warn("Idempotency: fulfillment saga for order {} already created (possible replay). Skipping. Detail: {}",
+                    orderId, e.getMessage());
         } catch (Exception e) {
             log.error("Failed to create fulfillment saga for order: {}", orderId, e);
             // TODO: Publish failure event or send to dead-letter topic for retry

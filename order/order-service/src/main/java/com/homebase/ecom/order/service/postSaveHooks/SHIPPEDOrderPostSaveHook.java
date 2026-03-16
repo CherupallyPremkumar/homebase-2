@@ -14,8 +14,7 @@ import java.time.LocalDateTime;
 
 /**
  * PostSaveHook for SHIPPED state.
- * Publishes OrderShippedEvent to trigger shipping BC to create a shipment record.
- * Reads carrier and tracking info from the transientMap (set by CourierPickupOrderAction).
+ * Publishes ORDER_SHIPPED event.
  */
 public class SHIPPEDOrderPostSaveHook implements PostSaveHook<Order> {
 
@@ -27,24 +26,15 @@ public class SHIPPEDOrderPostSaveHook implements PostSaveHook<Order> {
     @Override
     public void execute(State startState, State endState, Order order, TransientMap map) {
         String carrier = (map != null && map.get("carrier") != null)
-                ? map.get("carrier").toString()
-                : "UNKNOWN";
+                ? map.get("carrier").toString() : "UNKNOWN";
         String trackingNumber = (map != null && map.get("trackingNumber") != null)
-                ? map.get("trackingNumber").toString()
-                : null;
-
-        LocalDateTime estimatedDelivery = order.getDeliveryDate();
+                ? map.get("trackingNumber").toString() : null;
 
         OrderShippedEvent event = new OrderShippedEvent(
-                order.getId(),
-                carrier,
-                trackingNumber,
-                estimatedDelivery,
-                LocalDateTime.now()
+                order.getId(), carrier, trackingNumber, null, LocalDateTime.now()
         );
 
-        log.info("Publishing OrderShippedEvent for order: {}, carrier: {}, tracking: {}",
-                order.getId(), carrier, trackingNumber);
+        log.info("Publishing ORDER_SHIPPED event for order: {}, carrier: {}", order.getId(), carrier);
         orderEventPublisher.publishOrderShipped(event);
     }
 }

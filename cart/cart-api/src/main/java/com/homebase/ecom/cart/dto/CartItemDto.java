@@ -1,65 +1,40 @@
 package com.homebase.ecom.cart.dto;
 
-import com.homebase.ecom.shared.Money;
-import com.homebase.ecom.cart.model.CartItemStatus;
 import java.io.Serializable;
 
 public class CartItemDto implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private String cartId;
     private String productId;
-    private Integer quantity;
-    private Money price;
-    private String sellerId;
-    private CartItemStatus status;
+    private String variantId;
+    private String sku;
+    private String productName;
+    private String supplierId;
+    private int quantity;
+    private long unitPrice;
+    private long lineTotal;
 
-    // Getters and Setters
-    public String getCartId() {
-        return cartId;
-    }
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
 
-    public void setCartId(String cartId) {
-        this.cartId = cartId;
-    }
+    public String getVariantId() { return variantId; }
+    public void setVariantId(String variantId) { this.variantId = variantId; }
 
-    public String getProductId() {
-        return productId;
-    }
+    public String getSku() { return sku; }
+    public void setSku(String sku) { this.sku = sku; }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
-    }
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
 
-    public Integer getQuantity() {
-        return quantity;
-    }
+    public int getQuantity() { return quantity; }
+    public void setQuantity(int quantity) { this.quantity = quantity; }
 
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
+    public String getSupplierId() { return supplierId; }
+    public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
 
-    public Money getPrice() {
-        return price;
-    }
+    public long getUnitPrice() { return unitPrice; }
+    public void setUnitPrice(long unitPrice) { this.unitPrice = unitPrice; }
 
-    public void setPrice(Money price) {
-        this.price = price;
-    }
-
-    public String getSellerId() {
-        return sellerId;
-    }
-
-    public void setSellerId(String sellerId) {
-        this.sellerId = sellerId;
-    }
-
-    public CartItemStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(CartItemStatus status) {
-        this.status = status;
-    }
+    public long getLineTotal() { return lineTotal; }
+    public void setLineTotal(long lineTotal) { this.lineTotal = lineTotal; }
 }

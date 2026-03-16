@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homebase-config
+  namespace: homebase
+  labels:
+    app.kubernetes.io/part-of: homebase
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/ecommerce_db"
+  SPRING_DATA_REDIS_HOST: "redis"
+  SPRING_DATA_REDIS_PORT: "6379"
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+  KEYCLOAK_ISSUER_URI: "http://keycloak:8080/realms/homebase"
+  SERVER_PORT: "8080"

@@ -4,8 +4,6 @@ import com.homebase.ecom.product.domain.model.Category;
 import com.homebase.ecom.product.domain.port.CategoryRepository;
 import com.homebase.ecom.product.infrastructure.persistence.entity.CategoryEntity;
 import com.homebase.ecom.product.infrastructure.persistence.mapper.CategoryMapper;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -66,11 +64,5 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     @Override
     public void deleteById(String id) {
         jpaRepository.deleteById(id);
-    }
-
-    public interface CategoryJpaRepository extends JpaRepository<CategoryEntity, String> {
-        Optional<CategoryEntity> findBySlug(String slug);
-        List<CategoryEntity> findByParentId(String parentId);
-        List<CategoryEntity> findAllByActiveTrue();
     }
 }

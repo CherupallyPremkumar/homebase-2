@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.workflow.service.activities.ActivityChecker;
@@ -86,7 +87,7 @@ public class FulfillmentConfiguration {
             @Qualifier("fulfillmentEntityStm") STM<FulfillmentSaga> stm,
             @Qualifier("fulfillmentActionsInfoProvider") STMActionsInfoProvider fulfillmentInfoProvider,
             @Qualifier("fulfillmentEntityStore") EntityStore<FulfillmentSaga> entityStore) {
-        return new StateEntityServiceImpl<>(stm, fulfillmentInfoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, fulfillmentInfoProvider, entityStore);
     }
 
     // --- STM Components ---
@@ -338,5 +339,12 @@ public class FulfillmentConfiguration {
     @Bean
     UpdateNotificationStatus updateNotificationStatus() {
         return new UpdateNotificationStatus();
+    }
+
+    @Bean
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> fulfillmentEventAuthoritiesSupplier(
+            @Qualifier("fulfillmentActionsInfoProvider") STMActionsInfoProvider fulfillmentInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(fulfillmentInfoProvider, false);
+        return builder.build();
     }
 }

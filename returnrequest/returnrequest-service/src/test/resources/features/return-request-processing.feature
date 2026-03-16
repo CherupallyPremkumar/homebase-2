@@ -1,168 +1,92 @@
 Feature: Return Request Processing
-Tests complete return request business logic including window validation,
-auto-approve for low-value items, rejection with comment policy,
-full lifecycle flow, and refund processing.
+Tests auto-approve for low-value items, rejection with comment policy,
+partial approval, and value-based routing through CHECK_AUTO_APPROVE.
 
-Scenario: Submit return request within window
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
+Scenario: Submit low-value return request (under 500 threshold)
 Given that "flowName" equals "return-request-flow"
 And that "initialState" equals "REQUESTED"
 When I POST a REST request to URL "/returnrequest" with payload
 """json
 {
-    "description": "Return request for damaged product",
-    "orderId": "ORD-001",
-    "orderItemId": "ITEM-001",
+    "description": "Return low-value item",
+    "orderId": "ORD-LOW-001",
+    "customerId": "CUST-LOW-001",
     "reason": "DAMAGED",
-    "quantity": 1,
-    "itemPrice": 1500.00,
-    "orderDeliveryDate": "2026-03-11T10:00:00"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And store "$.payload.mutatedEntity.id" from response to "id"
-And the REST response key "mutatedEntity.currentState.stateId" is "${initialState}"
-And the REST response key "mutatedEntity.orderId" is "ORD-001"
-And the REST response key "mutatedEntity.reason" is "DAMAGED"
-
-Scenario: Retrieve the return request that was just created
-When I GET a REST request to URL "/returnrequest/${id}"
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "REQUESTED"
-
-Scenario: Inspect return for high-value item goes to UNDER_REVIEW
-Given that "comment" equals "Quality checker reviewing return request and product photos"
-And that "event" equals "inspectReturn"
-When I PATCH a REST request to URL "/returnrequest/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}",
-    "inspectorId": "QC-001"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "UNDER_REVIEW"
-
-Scenario: Approve return request
-Given that "comment" equals "Damage confirmed, return approved for full refund"
-And that "event" equals "approveReturn"
-When I PATCH a REST request to URL "/returnrequest/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}",
-    "refundType": "FULL"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "APPROVED"
-
-Scenario: Initiate pickup for approved return
-Given that "comment" equals "Return pickup scheduled with courier"
-And that "event" equals "pickupInitiated"
-When I PATCH a REST request to URL "/returnrequest/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}",
-    "pickupTrackingNumber": "RET-DHL-56789"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "IN_TRANSIT_BACK"
-
-Scenario: Warehouse receives returned item
-Given that "comment" equals "Item received at warehouse, condition matches description"
-And that "event" equals "itemReceived"
-When I PATCH a REST request to URL "/returnrequest/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}",
-    "warehouseId": "WH-BLR-001",
-    "conditionOnReceipt": "DAMAGED_AS_REPORTED"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "RECEIVED"
-
-Scenario: Complete return and refund - refund amount should match item price
-Given that "comment" equals "Full refund processed to customer wallet"
-And that "event" equals "processRefund"
-When I PATCH a REST request to URL "/returnrequest/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}",
-    "refundAmount": 1500.00,
-    "refundMethod": "WALLET"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "REFUNDED"
-
-Scenario: Verify refunded state is terminal
-When I PATCH a REST request to URL "/returnrequest/${id}/inspectReturn" with payload
-"""json
-{
-    "comment": "Attempting event on refunded return"
-}
-"""
-Then the REST response does not contain key "mutatedEntity"
-And the http status code is 422
-
-Scenario: Create a return request for auto-approve test with low-value item
-When I POST a REST request to URL "/returnrequest" with payload
-"""json
-{
-    "description": "Return request for low-value item",
-    "orderId": "ORD-AUTO-001",
-    "orderItemId": "ITEM-AUTO-001",
-    "reason": "DAMAGED",
-    "quantity": 1,
-    "itemPrice": 200.00,
-    "orderDeliveryDate": "2026-03-11T10:00:00"
+    "returnType": "REFUND",
+    "totalRefundAmount": 150.00
 }
 """
 Then the REST response contains key "mutatedEntity"
 And store "$.payload.mutatedEntity.id" from response to "autoId"
-And the REST response key "mutatedEntity.currentState.stateId" is "REQUESTED"
+And the REST response key "mutatedEntity.currentState.stateId" is "${initialState}"
 
-Scenario: Auto-approve low-value return - inspect marks as AUTO_APPROVED
-Given that "comment" equals "Quality check for low-value item"
-And that "event" equals "inspectReturn"
+Scenario: Review low-value return - should auto-approve (150 <= 500)
+Given that "comment" equals "Reviewing low-value return"
+And that "event" equals "reviewReturn"
 When I PATCH a REST request to URL "/returnrequest/${autoId}/${event}" with payload
 """json
 {
     "comment": "${comment}",
-    "inspectorId": "QC-002"
+    "reviewerId": "SUPPORT-AUTO"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${autoId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "UNDER_REVIEW"
-And the REST response key "mutatedEntity.returnType" is "AUTO_APPROVED"
+And the REST response key "mutatedEntity.currentState.stateId" is "APPROVED"
 
-Scenario: Create a return request for the rejection flow
+Scenario: Submit high-value return request (above 500 threshold)
 When I POST a REST request to URL "/returnrequest" with payload
 """json
 {
-    "description": "Return request for buyer remorse",
-    "orderId": "ORD-REJ-001",
-    "orderItemId": "ITEM-REJ-001",
+    "description": "Return expensive item",
+    "orderId": "ORD-HIGH-001",
+    "customerId": "CUST-HIGH-001",
+    "reason": "DEFECTIVE",
+    "returnType": "REFUND",
+    "totalRefundAmount": 1500.00
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And store "$.payload.mutatedEntity.id" from response to "manualId"
+And the REST response key "mutatedEntity.currentState.stateId" is "REQUESTED"
+
+Scenario: Review high-value return - should go to UNDER_REVIEW (1500 > 500)
+Given that "comment" equals "Reviewing high-value return"
+And that "event" equals "reviewReturn"
+When I PATCH a REST request to URL "/returnrequest/${manualId}/${event}" with payload
+"""json
+{
+    "comment": "${comment}",
+    "reviewerId": "SUPPORT-MANUAL"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${manualId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "UNDER_REVIEW"
+
+Scenario: Create a return request for rejection test
+When I POST a REST request to URL "/returnrequest" with payload
+"""json
+{
+    "description": "Return request to test rejection",
+    "orderId": "ORD-REJ-002",
+    "customerId": "CUST-REJ-002",
     "reason": "DAMAGED",
-    "quantity": 1,
-    "orderDeliveryDate": "2026-03-11T10:00:00"
+    "returnType": "REFUND",
+    "totalRefundAmount": 800.00
 }
 """
 Then the REST response contains key "mutatedEntity"
 And store "$.payload.mutatedEntity.id" from response to "rejId"
 And the REST response key "mutatedEntity.currentState.stateId" is "REQUESTED"
 
-Scenario: Inspect the return request for rejection test
+Scenario: Review the return for rejection
 Given that "comment" equals "Reviewing return for rejection"
-And that "event" equals "inspectReturn"
+And that "event" equals "reviewReturn"
 When I PATCH a REST request to URL "/returnrequest/${rejId}/${event}" with payload
 """json
 {
@@ -173,7 +97,7 @@ Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${rejId}"
 And the REST response key "mutatedEntity.currentState.stateId" is "UNDER_REVIEW"
 
-Scenario: Reject return without comment should fail (comment-required-on-reject policy)
+Scenario: Reject return without comment should fail (comment-required policy)
 Given that "event" equals "rejectReturn"
 When I PATCH a REST request to URL "/returnrequest/${rejId}/${event}" with payload
 """json
@@ -209,7 +133,7 @@ Then the REST response does not contain key "mutatedEntity"
 And the http status code is 422
 
 Scenario: Send an invalid event to return request
-When I PATCH a REST request to URL "/returnrequest/${id}/invalid" with payload
+When I PATCH a REST request to URL "/returnrequest/${rejId}/invalid" with payload
 """json
 {
     "comment": "invalid event"

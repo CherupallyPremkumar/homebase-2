@@ -7,8 +7,6 @@ import com.homebase.ecom.user.domain.event.UserDomainEvents;
  *
  * The domain/service layer depends on this interface. Infrastructure provides
  * the implementation (e.g. Spring ApplicationEventPublisher, Kafka, etc.).
- *
- * Follows the same pattern as CartEventPublisher in the cart BC.
  */
 public interface UserEventPublisher {
 
@@ -31,4 +29,8 @@ public interface UserEventPublisher {
     void publishAddressAdded(UserDomainEvents.AddressAdded event);
 
     void publishAddressRemoved(UserDomainEvents.AddressRemoved event);
+
+    void publishKycSubmitted(UserDomainEvents.KycSubmitted event);
+
+    void publishKycVerified(UserDomainEvents.KycVerified event);
 }

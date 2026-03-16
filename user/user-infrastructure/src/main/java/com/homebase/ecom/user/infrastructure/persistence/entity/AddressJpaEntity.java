@@ -26,8 +26,8 @@ public class AddressJpaEntity extends BaseJpaEntity {
     @Column(name = "state")
     private String state;
 
-    @Column(name = "zip")
-    private String zip;
+    @Column(name = "postal_code")
+    private String postalCode;
 
     @Column(name = "country")
     private String country;
@@ -54,8 +54,8 @@ public class AddressJpaEntity extends BaseJpaEntity {
     public String getState() { return state; }
     public void setState(String state) { this.state = state; }
 
-    public String getZip() { return zip; }
-    public void setZip(String zip) { this.zip = zip; }
+    public String getPostalCode() { return postalCode; }
+    public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
 
     public String getCountry() { return country; }
     public void setCountry(String country) { this.country = country; }
@@ -65,4 +65,8 @@ public class AddressJpaEntity extends BaseJpaEntity {
 
     public UserJpaEntity getUser() { return user; }
     public void setUser(UserJpaEntity user) { this.user = user; }
+
+    // Backward compatibility
+    public String getZip() { return postalCode; }
+    public void setZip(String zip) { this.postalCode = zip; }
 }

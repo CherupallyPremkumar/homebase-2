@@ -8,8 +8,16 @@ import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.support.model.SupportTicket;
 import com.homebase.ecom.support.model.TicketMessage;
 import com.homebase.ecom.support.dto.ReopenTicketPayload;
+import com.homebase.ecom.support.service.validator.SupportPolicyValidator;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Date;
+import java.util.UUID;
 
 public class ReopenSupportAction extends AbstractSTMTransitionAction<SupportTicket, ReopenTicketPayload> {
+
+    @Autowired
+    private SupportPolicyValidator policyValidator;
 
     @Override
     public void transitionTo(SupportTicket ticket,
@@ -21,16 +29,23 @@ public class ReopenSupportAction extends AbstractSTMTransitionAction<SupportTick
             throw new IllegalArgumentException("Reason for reopening is required");
         }
 
+        // Validate reopen limit
+        policyValidator.validateReopen(ticket);
+
+        // Increment reopen count
+        ticket.setReopenCount(ticket.getReopenCount() + 1);
+
         // Clear resolved data
         ticket.setResolvedAt(null);
         // Clear assignment so ticket can be reassigned
-        ticket.setAssignedTo(null);
+        ticket.setAssignedAgentId(null);
 
         // Add system message about reopening
         TicketMessage reopenMsg = new TicketMessage();
-        reopenMsg.setId(java.util.UUID.randomUUID().toString());
+        reopenMsg.setId(UUID.randomUUID().toString());
         reopenMsg.setSenderType("SYSTEM");
-        reopenMsg.setMessage("Ticket reopened. Reason: " + payload.getReason());
+        reopenMsg.setTimestamp(new Date());
+        reopenMsg.setMessage("Ticket reopened (reopen #" + ticket.getReopenCount() + "). Reason: " + payload.getReason());
         ticket.getMessages().add(reopenMsg);
 
         ticket.getTransientMap().previousPayload = payload;

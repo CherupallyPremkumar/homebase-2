@@ -1,7 +1,7 @@
 package com.homebase.ecom.returnrequest.service.postSaveHooks;
 
+import com.homebase.ecom.returnrequest.domain.port.NotificationPort;
 import com.homebase.ecom.returnrequest.model.Returnrequest;
-import com.homebase.ecom.returnrequest.service.event.ReturnRejectedEvent;
 import com.homebase.ecom.returnrequest.service.event.ReturnRequestEventPublisher;
 import org.chenile.stm.State;
 import org.chenile.workflow.model.TransientMap;
@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * PostSaveHook for REJECTED state.
- * Publishes ReturnRejectedEvent after the return request is rejected.
+ * Publishes RETURN_REJECTED event and notifies customer.
  */
 public class REJECTEDReturnrequestPostSaveHook implements PostSaveHook<Returnrequest> {
 
@@ -21,15 +21,21 @@ public class REJECTEDReturnrequestPostSaveHook implements PostSaveHook<Returnreq
     @Autowired
     private ReturnRequestEventPublisher eventPublisher;
 
+    @Autowired(required = false)
+    private NotificationPort notificationPort;
+
     @Override
     public void execute(State startState, State endState, Returnrequest returnrequest, TransientMap map) {
-        ReturnRejectedEvent event = new ReturnRejectedEvent(
-                returnrequest.getId(),
-                returnrequest.orderId,
-                returnrequest.rejectionReason,
-                returnrequest.rejectionComment
-        );
-        log.info("Return request {} rejected, publishing ReturnRejectedEvent", returnrequest.getId());
-        eventPublisher.publishReturnRejected(event);
+        log.info("Return request {} rejected, publishing RETURN_REJECTED", returnrequest.getId());
+
+        // Notify customer
+        if (notificationPort != null) {
+            notificationPort.notifyReturnRejected(
+                    returnrequest.getId(), returnrequest.customerId,
+                    returnrequest.orderId, returnrequest.rejectionReason);
+        }
+
+        // Publish event
+        eventPublisher.publishReturnRejected(returnrequest);
     }
 }

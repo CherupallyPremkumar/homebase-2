@@ -1,0 +1,10 @@
+{
+    "policies": {
+        "maxRetryAttempts": 3,
+        "retryDelayMinutes": 5,
+        "batchSize": 100,
+        "rateLimitPerMinute": 1000,
+        "supportedChannels": ["EMAIL", "SMS", "PUSH", "IN_APP"],
+        "templateRequired": true
+    }
+}

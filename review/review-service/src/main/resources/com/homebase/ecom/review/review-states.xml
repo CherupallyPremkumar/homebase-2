@@ -1,58 +1,138 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
-  <default-transition-action componentName="reviewBaseTransitionAction"/>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
 
-  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
+  <!-- ================================================================ -->
+  <!-- Event definitions with ACLs and payload types                     -->
+  <!-- ================================================================ -->
+  <event-information eventId='submitReview' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.review.dto.SubmitReviewPayload"/>
+  <event-information eventId='moderateReview' meta-acls="MODERATOR,ADMIN" meta-bodyType="com.homebase.ecom.review.dto.ModerateReviewPayload"/>
+  <event-information eventId='publishReview' meta-acls="MODERATOR,ADMIN" meta-bodyType="com.homebase.ecom.review.dto.PublishReviewPayload"/>
+  <event-information eventId='rejectReview' meta-acls="MODERATOR,ADMIN" meta-bodyType="com.homebase.ecom.review.dto.RejectReviewPayload"/>
+  <event-information eventId='flagReview' meta-acls="CUSTOMER,SYSTEM" meta-bodyType="com.homebase.ecom.review.dto.FlagReviewPayload"/>
+  <event-information eventId='requestEdit' meta-acls="MODERATOR,ADMIN" meta-bodyType="com.homebase.ecom.review.dto.RequestEditPayload"/>
+  <event-information eventId='resubmitReview' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.review.dto.ResubmitReviewPayload"/>
+  <event-information eventId='archiveReview' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.review.dto.ArchiveReviewPayload"/>
+  <event-information eventId='markHelpful' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.review.dto.MarkHelpfulPayload"/>
+  <event-information eventId='reportReview' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.review.dto.ReportReviewPayload"/>
 
   <flow id='review-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="reviewEntryAction" />
     <exit-action componentName="reviewExitAction" />
 
-    <!-- ========== INITIAL STATE ========== -->
-    <status id='PENDING' initialState='true' meta-mainPath="true" description="Review submitted, awaiting moderation">
-      <on eventId='approveReview'
-          componentName='reviewApproveReviewAction'
-          newStateId='APPROVED'
-          meta-mainPath="true"
-          meta-acls="ADMIN"/>
+    <!-- ================================================================ -->
+    <!-- SUBMITTED: Customer submitted a review, pending auto-routing      -->
+    <!-- ================================================================ -->
+    <manual-state id='SUBMITTED' initialState='true' meta-mainPath="true"
+                  description="Review submitted by customer, pending auto-publish check">
+      <on eventId='submitReview'
+          componentName='reviewSubmitReviewAction'
+          newStateId='CHECK_AUTO_PUBLISH'
+          meta-mainPath="true" meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- AUTO-STATE: Route verified purchases to PUBLISHED or moderation   -->
+    <!-- Condition: isVerifiedPurchase == true (auto-publish for verified)  -->
+    <!-- ================================================================ -->
+    <auto-state id='CHECK_AUTO_PUBLISH'
+                componentName='ifAction'
+                condition='verifiedPurchase == true'
+                then='autoPublish'
+                else='needsModeration'>
+      <on eventId='autoPublish' newStateId='PUBLISHED'/>
+      <on eventId='needsModeration' newStateId='UNDER_MODERATION'/>
+    </auto-state>
+
+    <!-- ================================================================ -->
+    <!-- UNDER_MODERATION: Awaiting moderator review                       -->
+    <!-- ================================================================ -->
+    <manual-state id='UNDER_MODERATION' meta-mainPath="true"
+                  description="Review awaiting moderator review">
+      <on eventId='publishReview'
+          componentName='reviewPublishReviewAction'
+          newStateId='PUBLISHED'
+          meta-mainPath="true" meta-acls="MODERATOR,ADMIN"/>
       <on eventId='rejectReview'
           componentName='reviewRejectReviewAction'
           newStateId='REJECTED'
-          meta-acls="ADMIN"/>
-      <on eventId='flagReview'
-          componentName='reviewFlagReviewAction'
-          newStateId='FLAGGED'
-          meta-acls="CUSTOMER,SYSTEM"/>
-    </status>
+          meta-acls="MODERATOR,ADMIN"/>
+      <on eventId='requestEdit'
+          componentName='reviewRequestEditAction'
+          newStateId='EDIT_REQUESTED'
+          meta-acls="MODERATOR,ADMIN"/>
+    </manual-state>
 
-    <!-- ========== APPROVED ========== -->
-    <status id='APPROVED' meta-mainPath="true" description="Review approved and visible to customers">
+    <!-- ================================================================ -->
+    <!-- PUBLISHED: Review visible to customers                            -->
+    <!-- ================================================================ -->
+    <manual-state id='PUBLISHED' meta-mainPath="true"
+                  description="Review published and visible to customers">
       <on eventId='markHelpful'
           componentName='reviewMarkHelpfulAction'
-          newStateId='APPROVED'
+          newStateId='PUBLISHED'
+          meta-acls="CUSTOMER"/>
+      <on eventId='reportReview'
+          componentName='reviewReportReviewAction'
+          newStateId='PUBLISHED'
           meta-acls="CUSTOMER"/>
       <on eventId='flagReview'
           componentName='reviewFlagReviewAction'
           newStateId='FLAGGED'
           meta-acls="CUSTOMER,SYSTEM"/>
-    </status>
-
-    <!-- ========== FLAGGED ========== -->
-    <status id='FLAGGED' description="Review flagged for re-moderation">
-      <on eventId='approveReview'
-          componentName='reviewApproveReviewAction'
-          newStateId='APPROVED'
+      <on eventId='archiveReview'
+          componentName='reviewArchiveReviewAction'
+          newStateId='ARCHIVED'
           meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- FLAGGED: Review flagged for re-moderation                         -->
+    <!-- ================================================================ -->
+    <manual-state id='FLAGGED'
+                  description="Review flagged, sent back to moderation queue">
+      <on eventId='moderateReview'
+          componentName='reviewModerateReviewAction'
+          newStateId='UNDER_MODERATION'
+          meta-acls="MODERATOR,ADMIN"/>
+      <on eventId='publishReview'
+          componentName='reviewPublishReviewAction'
+          newStateId='PUBLISHED'
+          meta-acls="MODERATOR,ADMIN"/>
       <on eventId='rejectReview'
           componentName='reviewRejectReviewAction'
           newStateId='REJECTED'
-          meta-acls="ADMIN"/>
-    </status>
+          meta-acls="MODERATOR,ADMIN"/>
+    </manual-state>
 
-    <!-- ========== REJECTED (TERMINAL) ========== -->
-    <status id='REJECTED' description="Review rejected by moderator">
-      <!-- Terminal state -->
-    </status>
+    <!-- ================================================================ -->
+    <!-- EDIT_REQUESTED: Moderator requested changes from the customer     -->
+    <!-- ================================================================ -->
+    <manual-state id='EDIT_REQUESTED'
+                  description="Moderator requested edits from the reviewer">
+      <on eventId='resubmitReview'
+          componentName='reviewResubmitReviewAction'
+          newStateId='UNDER_MODERATION'
+          meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- REJECTED: Review rejected by moderator (terminal)                 -->
+    <!-- ================================================================ -->
+    <manual-state id='REJECTED'
+                  description="Review rejected by moderator">
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- ARCHIVED: Review archived by admin (terminal)                     -->
+    <!-- ================================================================ -->
+    <manual-state id='ARCHIVED'
+                  description="Review archived and no longer visible">
+    </manual-state>
+
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
+    </manual-state>
   </flow>
 </states>

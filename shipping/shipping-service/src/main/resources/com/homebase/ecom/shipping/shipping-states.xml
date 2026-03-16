@@ -1,60 +1,136 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
+
+  <!-- Event definitions with ACLs and payload types -->
+  <event-information eventId='createLabel' meta-acls="WAREHOUSE,SYSTEM" meta-bodyType="com.homebase.ecom.shipping.dto.CreateLabelShippingPayload"/>
+  <event-information eventId='pickUp' meta-acls="CARRIER,SYSTEM" meta-bodyType="com.homebase.ecom.shipping.dto.PickUpShippingPayload"/>
+  <event-information eventId='updateTransit' meta-acls="CARRIER,SYSTEM" meta-bodyType="com.homebase.ecom.shipping.dto.UpdateTransitShippingPayload"/>
+  <event-information eventId='outForDelivery' meta-acls="CARRIER,SYSTEM" meta-bodyType="com.homebase.ecom.shipping.dto.OutForDeliveryShippingPayload"/>
+  <event-information eventId='deliver' meta-acls="CARRIER" meta-bodyType="com.homebase.ecom.shipping.dto.DeliverShippingPayload"/>
+  <event-information eventId='failDelivery' meta-acls="CARRIER" meta-bodyType="com.homebase.ecom.shipping.dto.FailDeliveryShippingPayload"/>
+  <event-information eventId='retryDelivery' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.shipping.dto.RetryDeliveryShippingPayload"/>
+  <event-information eventId='cancelShipment' meta-acls="WAREHOUSE,SYSTEM" meta-bodyType="com.homebase.ecom.shipping.dto.CancelShipmentShippingPayload"/>
+  <event-information eventId='returnShipment' meta-acls="WAREHOUSE,SYSTEM" meta-bodyType="com.homebase.ecom.shipping.dto.ReturnShipmentShippingPayload"/>
+
   <flow id='shipping-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="shippingEntryAction" />
+    <exit-action componentName="shippingExitAction" />
 
-    <manual-state id='AWAITING_PICKUP' initialState='true' meta-mainPath="true" description="Shipment created, awaiting courier pickup">
-      <entry-action componentName="awaitingPickupAction" />
-      <on eventId='courierAssigned'
-          componentName='shippingCourierAssignedAction'
+    <!-- ================================================================ -->
+    <!-- FORWARD SHIPPING: Create Label -> Pickup -> Transit -> Deliver    -->
+    <!-- ================================================================ -->
+
+    <!-- Shipment created, awaiting label generation -->
+    <manual-state id='PENDING' initialState='true' meta-mainPath="true"
+                  description="Shipment created, awaiting label generation">
+      <on eventId='createLabel'
+          componentName='shippingCreateLabelAction'
+          newStateId='LABEL_CREATED'
+          meta-mainPath="true" meta-acls="WAREHOUSE,SYSTEM"/>
+      <on eventId='cancelShipment'
+          componentName='shippingCancelShipmentAction'
+          newStateId='CANCELLED'
+          meta-acls="WAREHOUSE,SYSTEM"/>
+    </manual-state>
+
+    <!-- Shipping label created, ready for carrier pickup -->
+    <manual-state id='LABEL_CREATED' meta-mainPath="true"
+                  description="Shipping label created, ready for carrier pickup">
+      <on eventId='pickUp'
+          componentName='shippingPickUpAction'
           newStateId='PICKED_UP'
-          meta-mainPath="true"
-          meta-acls="WAREHOUSE"/>
+          meta-mainPath="true" meta-acls="CARRIER,SYSTEM"/>
+      <on eventId='cancelShipment'
+          componentName='shippingCancelShipmentAction'
+          newStateId='CANCELLED'
+          meta-acls="WAREHOUSE,SYSTEM"/>
     </manual-state>
 
-    <manual-state id='PICKED_UP' meta-mainPath="true" description="Courier has picked up the shipment">
-      <on eventId='inTransit'
-          componentName='shippingInTransitAction'
+    <!-- Carrier has picked up the shipment -->
+    <manual-state id='PICKED_UP' meta-mainPath="true"
+                  description="Carrier has picked up the shipment">
+      <on eventId='updateTransit'
+          componentName='shippingUpdateTransitAction'
           newStateId='IN_TRANSIT'
-          meta-mainPath="true"
-          meta-acls="SYSTEM"/>
+          meta-mainPath="true" meta-acls="CARRIER,SYSTEM"/>
     </manual-state>
 
-    <manual-state id='IN_TRANSIT' meta-mainPath="true" description="Shipment in transit to destination">
+    <!-- Shipment in transit to destination -->
+    <manual-state id='IN_TRANSIT' meta-mainPath="true"
+                  description="Shipment in transit to destination">
       <on eventId='outForDelivery'
           componentName='shippingOutForDeliveryAction'
           newStateId='OUT_FOR_DELIVERY'
-          meta-mainPath="true"
-          meta-acls="SYSTEM"/>
-      <on eventId='returnRequested'
-          componentName='shippingReturnRequestedAction'
-          newStateId='RETURN_REQUESTED'
-          meta-acls="CUSTOMER"/>
-    </manual-state>
-
-    <manual-state id='OUT_FOR_DELIVERY' meta-mainPath="true" description="Shipment out for delivery to customer">
-      <on eventId='markDelivered'
-          componentName='shippingMarkDeliveredAction'
-          newStateId='DELIVERED'
-          meta-mainPath="true"
-          meta-acls="SYSTEM"/>
-    </manual-state>
-
-    <manual-state id='DELIVERED' meta-mainPath="true" description="Shipment delivered to customer">
-      <on eventId='returnRequested'
-          componentName='shippingReturnRequestedAction'
-          newStateId='RETURN_REQUESTED'
-          meta-acls="CUSTOMER"/>
-    </manual-state>
-
-    <manual-state id='RETURN_REQUESTED' description="Return requested, awaiting return pickup">
-      <on eventId='returnPickup'
-          componentName='shippingReturnPickupAction'
+          meta-mainPath="true" meta-acls="CARRIER,SYSTEM"/>
+      <on eventId='updateTransit'
+          componentName='shippingUpdateTransitAction'
           newStateId='IN_TRANSIT'
-          meta-acls="SYSTEM"/>
+          meta-acls="CARRIER,SYSTEM"/>
     </manual-state>
 
-    <manual-state id='RETURNED' description="Shipment returned to warehouse">
+    <!-- Shipment out for delivery to customer -->
+    <manual-state id='OUT_FOR_DELIVERY' meta-mainPath="true"
+                  description="Shipment out for delivery to customer">
+      <on eventId='deliver'
+          componentName='shippingDeliverAction'
+          newStateId='DELIVERED'
+          meta-mainPath="true" meta-acls="CARRIER"/>
+      <on eventId='failDelivery'
+          componentName='shippingFailDeliveryAction'
+          newStateId='DELIVERY_FAILED'
+          meta-acls="CARRIER"/>
+    </manual-state>
+
+    <!-- Shipment delivered to customer (terminal for happy path) -->
+    <manual-state id='DELIVERED' meta-mainPath="true"
+                  description="Shipment delivered to customer">
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- DELIVERY FAILURE: Failed -> Auto-check attempts -> Retry/Return  -->
+    <!-- ================================================================ -->
+
+    <!-- Delivery failed (customer not home, wrong address, etc.) -->
+    <manual-state id='DELIVERY_FAILED'
+                  description="Delivery attempt failed">
+      <on eventId='retryDelivery'
+          componentName='shippingRetryDeliveryAction'
+          newStateId='CHECK_DELIVERY_ATTEMPTS'
+          meta-acls="WAREHOUSE"/>
+      <on eventId='returnShipment'
+          componentName='shippingReturnShipmentAction'
+          newStateId='RETURNED'
+          meta-acls="WAREHOUSE,SYSTEM"/>
+    </manual-state>
+
+    <!--
+      OGNL auto-state: after retry, check if max delivery attempts exceeded.
+      If deliveryAttempts >= 3 -> RETURNED (too many attempts, return to warehouse)
+      Else -> OUT_FOR_DELIVERY (retry delivery)
+    -->
+    <auto-state id='CHECK_DELIVERY_ATTEMPTS'
+                componentName='ifAction'
+                condition='deliveryAttempts &gt;= 3'
+                then='maxAttemptsReached'
+                else='canRetry'>
+      <on eventId='maxAttemptsReached' newStateId='RETURNED'/>
+      <on eventId='canRetry' newStateId='OUT_FOR_DELIVERY'/>
+    </auto-state>
+
+    <!-- Shipment returned to warehouse -->
+    <manual-state id='RETURNED'
+                  description="Shipment returned to warehouse">
+    </manual-state>
+
+    <!-- Shipment cancelled before pickup -->
+    <manual-state id='CANCELLED'
+                  description="Shipment cancelled">
+    </manual-state>
+
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
     </manual-state>
   </flow>
 </states>

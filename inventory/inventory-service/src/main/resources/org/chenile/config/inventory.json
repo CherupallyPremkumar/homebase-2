@@ -1,0 +1,35 @@
+{
+  "policies": {
+    "reservation": {
+      "maxQuantityPerOrder": 10,
+      "maxActiveReservationsPerProduct": 50,
+      "reservationTtlMinutes": 30
+    },
+    "stock": {
+      "maxStockPerProduct": 1000,
+      "minApprovalQuantity": 1
+    },
+    "damage": {
+      "autoDiscardOnSevereDamagePercent": 80
+    },
+    "inspection": {
+      "rejectionRequiresComment": true,
+      "autoApproveIfNoDefects": false
+    }
+  },
+  "rules": {
+    "alerts": {
+      "lowStockThreshold": 10,
+      "lowStockAlertEnabled": true,
+      "outOfStockAlertEnabled": true
+    },
+    "supplier": {
+      "maxProductsPerSupplier": 200
+    }
+  },
+  "policyEngine": {
+    "inventory-approve-stock": "policy-inv-approve-001",
+    "inventory-reserve-stock": "policy-inv-reserve-001",
+    "inventory-damage-found": "policy-inv-damage-001"
+  }
+}

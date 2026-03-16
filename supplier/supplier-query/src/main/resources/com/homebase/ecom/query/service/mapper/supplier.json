@@ -10,22 +10,41 @@
 				"filterable": true,
 				"columnType": "Text"
 			},
-			"name": {
-				"name": "name",
+			"businessName": {
+				"name": "businessName",
 				"columnType": "Text",
 				"likeQuery": true,
 				"filterable": true
 			},
-			"email": {
-				"name": "email",
-				"columnType": "Text",
-				"likeQuery": true,
-				"filterable": true
-			},
-			"status": {
-				"name": "status",
+			"businessType": {
+				"name": "businessType",
 				"filterable": true,
 				"columnType": "Text"
+			},
+			"contactEmail": {
+				"name": "contactEmail",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"rating": {
+				"name": "rating",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"fulfillmentRate": {
+				"name": "fulfillmentRate",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"totalOrders": {
+				"name": "totalOrders",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"commissionRate": {
+				"name": "commissionRate",
+				"columnType": "Number"
 			},
 			"stateId": {
 				"name": "stateId",
@@ -33,7 +52,7 @@
 				"columnType": "Text"
 			},
 			"createdAt": {
-				"name": "created_at",
+				"name": "createdAt",
 				"columnType": "Date",
 				"sortable": true
 			}
@@ -41,5 +60,148 @@
 		"flexiblePropnames": false,
 		"paginated": true,
 		"sortable": true
+	},
+	{
+		"id": "Supplier.getById",
+		"name": "supplierById",
+		"workflowName": "supplier",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Supplier.getStateCounts",
+		"name": "supplierStateCounts",
+		"columnMetadata": {
+			"stateId": {
+				"name": "stateId",
+				"columnType": "Text"
+			},
+			"totalOrders": {
+				"name": "totalOrders",
+				"columnType": "Number"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Supplier.getPendingApproval",
+		"name": "suppliersPendingApproval",
+		"workflowName": "supplier",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"columnType": "Text"
+			},
+			"businessName": {
+				"name": "businessName",
+				"columnType": "Text"
+			},
+			"createdAt": {
+				"name": "createdAt",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Supplier.getTopSuppliers",
+		"name": "topSuppliers",
+		"workflowName": "supplier",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"columnType": "Text"
+			},
+			"businessName": {
+				"name": "businessName",
+				"columnType": "Text"
+			},
+			"rating": {
+				"name": "rating",
+				"columnType": "Number"
+			},
+			"fulfillmentRate": {
+				"name": "fulfillmentRate",
+				"columnType": "Number"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Supplier.getUnderperforming",
+		"name": "underperformingSuppliers",
+		"workflowName": "supplier",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"columnType": "Text"
+			},
+			"businessName": {
+				"name": "businessName",
+				"columnType": "Text"
+			},
+			"rating": {
+				"name": "rating",
+				"columnType": "Number"
+			},
+			"fulfillmentRate": {
+				"name": "fulfillmentRate",
+				"columnType": "Number"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Supplier.getProfile",
+		"name": "supplierProfile",
+		"workflowName": "supplier",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"userId": {
+				"name": "userId",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Supplier.getPerformanceMetrics",
+		"name": "supplierPerformanceMetrics",
+		"workflowName": "supplier",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
 	}
 ]

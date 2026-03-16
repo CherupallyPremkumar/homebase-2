@@ -29,9 +29,7 @@ public class UpdateProfileAction implements STMTransitionAction<User> {
             if (incoming.getPhone() != null) {
                 user.setPhone(incoming.getPhone().trim());
             }
-            if (incoming.getAvatarUrl() != null) {
-                user.setAvatarUrl(incoming.getAvatarUrl().trim());
-            }
+            // avatarUrl not yet in User domain model — skip for now
         }
 
         user.getTransientMap().put("event", "PROFILE_UPDATED");

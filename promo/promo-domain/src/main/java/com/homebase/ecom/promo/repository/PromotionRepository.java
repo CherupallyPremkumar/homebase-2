@@ -6,8 +6,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PromotionRepository {
-    Optional<Promotion> findById(UUID id);
+    Optional<Promotion> findById(String id);
     List<Promotion> findAllActive();
     Promotion save(Promotion promotion);
-    void deleteById(UUID id);
+    void deleteById(String id);
 }
+

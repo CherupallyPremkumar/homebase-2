@@ -13,9 +13,9 @@ public class ResumePromoAction extends AbstractPromoAction<ResumePromoPayload> {
     @Override
     public void transitionTo(Coupon coupon, ResumePromoPayload payload, State startState, String eventId,
             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-        // Validate expiry date is still valid when resuming
-        if (coupon.getExpiryDate() != null && coupon.getExpiryDate().isBefore(java.time.LocalDateTime.now())) {
-            throw new IllegalArgumentException("Cannot resume a promo code that has already passed its expiry date");
+        // Validate end date is still in the future when resuming
+        if (coupon.getEndDate() != null && coupon.getEndDate().isBefore(java.time.LocalDateTime.now())) {
+            throw new IllegalArgumentException("Cannot resume a promo that has passed its end date");
         }
         coupon.addActivity("resume", "Promo resumed from paused state");
         super.transitionTo(coupon, payload, startState, eventId, endState, stm, transition);

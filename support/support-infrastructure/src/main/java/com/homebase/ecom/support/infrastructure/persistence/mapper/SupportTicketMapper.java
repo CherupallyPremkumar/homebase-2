@@ -9,6 +9,8 @@ import com.homebase.ecom.support.infrastructure.persistence.entity.TicketMessage
 import org.chenile.workflow.activities.model.ActivityLog;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class SupportTicketMapper {
@@ -17,14 +19,17 @@ public class SupportTicketMapper {
         if (entity == null) return null;
         SupportTicket model = new SupportTicket();
         model.setId(entity.getId());
-        model.setUserId(entity.getUserId());
+        model.setCustomerId(entity.getCustomerId());
         model.setOrderId(entity.getOrderId());
         model.setSubject(entity.getSubject());
         model.setCategory(entity.getCategory());
         model.setPriority(entity.getPriority());
-        model.setAssignedTo(entity.getAssignedTo());
-        model.setResolvedAt(entity.getResolvedAt());
         model.setDescription(entity.getDescription());
+        model.setAssignedAgentId(entity.getAssignedAgentId());
+        model.setResolvedAt(entity.getResolvedAt());
+        model.setReopenCount(entity.getReopenCount());
+        model.setSlaBreached(entity.isSlaBreached());
+        model.setAutoCloseReady(entity.isAutoCloseReady());
         model.setCurrentState(entity.getCurrentState());
 
         if (entity.getMessages() != null) {
@@ -46,14 +51,17 @@ public class SupportTicketMapper {
         if (model == null) return null;
         SupportTicketEntity entity = new SupportTicketEntity();
         entity.setId(model.getId());
-        entity.setUserId(model.getUserId());
+        entity.setCustomerId(model.getCustomerId());
         entity.setOrderId(model.getOrderId());
         entity.setSubject(model.getSubject());
         entity.setCategory(model.getCategory());
         entity.setPriority(model.getPriority());
-        entity.setAssignedTo(model.getAssignedTo());
-        entity.setResolvedAt(model.getResolvedAt());
         entity.setDescription(model.getDescription());
+        entity.setAssignedAgentId(model.getAssignedAgentId());
+        entity.setResolvedAt(model.getResolvedAt());
+        entity.setReopenCount(model.getReopenCount());
+        entity.setSlaBreached(model.isSlaBreached());
+        entity.setAutoCloseReady(model.isAutoCloseReady());
         entity.setCurrentState(model.getCurrentState());
 
         if (model.getMessages() != null) {
@@ -84,7 +92,10 @@ public class SupportTicketMapper {
         model.setSenderId(entity.getSenderId());
         model.setSenderType(entity.getSenderType());
         model.setMessage(entity.getMessage());
-        model.setAttachments(entity.getAttachments());
+        model.setTimestamp(entity.getTimestamp());
+        if (entity.getAttachments() != null) {
+            model.setAttachments(parseAttachments(entity.getAttachments()));
+        }
         return model;
     }
 
@@ -95,7 +106,34 @@ public class SupportTicketMapper {
         entity.setSenderId(model.getSenderId());
         entity.setSenderType(model.getSenderType());
         entity.setMessage(model.getMessage());
-        entity.setAttachments(model.getAttachments());
+        entity.setTimestamp(model.getTimestamp() != null ? model.getTimestamp() : new Date());
+        if (model.getAttachments() != null) {
+            entity.setAttachments(serializeAttachments(model.getAttachments()));
+        }
         return entity;
+    }
+
+    private List<String> parseAttachments(String json) {
+        if (json == null || json.isBlank()) return new ArrayList<>();
+        // Simple JSON array parse: ["a","b"] -> List
+        try {
+            List<String> result = new ArrayList<>();
+            String stripped = json.replace("[", "").replace("]", "").replace("\"", "");
+            if (!stripped.isBlank()) {
+                for (String s : stripped.split(",")) {
+                    result.add(s.trim());
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    private String serializeAttachments(List<String> attachments) {
+        if (attachments == null || attachments.isEmpty()) return "[]";
+        return "[" + attachments.stream()
+                .map(a -> "\"" + a + "\"")
+                .collect(Collectors.joining(",")) + "]";
     }
 }

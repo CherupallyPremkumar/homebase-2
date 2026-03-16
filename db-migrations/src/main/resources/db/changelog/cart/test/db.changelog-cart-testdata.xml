@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        All money values are in PAISE (smallest currency unit for INR).
+        e.g., 150000 = Rs.1500.00, 49900 = Rs.499.00
+        Currency field determines the divisor (INR=100, USD=100, JPY=1).
+    -->
+    <changeSet id="cart-test-data" author="homebase">
+
+        <!-- ACTIVE carts (user shopping) -->
+        <!-- cart-1: 2 items => Widget A (2 x 50000) + Gadget B (1 x 49900) = 149900 paise = Rs.1499.00 -->
+        <insert tableName="cart">
+            <column name="id" value="cart-1"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="stateid" value="ACTIVE"/>
+            <column name="flowid" value="cart-flow"/>
+            <column name="subtotal" valueNumeric="149900"/>
+            <column name="currency" value="INR"/>
+            <column name="created_time" valueDate="2026-01-10T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <!-- cart-2: 1 item => Gizmo C (3 x 79900) = 239700 paise = Rs.2397.00 -->
+        <insert tableName="cart">
+            <column name="id" value="cart-2"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="stateid" value="ACTIVE"/>
+            <column name="flowid" value="cart-flow"/>
+            <column name="subtotal" valueNumeric="239700"/>
+            <column name="currency" value="INR"/>
+            <column name="created_time" valueDate="2026-01-12T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-16T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- CHECKOUT_INITIATED cart (locked for checkout) -->
+        <insert tableName="cart">
+            <column name="id" value="cart-3"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="stateid" value="CHECKOUT_INITIATED"/>
+            <column name="flowid" value="cart-flow"/>
+            <column name="subtotal" valueNumeric="420000"/>
+            <column name="currency" value="INR"/>
+            <column name="created_time" valueDate="2026-01-08T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-14T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- CHECKOUT_COMPLETED cart (order created) -->
+        <insert tableName="cart">
+            <column name="id" value="cart-4"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="stateid" value="CHECKOUT_COMPLETED"/>
+            <column name="flowid" value="cart-flow"/>
+            <column name="subtotal" valueNumeric="320000"/>
+            <column name="currency" value="INR"/>
+            <column name="created_time" valueDate="2025-12-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-12-05T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ABANDONED carts -->
+        <insert tableName="cart">
+            <column name="id" value="cart-5"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="stateid" value="ABANDONED"/>
+            <column name="flowid" value="cart-flow"/>
+            <column name="subtotal" valueNumeric="80000"/>
+            <column name="currency" value="INR"/>
+            <column name="created_time" valueDate="2025-12-20T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-12-25T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cart">
+            <column name="id" value="cart-6"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="stateid" value="ABANDONED"/>
+            <column name="flowid" value="cart-flow"/>
+            <column name="subtotal" valueNumeric="35000"/>
+            <column name="currency" value="INR"/>
+            <column name="created_time" valueDate="2025-12-22T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-12-28T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- EXPIRED cart -->
+        <insert tableName="cart">
+            <column name="id" value="cart-7"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="stateid" value="EXPIRED"/>
+            <column name="flowid" value="cart-flow"/>
+            <column name="subtotal" valueNumeric="60000"/>
+            <column name="currency" value="INR"/>
+            <column name="expires_at" valueDate="2025-12-31T23:59:59"/>
+            <column name="created_time" valueDate="2025-12-10T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-12-31T23:59:59"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- MERGED cart -->
+        <insert tableName="cart">
+            <column name="id" value="cart-8"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="stateid" value="MERGED"/>
+            <column name="flowid" value="cart-flow"/>
+            <column name="subtotal" valueNumeric="15000"/>
+            <column name="currency" value="INR"/>
+            <column name="created_time" valueDate="2025-11-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-11-20T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Cart items for cart-1 (ACTIVE): Widget A @Rs.500 x 2 + Gadget B @Rs.499 x 1 = Rs.1499 -->
+        <insert tableName="cart_item">
+            <column name="id" value="item-1"/>
+            <column name="cart_id" value="cart-1"/>
+            <column name="product_id" value="prod-1"/>
+            <column name="variant_id" value="var-1a"/>
+            <column name="sku" value="SKU-001"/>
+            <column name="product_name" value="Widget A"/>
+            <column name="supplier_id" value="supplier-1"/>
+            <column name="quantity" valueNumeric="2"/>
+            <column name="unit_price" valueNumeric="50000"/>
+            <column name="line_total" valueNumeric="100000"/>
+            <column name="created_time" valueDate="2026-01-10T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-10T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cart_item">
+            <column name="id" value="item-2"/>
+            <column name="cart_id" value="cart-1"/>
+            <column name="product_id" value="prod-2"/>
+            <column name="variant_id" value="var-2a"/>
+            <column name="sku" value="SKU-002"/>
+            <column name="product_name" value="Gadget B"/>
+            <column name="supplier_id" value="supplier-1"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="49900"/>
+            <column name="line_total" valueNumeric="49900"/>
+            <column name="created_time" valueDate="2026-01-10T10:05:00"/>
+            <column name="last_modified_time" valueDate="2026-01-10T10:05:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Cart items for cart-2 (ACTIVE): Gizmo C @Rs.799 x 3 = Rs.2397 -->
+        <insert tableName="cart_item">
+            <column name="id" value="item-3"/>
+            <column name="cart_id" value="cart-2"/>
+            <column name="product_id" value="prod-3"/>
+            <column name="variant_id" value="var-3a"/>
+            <column name="sku" value="SKU-003"/>
+            <column name="product_name" value="Gizmo C"/>
+            <column name="supplier_id" value="supplier-2"/>
+            <column name="quantity" valueNumeric="3"/>
+            <column name="unit_price" valueNumeric="79900"/>
+            <column name="line_total" valueNumeric="239700"/>
+            <column name="created_time" valueDate="2026-01-12T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-12T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- CART ACTIVITY LOG test data                                   -->
+        <!-- cart-1: 3 activities (create, addItem x2)                     -->
+        <!-- cart-2: 2 activities (create, addItem)                        -->
+        <!-- ============================================================ -->
+        <insert tableName="cart_activity_log">
+            <column name="id" value="act-1"/>
+            <column name="cart_id" value="cart-1"/>
+            <column name="activity_name" value="create"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Cart created for user-1"/>
+            <column name="created_time" valueDate="2026-01-10T10:00:00"/>
+            <column name="created_by" value="user-1"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cart_activity_log">
+            <column name="id" value="act-2"/>
+            <column name="cart_id" value="cart-1"/>
+            <column name="activity_name" value="addItem"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Added Widget A x2"/>
+            <column name="created_time" valueDate="2026-01-10T10:01:00"/>
+            <column name="created_by" value="user-1"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cart_activity_log">
+            <column name="id" value="act-3"/>
+            <column name="cart_id" value="cart-1"/>
+            <column name="activity_name" value="addItem"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Added Gadget B x1"/>
+            <column name="created_time" valueDate="2026-01-10T10:05:00"/>
+            <column name="created_by" value="user-1"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cart_activity_log">
+            <column name="id" value="act-4"/>
+            <column name="cart_id" value="cart-2"/>
+            <column name="activity_name" value="create"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Cart created for user-2"/>
+            <column name="created_time" valueDate="2026-01-12T10:00:00"/>
+            <column name="created_by" value="user-2"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cart_activity_log">
+            <column name="id" value="act-5"/>
+            <column name="cart_id" value="cart-2"/>
+            <column name="activity_name" value="addItem"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Added Gizmo C x3"/>
+            <column name="created_time" valueDate="2026-01-12T10:01:00"/>
+            <column name="created_by" value="user-2"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- PRODUCT + CATALOG test data for storefront queries            -->
+        <!-- Products: prod-1 (Widget A), prod-2 (Gadget B), prod-3 (Gizmo C) -->
+        <!-- ============================================================ -->
+
+        <!-- Categories -->
+        <insert tableName="categories">
+            <column name="id" value="cat-electronics"/>
+            <column name="name" value="Electronics"/>
+            <column name="slug" value="electronics"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-gadgets"/>
+            <column name="name" value="Gadgets"/>
+            <column name="slug" value="gadgets"/>
+            <column name="parent_id" value="cat-electronics"/>
+            <column name="path" value="cat-electronics/cat-gadgets"/>
+            <column name="depth" valueNumeric="1"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Products (after V5 + V46 migrations: no price/in_stock/image_url/category/created_at/updated_at) -->
+        <insert tableName="products">
+            <column name="id" value="prod-1"/>
+            <column name="name" value="Widget A"/>
+            <column name="description" value="Premium widget for everyday use"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="brand" value="WidgetCo"/>
+            <column name="category_id" value="cat-electronics"/>
+            <column name="slug" value="widget-a"/>
+        </insert>
+        <insert tableName="products">
+            <column name="id" value="prod-2"/>
+            <column name="name" value="Gadget B"/>
+            <column name="description" value="Smart gadget with bluetooth"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="brand" value="GadgetPro"/>
+            <column name="category_id" value="cat-gadgets"/>
+            <column name="slug" value="gadget-b"/>
+        </insert>
+        <insert tableName="products">
+            <column name="id" value="prod-3"/>
+            <column name="name" value="Gizmo C"/>
+            <column name="description" value="Multi-purpose gizmo"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="brand" value="GizmoCorp"/>
+            <column name="category_id" value="cat-electronics"/>
+            <column name="slug" value="gizmo-c"/>
+        </insert>
+
+        <!-- Product Variants -->
+        <insert tableName="product_variants">
+            <column name="id" value="var-1a"/>
+            <column name="product_id" value="prod-1"/>
+            <column name="sku" value="SKU-001"/>
+        </insert>
+        <insert tableName="product_variants">
+            <column name="id" value="var-2a"/>
+            <column name="product_id" value="prod-2"/>
+            <column name="sku" value="SKU-002"/>
+        </insert>
+        <insert tableName="product_variants">
+            <column name="id" value="var-3a"/>
+            <column name="product_id" value="prod-3"/>
+            <column name="sku" value="SKU-003"/>
+        </insert>
+
+        <!-- Variant Attributes (color, size) -->
+        <insert tableName="variant_attributes">
+            <column name="variant_id" value="var-1a"/>
+            <column name="attribute_key" value="color"/>
+            <column name="attribute_value" value="Red"/>
+        </insert>
+        <insert tableName="variant_attributes">
+            <column name="variant_id" value="var-1a"/>
+            <column name="attribute_key" value="size"/>
+            <column name="attribute_value" value="M"/>
+        </insert>
+        <insert tableName="variant_attributes">
+            <column name="variant_id" value="var-2a"/>
+            <column name="attribute_key" value="color"/>
+            <column name="attribute_value" value="Blue"/>
+        </insert>
+        <insert tableName="variant_attributes">
+            <column name="variant_id" value="var-2a"/>
+            <column name="attribute_key" value="size"/>
+            <column name="attribute_value" value="L"/>
+        </insert>
+        <insert tableName="variant_attributes">
+            <column name="variant_id" value="var-3a"/>
+            <column name="attribute_key" value="color"/>
+            <column name="attribute_value" value="Black"/>
+        </insert>
+        <insert tableName="variant_attributes">
+            <column name="variant_id" value="var-3a"/>
+            <column name="attribute_key" value="size"/>
+            <column name="attribute_value" value="S"/>
+        </insert>
+
+        <!-- Media Assets -->
+        <insert tableName="media_assets">
+            <column name="id" value="media-1"/>
+            <column name="original_url" value="https://cdn.homebase.com/widget-a.jpg"/>
+            <column name="cdn_url" value="https://cdn.homebase.com/widget-a.jpg"/>
+            <column name="type" value="IMAGE"/>
+            <column name="alt_text" value="Widget A product image"/>
+        </insert>
+        <insert tableName="media_assets">
+            <column name="id" value="media-2"/>
+            <column name="original_url" value="https://cdn.homebase.com/gadget-b.jpg"/>
+            <column name="cdn_url" value="https://cdn.homebase.com/gadget-b.jpg"/>
+            <column name="type" value="IMAGE"/>
+            <column name="alt_text" value="Gadget B product image"/>
+        </insert>
+        <insert tableName="media_assets">
+            <column name="id" value="media-3"/>
+            <column name="original_url" value="https://cdn.homebase.com/gizmo-c.jpg"/>
+            <column name="cdn_url" value="https://cdn.homebase.com/gizmo-c.jpg"/>
+            <column name="type" value="IMAGE"/>
+            <column name="alt_text" value="Gizmo C product image"/>
+        </insert>
+
+        <!-- Product Media (fallback images) -->
+        <insert tableName="product_media">
+            <column name="id" value="pm-1"/>
+            <column name="product_id" value="prod-1"/>
+            <column name="asset_id" value="media-1"/>
+            <column name="is_primary" valueBoolean="true"/>
+            <column name="sort_order" valueNumeric="0"/>
+        </insert>
+        <insert tableName="product_media">
+            <column name="id" value="pm-2"/>
+            <column name="product_id" value="prod-2"/>
+            <column name="asset_id" value="media-2"/>
+            <column name="is_primary" valueBoolean="true"/>
+            <column name="sort_order" valueNumeric="0"/>
+        </insert>
+        <insert tableName="product_media">
+            <column name="id" value="pm-3"/>
+            <column name="product_id" value="prod-3"/>
+            <column name="asset_id" value="media-3"/>
+            <column name="is_primary" valueBoolean="true"/>
+            <column name="sort_order" valueNumeric="0"/>
+        </insert>
+
+        <!-- Variant Media (primary variant images) -->
+        <insert tableName="variant_media">
+            <column name="variant_id" value="var-1a"/>
+            <column name="asset_id" value="media-1"/>
+            <column name="is_primary" valueBoolean="true"/>
+            <column name="sort_order" valueNumeric="0"/>
+        </insert>
+        <insert tableName="variant_media">
+            <column name="variant_id" value="var-2a"/>
+            <column name="asset_id" value="media-2"/>
+            <column name="is_primary" valueBoolean="true"/>
+            <column name="sort_order" valueNumeric="0"/>
+        </insert>
+        <insert tableName="variant_media">
+            <column name="variant_id" value="var-3a"/>
+            <column name="asset_id" value="media-3"/>
+            <column name="is_primary" valueBoolean="true"/>
+            <column name="sort_order" valueNumeric="0"/>
+        </insert>
+
+        <!-- Inventory Items (stock for each variant) -->
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-1"/>
+            <column name="sku" value="SKU-001"/>
+            <column name="product_id" value="prod-1"/>
+            <column name="variant_id" value="var-1a"/>
+            <column name="quantity" valueNumeric="100"/>
+            <column name="available_quantity" valueNumeric="95"/>
+            <column name="reserved_quantity" valueNumeric="5"/>
+            <column name="status" value="AVAILABLE"/>
+            <column name="tenant" value="homebase"/>
+            <column name="stateId" value="AVAILABLE"/>
+            <column name="flowId" value="inventory-flow"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-2"/>
+            <column name="sku" value="SKU-002"/>
+            <column name="product_id" value="prod-2"/>
+            <column name="variant_id" value="var-2a"/>
+            <column name="quantity" valueNumeric="50"/>
+            <column name="available_quantity" valueNumeric="48"/>
+            <column name="reserved_quantity" valueNumeric="2"/>
+            <column name="status" value="AVAILABLE"/>
+            <column name="tenant" value="homebase"/>
+            <column name="stateId" value="AVAILABLE"/>
+            <column name="flowId" value="inventory-flow"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-3"/>
+            <column name="sku" value="SKU-003"/>
+            <column name="product_id" value="prod-3"/>
+            <column name="variant_id" value="var-3a"/>
+            <column name="quantity" valueNumeric="200"/>
+            <column name="available_quantity" valueNumeric="197"/>
+            <column name="reserved_quantity" valueNumeric="3"/>
+            <column name="status" value="AVAILABLE"/>
+            <column name="tenant" value="homebase"/>
+            <column name="stateId" value="AVAILABLE"/>
+            <column name="flowId" value="inventory-flow"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

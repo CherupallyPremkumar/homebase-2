@@ -1,0 +1,22 @@
+{
+  "policies": {
+    "limits": {
+      "maxItemsPerCart": 30,
+      "maxQuantityPerItem": 10,
+      "maxCouponsPerCart": 3,
+      "minCheckoutAmount": 100,
+      "maxCartValue": 10000000
+    },
+    "expiration": {
+      "cartExpirationHours": 72,
+      "abandonmentThresholdHours": 24,
+      "checkoutReservationMinutes": 15
+    },
+    "checkout": {
+      "allowGuestCheckout": true
+    },
+    "currency": {
+      "enforceSingle": true
+    }
+  }
+}

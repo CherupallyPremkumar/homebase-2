@@ -1,148 +1,60 @@
 package com.homebase.ecom.promo.model;
 
 import com.homebase.ecom.shared.Money;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Collections;
+
 import java.util.List;
-import java.util.Map;
 
-public final class CartSnapshot implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class CartSnapshot {
+    private String cartId;
+    private String userId;
+    private int totalItems;
+    private Money totalAmount;
+    private String region;
+    private String customerSegment;
+    private List<CartSnapshotItem> items;
 
-    private final List<CartItem> items;
-    private final Money shippingCost;
-    private final String region;
-    private final String customerId;
-    private final String customerSegment;
-    private final Map<String, Object> metadata;
-
-    private CartSnapshot(Builder builder) {
-        this.items = builder.items;
-        this.shippingCost = builder.shippingCost;
-        this.region = builder.region;
-        this.customerId = builder.customerId;
-        this.customerSegment = builder.customerSegment;
-        this.metadata = builder.metadata != null ? builder.metadata : Collections.emptyMap();
-    }
-
-    public List<CartItem> getItems() {
-        return items;
-    }
-
-    public Money getShippingCost() {
-        return shippingCost;
-    }
-
-    public String getRegion() {
-        return region;
-    }
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public String getCustomerSegment() {
-        return customerSegment;
-    }
-
-    public Map<String, Object> getMetadata() {
-        return metadata;
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private List<CartItem> items;
-        private Money shippingCost;
-        private String region;
-        private String customerId;
-        private String customerSegment;
-        private Map<String, Object> metadata = Collections.emptyMap();
-
-        public Builder items(List<CartItem> items) {
-            this.items = items;
-            return this;
-        }
-
-        public Builder shippingCost(Money shippingCost) {
-            this.shippingCost = shippingCost;
-            return this;
-        }
-
-        public Builder region(String region) {
-            this.region = region;
-            return this;
-        }
-
-        public Builder customerId(String customerId) {
-            this.customerId = customerId;
-            return this;
-        }
-
-        public Builder customerSegment(String customerSegment) {
-            this.customerSegment = customerSegment;
-            return this;
-        }
-
-        public Builder metadata(Map<String, Object> metadata) {
-            this.metadata = metadata;
-            return this;
-        }
-
-        public CartSnapshot build() {
-            return new CartSnapshot(this);
-        }
-    }
-
-    public Money getTotalAmount() {
-        if (items == null || items.isEmpty()) {
-            return new Money(BigDecimal.ZERO, shippingCost != null ? shippingCost.getCurrency() : "USD");
-        }
-        String currency = items.get(0).getBasePrice().getCurrency();
-        Money total = new Money(BigDecimal.ZERO, currency);
-        for (CartItem item : items) {
-            total = total.add(item.getSubtotal());
-        }
-        return total;
-    }
-
-    public int getTotalItems() {
-        if (items == null)
-            return 0;
-        return items.stream().mapToInt(CartItem::getQuantity).sum();
-    }
+    public String getCartId() { return cartId; }
+    public void setCartId(String cartId) { this.cartId = cartId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+    public int getTotalItems() { return totalItems; }
+    public void setTotalItems(int totalItems) { this.totalItems = totalItems; }
+    public Money getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(Money totalAmount) { this.totalAmount = totalAmount; }
+    public String getRegion() { return region; }
+    public void setRegion(String region) { this.region = region; }
+    public String getCustomerSegment() { return customerSegment; }
+    public void setCustomerSegment(String customerSegment) { this.customerSegment = customerSegment; }
+    public List<CartSnapshotItem> getItems() { return items; }
+    public void setItems(List<CartSnapshotItem> items) { this.items = items; }
 
     public int getQuantityByCategory(String category) {
-        if (items == null)
-            return 0;
+        if (items == null) return 0;
         return items.stream()
-                .filter(item -> category.equals(item.getCategory()))
-                .mapToInt(CartItem::getQuantity)
+                .filter(item -> category != null && category.equals(item.getCategory()))
+                .mapToInt(CartSnapshotItem::getQuantity)
                 .sum();
     }
 
-    public Money getAveragePriceForCategory(String category) {
-        if (items == null)
-            return null;
-        String currency = null;
-        BigDecimal totalAmount = BigDecimal.ZERO;
-        int totalQuantity = 0;
+    public Money getShippingCost() {
+        // Default shipping cost; override as needed
+        String currency = (totalAmount != null) ? totalAmount.getCurrency() : "USD";
+        return Money.zero(currency);
+    }
 
-        for (CartItem item : items) {
-            if (category.equals(item.getCategory())) {
-                if (currency == null)
-                    currency = item.getBasePrice().getCurrency();
-                totalAmount = totalAmount.add(item.getSubtotal().getAmount());
-                totalQuantity += item.getQuantity();
-            }
-        }
+    public static class CartSnapshotItem {
+        private String productId;
+        private String category;
+        private int quantity;
+        private Money price;
 
-        if (totalQuantity == 0)
-            return null;
-        return new Money(totalAmount.divide(BigDecimal.valueOf(totalQuantity), 2, RoundingMode.HALF_UP), currency);
+        public String getProductId() { return productId; }
+        public void setProductId(String productId) { this.productId = productId; }
+        public String getCategory() { return category; }
+        public void setCategory(String category) { this.category = category; }
+        public int getQuantity() { return quantity; }
+        public void setQuantity(int quantity) { this.quantity = quantity; }
+        public Money getPrice() { return price; }
+        public void setPrice(Money price) { this.price = price; }
     }
 }

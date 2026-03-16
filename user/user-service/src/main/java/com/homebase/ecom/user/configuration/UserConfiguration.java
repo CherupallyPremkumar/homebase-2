@@ -1,19 +1,27 @@
 package com.homebase.ecom.user.configuration;
 
 import com.homebase.ecom.user.domain.model.User;
+import com.homebase.ecom.user.domain.port.IdentityProviderPort;
+import com.homebase.ecom.user.domain.port.NotificationPort;
 import com.homebase.ecom.user.domain.port.UserEventPublisher;
 import com.homebase.ecom.user.domain.port.UserRepository;
+import com.homebase.ecom.user.infrastructure.adapter.IdentityProviderAdapter;
+import com.homebase.ecom.user.infrastructure.adapter.NotificationAdapter;
 import com.homebase.ecom.user.infrastructure.event.UserEventPublisherImpl;
 import com.homebase.ecom.user.infrastructure.persistence.adapter.UserJpaRepository;
 import com.homebase.ecom.user.infrastructure.persistence.adapter.UserRepositoryImpl;
 import com.homebase.ecom.user.infrastructure.persistence.mapper.UserMapper;
 import com.homebase.ecom.user.service.cmds.*;
+import com.homebase.ecom.user.service.event.UserEventHandler;
 import com.homebase.ecom.user.service.impl.UserServiceImpl;
 import com.homebase.ecom.user.service.postSaveHooks.*;
 import com.homebase.ecom.user.service.store.UserEntityStore;
+import com.homebase.ecom.user.service.validator.UserPolicyValidator;
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
+import org.chenile.stm.action.scriptsupport.IfAction;
 import org.chenile.stm.impl.*;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.api.WorkflowRegistry;
@@ -28,9 +36,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * UserConfiguration — explicit bean wiring for the User bounded context.
+ * UserConfiguration -- explicit bean wiring for the User bounded context.
  *
- * Rules (from gemini.md):
+ * Rules:
  *  - No @Component, @Service, @Repository anywhere
  *  - Constructor injection everywhere
  *  - Action beans: user{EventId}Action (auto-resolved by STM)
@@ -42,14 +50,24 @@ public class UserConfiguration {
     private static final String FLOW_DEFINITION_FILE = "com/homebase/ecom/user/user-states.xml";
     public static final String PREFIX = "user";
 
-    // ─── Event Publisher ──────────────────────────────────────────────────────
+    // --- Hexagonal Ports (Outbound) ---
 
     @Bean
     public UserEventPublisher userEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
         return new UserEventPublisherImpl(applicationEventPublisher);
     }
 
-    // ─── STM Infrastructure ──────────────────────────────────────────────────
+    @Bean
+    public IdentityProviderPort identityProviderPort() {
+        return new IdentityProviderAdapter();
+    }
+
+    @Bean
+    public NotificationPort notificationPort() {
+        return new NotificationAdapter();
+    }
+
+    // --- STM Infrastructure ---
 
     @Bean BeanFactoryAdapter userBeanFactoryAdapter() {
         return new SpringBeanFactoryAdapter();
@@ -83,7 +101,19 @@ public class UserConfiguration {
         return reader;
     }
 
-    // ─── Repository + Entity Store ────────────────────────────────────────────
+    // --- OGNL + Auto-state support ---
+
+    @Bean
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
+
+    @Bean
+    IfAction<User> ifAction() {
+        return new IfAction<>();
+    }
+
+    // --- Repository + Entity Store ---
 
     @Bean
     public UserMapper userMapper() {
@@ -99,7 +129,7 @@ public class UserConfiguration {
         return new UserEntityStore(userRepository);
     }
 
-    // ─── Service ──────────────────────────────────────────────────────────────
+    // --- Service ---
 
     @Bean StateEntityServiceImpl<User> _userStateEntityService_(
             @Qualifier("userEntityStm") STM<User> stm,
@@ -108,7 +138,7 @@ public class UserConfiguration {
         return new UserServiceImpl(stm, provider, entityStore);
     }
 
-    // ─── STM Wiring ──────────────────────────────────────────────────────────
+    // --- STM Wiring ---
 
     @Bean STMTransitionActionResolver userTransitionActionResolver(
             @Qualifier("defaultUserSTMTransitionAction") STMTransitionAction<User> defaultAction) {
@@ -141,6 +171,14 @@ public class UserConfiguration {
         return exitAction;
     }
 
+    @Bean DefaultAutomaticStateComputation<User> userDefaultAutoState(
+            @Qualifier("userTransitionActionResolver") STMTransitionActionResolver resolver,
+            @Qualifier("userFlowStore") STMFlowStoreImpl stmFlowStore) {
+        DefaultAutomaticStateComputation<User> autoState = new DefaultAutomaticStateComputation<>(resolver);
+        stmFlowStore.setDefaultAutomaticStateComputation(autoState);
+        return autoState;
+    }
+
     @Bean STMTransitionAction<User> userBaseTransitionAction(
             @Qualifier("userTransitionActionResolver") STMTransitionActionResolver resolver,
             @Qualifier("userActivityChecker") ActivityChecker activityChecker,
@@ -167,34 +205,46 @@ public class UserConfiguration {
         return new StmBodyTypeSelector(provider, resolver);
     }
 
-    @Bean DefaultAutomaticStateComputation<User> userDefaultAutoState(
-            @Qualifier("userTransitionActionResolver") STMTransitionActionResolver resolver,
-            @Qualifier("userFlowStore") STMFlowStoreImpl stmFlowStore) {
-        DefaultAutomaticStateComputation<User> autoState = new DefaultAutomaticStateComputation<>(resolver);
-        stmFlowStore.setDefaultAutomaticStateComputation(autoState);
-        return autoState;
+    @Bean ConfigProviderImpl userConfigProvider() {
+        return new ConfigProviderImpl();
     }
 
-    // ─── STM Actions (user{EventId}Action — auto-resolved by prefix) ─────────
+    @Bean ConfigBasedEnablementStrategy userConfigBasedEnablementStrategy(
+            @Qualifier("userConfigProvider") ConfigProvider configProvider,
+            @Qualifier("userFlowStore") STMFlowStoreImpl stmFlowStore) {
+        ConfigBasedEnablementStrategy enablementStrategy = new ConfigBasedEnablementStrategy(configProvider, "User");
+        stmFlowStore.setEnablementStrategy(enablementStrategy);
+        return enablementStrategy;
+    }
 
-    @Bean STMTransitionAction<User> userRegisterAction()         { return new RegisterUserAction(); }
-    @Bean STMTransitionAction<User> userVerifyEmailAction()      { return new VerifyEmailAction(); }
-    @Bean STMTransitionAction<User> userLockAccountAction()      { return new LockAccountAction(); }
-    @Bean STMTransitionAction<User> userUnlockAccountAction()    { return new UnlockAccountAction(); }
-    @Bean STMTransitionAction<User> userSuspendUserAction()      { return new SuspendUserAction(); }
-    @Bean STMTransitionAction<User> userReinstateUserAction()    { return new ReinstateUserAction(); }
-    @Bean STMTransitionAction<User> userUpdateProfileAction()    { return new UpdateProfileAction(); }
-    @Bean STMTransitionAction<User> userAddAddressAction()       { return new AddAddressAction(); }
-    @Bean STMTransitionAction<User> userDeleteAccountAction()    { return new DeleteAccountAction(); }
-    @Bean STMTransitionAction<User> userResendVerificationAction() { return new ResendVerificationAction(); }
-    @Bean STMTransitionAction<User> userChangePasswordAction()    { return new ChangePasswordAction(); }
-    @Bean STMTransitionAction<User> userRemoveAddressAction()     { return new RemoveAddressAction(); }
+    // --- STM Actions (user{EventId}Action -- auto-resolved by prefix) ---
 
-    // ─── Post-Save Hooks ({STATE}UserPostSaveHook — auto-resolved) ───────────
+    @Bean STMTransitionAction<User> userRegisterAction()            { return new RegisterUserAction(); }
+    @Bean STMTransitionAction<User> userVerifyEmailAction()         { return new VerifyEmailAction(); }
+    @Bean STMTransitionAction<User> userActivateAction()            { return new ActivateAction(); }
+    @Bean STMTransitionAction<User> userSuspendAction()             { return new SuspendAction(); }
+    @Bean STMTransitionAction<User> userDeactivateAction()          { return new DeactivateAction(); }
+    @Bean STMTransitionAction<User> userUpdateProfileAction()       { return new UpdateProfileAction(); }
+    @Bean STMTransitionAction<User> userAddAddressAction()          { return new AddAddressAction(); }
+    @Bean STMTransitionAction<User> userRemoveAddressAction()       { return new RemoveAddressAction(); }
+    @Bean STMTransitionAction<User> userChangePasswordAction()      { return new ChangePasswordAction(); }
+    @Bean STMTransitionAction<User> userLockAccountAction()         { return new LockAccountAction(); }
+    @Bean STMTransitionAction<User> userUnlockAccountAction()       { return new UnlockAccountAction(); }
+    @Bean STMTransitionAction<User> userReinstateUserAction()       { return new ReinstateUserAction(); }
+    @Bean STMTransitionAction<User> userResendVerificationAction()  { return new ResendVerificationAction(); }
+    @Bean STMTransitionAction<User> userSubmitKycAction()           { return new SubmitKycAction(); }
+    @Bean STMTransitionAction<User> userVerifyKycAction()           { return new VerifyKycAction(); }
 
-    @Bean PENDING_VERIFICATIONUserPostSaveHook userPENDING_VERIFICATIONPostSaveHook(
+    // --- Post-Save Hooks ({STATE}UserPostSaveHook -- auto-resolved) ---
+
+    @Bean REGISTEREDUserPostSaveHook userREGISTEREDPostSaveHook(
             UserEventPublisher eventPublisher) {
-        return new PENDING_VERIFICATIONUserPostSaveHook(eventPublisher);
+        return new REGISTEREDUserPostSaveHook(eventPublisher);
+    }
+
+    @Bean EMAIL_VERIFIEDUserPostSaveHook userEMAIL_VERIFIEDPostSaveHook(
+            UserEventPublisher eventPublisher) {
+        return new EMAIL_VERIFIEDUserPostSaveHook(eventPublisher);
     }
 
     @Bean ACTIVEUserPostSaveHook userACTIVEPostSaveHook(UserEventPublisher eventPublisher) {
@@ -209,7 +259,42 @@ public class UserConfiguration {
         return new SUSPENDEDUserPostSaveHook(eventPublisher);
     }
 
-    @Bean DELETEDUserPostSaveHook userDELETEDPostSaveHook(UserEventPublisher eventPublisher) {
-        return new DELETEDUserPostSaveHook(eventPublisher);
+    @Bean DEACTIVATEDUserPostSaveHook userDEACTIVATEDPostSaveHook(UserEventPublisher eventPublisher) {
+        return new DEACTIVATEDUserPostSaveHook(eventPublisher);
+    }
+
+    @Bean KYC_VERIFIEDUserPostSaveHook userKYC_VERIFIEDPostSaveHook(UserEventPublisher eventPublisher) {
+        return new KYC_VERIFIEDUserPostSaveHook(eventPublisher);
+    }
+
+    // --- Security / ACL ---
+
+    @Bean
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> userEventAuthoritiesSupplier(
+            @Qualifier("userActionsInfoProvider") STMActionsInfoProvider userInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(userInfoProvider, false);
+        return builder.build();
+    }
+
+    // --- Policy Validator ---
+
+    @Bean
+    UserPolicyValidator userPolicyValidator() {
+        return new UserPolicyValidator();
+    }
+
+    // --- Health Checker ---
+
+    @Bean
+    com.homebase.ecom.user.service.healthcheck.UserHealthChecker userHealthChecker() {
+        return new com.homebase.ecom.user.service.healthcheck.UserHealthChecker();
+    }
+
+    // --- Kafka Event Handler (minimal consumer) ---
+
+    @Bean("userEventService")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
+    UserEventHandler userEventService() {
+        return new UserEventHandler();
     }
 }

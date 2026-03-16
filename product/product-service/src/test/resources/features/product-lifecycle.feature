@@ -7,6 +7,10 @@ Feature: Product Lifecycle — tests the full product state machine through all 
 # HAPPY PATH: Create -> Submit -> Approve -> Discontinue
 # ═══════════════════════════════════════════════════════════════════════════════
 
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
 Scenario: Create a new product in DRAFT state
 Given that "flowName" equals "product-flow"
 And that "initialState" equals "DRAFT"
@@ -197,6 +201,173 @@ When I PATCH a REST request to URL "/product/${disableId}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${disableId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "DISCONTINUED"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EDIT-AFTER-PUBLISH FLOW: PUBLISHED -> PENDING_UPDATE -> PUBLISHED
+# ═══════════════════════════════════════════════════════════════════════════════
+
+Scenario: Create a product for edit-after-publish flow
+When I POST a REST request to URL "/product" with payload
+"""json
+{
+    "name": "Editable Product",
+    "description": "Product that will be updated after publish",
+    "brand": "HomeBase Editable"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And store "$.payload.mutatedEntity.id" from response to "editId"
+And the REST response key "mutatedEntity.currentState.stateId" is "DRAFT"
+
+Scenario: Move edit product through to PUBLISHED
+Given that "event" equals "submitForReview"
+When I PATCH a REST request to URL "/product/${editId}/${event}" with payload
+"""json
+{
+    "comment": "Ready for review"
+}
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "UNDER_REVIEW"
+
+Scenario: Approve edit product
+Given that "event" equals "approveProduct"
+When I PATCH a REST request to URL "/product/${editId}/${event}" with payload
+"""json
+{
+    "comment": "Approved"
+}
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "PUBLISHED"
+
+Scenario: Request update on published product (PUBLISHED -> PENDING_UPDATE)
+Given that "event" equals "requestUpdate"
+When I PATCH a REST request to URL "/product/${editId}/${event}" with payload
+"""json
+{
+    "pendingChanges": "{\"name\": \"Updated Editable Product\", \"description\": \"Better description\"}"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${editId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "PENDING_UPDATE"
+
+Scenario: Approve the update (PENDING_UPDATE -> PUBLISHED)
+Given that "event" equals "approveUpdate"
+When I PATCH a REST request to URL "/product/${editId}/${event}" with payload
+"""json
+{
+    "comment": "Changes look good, approved"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${editId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "PUBLISHED"
+
+Scenario: Request another update for rejection test
+Given that "event" equals "requestUpdate"
+When I PATCH a REST request to URL "/product/${editId}/${event}" with payload
+"""json
+{
+    "pendingChanges": "{\"name\": \"Bad Name\"}"
+}
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "PENDING_UPDATE"
+
+Scenario: Reject the update (PENDING_UPDATE -> PUBLISHED, no changes applied)
+Given that "event" equals "rejectUpdate"
+When I PATCH a REST request to URL "/product/${editId}/${event}" with payload
+"""json
+{
+    "comment": "Name change not appropriate for this product"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${editId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "PUBLISHED"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ARCHIVE FLOW: PUBLISHED -> ARCHIVED -> PUBLISHED (unarchive)
+#               ARCHIVED -> DISCONTINUED (permanent end-of-life)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+Scenario: Create a product for archive flow
+When I POST a REST request to URL "/product" with payload
+"""json
+{
+    "name": "Archivable Product",
+    "description": "Product that will be archived",
+    "brand": "HomeBase Archive"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And store "$.payload.mutatedEntity.id" from response to "archiveId"
+And the REST response key "mutatedEntity.currentState.stateId" is "DRAFT"
+
+Scenario: Move archive product through to PUBLISHED
+Given that "event" equals "submitForReview"
+When I PATCH a REST request to URL "/product/${archiveId}/${event}" with payload
+"""json
+{
+    "comment": "Ready"
+}
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "UNDER_REVIEW"
+
+Scenario: Approve archive product
+Given that "event" equals "approveProduct"
+When I PATCH a REST request to URL "/product/${archiveId}/${event}" with payload
+"""json
+{
+    "comment": "Approved"
+}
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "PUBLISHED"
+
+Scenario: Archive the published product (PUBLISHED -> ARCHIVED)
+Given that "event" equals "archiveProduct"
+When I PATCH a REST request to URL "/product/${archiveId}/${event}" with payload
+"""json
+{
+    "comment": "Seasonal product, archiving for off-season"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${archiveId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "ARCHIVED"
+
+Scenario: Unarchive the product (ARCHIVED -> PUBLISHED)
+Given that "event" equals "unarchiveProduct"
+When I PATCH a REST request to URL "/product/${archiveId}/${event}" with payload
+"""json
+{
+    "comment": "Season started, bringing product back"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${archiveId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "PUBLISHED"
+
+Scenario: Archive again then discontinue (ARCHIVED -> DISCONTINUED)
+Given that "event" equals "archiveProduct"
+When I PATCH a REST request to URL "/product/${archiveId}/${event}" with payload
+"""json
+{
+    "comment": "Re-archiving"
+}
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "ARCHIVED"
+
+Scenario: Discontinue from archived state
+Given that "event" equals "discontinueProduct"
+When I PATCH a REST request to URL "/product/${archiveId}/${event}" with payload
+"""json
+{
+    "comment": "Product end-of-life, permanently discontinuing"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${archiveId}"
 And the REST response key "mutatedEntity.currentState.stateId" is "DISCONTINUED"
 
 # ═══════════════════════════════════════════════════════════════════════════════

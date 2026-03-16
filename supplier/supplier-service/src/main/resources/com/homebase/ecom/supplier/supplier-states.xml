@@ -1,73 +1,160 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
-  <flow id='supplier-flow' default='true'>
-    <security-strategy componentName="supplierSecurityStrategy"/>
-    <entry-action componentName="supplierEntryAction" />
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
 
-    <manual-state id='PENDING_REVIEW' initialState='true' description="Supplier application submitted, awaiting admin review">
+  <!-- Event definitions with ACLs and payload types -->
+  <event-information eventId='reviewSupplier' meta-acls="ADMIN,CATALOG_ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.ReviewSupplierPayload"/>
+  <event-information eventId='approveSupplier' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.ApproveSupplierPayload"/>
+  <event-information eventId='rejectSupplier' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.RejectSupplierPayload"/>
+  <event-information eventId='resubmitSupplier' meta-acls="SELLER" meta-bodyType="com.homebase.ecom.supplier.dto.ResubmitSupplierPayload"/>
+  <event-information eventId='suspendSupplier' meta-acls="ADMIN,SYSTEM" meta-bodyType="com.homebase.ecom.supplier.dto.SuspendSupplierPayload"/>
+  <event-information eventId='terminateSupplier' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.TerminateSupplierPayload"/>
+  <event-information eventId='putOnProbation' meta-acls="ADMIN,SYSTEM" meta-bodyType="com.homebase.ecom.supplier.dto.PutOnProbationPayload"/>
+  <event-information eventId='reactivateSupplier' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.ReactivateSupplierPayload"/>
+  <event-information eventId='resolveFromProbation' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.ResolveFromProbationPayload"/>
+
+  <flow id='supplier-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="supplierEntryAction" />
+    <exit-action componentName="supplierExitAction" />
+
+    <!-- ================================================================ -->
+    <!-- APPLICATION: Supplier applies to join the platform                -->
+    <!-- ================================================================ -->
+
+    <manual-state id='APPLIED' initialState='true' meta-mainPath="true"
+                  description="Supplier application submitted, awaiting admin review">
+      <on eventId='reviewSupplier'
+          componentName='supplierReviewSupplierAction'
+          newStateId='UNDER_REVIEW'
+          meta-mainPath="true" meta-acls="ADMIN,CATALOG_ADMIN"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- REVIEW: Admin reviewing supplier application                      -->
+    <!-- ================================================================ -->
+
+    <manual-state id='UNDER_REVIEW' meta-mainPath="true"
+                  description="Supplier application under admin review">
       <on eventId='approveSupplier'
           componentName='supplierApproveSupplierAction'
-          newStateId='ACTIVE'
-          meta-mainPath="true"
-          meta-acls="ADMIN"/>
+          newStateId='APPROVED'
+          meta-mainPath="true" meta-acls="ADMIN"/>
       <on eventId='rejectSupplier'
           componentName='supplierRejectSupplierAction'
           newStateId='REJECTED'
           meta-acls="ADMIN"/>
     </manual-state>
 
-    <manual-state id='REJECTED' description="Supplier application rejected">
-       <on eventId='resubmitSupplier'
-          componentName='supplierResubmitSupplierAction'
-          newStateId='PENDING_REVIEW'
-          meta-acls="SUPPLIER"/>
+    <!-- ================================================================ -->
+    <!-- APPROVED: Pending final onboarding steps                          -->
+    <!-- ================================================================ -->
+
+    <manual-state id='APPROVED' meta-mainPath="true"
+                  description="Supplier approved, completing onboarding">
+      <entry-action componentName="supplierApprovedEntryAction" />
     </manual-state>
 
-    <manual-state id='ACTIVE' meta-mainPath="true" description="Supplier active and able to list products">
+    <!-- ================================================================ -->
+    <!-- REJECTED: Application rejected, can resubmit                      -->
+    <!-- ================================================================ -->
+
+    <manual-state id='REJECTED'
+                  description="Supplier application rejected, can resubmit with updates">
+      <on eventId='resubmitSupplier'
+          componentName='supplierResubmitSupplierAction'
+          newStateId='APPLIED'
+          meta-acls="SELLER"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- ACTIVE: Supplier is fully operational                             -->
+    <!-- ================================================================ -->
+
+    <manual-state id='ACTIVE' meta-mainPath="true"
+                  description="Supplier active and able to list products">
       <entry-action componentName="supplierActiveAction" />
       <on eventId='suspendSupplier'
           componentName='supplierSuspendSupplierAction'
           newStateId='SUSPENDED'
-          meta-acls="ADMIN"/>
-      <on eventId='pauseSupplier'
-          componentName='supplierPauseSupplierAction'
-          newStateId='INACTIVE'
-          meta-acls="SUPPLIER,ADMIN"/>
-      <on eventId='blacklistSupplier'
-          componentName='supplierBlacklistSupplierAction'
-          newStateId='BLACKLISTED'
+          meta-acls="ADMIN,SYSTEM"/>
+      <on eventId='putOnProbation'
+          componentName='supplierPutOnProbationAction'
+          newStateId='ON_PROBATION'
+          meta-acls="ADMIN,SYSTEM"/>
+      <on eventId='terminateSupplier'
+          componentName='supplierTerminateSupplierAction'
+          newStateId='TERMINATED'
           meta-acls="ADMIN"/>
     </manual-state>
 
-    <manual-state id='INACTIVE' description="Supplier temporarily paused">
-      <entry-action componentName="supplierInactiveAction" />
-      <on eventId='reactivateSupplier'
-          componentName='supplierReactivateSupplierAction'
+    <!-- ================================================================ -->
+    <!-- ON_PROBATION: Supplier under performance review                   -->
+    <!-- ================================================================ -->
+
+    <manual-state id='ON_PROBATION'
+                  description="Supplier on probation due to poor performance metrics">
+      <entry-action componentName="supplierOnProbationEntryAction" />
+      <on eventId='resolveFromProbation'
+          componentName='supplierResolveFromProbationAction'
           newStateId='ACTIVE'
-          meta-mainPath="true"
-          meta-acls="SUPPLIER,ADMIN"/>
-      <on eventId='blacklistSupplier'
-          componentName='supplierBlacklistSupplierAction'
-          newStateId='BLACKLISTED'
+          meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='suspendSupplier'
+          componentName='supplierSuspendSupplierAction'
+          newStateId='SUSPENDED'
+          meta-acls="ADMIN,SYSTEM"/>
+      <on eventId='terminateSupplier'
+          componentName='supplierTerminateSupplierAction'
+          newStateId='TERMINATED'
           meta-acls="ADMIN"/>
     </manual-state>
 
-    <manual-state id='SUSPENDED' description="Supplier suspended by admin">
+    <!-- ================================================================ -->
+    <!-- SUSPENDED: Supplier temporarily suspended                         -->
+    <!-- ================================================================ -->
+
+    <manual-state id='SUSPENDED'
+                  description="Supplier suspended by admin or system">
       <entry-action componentName="supplierSuspendedAction" />
       <on eventId='reactivateSupplier'
           componentName='supplierReactivateSupplierAction'
           newStateId='ACTIVE'
-          meta-mainPath="true"
-          meta-acls="ADMIN"/>
-      <on eventId='blacklistSupplier'
-          componentName='supplierBlacklistSupplierAction'
-          newStateId='BLACKLISTED'
+          meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='terminateSupplier'
+          componentName='supplierTerminateSupplierAction'
+          newStateId='TERMINATED'
           meta-acls="ADMIN"/>
     </manual-state>
 
-    <manual-state id='BLACKLISTED' description="Supplier permanently blacklisted">
-      <entry-action componentName="supplierBlacklistedAction" />
-      <exit-action componentName="supplierDisableAllProductsAction" />
+    <!-- ================================================================ -->
+    <!-- TERMINATED: Supplier permanently removed from platform            -->
+    <!-- ================================================================ -->
+
+    <manual-state id='TERMINATED'
+                  description="Supplier permanently terminated from platform">
+      <entry-action componentName="supplierTerminatedEntryAction" />
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- AUTO-STATE: Performance check for probation                       -->
+    <!-- ================================================================ -->
+
+    <!--
+      OGNL auto-state: CHECK_PERFORMANCE
+      If rating < autoSuspendBelowRating OR fulfillmentRate < minFulfillmentRate
+      then -> ON_PROBATION, else -> stay in ACTIVE
+    -->
+    <auto-state id='CHECK_PERFORMANCE'
+                componentName='ifAction'
+                condition='rating &lt; 2.0 or fulfillmentRate &lt; 85.0'
+                then='poorPerformance'
+                else='acceptable'>
+      <on eventId='poorPerformance' newStateId='ON_PROBATION'/>
+      <on eventId='acceptable' newStateId='ACTIVE'/>
+    </auto-state>
+
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
     </manual-state>
   </flow>
 </states>

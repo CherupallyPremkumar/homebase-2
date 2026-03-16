@@ -7,18 +7,27 @@ import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
 
 /**
- * Contains customized logic for the transition. Common logic resides at
- * {@link DefaultSTMTransitionAction}
+ * STM transition action for removeItem event.
+ * Removes item by variantId, then recalculates pricing.
  */
 public class RemoveItemCartAction extends AbstractCartAction<RemoveItemCartPayload> {
 
     @Override
-    public void transitionTo(Cart cart,
-            RemoveItemCartPayload payload,
+    public void transitionTo(Cart cart, RemoveItemCartPayload payload,
             State startState, String eventId,
             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-        cart.getItems().removeIf(item -> item.getProductId().equals(payload.productId));
-        cart.getTransientMap().previousPayload = payload;
+        boolean existed = cart.getItems().stream()
+                .anyMatch(i -> i.getVariantId().equals(payload.variantId));
+        if (!existed) {
+            throw new IllegalArgumentException("Variant not found in cart: " + payload.variantId);
+        }
+
+        cart.removeItem(payload.variantId);
+
+        // Recalculate pricing after removal (pricing handles empty cart too)
+        recalculatePricing(cart);
+
+        logActivity(cart, "removeItem", "Removed variant " + payload.variantId);
     }
 }

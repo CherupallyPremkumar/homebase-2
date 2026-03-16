@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -49,10 +50,11 @@ public class ReturnApprovedEventConsumer {
 
         log.info("Received RETURN_APPROVED event, initiating return processing saga");
 
+        String returnRequestId = null;
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> payload = objectMapper.convertValue(envelope.getPayload(), Map.class);
-            String returnRequestId = (String) payload.get("returnRequestId");
+            returnRequestId = (String) payload.get("returnRequestId");
             String orderId = (String) payload.get("orderId");
             String orderItemId = (String) payload.get("orderItemId");
 
@@ -64,6 +66,9 @@ public class ReturnApprovedEventConsumer {
 
             sagaRepository.save(saga);
             log.info("Return processing saga created for return request: {}", returnRequestId);
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Idempotency: return processing saga for request {} already exists (possible replay). Skipping. Detail: {}",
+                    returnRequestId, e.getMessage());
         } catch (Exception e) {
             log.error("Failed to process RETURN_APPROVED event", e);
         }

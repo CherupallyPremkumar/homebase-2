@@ -10,6 +10,7 @@ import java.util.Objects;
 public class CartItemSnapshotDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private String variantId;
     private String productId;
     private int quantity;
     private Money basePrice;
@@ -17,6 +18,8 @@ public class CartItemSnapshotDTO implements Serializable {
 
     public CartItemSnapshotDTO() {}
 
+    public String getVariantId() { return variantId; }
+    public void setVariantId(String variantId) { this.variantId = variantId; }
     public String getProductId() { return productId; }
     public void setProductId(String productId) { this.productId = productId; }
     public int getQuantity() { return quantity; }

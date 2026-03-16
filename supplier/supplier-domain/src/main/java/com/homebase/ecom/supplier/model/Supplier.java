@@ -7,54 +7,94 @@ import java.time.LocalDateTime;
 import org.chenile.workflow.model.*;
 import org.chenile.utils.entity.model.AbstractExtendedStateEntity;
 
+/**
+ * Domain model for Supplier bounded context.
+ * Fields aligned with DDD supplier aggregate: identity, business info,
+ * performance metrics, and lifecycle tracking.
+ */
 public class Supplier extends AbstractExtendedStateEntity
         implements ActivityEnabledStateEntity,
         ContainsTransientMap {
 
-    private String name;
+    // --- Identity & Business Info ---
     private String userId;
-    private String email;
-    private String description;
-    private String phone;
-    private String upiId;
+    private String businessName;
+    private String businessType; // INDIVIDUAL or COMPANY
+    private String taxId;
+    private String bankAccountId;
+    private String contactEmail;
+    private String contactPhone;
     private String address;
-    private Double commissionPercentage;
 
-    // Lifecycle tracking fields
+    // --- Performance Metrics ---
+    private double rating;
+    private int totalOrders;
+    private int totalReturns;
+    private double fulfillmentRate;
+    private double avgShippingDays;
+    private double commissionRate;
+
+    // --- Lifecycle Tracking ---
     private LocalDateTime activeDate;
     private String rejectionReason;
     private String suspensionReason;
-    private String blacklistReason;
+    private String terminationReason;
+    private String probationReason;
     private LocalDateTime suspendedDate;
-    private LocalDateTime blacklistedDate;
+    private LocalDateTime terminatedDate;
+    private LocalDateTime probationDate;
     private boolean productsDisabled;
 
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    // --- Identity & Business Info Accessors ---
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getBusinessName() { return businessName; }
+    public void setBusinessName(String businessName) { this.businessName = businessName; }
 
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
+    public String getBusinessType() { return businessType; }
+    public void setBusinessType(String businessType) { this.businessType = businessType; }
 
-    public String getUpiId() { return upiId; }
-    public void setUpiId(String upiId) { this.upiId = upiId; }
+    public String getTaxId() { return taxId; }
+    public void setTaxId(String taxId) { this.taxId = taxId; }
+
+    public String getBankAccountId() { return bankAccountId; }
+    public void setBankAccountId(String bankAccountId) { this.bankAccountId = bankAccountId; }
+
+    public String getContactEmail() { return contactEmail; }
+    public void setContactEmail(String contactEmail) { this.contactEmail = contactEmail; }
+
+    public String getContactPhone() { return contactPhone; }
+    public void setContactPhone(String contactPhone) { this.contactPhone = contactPhone; }
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
 
-    public Double getCommissionPercentage() { return commissionPercentage; }
-    public void setCommissionPercentage(Double commissionPercentage) { this.commissionPercentage = commissionPercentage; }
+    // --- Performance Metrics Accessors ---
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public double getRating() { return rating; }
+    public void setRating(double rating) { this.rating = rating; }
+
+    public int getTotalOrders() { return totalOrders; }
+    public void setTotalOrders(int totalOrders) { this.totalOrders = totalOrders; }
+
+    public int getTotalReturns() { return totalReturns; }
+    public void setTotalReturns(int totalReturns) { this.totalReturns = totalReturns; }
+
+    public double getFulfillmentRate() { return fulfillmentRate; }
+    public void setFulfillmentRate(double fulfillmentRate) { this.fulfillmentRate = fulfillmentRate; }
+
+    public double getAvgShippingDays() { return avgShippingDays; }
+    public void setAvgShippingDays(double avgShippingDays) { this.avgShippingDays = avgShippingDays; }
+
+    public double getCommissionRate() { return commissionRate; }
+    public void setCommissionRate(double commissionRate) { this.commissionRate = commissionRate; }
+
+    // --- Lifecycle Tracking Accessors ---
 
     public LocalDateTime getActiveDate() { return activeDate; }
     public void setActiveDate(LocalDateTime activeDate) { this.activeDate = activeDate; }
@@ -65,20 +105,35 @@ public class Supplier extends AbstractExtendedStateEntity
     public String getSuspensionReason() { return suspensionReason; }
     public void setSuspensionReason(String suspensionReason) { this.suspensionReason = suspensionReason; }
 
-    public String getBlacklistReason() { return blacklistReason; }
-    public void setBlacklistReason(String blacklistReason) { this.blacklistReason = blacklistReason; }
+    public String getTerminationReason() { return terminationReason; }
+    public void setTerminationReason(String terminationReason) { this.terminationReason = terminationReason; }
+
+    public String getProbationReason() { return probationReason; }
+    public void setProbationReason(String probationReason) { this.probationReason = probationReason; }
 
     public LocalDateTime getSuspendedDate() { return suspendedDate; }
     public void setSuspendedDate(LocalDateTime suspendedDate) { this.suspendedDate = suspendedDate; }
 
-    public LocalDateTime getBlacklistedDate() { return blacklistedDate; }
-    public void setBlacklistedDate(LocalDateTime blacklistedDate) { this.blacklistedDate = blacklistedDate; }
+    public LocalDateTime getTerminatedDate() { return terminatedDate; }
+    public void setTerminatedDate(LocalDateTime terminatedDate) { this.terminatedDate = terminatedDate; }
+
+    public LocalDateTime getProbationDate() { return probationDate; }
+    public void setProbationDate(LocalDateTime probationDate) { this.probationDate = probationDate; }
 
     public boolean isProductsDisabled() { return productsDisabled; }
     public void setProductsDisabled(boolean productsDisabled) { this.productsDisabled = productsDisabled; }
 
+    // --- Backward compatibility: name maps to businessName ---
+
+    public String getName() { return businessName; }
+    public void setName(String name) { this.businessName = name; }
+
+    // --- TransientMap ---
+
     public TransientMap getTransientMap() { return this.transientMap; }
     public void setTransientMap(TransientMap transientMap) { this.transientMap = transientMap; }
+
+    // --- Activities ---
 
     @Override
     public Collection<ActivityLog> obtainActivities() {

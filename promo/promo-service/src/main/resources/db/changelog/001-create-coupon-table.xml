@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="001-create-coupon-table" author="homebase">
+        <createTable tableName="coupon">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="varchar(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(2000)"/>
+            <column name="discount_type" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount_value" type="double">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min_order_value" type="double"/>
+            <column name="max_discount_amount" type="double"/>
+            <column name="start_date" type="timestamp"/>
+            <column name="end_date" type="timestamp"/>
+            <column name="usage_limit" type="int" defaultValueNumeric="0"/>
+            <column name="usage_count" type="int" defaultValueNumeric="0"/>
+            <column name="usage_per_customer" type="int" defaultValueNumeric="1"/>
+            <column name="applicable_categories" type="jsonb"/>
+            <column name="applicable_products" type="jsonb"/>
+            <column name="state_id" type="varchar(50)"/>
+            <column name="flow_id" type="varchar(100)"/>
+            <!-- Chenile BaseJpaEntity / AbstractJpaStateEntity fields -->
+            <column name="state_entry_time" type="timestamp"/>
+            <column name="sla_yellow_date" type="timestamp"/>
+            <column name="sla_red_date" type="timestamp"/>
+            <column name="sla_tending_late" type="int" defaultValueNumeric="0"/>
+            <column name="sla_late" type="int" defaultValueNumeric="0"/>
+            <column name="version" type="bigint" defaultValueNumeric="0"/>
+            <column name="tenant" type="varchar(100)"/>
+            <column name="created_by" type="varchar(255)"/>
+            <column name="last_modified_by" type="varchar(255)"/>
+            <column name="created_time" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="last_modified_time" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <createIndex tableName="coupon" indexName="idx_coupon_code">
+            <column name="code"/>
+        </createIndex>
+        <createIndex tableName="coupon" indexName="idx_coupon_state_id">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex tableName="coupon" indexName="idx_coupon_end_date">
+            <column name="end_date"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

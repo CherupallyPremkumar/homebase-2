@@ -1,10 +1,15 @@
-Feature: Supplier Onboarding
-  Tests the supplier onboarding saga through the STM workflow.
-  Covers application submission, document validation, review, approval/rejection, and resubmission.
+Feature: Supplier Onboarding Lifecycle
+  Tests the full onboarding lifecycle through the STM workflow with security.
+  States: APPLICATION_SUBMITTED -> DOCUMENT_VERIFICATION -> BUSINESS_VERIFICATION -> TRAINING -> ONBOARDED -> COMPLETED
+  Side states: DOCUMENTS_REQUESTED, REJECTED
 
 # ====================================================================
-# HAPPY PATH: Submit -> Validate -> Review -> Approve -> Create -> Notify -> Active
+# HAPPY PATH: Full lifecycle from submission to completion
 # ====================================================================
+
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
 
 Scenario: Submit application with all documents
 Given that "flowName" equals "onboarding-flow"
@@ -12,226 +17,213 @@ And that "initialState" equals "APPLICATION_SUBMITTED"
 When I POST a REST request to URL "/onboarding" with payload
 """json
 {
-    "description": "Handmade silk sarees supplier",
-    "supplierName": "Silk Weaves India",
-    "email": "contact@silkweaves.in",
-    "phone": "+91-9876543210",
-    "upiId": "silkweaves@upi",
-    "address": "123 Weaver Lane, Kanchipuram",
-    "commissionPercentage": 12.5
+    "applicantName": "Rajesh Kumar",
+    "businessName": "Silk Weaves India",
+    "businessType": "MANUFACTURER",
+    "documents": [
+        {"type": "TAX_ID", "fileUrl": "https://docs.example.com/tax-id-001.pdf"},
+        {"type": "BUSINESS_LICENSE", "fileUrl": "https://docs.example.com/license-001.pdf"},
+        {"type": "BANK_PROOF", "fileUrl": "https://docs.example.com/bank-001.pdf"}
+    ]
 }
 """
 Then the REST response contains key "mutatedEntity"
 And store "$.payload.mutatedEntity.id" from response to "onboardingId"
 And the REST response key "mutatedEntity.currentState.stateId" is "${initialState}"
-And the REST response key "mutatedEntity.supplierName" is "Silk Weaves India"
-And the REST response key "mutatedEntity.email" is "contact@silkweaves.in"
+And the REST response key "mutatedEntity.businessName" is "Silk Weaves India"
+And the REST response key "mutatedEntity.applicantName" is "Rajesh Kumar"
 
-Scenario: Validate documents (APPLICATION_SUBMITTED -> DOCUMENTS_VERIFIED)
-Given that "event" equals "validateDocuments"
+Scenario: Verify documents (APPLICATION_SUBMITTED -> DOCUMENT_VERIFICATION)
+Given that "event" equals "verifyDocuments"
 When I PATCH a REST request to URL "/onboarding/${onboardingId}/${event}" with payload
 """json
 {
-    "comment": "All documents verified"
+    "verificationNotes": "All three documents verified successfully",
+    "comment": "Documents OK"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${onboardingId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "DOCUMENTS_VERIFIED"
+And the REST response key "mutatedEntity.currentState.stateId" is "DOCUMENT_VERIFICATION"
 
-Scenario: Submit for review (DOCUMENTS_VERIFIED -> UNDER_REVIEW)
-Given that "event" equals "submitForReview"
+Scenario: Verify business (DOCUMENT_VERIFICATION -> BUSINESS_VERIFICATION)
+Given that "event" equals "verifyBusiness"
 When I PATCH a REST request to URL "/onboarding/${onboardingId}/${event}" with payload
 """json
 {
-    "comment": "Submitting for admin review"
+    "verificationNotes": "Business registration confirmed with MCA",
+    "comment": "Business verified"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${onboardingId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "UNDER_REVIEW"
+And the REST response key "mutatedEntity.currentState.stateId" is "BUSINESS_VERIFICATION"
 
-Scenario: Approve and create supplier (UNDER_REVIEW -> APPROVED)
-Given that "event" equals "approve"
+Scenario: Start training (BUSINESS_VERIFICATION -> TRAINING)
+Given that "event" equals "startTraining"
 When I PATCH a REST request to URL "/onboarding/${onboardingId}/${event}" with payload
 """json
 {
-    "comment": "Application approved by admin"
+    "comment": "Initiating training"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${onboardingId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "APPROVED"
+And the REST response key "mutatedEntity.currentState.stateId" is "TRAINING"
+
+Scenario: Complete first training module (stays in TRAINING)
+Given that "event" equals "completeTraining"
+When I PATCH a REST request to URL "/onboarding/${onboardingId}/${event}" with payload
+"""json
+{
+    "moduleId": "PLATFORM_BASICS",
+    "comment": "Completed platform basics"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.currentState.stateId" is "TRAINING"
+
+Scenario: Complete second training module (stays in TRAINING)
+Given that "event" equals "completeTraining"
+When I PATCH a REST request to URL "/onboarding/${onboardingId}/${event}" with payload
+"""json
+{
+    "moduleId": "SELLER_POLICIES",
+    "comment": "Completed seller policies"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.currentState.stateId" is "TRAINING"
+
+Scenario: Complete third training module (TRAINING -> CHECK_TRAINING_COMPLETE -> ONBOARDED)
+Given that "event" equals "completeTraining"
+When I PATCH a REST request to URL "/onboarding/${onboardingId}/${event}" with payload
+"""json
+{
+    "moduleId": "SHIPPING_GUIDELINES",
+    "comment": "Completed shipping guidelines"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.currentState.stateId" is "ONBOARDED"
+
+Scenario: Complete onboarding (ONBOARDED -> COMPLETED)
+Given that "event" equals "completeOnboarding"
+When I PATCH a REST request to URL "/onboarding/${onboardingId}/${event}" with payload
+"""json
+{
+    "comment": "Supplier fully activated"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${onboardingId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "COMPLETED"
 
 # ====================================================================
-# REJECTION PATH: Submit -> Validate -> Review -> Reject -> Resubmit
+# REJECTION PATH: Submit -> Verify Docs -> Reject
 # ====================================================================
 
 Scenario: Submit application for rejection test
 When I POST a REST request to URL "/onboarding" with payload
 """json
 {
-    "description": "Supplier for rejection test",
-    "supplierName": "Test Supplier",
-    "email": "test@supplier.com",
-    "phone": "+91-1234567890",
-    "upiId": "test@upi",
-    "address": "456 Test St"
+    "applicantName": "Bad Actor",
+    "businessName": "Fraudulent Corp",
+    "businessType": "RESELLER",
+    "documents": [
+        {"type": "TAX_ID", "fileUrl": "https://docs.example.com/fake-tax.pdf"},
+        {"type": "BUSINESS_LICENSE", "fileUrl": "https://docs.example.com/fake-license.pdf"},
+        {"type": "BANK_PROOF", "fileUrl": "https://docs.example.com/fake-bank.pdf"}
+    ]
 }
 """
 Then the REST response contains key "mutatedEntity"
 And store "$.payload.mutatedEntity.id" from response to "rejectOnboardingId"
 And the REST response key "mutatedEntity.currentState.stateId" is "APPLICATION_SUBMITTED"
 
-Scenario: Reject incomplete application (APPLICATION_SUBMITTED -> REJECTED)
-Given that "event" equals "rejectApplication"
+Scenario: Reject application (APPLICATION_SUBMITTED -> REJECTED)
+Given that "event" equals "reject"
 When I PATCH a REST request to URL "/onboarding/${rejectOnboardingId}/${event}" with payload
 """json
 {
-    "comment": "Rejecting due to incomplete docs",
-    "reason": "GST certificate is missing and business address not verifiable"
+    "reason": "Fraudulent business documents detected",
+    "comment": "Rejecting fraudulent application"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${rejectOnboardingId}"
 And the REST response key "mutatedEntity.currentState.stateId" is "REJECTED"
 
-Scenario: Resubmit after rejection (REJECTED -> APPLICATION_SUBMITTED)
-Given that "event" equals "resubmit"
-When I PATCH a REST request to URL "/onboarding/${rejectOnboardingId}/${event}" with payload
+# ====================================================================
+# DOCUMENTS REQUESTED PATH: Submit -> Verify -> Request Docs -> Resubmit -> Verify
+# ====================================================================
+
+Scenario: Submit application for document resubmission test
+When I POST a REST request to URL "/onboarding" with payload
 """json
 {
-    "comment": "Resubmitting with corrected information"
+    "applicantName": "Priya Sharma",
+    "businessName": "Artisan Crafts",
+    "businessType": "ARTISAN",
+    "documents": [
+        {"type": "TAX_ID", "fileUrl": "https://docs.example.com/tax-artisan.pdf"},
+        {"type": "BUSINESS_LICENSE", "fileUrl": "https://docs.example.com/license-artisan.pdf"},
+        {"type": "BANK_PROOF", "fileUrl": "https://docs.example.com/bank-artisan.pdf"}
+    ]
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${rejectOnboardingId}"
+And store "$.payload.mutatedEntity.id" from response to "resubmitId"
 And the REST response key "mutatedEntity.currentState.stateId" is "APPLICATION_SUBMITTED"
 
-# ====================================================================
-# REQUEST MORE INFO PATH: Submit -> Validate -> Review -> RequestMoreInfo -> Submit docs -> Verify
-# ====================================================================
-
-Scenario: Create application for additional documents test
-When I POST a REST request to URL "/onboarding" with payload
+Scenario: Verify documents for resubmission test
+Given that "event" equals "verifyDocuments"
+When I PATCH a REST request to URL "/onboarding/${resubmitId}/${event}" with payload
 """json
 {
-    "description": "Supplier needing more docs",
-    "supplierName": "Artisan Crafts",
-    "email": "artisan@crafts.com",
-    "phone": "+91-5555555555",
-    "upiId": "artisan@upi",
-    "address": "789 Craft Ave, Jaipur"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And store "$.payload.mutatedEntity.id" from response to "moreInfoId"
-
-Scenario: Validate documents for more info test
-Given that "event" equals "validateDocuments"
-When I PATCH a REST request to URL "/onboarding/${moreInfoId}/${event}" with payload
-"""json
-{
-    "comment": "Documents verified"
-}
-"""
-Then the REST response key "mutatedEntity.currentState.stateId" is "DOCUMENTS_VERIFIED"
-
-Scenario: Submit for review for more info test
-Given that "event" equals "submitForReview"
-When I PATCH a REST request to URL "/onboarding/${moreInfoId}/${event}" with payload
-"""json
-{
-    "comment": "Submitted for review"
-}
-"""
-Then the REST response key "mutatedEntity.currentState.stateId" is "UNDER_REVIEW"
-
-Scenario: Request additional documents (UNDER_REVIEW -> PENDING_DOCUMENTS)
-Given that "event" equals "requestMoreInfo"
-When I PATCH a REST request to URL "/onboarding/${moreInfoId}/${event}" with payload
-"""json
-{
-    "comment": "Please provide PAN card copy and bank account proof"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${moreInfoId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PENDING_DOCUMENTS"
-
-Scenario: Submit additional documents (PENDING_DOCUMENTS -> DOCUMENTS_VERIFIED)
-Given that "event" equals "submitDocuments"
-When I PATCH a REST request to URL "/onboarding/${moreInfoId}/${event}" with payload
-"""json
-{
-    "comment": "Uploading PAN and bank proof documents"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${moreInfoId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "DOCUMENTS_VERIFIED"
-
-# ====================================================================
-# NOTIFY SUPPLIER: After approval, create supplier record and send welcome notification
-# ====================================================================
-
-Scenario: Notify supplier on activation - verify APPROVED state
-When I GET a REST request to URL "/onboarding/${onboardingId}"
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${onboardingId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "APPROVED"
-
-# ====================================================================
-# DAD APPROVAL: Admin review validates before approval
-# ====================================================================
-
-Scenario: Dad approval required - reject from review state
-When I POST a REST request to URL "/onboarding" with payload
-"""json
-{
-    "description": "Supplier needing Dad approval",
-    "supplierName": "Premium Silks",
-    "email": "premium@silks.com",
-    "phone": "+91-7777777777",
-    "upiId": "premium@upi",
-    "address": "101 Silk Rd, Varanasi"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And store "$.payload.mutatedEntity.id" from response to "dadApprovalId"
-
-Scenario: Validate docs for dad approval test
-Given that "event" equals "validateDocuments"
-When I PATCH a REST request to URL "/onboarding/${dadApprovalId}/${event}" with payload
-"""json
-{
+    "verificationNotes": "Docs verified",
     "comment": "Documents OK"
 }
 """
-Then the REST response key "mutatedEntity.currentState.stateId" is "DOCUMENTS_VERIFIED"
+Then the REST response key "mutatedEntity.currentState.stateId" is "DOCUMENT_VERIFICATION"
 
-Scenario: Submit for review for dad approval
-Given that "event" equals "submitForReview"
-When I PATCH a REST request to URL "/onboarding/${dadApprovalId}/${event}" with payload
+Scenario: Request additional documents (DOCUMENT_VERIFICATION -> DOCUMENTS_REQUESTED)
+Given that "event" equals "requestDocuments"
+When I PATCH a REST request to URL "/onboarding/${resubmitId}/${event}" with payload
 """json
 {
-    "comment": "Sending for review"
-}
-"""
-Then the REST response key "mutatedEntity.currentState.stateId" is "UNDER_REVIEW"
-
-Scenario: Dad rejects from review (UNDER_REVIEW -> REJECTED)
-Given that "event" equals "reject"
-When I PATCH a REST request to URL "/onboarding/${dadApprovalId}/${event}" with payload
-"""json
-{
-    "comment": "Dad says no",
-    "reason": "Supplier does not meet quality standards for our platform"
+    "requestedDocumentTypes": ["GST_CERTIFICATE"],
+    "notes": "Please provide GST registration certificate",
+    "comment": "Need GST certificate"
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${dadApprovalId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "REJECTED"
+And the REST response key "mutatedEntity.id" is "${resubmitId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "DOCUMENTS_REQUESTED"
+
+Scenario: Resubmit documents (DOCUMENTS_REQUESTED -> DOCUMENT_VERIFICATION)
+Given that "event" equals "resubmitDocuments"
+When I PATCH a REST request to URL "/onboarding/${resubmitId}/${event}" with payload
+"""json
+{
+    "documentTypes": ["GST_CERTIFICATE"],
+    "documentNotes": "GST certificate attached",
+    "comment": "Resubmitting with GST"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${resubmitId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "DOCUMENT_VERIFICATION"
+
+# ====================================================================
+# GET: Retrieve onboarding by ID
+# ====================================================================
+
+Scenario: Retrieve onboarding application by ID
+When I GET a REST request to URL "/onboarding/${onboardingId}"
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${onboardingId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "COMPLETED"
 
 # ====================================================================
 # INVALID EVENT

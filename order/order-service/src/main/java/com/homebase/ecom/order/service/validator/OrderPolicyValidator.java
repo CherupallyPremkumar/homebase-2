@@ -6,12 +6,14 @@ import com.homebase.ecom.order.exception.CancellationReasonRequiredException;
 import com.homebase.ecom.order.exception.CancellationWindowExpiredException;
 import com.homebase.ecom.order.exception.InvalidReturnReasonException;
 import com.homebase.ecom.order.exception.ReturnWindowExpiredException;
+import com.homebase.ecom.order.model.Order;
 import org.chenile.cconfig.sdk.CconfigClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -19,31 +21,23 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Central component enforcing all Order lifecycle policies and returning rule
- * configuration values.
+ * Central component enforcing all Order lifecycle policies.
+ * All values sourced from order.json via CconfigClient.
  *
- * <h3>Policies (throw exceptions)</h3>
- * <ul>
- * <li>Cancellation window expiry check</li>
- * <li>Cancellation reason required if policy demands it</li>
- * <li>Return window expiry check</li>
- * <li>Return reason validity</li>
- * </ul>
- *
- * <h3>Rules (return config values)</h3>
- * <ul>
- * <li>Fulfillment SLA: max days, alert hours</li>
- * <li>Audit: comment required on reject/approve return</li>
- * </ul>
- *
- * All values sourced from {@code order.json} via {@code CconfigClient}.
+ * Policies:
+ * - Order value limits (min/max)
+ * - Item count limit
+ * - Cancellation window expiry
+ * - Cancellation reason required
+ * - Return window expiry
+ * - Return reason validity
  */
 @Component
 public class OrderPolicyValidator {
 
     private static final Logger log = LoggerFactory.getLogger(OrderPolicyValidator.class);
 
-    @Autowired
+    @Autowired(required = false)
     private CconfigClient cconfigClient;
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -61,22 +55,59 @@ public class OrderPolicyValidator {
     }
 
     // ===========================================================
-    // POLICY: Cancellation window
+    // POLICY: Order value limits
     // ===========================================================
 
     /**
-     * Validates that cancellation is initiated within the allowed window.
-     * Controlled by: order.json → policies.cancellation.cancellationWindowHours
-     *
-     * @param orderCreatedAt timestamp when the order was placed
-     * @throws CancellationWindowExpiredException if window has passed
+     * Validates that order total is within configured min/max bounds.
      */
+    public void validateOrderValue(Order order) {
+        if (order.getTotalAmount() == null) return;
+
+        JsonNode config = getOrderConfig();
+        int maxValue = getInt(config, "/policies/order/maxOrderValue", 500000);
+        int minValue = getInt(config, "/policies/order/minOrderValue", 100);
+
+        BigDecimal total = order.getTotalAmount();
+        if (total.compareTo(BigDecimal.valueOf(maxValue)) > 0) {
+            throw new IllegalStateException("Order total " + total + " exceeds maximum allowed value " + maxValue);
+        }
+        if (total.compareTo(BigDecimal.valueOf(minValue)) < 0) {
+            throw new IllegalStateException("Order total " + total + " is below minimum required value " + minValue);
+        }
+    }
+
+    /**
+     * Validates that order item count is within limits.
+     */
+    public void validateItemCount(Order order) {
+        if (order.getItems() == null) return;
+
+        JsonNode config = getOrderConfig();
+        int maxItems = getInt(config, "/policies/order/maxItemsPerOrder", 50);
+
+        if (order.getItems().size() > maxItems) {
+            throw new IllegalStateException("Order has " + order.getItems().size() +
+                    " items, exceeds maximum of " + maxItems);
+        }
+    }
+
+    /**
+     * Validates order has items.
+     */
+    public void validateOrderHasItems(Order order) {
+        if (order.getItems() == null || order.getItems().isEmpty()) {
+            throw new IllegalStateException("Cannot process: order " + order.getId() + " has no items");
+        }
+    }
+
+    // ===========================================================
+    // POLICY: Cancellation window
+    // ===========================================================
+
     public void validateCancellationWindow(LocalDateTime orderCreatedAt) {
         JsonNode config = getOrderConfig();
-        int windowHours = 24;
-        JsonNode node = config.at("/policies/cancellation/cancellationWindowHours");
-        if (!node.isMissingNode() && node.isInt())
-            windowHours = node.asInt();
+        int windowHours = getInt(config, "/policies/cancellation/cancellationWindowHours", 24);
 
         long hoursSinceOrder = ChronoUnit.HOURS.between(orderCreatedAt, LocalDateTime.now());
         if (hoursSinceOrder > windowHours) {
@@ -84,13 +115,6 @@ public class OrderPolicyValidator {
         }
     }
 
-    /**
-     * Validates that a cancellation reason is provided when required.
-     * Controlled by: order.json → policies.cancellation.requireCancellationReason
-     *
-     * @throws CancellationReasonRequiredException if reason missing and policy
-     *                                             requires it
-     */
     public void validateCancellationReason(String reason) {
         JsonNode config = getOrderConfig();
         JsonNode required = config.at("/policies/cancellation/requireCancellationReason");
@@ -105,19 +129,9 @@ public class OrderPolicyValidator {
     // POLICY: Return window
     // ===========================================================
 
-    /**
-     * Validates that return is initiated within the allowed return window.
-     * Controlled by: order.json → policies.return.returnWindowDays
-     *
-     * @param deliveredAt timestamp when the order was delivered
-     * @throws ReturnWindowExpiredException if window has passed
-     */
     public void validateReturnWindow(LocalDateTime deliveredAt) {
         JsonNode config = getOrderConfig();
-        int windowDays = 10;
-        JsonNode node = config.at("/policies/return/returnWindowDays");
-        if (!node.isMissingNode() && node.isInt())
-            windowDays = node.asInt();
+        int windowDays = getInt(config, "/policies/refund/returnWindowDays", 10);
 
         long daysSinceDelivery = ChronoUnit.DAYS.between(deliveredAt, LocalDateTime.now());
         if (daysSinceDelivery > windowDays) {
@@ -125,18 +139,11 @@ public class OrderPolicyValidator {
         }
     }
 
-    /**
-     * Validates that the return reason is in the platform's allowed list.
-     * Controlled by: order.json → policies.return.allowedReturnReasons
-     *
-     * @throws InvalidReturnReasonException if reason is not allowed
-     */
     public void validateReturnReason(String reason) {
-        if (reason == null || reason.trim().isEmpty())
-            return;
+        if (reason == null || reason.trim().isEmpty()) return;
         JsonNode config = getOrderConfig();
         List<String> allowed = new ArrayList<>();
-        JsonNode node = config.at("/policies/return/allowedReturnReasons");
+        JsonNode node = config.at("/policies/refund/allowedReturnReasons");
         if (!node.isMissingNode() && node.isArray()) {
             node.forEach(r -> allowed.add(r.asText().toUpperCase()));
         }
@@ -146,38 +153,28 @@ public class OrderPolicyValidator {
     }
 
     // ===========================================================
-    // RULE: Fulfillment SLA
+    // RULES
     // ===========================================================
 
-    /**
-     * Returns max fulfillment days from placing order to delivery.
-     * Controlled by: order.json → rules.fulfillment.maxFulfillmentDays
-     */
     public int getMaxFulfillmentDays() {
-        JsonNode node = getOrderConfig().at("/rules/fulfillment/maxFulfillmentDays");
-        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 7;
+        return getInt(getOrderConfig(), "/rules/fulfillment/maxFulfillmentDays", 7);
     }
 
-    /**
-     * Returns hours after which an SLA alert should be raised for unfulfilled
-     * orders.
-     * Controlled by: order.json → rules.fulfillment.slaAlertAfterHours
-     */
     public int getSlaAlertAfterHours() {
-        JsonNode node = getOrderConfig().at("/rules/fulfillment/slaAlertAfterHours");
-        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 48;
+        return getInt(getOrderConfig(), "/rules/fulfillment/slaAlertAfterHours", 48);
     }
 
-    // ===========================================================
-    // RULE: Audit comments
-    // ===========================================================
-
-    /**
-     * Returns whether a comment is required when rejecting a return request.
-     * Controlled by: order.json → rules.audit.requireCommentOnRejectReturn
-     */
     public boolean isCommentRequiredOnRejectReturn() {
         JsonNode node = getOrderConfig().at("/rules/audit/requireCommentOnRejectReturn");
         return node.isMissingNode() || node.asBoolean(true);
+    }
+
+    public int getCancellationWindowHours() {
+        return getInt(getOrderConfig(), "/policies/order/cancellationWindowHours", 24);
+    }
+
+    private int getInt(JsonNode config, String path, int defaultValue) {
+        JsonNode node = config.at(path);
+        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : defaultValue;
     }
 }

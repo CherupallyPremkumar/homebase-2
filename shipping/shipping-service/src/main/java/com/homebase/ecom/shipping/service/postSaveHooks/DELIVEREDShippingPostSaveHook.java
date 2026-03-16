@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * PostSaveHook for DELIVERED state.
- * Publishes ShipmentDeliveredEvent after delivery is persisted.
+ * Publishes DELIVERED event — notifies customer + signals order completion.
  */
 public class DELIVEREDShippingPostSaveHook implements PostSaveHook<Shipping> {
 
@@ -18,6 +18,6 @@ public class DELIVEREDShippingPostSaveHook implements PostSaveHook<Shipping> {
 
     @Override
     public void execute(State startState, State endState, Shipping shipping, TransientMap map) {
-        eventPublisher.publishShipmentDelivered(shipping);
+        eventPublisher.publishDelivered(shipping);
     }
 }

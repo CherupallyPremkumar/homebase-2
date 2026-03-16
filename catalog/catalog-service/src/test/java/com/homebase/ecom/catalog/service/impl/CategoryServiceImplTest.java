@@ -1,6 +1,7 @@
 package com.homebase.ecom.catalog.service.impl;
 
 import com.homebase.ecom.catalog.model.Category;
+import com.homebase.ecom.catalog.domain.service.CatalogPolicyValidator;
 import com.homebase.ecom.catalog.repository.CategoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,9 @@ class CategoryServiceImplTest {
 
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private CatalogPolicyValidator policyValidator;
 
     @InjectMocks
     private CategoryServiceImpl categoryService;

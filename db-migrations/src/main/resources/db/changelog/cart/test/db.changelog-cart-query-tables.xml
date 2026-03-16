@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Test-only: creates product, catalog, and inventory tables needed by
+        cart storefront queries. No FK constraints to unrelated domains.
+        These mirror the production schema created by product V46, inventory V47, etc.
+    -->
+    <changeSet id="cart-query-test-products" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="products"/></not>
+        </preConditions>
+        <createTable tableName="products">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(2000)"/>
+            <column name="status" type="VARCHAR(50)" defaultValue="DRAFT"/>
+            <column name="brand" type="VARCHAR(255)"/>
+            <column name="category_id" type="VARCHAR(255)"/>
+            <column name="short_description" type="VARCHAR(500)"/>
+            <column name="slug" type="VARCHAR(300)"/>
+            <column name="meta_title" type="VARCHAR(200)"/>
+            <column name="meta_description" type="VARCHAR(500)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="cart-query-test-categories" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="categories"/></not>
+        </preConditions>
+        <createTable tableName="categories">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="slug" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_id" type="VARCHAR(255)"/>
+            <column name="path" type="VARCHAR(255)"/>
+            <column name="depth" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="display_order" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="cart-query-test-product-variants" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_variants"/></not>
+        </preConditions>
+        <createTable tableName="product_variants">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="cart-query-test-variant-attributes" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="variant_attributes"/></not>
+        </preConditions>
+        <createTable tableName="variant_attributes">
+            <column name="variant_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attribute_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attribute_value" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="cart-query-test-media-assets" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="media_assets"/></not>
+        </preConditions>
+        <createTable tableName="media_assets">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="original_url" type="VARCHAR(1000)"/>
+            <column name="cdn_url" type="VARCHAR(1000)"/>
+            <column name="thumbnail_url" type="VARCHAR(1000)"/>
+            <column name="medium_url" type="VARCHAR(1000)"/>
+            <column name="zoom_url" type="VARCHAR(1000)"/>
+            <column name="type" type="VARCHAR(50)"/>
+            <column name="mime_type" type="VARCHAR(255)"/>
+            <column name="file_size_bytes" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="width" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="height" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="alt_text" type="VARCHAR(255)"/>
+            <column name="processing_status" type="VARCHAR(50)" defaultValue="PENDING"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="cart-query-test-product-media" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_media"/></not>
+        </preConditions>
+        <createTable tableName="product_media">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="asset_id" type="VARCHAR(255)"/>
+            <column name="is_primary" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="sort_order" type="INTEGER" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="cart-query-test-variant-media" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="variant_media"/></not>
+        </preConditions>
+        <createTable tableName="variant_media">
+            <column name="variant_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="asset_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_primary" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="sort_order" type="INTEGER" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="cart-query-test-inventory-item" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="inventory_item"/></not>
+        </preConditions>
+        <createTable tableName="inventory_item">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="asin" type="VARCHAR(255)"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="quantity" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="available_quantity" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="reserved_quantity" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="inbound_quantity" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="damaged_quantity" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="primary_fc" type="VARCHAR(255)"/>
+            <column name="is_fba" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="is_merchant_fulfilled" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="low_stock_threshold" type="INTEGER" defaultValueNumeric="10"/>
+            <column name="out_of_stock_threshold" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="status" type="VARCHAR(50)" defaultValue="AVAILABLE"/>
+            <column name="last_sale_at" type="TIMESTAMP"/>
+            <column name="last_restock_at" type="TIMESTAMP"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(255)"/>
+            <column name="last_modified_by" type="VARCHAR(255)"/>
+            <column name="tenant" type="VARCHAR(255)"/>
+            <column name="stateId" type="VARCHAR(100)"/>
+            <column name="flowId" type="VARCHAR(100)"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

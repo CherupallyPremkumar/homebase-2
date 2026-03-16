@@ -11,6 +11,7 @@ import org.chenile.stm.StateEntity;
 import org.chenile.workflow.dto.StateEntityServiceResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * REST controller for return processing saga using STM pattern.
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @ChenileController(value = "returnProcessingService",
         serviceName = "_returnProcessingStateEntityService_",
         healthCheckerName = "returnProcessingHealthChecker")
+@Tag(name = "Return Processing", description = "Return processing saga")
 public class ReturnProcessingController extends ControllerSupport {
 
     @GetMapping("/return-processing/{id}")

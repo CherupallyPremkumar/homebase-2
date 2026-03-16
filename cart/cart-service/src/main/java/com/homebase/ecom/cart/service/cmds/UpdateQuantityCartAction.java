@@ -2,42 +2,43 @@ package com.homebase.ecom.cart.service.cmds;
 
 import com.homebase.ecom.cart.dto.UpdateQuantityCartPayload;
 import com.homebase.ecom.cart.model.Cart;
-import com.homebase.ecom.cart.model.CartItem;
-import com.homebase.ecom.dto.OfferDto;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
 
 /**
- * Contains customized logic for the transition. Common logic resides at
- * {@link DefaultSTMTransitionAction}
+ * STM transition action for updateQuantity event.
+ * Updates quantity by variantId, re-checks inventory, then recalculates pricing.
  */
 public class UpdateQuantityCartAction extends AbstractCartAction<UpdateQuantityCartPayload> {
 
     @Override
-    public void transitionTo(Cart cart,
-            UpdateQuantityCartPayload payload,
+    public void transitionTo(Cart cart, UpdateQuantityCartPayload payload,
             State startState, String eventId,
             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-        // Consistent validation for update quantity
-        OfferDto offer = validateAndGetOffer(payload.productId, payload.quantity);
+        if (payload.quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be positive");
+        }
 
-        cart.getItems().stream()
-                .filter(item -> item.getProductId().equals(payload.productId))
-                .findFirst()
-                .ifPresent(item -> {
-                    CartItem checkItem = new CartItem();
-                    checkItem.setProductId(payload.productId);
-                    checkItem.setQuantity(payload.quantity);
+        cartPolicyValidator.validateQuantity(payload.quantity);
 
-                    cartPolicyValidator.validate(cart, checkItem, offer);
+        boolean found = cart.getItems().stream()
+                .anyMatch(i -> i.getVariantId().equals(payload.variantId));
+        if (!found) {
+            throw new IllegalArgumentException("Variant not found in cart: " + payload.variantId);
+        }
 
-                    item.setQuantity(payload.quantity);
-                    item.setPrice(offer.getPrice());
-                    item.setSellerId(offer.getSellerId());
-                });
+        // Re-check inventory for the new quantity
+        if (!inventoryCheckPort.isAvailable(payload.variantId, payload.quantity)) {
+            throw new IllegalStateException("Insufficient inventory for variant: " + payload.variantId);
+        }
 
-        cart.getTransientMap().previousPayload = payload;
+        cart.updateItemQuantity(payload.variantId, payload.quantity);
+
+        // Recalculate pricing (volume discounts may change) and validate max cart value
+        recalculatePricingAndValidateValue(cart);
+
+        logActivity(cart, "updateQuantity", "Updated variant " + payload.variantId + " to qty " + payload.quantity);
     }
 }

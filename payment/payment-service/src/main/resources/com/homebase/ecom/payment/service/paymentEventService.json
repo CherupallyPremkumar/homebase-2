@@ -1,0 +1,12 @@
+{
+	"name": "paymentEventService",
+	"id": "paymentEventService",
+	"serviceName": "paymentEventService",
+	"operations": [
+		{
+			"name": "handleOrderEvent",
+			"input": "com.homebase.ecom.shared.event.OrderCreatedEvent",
+			"eventSubscribedTo": ["order.events"]
+		}
+	]
+}

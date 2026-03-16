@@ -5,8 +5,176 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
+    <!-- ================================================================== -->
+    <!-- V22: Add optimistic lock version to inventory                      -->
+    <!-- ================================================================== -->
     <changeSet id="V22__add_inventory_optimistic_lock_version" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/inventory/V22__add_inventory_optimistic_lock_version.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+        <addColumn tableName="inventory">
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- V48: Drop legacy inventory table and its dependents                -->
+    <!-- ================================================================== -->
+    <changeSet id="V48__drop_legacy_inventory_table" author="homebase" runOnChange="false">
+        <dropTable tableName="inventory_activity"/>
+        <dropTable tableName="inventory_reservation"/>
+        <dropTable tableName="inventory"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- V47: Inventory Item schema                                         -->
+    <!-- ================================================================== -->
+    <changeSet id="V47__inventory_item_schema" author="homebase" runOnChange="false">
+        <!-- 1. Main inventory item table -->
+        <createTable tableName="inventory_item">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="asin" type="VARCHAR(255)"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="variant_id" type="VARCHAR(255)">
+                <constraints unique="true" uniqueConstraintName="uk_inventory_item_variant"/>
+            </column>
+            <column name="quantity" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="available_quantity" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reserved_quantity" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="inbound_quantity" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="damaged_quantity" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="primary_fc" type="VARCHAR(255)"/>
+            <column name="is_fba" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="is_merchant_fulfilled" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="low_stock_threshold" type="INTEGER" defaultValueNumeric="10"/>
+            <column name="out_of_stock_threshold" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="status" type="VARCHAR(50)" defaultValue="AVAILABLE"/>
+            <column name="last_sale_at" type="TIMESTAMP"/>
+            <column name="last_restock_at" type="TIMESTAMP"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(255)"/>
+            <column name="last_modified_by" type="VARCHAR(255)"/>
+            <column name="tenant" type="VARCHAR(255)"/>
+            <column name="stateId" type="VARCHAR(100)"/>
+            <column name="flowId" type="VARCHAR(100)"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+
+        <createIndex indexName="idx_inventory_item_product" tableName="inventory_item">
+            <column name="product_id"/>
+        </createIndex>
+        <createIndex indexName="idx_inventory_item_sku" tableName="inventory_item">
+            <column name="sku"/>
+        </createIndex>
+        <createIndex indexName="idx_inventory_item_status" tableName="inventory_item">
+            <column name="status"/>
+        </createIndex>
+
+        <!-- 2. Inventory reservations -->
+        <createTable tableName="inventory_reservations">
+            <column name="inventory_item_id" type="VARCHAR(255)">
+                <constraints nullable="false" foreignKeyName="fk_inv_reservations_item" referencedTableName="inventory_item" referencedColumnNames="id"/>
+            </column>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="session_id" type="VARCHAR(255)"/>
+            <column name="quantity" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reserved_at" type="TIMESTAMP"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+            <column name="status" type="VARCHAR(50)"/>
+        </createTable>
+
+        <createIndex indexName="idx_inv_reservations_order" tableName="inventory_reservations">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex indexName="idx_inv_reservations_status" tableName="inventory_reservations">
+            <column name="status"/>
+        </createIndex>
+
+        <!-- 3. Inventory stock movements -->
+        <createTable tableName="inventory_movements">
+            <column name="inventory_item_id" type="VARCHAR(255)">
+                <constraints nullable="false" foreignKeyName="fk_inv_movements_item" referencedTableName="inventory_item" referencedColumnNames="id"/>
+            </column>
+            <column name="type" type="VARCHAR(50)"/>
+            <column name="quantity" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reference_id" type="VARCHAR(255)"/>
+            <column name="fulfillment_center_id" type="VARCHAR(255)"/>
+            <column name="movement_time" type="TIMESTAMP"/>
+            <column name="reason" type="VARCHAR(255)"/>
+        </createTable>
+
+        <createIndex indexName="idx_inv_movements_type" tableName="inventory_movements">
+            <column name="type"/>
+        </createIndex>
+        <createIndex indexName="idx_inv_movements_ref" tableName="inventory_movements">
+            <column name="reference_id"/>
+        </createIndex>
+
+        <!-- 4. Inventory damage records -->
+        <createTable tableName="inventory_damage_records">
+            <column name="inventory_item_id" type="VARCHAR(255)">
+                <constraints nullable="false" foreignKeyName="fk_inv_damage_item" referencedTableName="inventory_item" referencedColumnNames="id"/>
+            </column>
+            <column name="unit_identifier" type="VARCHAR(255)"/>
+            <column name="location" type="VARCHAR(255)"/>
+            <column name="damage_type" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="discovered_at" type="TIMESTAMP"/>
+            <column name="status" type="VARCHAR(50)"/>
+        </createTable>
+
+        <createIndex indexName="idx_inv_damage_status" tableName="inventory_damage_records">
+            <column name="status"/>
+        </createIndex>
+
+        <!-- 5. Inventory item activity log -->
+        <createTable tableName="inventory_item_activity">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="inventory_item_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_inv_activity_item" referencedTableName="inventory_item" referencedColumnNames="id"/>
+            </column>
+            <column name="event_id" type="VARCHAR(255)"/>
+            <column name="comment" type="VARCHAR(255)"/>
+            <column name="success" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(255)"/>
+            <column name="last_modified_by" type="VARCHAR(255)"/>
+            <column name="tenant" type="VARCHAR(255)"/>
+        </createTable>
     </changeSet>
 
 </databaseChangeLog>

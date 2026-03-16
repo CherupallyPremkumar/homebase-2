@@ -1,6 +1,8 @@
 package com.homebase.ecom.returnrequest.infrastructure.persistence.adapter;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.homebase.ecom.returnrequest.model.Returnrequest;
 import com.homebase.ecom.returnrequest.domain.port.ReturnrequestRepository;
@@ -20,6 +22,22 @@ public class ReturnrequestRepositoryImpl implements ReturnrequestRepository {
     @Override
     public Optional<Returnrequest> findById(String id) {
         return jpaRepository.findById(id).map(mapper::toModel);
+    }
+
+    @Override
+    public List<Returnrequest> findByOrderId(String orderId) {
+        return jpaRepository.findAll().stream()
+                .filter(e -> orderId.equals(e.getOrderId()))
+                .map(mapper::toModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Returnrequest> findByCustomerId(String customerId) {
+        return jpaRepository.findAll().stream()
+                .filter(e -> customerId.equals(e.getCustomerId()))
+                .map(mapper::toModel)
+                .collect(Collectors.toList());
     }
 
     @Override

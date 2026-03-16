@@ -5,8 +5,113 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
-    <changeSet id="V43__create_support_ticket_tables" author="homebase" runOnChange="false">
-        <sqlFile path="db/migration/support/V43__create_support_ticket_tables.sql" relativeToChangelogFile="false" splitStatements="true" stripComments="false"/>
+    <changeSet id="support-001" author="homebase">
+        <createTable tableName="support_tickets">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="customer_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="subject" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(4000)"/>
+            <column name="assigned_agent_id" type="VARCHAR(255)"/>
+            <column name="resolved_at" type="TIMESTAMP"/>
+            <column name="reopen_count" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sla_breached" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="auto_close_ready" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state_id" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <createIndex tableName="support_tickets" indexName="idx_support_customer_id">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex tableName="support_tickets" indexName="idx_support_state_id">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex tableName="support_tickets" indexName="idx_support_assigned_agent">
+            <column name="assigned_agent_id"/>
+        </createIndex>
+        <createIndex tableName="support_tickets" indexName="idx_support_priority">
+            <column name="priority"/>
+        </createIndex>
+        <createIndex tableName="support_tickets" indexName="idx_support_category">
+            <column name="category"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="support-002" author="homebase">
+        <createTable tableName="ticket_messages">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="ticket_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sender_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sender_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message" type="VARCHAR(4000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message_timestamp" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="attachments" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+            constraintName="fk_ticket_messages_ticket"
+            baseTableName="ticket_messages"
+            baseColumnNames="ticket_id"
+            referencedTableName="support_tickets"
+            referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="support-003" author="homebase">
+        <createTable tableName="ticket_activity">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="ticket_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="activity_name" type="VARCHAR(100)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="VARCHAR(1000)"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+            constraintName="fk_ticket_activity_ticket"
+            baseTableName="ticket_activity"
+            baseColumnNames="ticket_id"
+            referencedTableName="support_tickets"
+            referencedColumnNames="id"/>
     </changeSet>
 
 </databaseChangeLog>

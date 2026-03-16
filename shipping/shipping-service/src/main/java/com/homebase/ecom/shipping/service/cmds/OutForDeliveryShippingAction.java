@@ -9,11 +9,10 @@ import com.homebase.ecom.shipping.model.Shipping;
 import com.homebase.ecom.shipping.dto.OutForDeliveryShippingPayload;
 
 import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Handles the outForDelivery transition: IN_TRANSIT -> OUT_FOR_DELIVERY.
- * Final mile delivery has started. Updates location to local hub.
+ * Final mile delivery has started.
  */
 public class OutForDeliveryShippingAction extends AbstractSTMTransitionAction<Shipping,
         OutForDeliveryShippingPayload> {
@@ -39,6 +38,6 @@ public class OutForDeliveryShippingAction extends AbstractSTMTransitionAction<Sh
         cal.set(Calendar.HOUR_OF_DAY, 23);
         cal.set(Calendar.MINUTE, 59);
         cal.set(Calendar.SECOND, 59);
-        shipping.setEstimatedDelivery(cal.getTime());
+        shipping.setEstimatedDeliveryDate(cal.getTime());
     }
 }

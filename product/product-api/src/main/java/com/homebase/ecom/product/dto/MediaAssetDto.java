@@ -7,15 +7,23 @@ public class MediaAssetDto implements Serializable {
         IMAGE, VIDEO, THREE_D, DOCUMENT
     }
 
+    public enum ProcessingStatusDto {
+        PENDING, PROCESSING, COMPLETED, FAILED
+    }
+
     private String id;
     private String originalUrl;
     private String cdnUrl;
+    private String thumbnailUrl;
+    private String mediumUrl;
+    private String zoomUrl;
     private MediaTypeDto type;
     private String mimeType;
     private long fileSizeBytes;
     private int width;
     private int height;
     private String altText;
+    private ProcessingStatusDto processingStatus;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -25,6 +33,15 @@ public class MediaAssetDto implements Serializable {
 
     public String getCdnUrl() { return cdnUrl; }
     public void setCdnUrl(String cdnUrl) { this.cdnUrl = cdnUrl; }
+
+    public String getThumbnailUrl() { return thumbnailUrl; }
+    public void setThumbnailUrl(String thumbnailUrl) { this.thumbnailUrl = thumbnailUrl; }
+
+    public String getMediumUrl() { return mediumUrl; }
+    public void setMediumUrl(String mediumUrl) { this.mediumUrl = mediumUrl; }
+
+    public String getZoomUrl() { return zoomUrl; }
+    public void setZoomUrl(String zoomUrl) { this.zoomUrl = zoomUrl; }
 
     public MediaTypeDto getType() { return type; }
     public void setType(MediaTypeDto type) { this.type = type; }
@@ -43,4 +60,7 @@ public class MediaAssetDto implements Serializable {
 
     public String getAltText() { return altText; }
     public void setAltText(String altText) { this.altText = altText; }
+
+    public ProcessingStatusDto getProcessingStatus() { return processingStatus; }
+    public void setProcessingStatus(ProcessingStatusDto processingStatus) { this.processingStatus = processingStatus; }
 }

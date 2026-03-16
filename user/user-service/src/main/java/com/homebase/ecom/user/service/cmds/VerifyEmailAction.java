@@ -7,11 +7,11 @@ import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 
 /**
- * PENDING_VERIFICATION -> ACTIVE.
+ * REGISTERED -> EMAIL_VERIFIED.
  *
  * Email token verified via Keycloak webhook or user-submitted OTP.
  * Resets any failed login counter and marks user as verified in transient map
- * so the ACTIVE post-save hook can publish UserActivated event.
+ * so the EMAIL_VERIFIED post-save hook can publish USER_VERIFIED event.
  */
 public class VerifyEmailAction implements STMTransitionAction<User> {
     @Override
@@ -25,9 +25,9 @@ public class VerifyEmailAction implements STMTransitionAction<User> {
         }
 
         // Reset failed login attempts on successful verification
-        user.resetFailedLoginAttempts();
+        user.resetLoginAttempts();
 
-        // Clear any lock/suspend reason that may have been set
+        // Clear any lock/suspend reason
         user.setLockReason(null);
         user.setSuspendReason(null);
 

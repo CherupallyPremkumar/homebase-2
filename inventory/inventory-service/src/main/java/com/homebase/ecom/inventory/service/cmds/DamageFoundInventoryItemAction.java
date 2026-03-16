@@ -1,6 +1,9 @@
 package com.homebase.ecom.inventory.service.cmds;
 
+import com.homebase.ecom.inventory.domain.model.DamageRecord;
+import com.homebase.ecom.inventory.domain.model.DamageStatus;
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
+import com.homebase.ecom.inventory.dto.DamageUnit;
 import com.homebase.ecom.inventory.service.validator.InventoryItemPolicyValidator;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
@@ -11,9 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Instant;
+import java.util.List;
+
 /**
- * STM action when damaged units are discovered during warehouse inspection.
- * Records the damage count, calculates damage percentage, and flags severe damage.
+ * STM action when damaged units are discovered during inbound QC inspection.
+ * Records per-unit damage details for traceability.
  */
 public class DamageFoundInventoryItemAction extends AbstractSTMTransitionAction<InventoryItem, DamageFoundInventoryPayload> {
 
@@ -30,10 +36,9 @@ public class DamageFoundInventoryItemAction extends AbstractSTMTransitionAction<
 
         int damagedQty = payload.getDamagedQuantity() != null ? payload.getDamagedQuantity() : 0;
 
-        // Record the damage in the domain model
-        inventory.recordDamage(damagedQty);
+        List<DamageRecord> unitDamages = buildDamageRecords(payload.getDamagedUnits(), damagedQty);
+        inventory.recordDamage(damagedQty, unitDamages);
 
-        // Policy check: severe damage threshold
         boolean severeDamage = policyValidator.isSevereDamage(inventory, damagedQty);
         if (severeDamage) {
             log.warn("SEVERE DAMAGE detected for productId={}. {} of {} units damaged ({}%).",
@@ -47,5 +52,16 @@ public class DamageFoundInventoryItemAction extends AbstractSTMTransitionAction<
         inventory.getTransientMap().put("previousPayload", payload);
         inventory.getTransientMap().put("damagedQuantity", damagedQty);
         inventory.getTransientMap().put("damagePercentage", inventory.getDamagePercentage());
+    }
+
+    static List<DamageRecord> buildDamageRecords(List<DamageUnit> damagedUnits, int damagedQty) {
+        if (damagedUnits != null && !damagedUnits.isEmpty()) {
+            return damagedUnits.stream()
+                .map(u -> new DamageRecord(
+                    u.getUnitIdentifier(), u.getLocation(), u.getDamageType(),
+                    u.getDescription(), Instant.now(), DamageStatus.REPORTED))
+                .toList();
+        }
+        return List.of();
     }
 }

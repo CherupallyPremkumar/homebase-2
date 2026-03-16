@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
+  <event-information eventId='submitForReview' meta-acls="SUPPLIER" meta-bodyType="com.homebase.ecom.product.dto.SubmitForReviewProductPayload"/>
+  <event-information eventId='deleteProduct' meta-acls="SUPPLIER,ADMIN" meta-bodyType="com.homebase.ecom.product.dto.DeleteProductProductPayload"/>
+  <event-information eventId='approveProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.ApproveProductProductPayload"/>
+  <event-information eventId='rejectProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.RejectProductProductPayload"/>
+  <event-information eventId='disableProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.DisableProductProductPayload"/>
+  <event-information eventId='discontinueProduct' meta-acls="ADMIN,SUPPLIER" meta-bodyType="com.homebase.ecom.product.dto.DiscontinueProductProductPayload"/>
+  <event-information eventId='enableProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.EnableProductProductPayload"/>
+  <event-information eventId='requestUpdate' meta-acls="SUPPLIER" meta-bodyType="com.homebase.ecom.product.dto.RequestUpdateProductPayload"/>
+  <event-information eventId='approveUpdate' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.ApproveUpdateProductPayload"/>
+  <event-information eventId='rejectUpdate' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.RejectUpdateProductPayload"/>
+  <event-information eventId='archiveProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.ArchiveProductProductPayload"/>
+  <event-information eventId='unarchiveProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.UnarchiveProductProductPayload"/>
+  <event-information eventId='recallProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.RecallProductProductPayload"/>
+  <event-information eventId='resolveRecall' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.ResolveRecallProductPayload"/>
+
   <flow id="product-flow" default="true">
-    <security-strategy componentName="productSecurityStrategy"/>
+    <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="productEntryAction"/>
     <exit-action componentName="productExitAction"/>
 
@@ -30,14 +45,38 @@
     </manual-state>
 
     <manual-state id="PUBLISHED" meta-mainPath="true" description="Product live and visible in catalog">
+      <on eventId="requestUpdate"
+          componentName="productRequestUpdateAction"
+          newStateId="PENDING_UPDATE"
+          meta-acls="SUPPLIER"/>
       <on eventId="disableProduct"
           componentName="productDisableProductAction"
           newStateId="DISABLED"
+          meta-acls="ADMIN"/>
+      <on eventId="archiveProduct"
+          componentName="productArchiveProductAction"
+          newStateId="ARCHIVED"
+          meta-acls="ADMIN"/>
+      <on eventId="recallProduct"
+          componentName="productRecallProductAction"
+          newStateId="RECALLED"
           meta-acls="ADMIN"/>
       <on eventId="discontinueProduct"
           componentName="productDiscontinueProductAction"
           newStateId="DISCONTINUED"
           meta-acls="ADMIN,SUPPLIER"/>
+    </manual-state>
+
+    <manual-state id="PENDING_UPDATE" description="Published product with pending changes awaiting admin review">
+      <on eventId="approveUpdate"
+          componentName="productApproveUpdateAction"
+          newStateId="PUBLISHED"
+          meta-mainPath="true"
+          meta-acls="ADMIN"/>
+      <on eventId="rejectUpdate"
+          componentName="productRejectUpdateAction"
+          newStateId="PUBLISHED"
+          meta-acls="ADMIN"/>
     </manual-state>
 
     <manual-state id="DISABLED" description="Product temporarily hidden from catalog">
@@ -46,12 +85,46 @@
           newStateId="PUBLISHED"
           meta-mainPath="true"
           meta-acls="ADMIN"/>
+      <on eventId="archiveProduct"
+          componentName="productArchiveProductAction"
+          newStateId="ARCHIVED"
+          meta-acls="ADMIN"/>
+      <on eventId="recallProduct"
+          componentName="productRecallProductAction"
+          newStateId="RECALLED"
+          meta-acls="ADMIN"/>
       <on eventId="discontinueProduct"
           componentName="productDiscontinueProductAction"
           newStateId="DISCONTINUED"
           meta-acls="ADMIN,SUPPLIER"/>
     </manual-state>
 
-    <manual-state id="DISCONTINUED" description="Product permanently removed from catalog"/>
+    <manual-state id="ARCHIVED" description="Product hidden from catalog but data preserved for order history/returns. Can be re-enabled.">
+      <on eventId="unarchiveProduct"
+          componentName="productUnarchiveProductAction"
+          newStateId="PUBLISHED"
+          meta-mainPath="true"
+          meta-acls="ADMIN"/>
+      <on eventId="recallProduct"
+          componentName="productRecallProductAction"
+          newStateId="RECALLED"
+          meta-acls="ADMIN"/>
+      <on eventId="discontinueProduct"
+          componentName="productDiscontinueProductAction"
+          newStateId="DISCONTINUED"
+          meta-acls="ADMIN,SUPPLIER"/>
+    </manual-state>
+
+    <manual-state id="RECALLED" description="Product recalled for safety/compliance. Triggers customer notifications and order blocks. Admin-only resolution.">
+      <on eventId="resolveRecall"
+          componentName="productResolveRecallAction"
+          newStateId="DISCONTINUED"
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id="DISCONTINUED" description="Product permanently removed from catalog, triggers inventory clearance"/>
+    <!-- __TERMINAL_STATE__ is used by BDD tests for mandatory activity completion checks -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
+    </manual-state>
   </flow>
 </states>

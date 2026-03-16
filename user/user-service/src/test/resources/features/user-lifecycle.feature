@@ -1,15 +1,19 @@
-Feature: User Lifecycle — tests the full user state machine through all paths.
-  Covers registration, email verification, resend verification, profile updates,
-  address management, account locking/unlocking, suspension/reinstatement, and deletion.
-  States: PENDING_VERIFICATION -> ACTIVE <-> LOCKED / SUSPENDED -> DELETED
+Feature: User Lifecycle -- tests the full user state machine through all paths.
+  States: REGISTERED -> EMAIL_VERIFIED -> ACTIVE -> SUSPENDED -> DEACTIVATED
+  KYC: ACTIVE -> KYC_PENDING -> KYC_VERIFIED
+  Lock: ACTIVE -> LOCKED -> ACTIVE
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# HAPPY PATH: Register -> Resend Verification -> Verify Email -> Active
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===========================================================================
+# HAPPY PATH: Register -> Verify Email -> Activate -> Active
+# ===========================================================================
 
-Scenario: Register a new user in PENDING_VERIFICATION state
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
+Scenario: Register a new user in REGISTERED state
 Given that "flowName" equals "user-flow"
-And that "initialState" equals "PENDING_VERIFICATION"
+And that "initialState" equals "REGISTERED"
 When I POST a REST request to URL "/user" with payload
 """json
 {
@@ -28,9 +32,9 @@ Scenario: Retrieve the registered user
 When I GET a REST request to URL "/user/${id}"
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PENDING_VERIFICATION"
+And the REST response key "mutatedEntity.currentState.stateId" is "REGISTERED"
 
-Scenario: Resend verification email (stays PENDING_VERIFICATION)
+Scenario: Resend verification email (stays REGISTERED)
 Given that "comment" equals "Resending verification email"
 And that "event" equals "resendVerification"
 When I PATCH a REST request to URL "/user/${id}/${event}" with payload
@@ -41,9 +45,9 @@ When I PATCH a REST request to URL "/user/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PENDING_VERIFICATION"
+And the REST response key "mutatedEntity.currentState.stateId" is "REGISTERED"
 
-Scenario: Verify email and activate (PENDING_VERIFICATION -> ACTIVE)
+Scenario: Verify email (REGISTERED -> EMAIL_VERIFIED)
 Given that "comment" equals "Email verified via OTP"
 And that "event" equals "verifyEmail"
 When I PATCH a REST request to URL "/user/${id}/${event}" with payload
@@ -54,11 +58,24 @@ When I PATCH a REST request to URL "/user/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
+And the REST response key "mutatedEntity.currentState.stateId" is "EMAIL_VERIFIED"
+
+Scenario: Activate user (EMAIL_VERIFIED -> ACTIVE)
+Given that "comment" equals "System activation"
+And that "event" equals "activate"
+When I PATCH a REST request to URL "/user/${id}/${event}" with payload
+"""json
+{
+    "comment": "${comment}"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "ACTIVE"
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# PROFILE MANAGEMENT: Update profile, Add address, Remove address
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===========================================================================
+# PROFILE MANAGEMENT: Update profile, Add address, Change password
+# ===========================================================================
 
 Scenario: Update profile (ACTIVE -> ACTIVE)
 Given that "comment" equals "User updated their profile"
@@ -99,12 +116,72 @@ Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "ACTIVE"
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===========================================================================
+# KYC FLOW: ACTIVE -> KYC_PENDING -> KYC_VERIFIED
+# ===========================================================================
+
+Scenario: Submit KYC (ACTIVE -> KYC_PENDING)
+Given that "comment" equals "Submitting KYC documents"
+And that "event" equals "submitKyc"
+When I PATCH a REST request to URL "/user/${id}/${event}" with payload
+"""json
+{
+    "comment": "${comment}"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${id}"
+And the REST response key "mutatedEntity.currentState.stateId" is "KYC_PENDING"
+
+Scenario: Verify KYC (KYC_PENDING -> KYC_VERIFIED)
+Given that "comment" equals "KYC documents verified"
+And that "event" equals "verifyKyc"
+When I PATCH a REST request to URL "/user/${id}/${event}" with payload
+"""json
+{
+    "comment": "${comment}"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${id}"
+And the REST response key "mutatedEntity.currentState.stateId" is "KYC_VERIFIED"
+
+# ===========================================================================
+# SUSPEND/DEACTIVATE FROM KYC_VERIFIED
+# ===========================================================================
+
+Scenario: Suspend KYC-verified user (KYC_VERIFIED -> SUSPENDED)
+Given that "comment" equals "Fraud detected"
+And that "event" equals "suspend"
+When I PATCH a REST request to URL "/user/${id}/${event}" with payload
+"""json
+{
+    "comment": "${comment}"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${id}"
+And the REST response key "mutatedEntity.currentState.stateId" is "SUSPENDED"
+
+Scenario: Reinstate suspended user (SUSPENDED -> ACTIVE)
+Given that "comment" equals "Investigation cleared, reinstating"
+And that "event" equals "reinstateUser"
+When I PATCH a REST request to URL "/user/${id}/${event}" with payload
+"""json
+{
+    "comment": "${comment}"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${id}"
+And the REST response key "mutatedEntity.currentState.stateId" is "ACTIVE"
+
+# ===========================================================================
 # LOCK/UNLOCK FLOW: ACTIVE -> LOCKED -> ACTIVE
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===========================================================================
 
 Scenario: Lock account after failed login attempts (ACTIVE -> LOCKED)
-Given that "comment" equals "3 consecutive failed login attempts detected"
+Given that "comment" equals "5 consecutive failed login attempts detected"
 And that "event" equals "lockAccount"
 When I PATCH a REST request to URL "/user/${id}/${event}" with payload
 """json
@@ -129,13 +206,13 @@ Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "ACTIVE"
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SUSPEND/REINSTATE FLOW: ACTIVE -> SUSPENDED -> ACTIVE
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===========================================================================
+# SUSPEND FROM ACTIVE -> DEACTIVATE FROM SUSPENDED
+# ===========================================================================
 
-Scenario: Admin suspends user for fraud (ACTIVE -> SUSPENDED)
-Given that "comment" equals "Fraud detected"
-And that "event" equals "suspendUser"
+Scenario: Admin suspends user for policy violation (ACTIVE -> SUSPENDED)
+Given that "comment" equals "Policy violation"
+And that "event" equals "suspend"
 When I PATCH a REST request to URL "/user/${id}/${event}" with payload
 """json
 {
@@ -146,9 +223,9 @@ Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "SUSPENDED"
 
-Scenario: Reinstate suspended user (SUSPENDED -> ACTIVE)
-Given that "comment" equals "Investigation cleared, reinstating"
-And that "event" equals "reinstateUser"
+Scenario: Deactivate suspended user (SUSPENDED -> DEACTIVATED)
+Given that "comment" equals "User requested full account deactivation"
+And that "event" equals "deactivate"
 When I PATCH a REST request to URL "/user/${id}/${event}" with payload
 """json
 {
@@ -157,34 +234,17 @@ When I PATCH a REST request to URL "/user/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "ACTIVE"
+And the REST response key "mutatedEntity.currentState.stateId" is "DEACTIVATED"
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# DELETE FLOW: ACTIVE -> DELETED
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===========================================================================
+# DEACTIVATE FROM REGISTERED
+# ===========================================================================
 
-Scenario: Soft delete active user account (ACTIVE -> DELETED)
-Given that "comment" equals "User requested full account deletion"
-And that "event" equals "deleteAccount"
-When I PATCH a REST request to URL "/user/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "DELETED"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# DELETE FROM PENDING_VERIFICATION
-# ═══════════════════════════════════════════════════════════════════════════════
-
-Scenario: Create a second user for deletion from pending state
+Scenario: Create a second user for deactivation from registered state
 When I POST a REST request to URL "/user" with payload
 """json
 {
-    "description": "User to delete before verification",
+    "description": "User to deactivate before verification",
     "firstName": "Delete",
     "lastName": "TestUser",
     "email": "delete@test.com"
@@ -192,11 +252,11 @@ When I POST a REST request to URL "/user" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And store "$.payload.mutatedEntity.id" from response to "deleteId"
-And the REST response key "mutatedEntity.currentState.stateId" is "PENDING_VERIFICATION"
+And the REST response key "mutatedEntity.currentState.stateId" is "REGISTERED"
 
-Scenario: Delete unverified user (PENDING_VERIFICATION -> DELETED)
-Given that "comment" equals "Admin deleted unverified user"
-And that "event" equals "deleteAccount"
+Scenario: Deactivate unverified user (REGISTERED -> DEACTIVATED)
+Given that "comment" equals "Admin deactivated unverified user"
+And that "event" equals "deactivate"
 When I PATCH a REST request to URL "/user/${deleteId}/${event}" with payload
 """json
 {
@@ -205,24 +265,24 @@ When I PATCH a REST request to URL "/user/${deleteId}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${deleteId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "DELETED"
+And the REST response key "mutatedEntity.currentState.stateId" is "DEACTIVATED"
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===========================================================================
 # INVALID: Wrong event on wrong state
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===========================================================================
 
-Scenario: Attempt to update profile on DELETED user — should fail
+Scenario: Attempt to update profile on DEACTIVATED user -- should fail
 Given that "event" equals "updateProfile"
 When I PATCH a REST request to URL "/user/${id}/${event}" with payload
 """json
 {
-    "comment": "Trying to update deleted user"
+    "comment": "Trying to update deactivated user"
 }
 """
 Then the REST response does not contain key "mutatedEntity"
 And the http status code is 422
 
-Scenario: Send an invalid event to user — should fail
+Scenario: Send an invalid event to user -- should fail
 When I PATCH a REST request to URL "/user/${deleteId}/nonExistentEvent" with payload
 """json
 {
@@ -232,38 +292,49 @@ When I PATCH a REST request to URL "/user/${deleteId}/nonExistentEvent" with pay
 Then the REST response does not contain key "mutatedEntity"
 And the http status code is 422
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SUSPEND FROM LOCKED: Create user, activate, lock, then delete from locked
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===========================================================================
+# LOCK FROM ACTIVE, THEN DEACTIVATE FROM LOCKED
+# ===========================================================================
 
-Scenario: Create third user for lock-then-delete flow
+Scenario: Create third user for lock-then-deactivate flow
 When I POST a REST request to URL "/user" with payload
 """json
 {
-    "description": "User for lock-delete test",
+    "description": "User for lock-deactivate test",
     "firstName": "Lock",
-    "lastName": "DeleteUser",
-    "email": "lockdelete@test.com"
+    "lastName": "DeactivateUser",
+    "email": "lockdeactivate@test.com"
 }
 """
 Then the REST response contains key "mutatedEntity"
-And store "$.payload.mutatedEntity.id" from response to "lockDeleteId"
-And the REST response key "mutatedEntity.currentState.stateId" is "PENDING_VERIFICATION"
+And store "$.payload.mutatedEntity.id" from response to "lockDeactivateId"
+And the REST response key "mutatedEntity.currentState.stateId" is "REGISTERED"
 
-Scenario: Verify email for lock-delete user
+Scenario: Verify email for lock-deactivate user
 Given that "event" equals "verifyEmail"
-When I PATCH a REST request to URL "/user/${lockDeleteId}/${event}" with payload
+When I PATCH a REST request to URL "/user/${lockDeactivateId}/${event}" with payload
 """json
 {
     "comment": "Email verified"
 }
 """
 Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.currentState.stateId" is "EMAIL_VERIFIED"
+
+Scenario: Activate lock-deactivate user
+Given that "event" equals "activate"
+When I PATCH a REST request to URL "/user/${lockDeactivateId}/${event}" with payload
+"""json
+{
+    "comment": "Activated"
+}
+"""
+Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.currentState.stateId" is "ACTIVE"
 
-Scenario: Lock the lock-delete user
+Scenario: Lock the lock-deactivate user
 Given that "event" equals "lockAccount"
-When I PATCH a REST request to URL "/user/${lockDeleteId}/${event}" with payload
+When I PATCH a REST request to URL "/user/${lockDeactivateId}/${event}" with payload
 """json
 {
     "comment": "Failed logins"
@@ -272,14 +343,14 @@ When I PATCH a REST request to URL "/user/${lockDeleteId}/${event}" with payload
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.currentState.stateId" is "LOCKED"
 
-Scenario: Delete locked user (LOCKED -> DELETED)
-Given that "event" equals "deleteAccount"
-When I PATCH a REST request to URL "/user/${lockDeleteId}/${event}" with payload
+Scenario: Deactivate locked user (LOCKED -> DEACTIVATED)
+Given that "event" equals "deactivate"
+When I PATCH a REST request to URL "/user/${lockDeactivateId}/${event}" with payload
 """json
 {
-    "comment": "Admin deleting locked account"
+    "comment": "Admin deactivating locked account"
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${lockDeleteId}"
-And the REST response key "mutatedEntity.currentState.stateId" is "DELETED"
+And the REST response key "mutatedEntity.id" is "${lockDeactivateId}"
+And the REST response key "mutatedEntity.currentState.stateId" is "DEACTIVATED"

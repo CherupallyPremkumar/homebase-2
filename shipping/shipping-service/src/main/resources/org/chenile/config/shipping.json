@@ -1,0 +1,19 @@
+{
+  "policies": {
+    "delivery": {
+      "maxDeliveryAttempts": 3
+    }
+  },
+  "rules": {
+    "delivery": {
+      "standardShippingDays": 5,
+      "expressShippingDays": 2
+    },
+    "shipping": {
+      "freeShippingThreshold": 999
+    },
+    "returns": {
+      "returnWindowDays": 30
+    }
+  }
+}

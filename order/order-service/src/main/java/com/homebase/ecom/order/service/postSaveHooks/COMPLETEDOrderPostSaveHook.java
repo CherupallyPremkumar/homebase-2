@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 /**
  * PostSaveHook for COMPLETED state.
- * Publishes OrderCompletedEvent with items and amounts to trigger settlement processing.
+ * Publishes ORDER_COMPLETED event to trigger settlement processing.
  */
 public class COMPLETEDOrderPostSaveHook implements PostSaveHook<Order> {
 
@@ -32,22 +32,16 @@ public class COMPLETEDOrderPostSaveHook implements PostSaveHook<Order> {
         if (order.getItems() != null) {
             completedItems = order.getItems().stream()
                     .map(item -> new OrderCompletedEvent.CompletedItem(
-                            item.getProductId(),
-                            item.getSupplierId(),
-                            item.getQuantity(),
-                            item.getTotalPrice() != null ? item.getTotalPrice().getAmount() : null
-                    ))
+                            item.getProductId(), null, item.getQuantity(),
+                            item.getTotalPrice()))
                     .collect(Collectors.toList());
         }
 
         OrderCompletedEvent event = new OrderCompletedEvent(
-                order.getId(),
-                order.getUser_Id(),
-                LocalDateTime.now(),
-                completedItems
+                order.getId(), order.getCustomerId(), LocalDateTime.now(), completedItems
         );
 
-        log.info("Publishing OrderCompletedEvent for order: {}, items: {}", order.getId(), completedItems.size());
+        log.info("Publishing ORDER_COMPLETED event for order: {}", order.getId());
         orderEventPublisher.publishOrderCompleted(event);
     }
 }

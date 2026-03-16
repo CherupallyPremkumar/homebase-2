@@ -1,136 +1,101 @@
 Feature: Shipping Management
-  Tests the complete shipping lifecycle including forward shipping and return flow.
-  Validates state transitions, tracking number generation, delivery confirmation,
-  and return request handling.
+  Tests express shipping with cancellation and activity tracking.
+  Validates state transitions and security context.
 
-  Scenario: Create shipment when order is paid
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
+  Scenario: Create express shipment
     Given that "flowName" equals "shipping-flow"
-    And that "initialState" equals "AWAITING_PICKUP"
+    And that "initialState" equals "PENDING"
     When I POST a REST request to URL "/shipping" with payload
     """json
     {
-        "description": "Shipment for order ORD-001",
-        "orderId": "ORD-001",
-        "shippingAddress": "42 Handmade Lane, Bangalore 560001"
+        "description": "Express shipment for order ORD-EXPRESS-001",
+        "orderId": "ORD-EXPRESS-001",
+        "customerId": "CUST-EXPRESS",
+        "carrier": "DHL EXPRESS",
+        "toAddress": "42 Handmade Lane, Bangalore 560001"
     }
     """
     Then the REST response contains key "mutatedEntity"
     And store "$.payload.mutatedEntity.id" from response to "id"
-    And the REST response key "mutatedEntity.currentState.stateId" is "AWAITING_PICKUP"
-    And the REST response key "mutatedEntity.description" is "Shipment for order ORD-001"
+    And the REST response key "mutatedEntity.currentState.stateId" is "PENDING"
+    And the REST response key "mutatedEntity.description" is "Express shipment for order ORD-EXPRESS-001"
 
-  Scenario: Verify shipment has tracking number generated
+  Scenario: Create label with EXPRESS method
+    Given that "comment" equals "Express label created"
+    And that "event" equals "createLabel"
+    When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
+    """json
+    {
+        "comment": "${comment}",
+        "carrier": "DHL EXPRESS",
+        "trackingNumber": "DHL-EXPRESS-001",
+        "shippingMethod": "EXPRESS",
+        "estimatedDeliveryDays": 2
+    }
+    """
+    Then the REST response contains key "mutatedEntity"
+    And the REST response key "mutatedEntity.currentState.stateId" is "LABEL_CREATED"
+    And the REST response key "mutatedEntity.shippingMethod" is "EXPRESS"
+    And the REST response key "mutatedEntity.trackingNumber" is "DHL-EXPRESS-001"
+    And the REST response contains key "mutatedEntity.estimatedDeliveryDate"
+
+  Scenario: Verify shipment details via GET
     When I GET a REST request to URL "/shipping/${id}"
     Then the REST response contains key "mutatedEntity"
     And the REST response key "mutatedEntity.id" is "${id}"
-    And the REST response key "mutatedEntity.currentState.stateId" is "AWAITING_PICKUP"
+    And the REST response key "mutatedEntity.currentState.stateId" is "LABEL_CREATED"
     And the REST response contains key "mutatedEntity.trackingNumber"
     And the REST response contains key "mutatedEntity.carrier"
 
-  Scenario: Courier picks up shipment (AWAITING_PICKUP -> PICKED_UP)
-    Given that "comment" equals "Courier DELHIVERY assigned and picked up"
-    And that "event" equals "courierAssigned"
+  Scenario: Pick up, transit, out for delivery, then deliver
+    Given that "event" equals "pickUp"
     When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
     """json
     {
-        "comment": "${comment}",
-        "carrier": "DELHIVERY",
-        "trackingNumber": "DEL-TRACK-001",
-        "estimatedDeliveryDays": 3
+        "comment": "Picked up from DHL hub"
     }
     """
-    Then the REST response contains key "mutatedEntity"
-    And the REST response key "mutatedEntity.id" is "${id}"
-    And the REST response key "mutatedEntity.currentState.stateId" is "PICKED_UP"
-    And the REST response key "mutatedEntity.carrier" is "DELHIVERY"
-    And the REST response key "mutatedEntity.trackingNumber" is "DEL-TRACK-001"
-    And the REST response contains key "mutatedEntity.shippedAt"
-    And the REST response contains key "mutatedEntity.estimatedDelivery"
-    And the REST response contains key "mutatedEntity.trackingUrl"
+    Then the REST response key "mutatedEntity.currentState.stateId" is "PICKED_UP"
 
-  Scenario: Track shipment in transit (PICKED_UP -> IN_TRANSIT)
-    Given that "comment" equals "Package left sorting facility, in transit"
-    And that "event" equals "inTransit"
+  Scenario: Transit
+    Given that "event" equals "updateTransit"
     When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
     """json
     {
-        "comment": "${comment}",
-        "currentLocation": "Mumbai Sorting Facility"
+        "comment": "In transit",
+        "currentLocation": "Mumbai Airport"
     }
     """
-    Then the REST response contains key "mutatedEntity"
-    And the REST response key "mutatedEntity.id" is "${id}"
-    And the REST response key "mutatedEntity.currentState.stateId" is "IN_TRANSIT"
+    Then the REST response key "mutatedEntity.currentState.stateId" is "IN_TRANSIT"
 
-  Scenario: Shipment out for delivery (IN_TRANSIT -> OUT_FOR_DELIVERY)
-    Given that "comment" equals "Package at local hub, out for delivery"
-    And that "event" equals "outForDelivery"
+  Scenario: Out for delivery
+    Given that "event" equals "outForDelivery"
     When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
     """json
     {
-        "comment": "${comment}",
-        "localHub": "Bangalore Koramangala Hub"
+        "comment": "Out for delivery",
+        "localHub": "Bangalore HSR Hub"
     }
     """
-    Then the REST response contains key "mutatedEntity"
-    And the REST response key "mutatedEntity.id" is "${id}"
-    And the REST response key "mutatedEntity.currentState.stateId" is "OUT_FOR_DELIVERY"
+    Then the REST response key "mutatedEntity.currentState.stateId" is "OUT_FOR_DELIVERY"
 
-  Scenario: Deliver shipment (OUT_FOR_DELIVERY -> DELIVERED)
-    Given that "comment" equals "Package delivered, signed by recipient"
-    And that "event" equals "markDelivered"
+  Scenario: Deliver
+    Given that "event" equals "deliver"
     When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
     """json
     {
-        "comment": "${comment}",
-        "deliveryProof": "signature-img-001.png",
+        "comment": "Delivered",
+        "deliveryProof": "signature-express-001.png",
         "receivedBy": "Ramesh Kumar"
     }
     """
-    Then the REST response contains key "mutatedEntity"
-    And the REST response key "mutatedEntity.id" is "${id}"
-    And the REST response key "mutatedEntity.currentState.stateId" is "DELIVERED"
-    And the REST response contains key "mutatedEntity.deliveredAt"
-    And the REST response key "mutatedEntity.deliveryProof" is "signature-img-001.png"
-
-  Scenario: Verify delivered shipment via GET
-    When I GET a REST request to URL "/shipping/${id}"
-    Then the REST response contains key "mutatedEntity"
-    And the REST response key "mutatedEntity.id" is "${id}"
-    And the REST response key "mutatedEntity.currentState.stateId" is "DELIVERED"
-    And the REST response contains key "mutatedEntity.deliveredAt"
-
-  Scenario: Return requested after delivery (DELIVERED -> RETURN_REQUESTED)
-    Given that "comment" equals "Customer requested return - item damaged"
-    And that "event" equals "returnRequested"
-    When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
-    """json
-    {
-        "comment": "${comment}",
-        "returnReason": "Damaged on arrival"
-    }
-    """
-    Then the REST response contains key "mutatedEntity"
-    And the REST response key "mutatedEntity.id" is "${id}"
-    And the REST response key "mutatedEntity.currentState.stateId" is "RETURN_REQUESTED"
-    And the REST response key "mutatedEntity.returnReason" is "Damaged on arrival"
-    And the REST response contains key "mutatedEntity.returnTrackingNumber"
-
-  Scenario: Return pickup (RETURN_REQUESTED -> IN_TRANSIT)
-    Given that "comment" equals "Return pickup by courier"
-    And that "event" equals "returnPickup"
-    When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
-    """json
-    {
-        "comment": "${comment}",
-        "returnCarrier": "BLUEDART",
-        "returnTrackingNumber": "BD-RTN-001"
-    }
-    """
-    Then the REST response contains key "mutatedEntity"
-    And the REST response key "mutatedEntity.id" is "${id}"
-    And the REST response key "mutatedEntity.currentState.stateId" is "IN_TRANSIT"
-    And the REST response key "mutatedEntity.returnTrackingNumber" is "BD-RTN-001"
+    Then the REST response key "mutatedEntity.currentState.stateId" is "DELIVERED"
+    And the REST response contains key "mutatedEntity.actualDeliveryDate"
+    And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
   Scenario: Send an invalid event to shipping - should fail
     When I PATCH a REST request to URL "/shipping/${id}/invalidEvent" with payload

@@ -1,0 +1,17 @@
+{
+	"name": "settlementEventService",
+	"id": "settlementEventService",
+	"serviceName": "settlementEventService",
+	"operations": [
+		{
+			"name": "handleOrderEvent",
+			"input": "com.homebase.ecom.shared.event.OrderCompletedEvent",
+			"eventSubscribedTo": ["order.events"]
+		},
+		{
+			"name": "handlePaymentEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["payment.events"]
+		}
+	]
+}

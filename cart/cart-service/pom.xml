@@ -19,18 +19,6 @@
 			<groupId>com.homebase.ecom.cart</groupId>
 			<artifactId>cart-api</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom.promo</groupId>
-			<artifactId>promo-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom.inventory</groupId>
-			<artifactId>inventory-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom.product</groupId>
-			<artifactId>product-api</artifactId>
-		</dependency>
         <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>chenile-proxy</artifactId>
@@ -44,16 +32,18 @@
 			<artifactId>cart-query-api</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.homebase.ecom.shared</groupId>
+			<artifactId>shared-api</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.homebase.ecom.product</groupId>
-			<artifactId>product-query-api</artifactId>
+			<artifactId>product-client</artifactId>
+			<version>${revision}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.homebase.ecom.inventory</groupId>
-			<artifactId>inventory-query-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom.shared</groupId>
-			<artifactId>shared-api</artifactId>
+			<artifactId>inventory-client</artifactId>
+			<version>${revision}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.chenile.cconfig</groupId>
@@ -88,10 +78,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.homebase.ecom.promo</groupId>
-            <artifactId>promo-service</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>service-registry-service</artifactId>
         </dependency>
@@ -103,6 +89,24 @@
         <dependency>
             <groupId>com.homebase.ecom</groupId>
             <artifactId>cart-query-service</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-query-service</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom</groupId>
+            <artifactId>product-query-service</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom</groupId>
+            <artifactId>inventory-query-service</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
         </dependency>
 <!--		<dependency>-->
 <!--			<groupId>org.testcontainers</groupId>-->
@@ -123,10 +127,6 @@
 <!--			<scope>test</scope>-->
 <!--		</dependency>-->
 		<dependency>
-			<groupId>com.homebase.ecom.pricing</groupId>
-			<artifactId>pricing-client</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.homebase.ecom.cart</groupId>
 			<artifactId>cart-infrastructure</artifactId>
 			<version>${revision}</version>
@@ -134,6 +134,26 @@
 			<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>cucumber-sec-utils</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-security-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-security</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.dasniko</groupId>
+			<artifactId>testcontainers-keycloak</artifactId>
+			<version>3.4.0</version>
+			<scope>test</scope>
+		</dependency>
+			<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>db-migrations</artifactId>
+			<version>${revision}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -168,6 +188,7 @@
             <plugin>
                 <groupId>org.chenile</groupId>
                 <artifactId>stm-generate-puml</artifactId>
+                <version>${chenile.client.version}</version>
                 <executions>
                     <execution>
                         <goals>

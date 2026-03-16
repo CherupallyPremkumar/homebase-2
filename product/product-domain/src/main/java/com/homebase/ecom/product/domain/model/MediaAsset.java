@@ -5,15 +5,26 @@ public class MediaAsset {
         IMAGE, VIDEO, THREE_D, DOCUMENT
     }
 
+    public enum ProcessingStatus {
+        PENDING,      // Upload registered, not yet processed
+        PROCESSING,   // Resize/conversion in progress
+        COMPLETED,    // All variants generated, CDN ready
+        FAILED        // Processing failed
+    }
+
     private String id;
     private String originalUrl;
     private String cdnUrl;
+    private String thumbnailUrl;
+    private String mediumUrl;
+    private String zoomUrl;
     private MediaType type;
     private String mimeType;
     private long fileSizeBytes;
     private int width;
     private int height;
     private String altText;
+    private ProcessingStatus processingStatus = ProcessingStatus.PENDING;
 
     // Getters and Setters
     public String getId() { return id; }
@@ -42,4 +53,16 @@ public class MediaAsset {
 
     public String getAltText() { return altText; }
     public void setAltText(String altText) { this.altText = altText; }
+
+    public String getThumbnailUrl() { return thumbnailUrl; }
+    public void setThumbnailUrl(String thumbnailUrl) { this.thumbnailUrl = thumbnailUrl; }
+
+    public String getMediumUrl() { return mediumUrl; }
+    public void setMediumUrl(String mediumUrl) { this.mediumUrl = mediumUrl; }
+
+    public String getZoomUrl() { return zoomUrl; }
+    public void setZoomUrl(String zoomUrl) { this.zoomUrl = zoomUrl; }
+
+    public ProcessingStatus getProcessingStatus() { return processingStatus; }
+    public void setProcessingStatus(ProcessingStatus processingStatus) { this.processingStatus = processingStatus; }
 }

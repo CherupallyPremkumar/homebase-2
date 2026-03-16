@@ -1,62 +1,350 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="Product">
 
-<select id='getAll-count' resultType="int">
-	select count(*) from products
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- STOREFRONT QUERIES                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Storefront product listing — only PUBLISHED, joined with category -->
+<select id="getPublished-count" resultType="int">
+    SELECT count(*) FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
     <where>
-        <if test="name != null">
-            name like #{name}
-        </if>
-        <if test="category != null">
-            AND category = #{category}
-        </if>
-        <if test="status != null">
-            AND status = #{status}
-        </if>
-        <if test="stateId != null">
-            AND "stateId" = #{stateId}
-        </if>
+        p."stateId" = 'PUBLISHED'
+        <if test="name != null">AND p.name LIKE #{name}</if>
+        <if test="brand != null">AND p.brand = #{brand}</if>
+        <if test="categoryId != null">AND p.category_id = #{categoryId}</if>
     </where>
 </select>
 
-<select id="getAll" resultType="com.homebase.ecom.dto.ProductDto">	
-    SELECT 
-        id, 
-        name, 
-        description, 
-        category, 
-        image_url as "imageUrl", 
-        status, 
-        "stateId" 
-    FROM products
+<select id="getPublished" resultType="com.homebase.ecom.dto.ProductDto">
+    SELECT
+        p.id, p.name, p.description,
+        p.short_description as "shortDescription",
+        p.brand,
+        p.category_id as "categoryId",
+        c.name as "categoryName",
+        p.slug,
+        p."stateId" as "stateId"
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
     <where>
-        <if test="name != null">
-            name like #{name}
-        </if>
-        <if test="category != null">
-            AND category = #{category}
-        </if>
-        <if test="status != null">
-            AND status = #{status}
-        </if>
-        <if test="stateId != null">
-            AND "stateId" = #{stateId}
-        </if>
+        p."stateId" = 'PUBLISHED'
+        <if test="name != null">AND p.name LIKE #{name}</if>
+        <if test="brand != null">AND p.brand = #{brand}</if>
+        <if test="categoryId != null">AND p.category_id = #{categoryId}</if>
     </where>
     ${orderby} ${pagination}
 </select>
 
+<!-- Get product by slug (SEO-friendly URL) -->
+<select id="getBySlug" resultType="com.homebase.ecom.dto.ProductDto">
+    SELECT
+        p.id, p.name, p.description,
+        p.short_description as "shortDescription",
+        p.brand,
+        p.category_id as "categoryId",
+        c.name as "categoryName",
+        p.slug,
+        p.meta_title as "metaTitle",
+        p.meta_description as "metaDescription",
+        p."stateId" as "stateId"
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE p.slug = #{slug}
+</select>
+
+<!-- Search products — text search across name, description, brand -->
+<select id="searchProducts-count" resultType="int">
+    SELECT count(*) FROM products p
+    WHERE p."stateId" = 'PUBLISHED'
+      AND (p.name LIKE #{q} OR p.description LIKE #{q} OR p.brand LIKE #{q})
+</select>
+
+<select id="searchProducts" resultType="com.homebase.ecom.dto.ProductDto">
+    SELECT
+        p.id, p.name, p.description,
+        p.short_description as "shortDescription",
+        p.brand,
+        p.category_id as "categoryId",
+        c.name as "categoryName",
+        p.slug,
+        p."stateId" as "stateId"
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE p."stateId" = 'PUBLISHED'
+      AND (p.name LIKE #{q} OR p.description LIKE #{q} OR p.brand LIKE #{q})
+    ${orderby} ${pagination}
+</select>
+
+<!-- Get products by category including subcategories -->
+<select id="getByCategory-count" resultType="int">
+    SELECT count(*) FROM products p
+    JOIN categories c ON p.category_id = c.id
+    WHERE p."stateId" = 'PUBLISHED'
+      AND (c.id = #{categoryId} OR c.parent_id = #{categoryId})
+</select>
+
+<select id="getByCategory" resultType="com.homebase.ecom.dto.ProductDto">
+    SELECT
+        p.id, p.name, p.description,
+        p.short_description as "shortDescription",
+        p.brand,
+        p.category_id as "categoryId",
+        c.name as "categoryName",
+        p.slug,
+        p."stateId" as "stateId"
+    FROM products p
+    JOIN categories c ON p.category_id = c.id
+    WHERE p."stateId" = 'PUBLISHED'
+      AND (c.id = #{categoryId} OR c.parent_id = #{categoryId})
+    ${orderby} ${pagination}
+</select>
+
+<!-- Category tree for navigation -->
+<select id="getCategoryTree" resultType="com.homebase.ecom.dto.CategoryDto">
+    SELECT
+        id,
+        name,
+        slug,
+        parent_id as "parentId",
+        path,
+        depth,
+        display_order as "displayOrder",
+        active
+    FROM categories
+    WHERE active = true
+    ORDER BY depth, display_order
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ADMIN DASHBOARD QUERIES                                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- All products (admin) — filterable by all fields -->
+<select id='getAll-count' resultType="int">
+    SELECT count(*) FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    <where>
+        <if test="name != null">p.name LIKE #{name}</if>
+        <if test="brand != null">AND p.brand = #{brand}</if>
+        <if test="categoryId != null">AND p.category_id = #{categoryId}</if>
+        <if test="slug != null">AND p.slug = #{slug}</if>
+        <if test="stateId != null">AND p."stateId" = #{stateId}</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.dto.ProductDto">
+    SELECT
+        p.id, p.name, p.description,
+        p.short_description as "shortDescription",
+        p.brand,
+        p.category_id as "categoryId",
+        c.name as "categoryName",
+        p.slug,
+        p."stateId" as "stateId"
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    <where>
+        <if test="name != null">p.name LIKE #{name}</if>
+        <if test="brand != null">AND p.brand = #{brand}</if>
+        <if test="categoryId != null">AND p.category_id = #{categoryId}</if>
+        <if test="slug != null">AND p.slug = #{slug}</if>
+        <if test="stateId != null">AND p."stateId" = #{stateId}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Get product by id (admin detail view) -->
 <select id="getById" resultType="com.homebase.ecom.dto.ProductDto">
-    SELECT 
-        id, 
-        name, 
-        description, 
-        category, 
-        image_url as "imageUrl", 
-        status, 
-        "stateId" 
+    SELECT
+        p.id, p.name, p.description,
+        p.short_description as "shortDescription",
+        p.brand,
+        p.category_id as "categoryId",
+        c.name as "categoryName",
+        p.slug,
+        p.meta_title as "metaTitle",
+        p.meta_description as "metaDescription",
+        p."stateId" as "stateId"
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE p.id = #{id}
+</select>
+
+<!-- Dashboard summary: count of products per state -->
+<select id="getStateCounts" resultType="com.homebase.ecom.dto.StateCountDto">
+    SELECT
+        "stateId" as "stateId",
+        COUNT(*) as "count"
     FROM products
-    WHERE id = #{id}
+    GROUP BY "stateId"
+    ORDER BY "count" DESC
+</select>
+
+<!-- Products pending review — admin workflow queue -->
+<select id="getPendingReview-count" resultType="int">
+    SELECT count(*) FROM products WHERE "stateId" = 'UNDER_REVIEW'
+</select>
+
+<select id="getPendingReview" resultType="com.homebase.ecom.dto.ProductDto">
+    SELECT
+        p.id, p.name, p.description,
+        p.short_description as "shortDescription",
+        p.brand,
+        p.category_id as "categoryId",
+        c.name as "categoryName",
+        p.slug,
+        p."stateId" as "stateId",
+        p.created_by as "createdBy",
+        p.created_time as "createdTime"
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE p."stateId" = 'UNDER_REVIEW'
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- VARIANT QUERIES                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Variants for a product — one row per variant attribute -->
+<select id="getVariantsByProduct" resultType="com.homebase.ecom.dto.VariantDto">
+    SELECT
+        v.id as "id",
+        v.product_id as "productId",
+        v.sku as "sku",
+        p.name as "productName",
+        p."stateId" as "productState",
+        va.attribute_key as "attributeKey",
+        va.attribute_value as "attributeValue"
+    FROM product_variants v
+    JOIN products p ON v.product_id = p.id
+    LEFT JOIN variant_attributes va ON va.variant_id = v.id
+    WHERE v.product_id = #{productId}
+    ORDER BY v.id, va.attribute_key
+</select>
+
+<!-- Variant lookup by SKU -->
+<select id="getVariantBySku" resultType="com.homebase.ecom.dto.VariantDto">
+    SELECT
+        v.id as "id",
+        v.product_id as "productId",
+        v.sku as "sku",
+        p.name as "productName",
+        p."stateId" as "productState"
+    FROM product_variants v
+    JOIN products p ON v.product_id = p.id
+    WHERE v.sku = #{sku}
+</select>
+
+<!-- Cart integration: variant existence check -->
+<select id="variantExists" resultType="map">
+    SELECT
+        v.id as "variantId",
+        v.product_id as "productId",
+        v.sku as "sku",
+        p.name as "productName",
+        p."stateId" as "productState"
+    FROM product_variants v
+    JOIN products p ON v.product_id = p.id
+    WHERE v.id = #{variantId}
+      AND v.product_id = #{productId}
+      AND p."stateId" IN ('PUBLISHED', 'ACTIVE')
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MEDIA QUERIES                                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Media assets for a product — ordered by primary flag then sort_order -->
+<select id="getProductMedia" resultType="com.homebase.ecom.dto.ProductMediaDto">
+    SELECT
+        ma.id as "assetId",
+        pm.product_id as "productId",
+        ma.cdn_url as "cdnUrl",
+        ma.thumbnail_url as "thumbnailUrl",
+        ma.medium_url as "mediumUrl",
+        ma.zoom_url as "zoomUrl",
+        ma.type as "type",
+        ma.alt_text as "altText",
+        pm.is_primary as "primary",
+        pm.sort_order as "sortOrder"
+    FROM product_media pm
+    JOIN media_assets ma ON ma.id = pm.asset_id
+    WHERE pm.product_id = #{productId}
+    ORDER BY pm.is_primary DESC, pm.sort_order ASC
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ATTRIBUTE QUERIES                                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Attribute values for a product — joined with definitions + options -->
+<select id="getProductAttributes" resultType="com.homebase.ecom.dto.ProductAttributeDto">
+    SELECT
+        pav.id as "id",
+        pav.product_id as "productId",
+        pav.attribute_id as "attributeId",
+        ad.code as "attributeCode",
+        ad.label as "attributeLabel",
+        ad.input_type as "inputType",
+        pav.option_id as "optionId",
+        ao.label as "optionLabel",
+        pav.raw_value as "rawValue"
+    FROM product_attribute_values pav
+    JOIN attribute_definitions ad ON ad.id = pav.attribute_id
+    LEFT JOIN attribute_options ao ON ao.id = pav.option_id
+    WHERE pav.product_id = #{productId}
+    ORDER BY ad.display_order
+</select>
+
+<!-- Attribute definitions available for a category -->
+<select id="getAttributesByCategory" resultType="com.homebase.ecom.dto.AttributeDefinitionDto">
+    SELECT
+        ad.id as "id",
+        ad.code as "code",
+        ad.label as "label",
+        ad.input_type as "inputType",
+        ad.filterable as "filterable",
+        ad.searchable as "searchable",
+        ad.required as "required",
+        ad.display_order as "displayOrder"
+    FROM attribute_definitions ad
+    JOIN category_attributes ca ON ca.attribute_id = ad.id
+    WHERE ca.category_id = #{categoryId}
+    ORDER BY ad.display_order
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- TAGS QUERY                                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="getProductTags" resultType="map">
+    SELECT
+        product_id as "productId",
+        tag as "tag"
+    FROM product_tags
+    WHERE product_id = #{productId}
+    ORDER BY tag
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ACTIVITY LOG QUERY                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="getProductActivityLog" resultType="map">
+    SELECT
+        id,
+        product_id as "productId",
+        activity_name as "activityName",
+        activity_comment as "activityComment",
+        activity_success as "activitySuccess",
+        created_time as "createdTime",
+        created_by as "createdBy"
+    FROM product_activity_log
+    WHERE product_id = #{productId}
+    ORDER BY created_time ASC
 </select>
 
 </mapper>

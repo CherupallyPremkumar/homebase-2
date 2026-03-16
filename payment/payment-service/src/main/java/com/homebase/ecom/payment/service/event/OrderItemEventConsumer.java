@@ -7,6 +7,7 @@ import com.homebase.ecom.shared.event.KafkaTopics;
 import com.homebase.ecom.shared.event.OrderItemRefundRequestedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +55,9 @@ public class OrderItemEventConsumer {
             log.info("Granular refund processed for item {} in order {}",
                     event.getOrderItemId(), event.getOrderId());
 
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Idempotency: refund for item {} in order {} already processed (possible replay). Skipping. Detail: {}",
+                    event.getOrderItemId(), event.getOrderId(), e.getMessage());
         } catch (Exception e) {
             log.error("Failed to process OrderItemRefundRequestedEvent for item: " + event.getOrderItemId(), e);
         }

@@ -22,32 +22,16 @@
             <artifactId>shared-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.homebase.ecom.checkout</groupId>
-            <artifactId>checkout-service</artifactId>
+            <groupId>org.chenile</groupId>
+            <artifactId>jpa-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.github.resilience4j</groupId>
-            <artifactId>resilience4j-spring-boot2</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>chenile-kafka</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
         </dependency>
     </dependencies>
 </project>

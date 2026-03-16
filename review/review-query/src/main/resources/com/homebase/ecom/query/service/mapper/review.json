@@ -16,8 +16,8 @@
 				"columnType": "Text",
 				"filterable": true
 			},
-			"userId": {
-				"name": "userId",
+			"customerId": {
+				"name": "customerId",
 				"columnType": "Text",
 				"filterable": true
 			},
@@ -39,6 +39,11 @@
 			},
 			"helpfulCount": {
 				"name": "helpfulCount",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"reportCount": {
+				"name": "reportCount",
 				"columnType": "Number",
 				"sortable": true
 			},
@@ -69,7 +74,70 @@
 		"paginated": false
 	},
 	{
-		"id": "Review.getByProduct",
+		"id": "Review.getStateCounts",
+		"name": "reviewStateCounts",
+		"columnMetadata": {
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "Review.getFlaggedReviews",
+		"name": "flaggedReviews",
+		"workflowName": "review",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"productId": {
+				"name": "productId",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"reportCount": {
+				"name": "reportCount",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"createdAt": {
+				"name": "createdAt",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Review.getByModeration",
+		"name": "moderationQueue",
+		"workflowName": "review",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdAt": {
+				"name": "createdAt",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Review.getByProductId",
 		"name": "productReviews",
 		"columnMetadata": {
 			"productId": {
@@ -86,6 +154,36 @@
 				"name": "stateId",
 				"filterable": true,
 				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Review.getAverageRating",
+		"name": "averageRating",
+		"columnMetadata": {
+			"productId": {
+				"name": "product_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "Review.getRecentReviews",
+		"name": "recentReviews",
+		"columnMetadata": {
+			"productId": {
+				"name": "product_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdAt": {
+				"name": "createdAt",
+				"columnType": "Date",
+				"sortable": true
 			}
 		},
 		"paginated": true,

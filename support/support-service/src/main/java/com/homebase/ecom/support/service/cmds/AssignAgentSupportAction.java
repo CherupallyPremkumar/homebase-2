@@ -8,10 +8,16 @@ import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.support.model.SupportTicket;
 import com.homebase.ecom.support.model.TicketMessage;
 import com.homebase.ecom.support.dto.AssignAgentPayload;
+import com.homebase.ecom.support.service.validator.SupportPolicyValidator;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Date;
+import java.util.UUID;
 
 public class AssignAgentSupportAction extends AbstractSTMTransitionAction<SupportTicket, AssignAgentPayload> {
 
-    private static final long SLA_RESPONSE_TIME_MS = 4 * 60 * 60 * 1000L; // 4 hours
+    @Autowired
+    private SupportPolicyValidator policyValidator;
 
     @Override
     public void transitionTo(SupportTicket ticket,
@@ -23,23 +29,26 @@ public class AssignAgentSupportAction extends AbstractSTMTransitionAction<Suppor
             throw new IllegalArgumentException("Agent ID is required for assignment");
         }
 
-        ticket.setAssignedTo(payload.getAgentId());
+        ticket.setAssignedAgentId(payload.getAgentId());
 
-        // Set SLA timer based on priority
+        // Set SLA deadline based on configured response hours and priority
+        int slaHours = policyValidator.getSlaResponseHours();
         long slaMultiplier = 1L;
         if ("HIGH".equals(ticket.getPriority()) || "URGENT".equals(ticket.getPriority())) {
-            slaMultiplier = 1L; // 4 hours for high/urgent
+            slaMultiplier = 1L;
         } else if ("LOW".equals(ticket.getPriority())) {
-            slaMultiplier = 4L; // 16 hours for low
+            slaMultiplier = 4L;
         } else {
-            slaMultiplier = 2L; // 8 hours for medium (default)
+            slaMultiplier = 2L;
         }
-        long slaDeadline = System.currentTimeMillis() + (SLA_RESPONSE_TIME_MS * slaMultiplier);
+        long slaDeadline = System.currentTimeMillis() + (slaHours * 60 * 60 * 1000L / slaMultiplier);
         ticket.getTransientMap().put("slaDeadline", slaDeadline);
 
         // Add system message about assignment
         TicketMessage assignMsg = new TicketMessage();
+        assignMsg.setId(UUID.randomUUID().toString());
         assignMsg.setSenderType("SYSTEM");
+        assignMsg.setTimestamp(new Date());
         assignMsg.setMessage("Ticket assigned to agent: " + payload.getAgentId());
         ticket.getMessages().add(assignMsg);
 

@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Transition action for rejectSupplier event (PENDING_REVIEW -> REJECTED).
+ * Transition action for rejectSupplier event (UNDER_REVIEW -> REJECTED).
  * Requires a rejection reason to be provided.
  */
 public class RejectSupplierAction extends AbstractSTMTransitionAction<Supplier, RejectSupplierPayload> {
@@ -22,10 +22,8 @@ public class RejectSupplierAction extends AbstractSTMTransitionAction<Supplier, 
             State startState, String eventId,
             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-        // Validate that rejection reason is provided
         String reason = payload.getReason();
         if (reason == null || reason.trim().isEmpty()) {
-            // Fall back to comment if reason not set explicitly
             reason = payload.getComment();
         }
         if (reason == null || reason.trim().isEmpty()) {
@@ -37,6 +35,6 @@ public class RejectSupplierAction extends AbstractSTMTransitionAction<Supplier, 
         supplier.getTransientMap().previousPayload = payload;
 
         log.info("Supplier '{}' (ID: {}) rejected. Reason: {}",
-                supplier.getName(), supplier.getId(), reason);
+                supplier.getBusinessName(), supplier.getId(), reason);
     }
 }

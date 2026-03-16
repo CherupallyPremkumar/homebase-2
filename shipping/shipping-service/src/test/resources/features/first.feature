@@ -1,14 +1,19 @@
-Feature: Tests the shipping Workflow Service using a REST client. This is done only for the
-first testcase. Shipping service exists and is under test.
-It helps to create a shipping and manages the state of the shipping as documented in states xml
+Feature: Tests the shipping Workflow Service using a REST client.
+Shipping service exists and is under test. Includes delivery failure and retry path.
+
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
 Scenario: Create a new shipping
 Given that "flowName" equals "shipping-flow"
-And that "initialState" equals "AWAITING_PICKUP"
+And that "initialState" equals "PENDING"
 When I POST a REST request to URL "/shipping" with payload
 """json
 {
     "description": "Description",
-    "orderId": "ORD-FIRST-001"
+    "orderId": "ORD-FIRST-001",
+    "carrier": "HOMEBASE-LOGISTICS"
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -23,9 +28,9 @@ Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "${currentState}"
 
- Scenario: Send the courierAssigned event to the shipping with comments
- Given that "comment" equals "Comment for courierAssigned"
- And that "event" equals "courierAssigned"
+Scenario: Create label (PENDING -> LABEL_CREATED)
+Given that "comment" equals "Comment for createLabel"
+And that "event" equals "createLabel"
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
@@ -35,117 +40,98 @@ When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PICKED_UP"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
+And the REST response key "mutatedEntity.currentState.stateId" is "LABEL_CREATED"
+And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
 
- Scenario: Send the inTransit event to the shipping with comments
- Given that "comment" equals "Comment for inTransit"
- And that "event" equals "inTransit"
+Scenario: Pick up (LABEL_CREATED -> PICKED_UP)
+Given that "comment" equals "Comment for pickUp"
+And that "event" equals "pickUp"
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
     "comment": "${comment}"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${id}"
+And the REST response key "mutatedEntity.currentState.stateId" is "PICKED_UP"
+And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
+
+Scenario: Update transit (PICKED_UP -> IN_TRANSIT)
+Given that "comment" equals "Comment for updateTransit"
+And that "event" equals "updateTransit"
+When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
+"""json
+{
+    "comment": "${comment}",
+    "currentLocation": "Sorting Facility"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "IN_TRANSIT"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
+And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
 
- Scenario: Send the returnRequested event to the shipping with comments
- Given that "comment" equals "Comment for returnRequested"
- And that "event" equals "returnRequested"
+Scenario: Out for delivery (IN_TRANSIT -> OUT_FOR_DELIVERY)
+Given that "comment" equals "Comment for outForDelivery"
+And that "event" equals "outForDelivery"
+When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
+"""json
+{
+    "comment": "${comment}"
+}
+"""
+Then the REST response contains key "mutatedEntity"
+And the REST response key "mutatedEntity.id" is "${id}"
+And the REST response key "mutatedEntity.currentState.stateId" is "OUT_FOR_DELIVERY"
+And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
+
+Scenario: Fail delivery (OUT_FOR_DELIVERY -> DELIVERY_FAILED)
+Given that "comment" equals "Customer not home"
+And that "event" equals "failDelivery"
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
     "comment": "${comment}",
-    "returnReason": "Wrong item received"
+    "failureReason": "Customer not home"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "RETURN_REQUESTED"
+And the REST response key "mutatedEntity.currentState.stateId" is "DELIVERY_FAILED"
 And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
-
-Scenario: Add new mandatory activities a1,a2 for the last state.
-Add a new state "__TERMINAL_STATE__"
-Add a completion checker activity "cc" to the last state that leads to __TERMINAL_STATE__
-Send cc event on the shipping with comments. This should fail since the mandatory activities
-have not been completed.
-Given that "terminalState" equals "__TERMINAL_STATE__"
-And that config strategy is "shippingConfigProvider" with prefix "Shipping"
-And that a new mandatory activity "a1" is added from state "${finalState}" to state "${finalState}" in flow "${flowName}"
-And that a new mandatory activity "a2" is added from state "${finalState}" to state "${finalState}" in flow "${flowName}"
-And that a new state "${terminalState}" is added to flow "${flowName}"
-And that a new activity completion checker "cc" is added from state "${finalState}" to state "${terminalState}" in flow "${flowName}"
-And that "comment" equals "Attempting to send cc event without mandatory activities being completed."
-And that "event" equals "cc"
-When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
-"""json
-    {
-    "comment": "${comment}"
-    }
-"""
-Then the REST response does not contain key "mutatedEntity"
-And success is false
-And the http status code is 400
-And the top level subErrorCode is 49000
-
-Scenario: Retrieve the shipping that just got created
-When I GET a REST request to URL "/shipping/${id}"
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${finalState}"
-
-Scenario: Perform mandatory activity (a1) on the  shipping with comments
-Given that "comment" equals "Performed activity a1."
-And that "event" equals "a1"
+Scenario: Retry delivery (DELIVERY_FAILED -> CHECK_DELIVERY_ATTEMPTS -> OUT_FOR_DELIVERY)
+Given that "comment" equals "Retrying delivery with updated instructions"
+And that "event" equals "retryDelivery"
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
-"comment": "${comment}"
+    "comment": "${comment}",
+    "newDeliveryInstructions": "Leave at front desk"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${finalState}"
-And the REST response key "mutatedEntity.activities" collection has an item with keys and values:
-| key             | value         |
-| activityName    | ${event}      |
-| activityComment | ${comment}    |
+And the REST response key "mutatedEntity.currentState.stateId" is "OUT_FOR_DELIVERY"
+And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
-Scenario: Perform mandatory activity (a2) on the  shipping with comments
-Given that "comment" equals "Performed activity a2."
-And that "event" equals "a2"
+Scenario: Deliver on second attempt (OUT_FOR_DELIVERY -> DELIVERED)
+Given that "comment" equals "Delivered on second attempt"
+And that "event" equals "deliver"
 When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
 """json
 {
-"comment": "${comment}"
+    "comment": "${comment}",
+    "receivedBy": "Front Desk"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${finalState}"
-And the REST response key "mutatedEntity.activities" collection has an item with keys and values:
-| key             | value         |
-| activityName    | ${event}      |
-| activityComment | ${comment}    |
+And the REST response key "mutatedEntity.currentState.stateId" is "DELIVERED"
+And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
 
-Scenario: Perform mandatory activity (cc) on the  shipping with comments
-Given that "comment" equals "Performed activity cc after completing all activities."
-And that "event" equals "cc"
-When I PATCH a REST request to URL "/shipping/${id}/${event}" with payload
-"""json
-{
-"comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${terminalState}"
-
-Scenario: Send an invalid event to shipping . This will err out.
+Scenario: Send an invalid event to shipping. This will err out.
 When I PATCH a REST request to URL "/shipping/${id}/invalid" with payload
 """json
 {
@@ -154,4 +140,3 @@ When I PATCH a REST request to URL "/shipping/${id}/invalid" with payload
 """
 Then the REST response does not contain key "mutatedEntity"
 And the http status code is 422
-

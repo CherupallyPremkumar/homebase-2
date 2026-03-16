@@ -5,13 +5,13 @@ import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.impl.*;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.order.model.Order;
 import com.homebase.ecom.order.service.cmds.*;
@@ -20,20 +20,29 @@ import com.homebase.ecom.order.infrastructure.persistence.ChenileOrderEntityStor
 import com.homebase.ecom.order.infrastructure.persistence.adapter.OrderJpaRepository;
 import com.homebase.ecom.order.infrastructure.persistence.mapper.OrderMapper;
 import org.chenile.workflow.api.WorkflowRegistry;
-import org.chenile.stm.State;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
 import com.homebase.ecom.order.service.postSaveHooks.*;
-import com.homebase.ecom.order.service.event.OrderEventConsumer;
+import com.homebase.ecom.order.service.event.OrderEventHandler;
+import com.homebase.ecom.order.service.validator.OrderPolicyValidator;
+import com.homebase.ecom.order.service.impl.OrderServiceImpl;
+import com.homebase.ecom.order.service.OrderService;
 
 /**
- * This is where you will instantiate all the required classes in Spring
+ * Spring configuration for the Order module — wires STM, entity store, actions,
+ * post-save hooks, event handler, and policy validator.
  */
 @Configuration
 public class OrderConfiguration {
     private static final String FLOW_DEFINITION_FILE = "com/homebase/ecom/order/order-states.xml";
     public static final String PREFIX_FOR_PROPERTIES = "Order";
     public static final String PREFIX_FOR_RESOLVER = "order";
+
+    // ════════════════════════════════════════════════════════════════════════
+    // STM Core Infrastructure
+    // ════════════════════════════════════════════════════════════════════════
 
     @Bean
     BeanFactoryAdapter orderBeanFactoryAdapter() {
@@ -42,14 +51,14 @@ public class OrderConfiguration {
 
     @Bean
     STMFlowStoreImpl orderFlowStore(
-            @Qualifier("orderBeanFactoryAdapter") BeanFactoryAdapter orderBeanFactoryAdapter) throws Exception {
+            @Qualifier("orderBeanFactoryAdapter") BeanFactoryAdapter orderBeanFactoryAdapter) {
         STMFlowStoreImpl stmFlowStore = new STMFlowStoreImpl();
         stmFlowStore.setBeanFactory(orderBeanFactoryAdapter);
         return stmFlowStore;
     }
 
     @Bean
-    STM<Order> orderEntityStm(@Qualifier("orderFlowStore") STMFlowStoreImpl stmFlowStore) throws Exception {
+    STM<Order> orderEntityStm(@Qualifier("orderFlowStore") STMFlowStoreImpl stmFlowStore) {
         STMImpl<Order> stm = new STMImpl<>();
         stm.setStmFlowStore(stmFlowStore);
         return stm;
@@ -77,16 +86,17 @@ public class OrderConfiguration {
             @Qualifier("orderEntityStm") STM<Order> stm,
             @Qualifier("orderActionsInfoProvider") STMActionsInfoProvider orderInfoProvider,
             @Qualifier("orderEntityStore") EntityStore<Order> entityStore) {
-        return new StateEntityServiceImpl<>(stm, orderInfoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, orderInfoProvider, entityStore);
     }
 
-    // Now we start constructing the STM Components
+    // ════════════════════════════════════════════════════════════════════════
+    // STM Wiring: PostSaveHook, EntryAction, ExitAction, FlowReader
+    // ════════════════════════════════════════════════════════════════════════
 
     @Bean
     DefaultPostSaveHook<Order> orderDefaultPostSaveHook(
             @Qualifier("orderTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver) {
-        DefaultPostSaveHook<Order> postSaveHook = new DefaultPostSaveHook<>(stmTransitionActionResolver);
-        return postSaveHook;
+        return new DefaultPostSaveHook<>(stmTransitionActionResolver);
     }
 
     @Bean
@@ -94,8 +104,7 @@ public class OrderConfiguration {
             @Qualifier("orderActionsInfoProvider") STMActionsInfoProvider orderInfoProvider,
             @Qualifier("orderFlowStore") STMFlowStoreImpl stmFlowStore,
             @Qualifier("orderDefaultPostSaveHook") DefaultPostSaveHook<Order> postSaveHook) {
-        GenericEntryAction<Order> entryAction = new GenericEntryAction<Order>(entityStore, orderInfoProvider,
-                postSaveHook);
+        GenericEntryAction<Order> entryAction = new GenericEntryAction<>(entityStore, orderInfoProvider, postSaveHook);
         stmFlowStore.setEntryAction(entryAction);
         return entryAction;
     }
@@ -112,7 +121,7 @@ public class OrderConfiguration {
 
     @Bean
     GenericExitAction<Order> orderExitAction(@Qualifier("orderFlowStore") STMFlowStoreImpl stmFlowStore) {
-        GenericExitAction<Order> exitAction = new GenericExitAction<Order>();
+        GenericExitAction<Order> exitAction = new GenericExitAction<>();
         stmFlowStore.setExitAction(exitAction);
         return exitAction;
     }
@@ -169,89 +178,6 @@ public class OrderConfiguration {
         return new AreActivitiesComplete(activityChecker);
     }
 
-    // Create the specific transition actions here. Make sure that these actions are
-    // inheriting from
-    // AbstractSTMTransitionMachine (The sample classes provide an example of this).
-    // To automatically wire
-    // them into the STM use the convention of "order" + eventId + "Action" for the
-    // method name. (order is the
-    // prefix passed to the TransitionActionResolver above.)
-    // This will ensure that these are detected automatically by the Workflow
-    // system.
-    // The payload types will be detected as well so that there is no need to
-    // introduce an <event-information/>
-    // segment in src/main/resources/com/homebase/order/order-states.xml
-
-    @Bean
-    ApproveReturnOrderAction orderApproveReturnAction() {
-        return new ApproveReturnOrderAction();
-    }
-
-    @Bean
-    CancelOrderOrderAction orderCancelOrderAction() {
-        return new CancelOrderOrderAction();
-    }
-
-    @Bean
-    ReturnRequestedOrderAction orderReturnRequestedAction() {
-        return new ReturnRequestedOrderAction();
-    }
-
-    @Bean
-    RejectReturnOrderAction orderRejectReturnAction() {
-        return new RejectReturnOrderAction();
-    }
-
-    @Bean
-    ConfirmDeliveryOrderAction orderConfirmDeliveryAction() {
-        return new ConfirmDeliveryOrderAction();
-    }
-
-    @Bean
-    InitiateReturnOrderAction orderInitiateReturnAction() {
-        return new InitiateReturnOrderAction();
-    }
-
-    @Bean
-    DeliverOrderOrderAction orderDeliverOrderAction() {
-        return new DeliverOrderOrderAction();
-    }
-
-    @Bean
-    ProcessPaymentOrderAction orderProcessPaymentAction() {
-        return new ProcessPaymentOrderAction();
-    }
-
-    @Bean
-    StartProcessingOrderAction orderStartProcessingAction() {
-        return new StartProcessingOrderAction();
-    }
-
-    @Bean
-    ItemsPickedOrderAction orderItemsPickedAction() {
-        return new ItemsPickedOrderAction();
-    }
-
-    @Bean
-    RefundCompleteOrderAction orderRefundCompleteAction() {
-        return new RefundCompleteOrderAction();
-    }
-
-    @Bean
-    CourierPickupOrderAction orderCourierPickupAction() {
-        return new CourierPickupOrderAction();
-    }
-
-    @Bean
-    CancelOrderItemAction orderCancelOrderItemAction() {
-        return new CancelOrderItemAction();
-    }
-
-    @Bean
-    RefundOrderItemAction orderRefundOrderItemAction() {
-        return new RefundOrderItemAction();
-    }
-
     @Bean
     ConfigProviderImpl orderConfigProvider() {
         return new ConfigProviderImpl();
@@ -267,140 +193,61 @@ public class OrderConfiguration {
         return enablementStrategy;
     }
 
+    // ════════════════════════════════════════════════════════════════════════
+    // STM Transition Actions — convention: "order" + eventId + "Action"
+    // ════════════════════════════════════════════════════════════════════════
+
+    @Bean PaymentSucceededOrderAction orderPaymentSucceededAction() { return new PaymentSucceededOrderAction(); }
+    @Bean PaymentFailedOrderAction orderPaymentFailedAction() { return new PaymentFailedOrderAction(); }
+    @Bean RequestCancellationOrderAction orderRequestCancellationAction() { return new RequestCancellationOrderAction(); }
+    @Bean ConfirmCancellationOrderAction orderConfirmCancellationAction() { return new ConfirmCancellationOrderAction(); }
+    @Bean StartProcessingOrderAction orderStartProcessingAction() { return new StartProcessingOrderAction(); }
+    @Bean MarkShippedOrderAction orderMarkShippedAction() { return new MarkShippedOrderAction(); }
+    @Bean MarkDeliveredOrderAction orderMarkDeliveredAction() { return new MarkDeliveredOrderAction(); }
+    @Bean ConfirmDeliveryOrderAction orderConfirmDeliveryAction() { return new ConfirmDeliveryOrderAction(); }
+    @Bean RequestRefundOrderAction orderRequestRefundAction() { return new RequestRefundOrderAction(); }
+    @Bean CompleteRefundOrderAction orderCompleteRefundAction() { return new CompleteRefundOrderAction(); }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // PostSaveHooks — convention: "order" + STATE_ID + "PostSaveHook"
+    // ════════════════════════════════════════════════════════════════════════
+
+    @Bean CREATEDOrderPostSaveHook orderCREATEDPostSaveHook() { return new CREATEDOrderPostSaveHook(); }
+    @Bean PAIDOrderPostSaveHook orderPAIDPostSaveHook() { return new PAIDOrderPostSaveHook(); }
+    @Bean CANCELLEDOrderPostSaveHook orderCANCELLEDPostSaveHook() { return new CANCELLEDOrderPostSaveHook(); }
+    @Bean DELIVEREDOrderPostSaveHook orderDELIVEREDPostSaveHook() { return new DELIVEREDOrderPostSaveHook(); }
+    @Bean SHIPPEDOrderPostSaveHook orderSHIPPEDPostSaveHook() { return new SHIPPEDOrderPostSaveHook(); }
+    @Bean COMPLETEDOrderPostSaveHook orderCOMPLETEDPostSaveHook() { return new COMPLETEDOrderPostSaveHook(); }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Services, Events, Validators
+    // ════════════════════════════════════════════════════════════════════════
+
     @Bean
-    REFUND_INITIATEDOrderPostSaveHook orderREFUND_INITIATEDPostSaveHook() {
-        return new REFUND_INITIATEDOrderPostSaveHook();
+    @ConditionalOnMissingBean
+    ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 
     @Bean
-    CANCELLEDOrderPostSaveHook orderCANCELLEDPostSaveHook() {
-        return new CANCELLEDOrderPostSaveHook();
+    OrderService orderService() {
+        return new OrderServiceImpl();
     }
 
     @Bean
-    CREATEDOrderPostSaveHook orderCREATEDPostSaveHook() {
-        return new CREATEDOrderPostSaveHook();
+    OrderEventHandler orderEventService() {
+        return new OrderEventHandler();
     }
 
     @Bean
-    DELIVEREDOrderPostSaveHook orderDELIVEREDPostSaveHook() {
-        return new DELIVEREDOrderPostSaveHook();
+    OrderPolicyValidator orderPolicyValidator() {
+        return new OrderPolicyValidator();
     }
 
     @Bean
-    COMPLETEDOrderPostSaveHook orderCOMPLETEDPostSaveHook() {
-        return new COMPLETEDOrderPostSaveHook();
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> orderEventAuthoritiesSupplier(
+            @Qualifier("orderActionsInfoProvider") STMActionsInfoProvider orderInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(orderInfoProvider, false);
+        return builder.build();
     }
-
-    @Bean
-    REFUNDEDOrderPostSaveHook orderREFUNDEDPostSaveHook() {
-        return new REFUNDEDOrderPostSaveHook();
-    }
-
-    @Bean
-    PAYMENT_CONFIRMEDOrderPostSaveHook orderPAYMENT_CONFIRMEDPostSaveHook() {
-        return new PAYMENT_CONFIRMEDOrderPostSaveHook();
-    }
-
-    @Bean
-    PROCESSINGOrderPostSaveHook orderPROCESSINGPostSaveHook() {
-        return new PROCESSINGOrderPostSaveHook();
-    }
-
-    @Bean
-    PICKEDOrderPostSaveHook orderPICKEDPostSaveHook() {
-        return new PICKEDOrderPostSaveHook();
-    }
-
-    @Bean
-    RETURN_INITIATEDOrderPostSaveHook orderRETURN_INITIATEDPostSaveHook() {
-        return new RETURN_INITIATEDOrderPostSaveHook();
-    }
-
-    @Bean
-    SHIPPEDOrderPostSaveHook orderSHIPPEDPostSaveHook() {
-        return new SHIPPEDOrderPostSaveHook();
-    }
-
-    @Bean
-    public OrderEventConsumer orderEventConsumer() {
-        return new OrderEventConsumer();
-    }
-
-    // Entry-action beans referenced in order-states.xml
-
-    @Bean
-    OrderCreatedNotificationAction orderCreatedNotificationAction() {
-        return new OrderCreatedNotificationAction();
-    }
-
-    @Bean
-    OrderFailedNotificationAction orderFailedNotificationAction() {
-        return new OrderFailedNotificationAction();
-    }
-
-    @Bean
-    PaymentConfirmedAction paymentConfirmedAction() {
-        return new PaymentConfirmedAction();
-    }
-
-    @Bean
-    ProcessingStartedAction processingStartedAction() {
-        return new ProcessingStartedAction();
-    }
-
-    @Bean
-    ItemsPackedAction itemsPackedAction() {
-        return new ItemsPackedAction();
-    }
-
-    @Bean
-    ShippedNotificationAction shippedNotificationAction() {
-        return new ShippedNotificationAction();
-    }
-
-    @Bean
-    DeliveredNotificationAction deliveredNotificationAction() {
-        return new DeliveredNotificationAction();
-    }
-
-    @Bean
-    OrderCompletedAction orderCompletedAction() {
-        return new OrderCompletedAction();
-    }
-
-    @Bean
-    ReturnInitiatedAction returnInitiatedAction() {
-        return new ReturnInitiatedAction();
-    }
-
-    @Bean
-    RefundProcessingAction refundProcessingAction() {
-        return new RefundProcessingAction();
-    }
-
-    @Bean
-    CancelledNotificationAction cancelledNotificationAction() {
-        return new CancelledNotificationAction();
-    }
-
-    // Exit-action beans referenced in order-states.xml
-
-    @Bean
-    TriggerSettlementAction triggerSettlementAction() {
-        return new TriggerSettlementAction();
-    }
-
-    @Bean
-    AdjustSettlementAction adjustSettlementAction() {
-        return new AdjustSettlementAction();
-    }
-
-    // Transition action for paymentFailed event
-
-    @Bean
-    PaymentFailedOrderAction orderPaymentFailedAction() {
-        return new PaymentFailedOrderAction();
-    }
-
 }

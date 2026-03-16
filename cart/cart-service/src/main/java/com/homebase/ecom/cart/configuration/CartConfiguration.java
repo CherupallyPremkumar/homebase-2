@@ -1,46 +1,60 @@
 package com.homebase.ecom.cart.configuration;
 
-import com.homebase.ecom.cart.service.validator.CartPolicyValidator;
-import com.homebase.ecom.shared.CurrencyResolver;
-import org.chenile.cconfig.sdk.CconfigClient;
-import org.chenile.proxy.builder.ProxyBuilder;
-import org.chenile.service.registry.service.ServiceRegistryService;
-import org.chenile.service.registry.service.impl.ServiceRegistryServiceImpl;
+import org.chenile.core.context.ChenileExchange;
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.impl.*;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.cart.model.Cart;
 import com.homebase.ecom.cart.service.cmds.*;
+import com.homebase.ecom.cart.service.impl.CartServiceImpl;
+import com.homebase.ecom.cart.infrastructure.mapper.CartDtoMapper;
 import com.homebase.ecom.cart.service.healthcheck.CartHealthChecker;
 import com.homebase.ecom.cart.infrastructure.persistence.ChenileCartEntityStore;
+import com.homebase.ecom.cart.infrastructure.persistence.repository.CartJpaRepository;
+import com.homebase.ecom.cart.infrastructure.persistence.mapper.CartMapper;
+import com.homebase.ecom.cart.infrastructure.adapter.InventoryCheckAdapter;
+import com.homebase.ecom.cart.infrastructure.adapter.PricingAdapter;
+import com.homebase.ecom.cart.infrastructure.adapter.ProductCheckAdapter;
+import com.homebase.ecom.cart.domain.port.InventoryCheckPort;
+import com.homebase.ecom.cart.domain.port.PricingPort;
+import com.homebase.ecom.cart.domain.port.ProductCheckPort;
+import com.homebase.ecom.pricing.api.service.PricingService;
+import org.chenile.query.service.SearchService;
+import com.homebase.ecom.cart.service.validator.CartPolicyValidator;
+import com.homebase.ecom.cart.service.event.CartEventHandler;
+import com.homebase.ecom.cart.service.postSaveHooks.*;
 import org.chenile.workflow.api.WorkflowRegistry;
-import org.chenile.stm.State;
 import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
-import com.homebase.ecom.cart.service.postSaveHooks.*;
+
+import java.util.function.Function;
 
 /**
- * This is where you will instantiate all the required classes in Spring
+ * Cart module Spring configuration.
+ * Wires STM, entity store, transition actions, post-save hooks,
+ * hexagonal ports/adapters, and chenile-kafka event handler.
  */
 @Configuration
 public class CartConfiguration {
 
-    @Autowired
-    private ProxyBuilder proxyBuilder;
     private static final String FLOW_DEFINITION_FILE = "com/homebase/ecom/cart/cart-states.xml";
     public static final String PREFIX_FOR_PROPERTIES = "Cart";
     public static final String PREFIX_FOR_RESOLVER = "cart";
+
+    // ═══════════════════════════════════════════════════════════════════
+    // STM Infrastructure
+    // ═══════════════════════════════════════════════════════════════════
 
     @Bean
     BeanFactoryAdapter cartBeanFactoryAdapter() {
@@ -70,34 +84,36 @@ public class CartConfiguration {
     }
 
     @Bean
-    EntityStore<Cart> cartEntityStore() {
-        return new ChenileCartEntityStore();
+    EntityStore<Cart> cartEntityStore(CartJpaRepository repository, CartMapper mapper) {
+        return new ChenileCartEntityStore(repository, mapper);
     }
 
     @Bean
-    StateEntityServiceImpl<Cart> _cartStateEntityService_(
+    CartServiceImpl _cartStateEntityService_(
             @Qualifier("cartEntityStm") STM<Cart> stm,
             @Qualifier("cartActionsInfoProvider") STMActionsInfoProvider cartInfoProvider,
-            @Qualifier("cartEntityStore") EntityStore<Cart> entityStore) {
-        return new StateEntityServiceImpl<>(stm, cartInfoProvider, entityStore);
+            @Qualifier("cartEntityStore") EntityStore<Cart> entityStore,
+            CartDtoMapper cartDtoMapper) {
+        return new CartServiceImpl(stm, cartInfoProvider, entityStore, cartDtoMapper);
     }
 
-    // Now we start constructing the STM Components
+    // ═══════════════════════════════════════════════════════════════════
+    // STM Components: Entry/Exit actions, PostSaveHook, AutoState
+    // ═══════════════════════════════════════════════════════════════════
 
     @Bean
     DefaultPostSaveHook<Cart> cartDefaultPostSaveHook(
             @Qualifier("cartTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver) {
-        DefaultPostSaveHook<Cart> postSaveHook = new DefaultPostSaveHook<>(stmTransitionActionResolver);
-        return postSaveHook;
+        return new DefaultPostSaveHook<>(stmTransitionActionResolver);
     }
 
     @Bean
-    GenericEntryAction<Cart> cartEntryAction(@Qualifier("cartEntityStore") EntityStore<Cart> entityStore,
+    GenericEntryAction<Cart> cartEntryAction(
+            @Qualifier("cartEntityStore") EntityStore<Cart> entityStore,
             @Qualifier("cartActionsInfoProvider") STMActionsInfoProvider cartInfoProvider,
             @Qualifier("cartFlowStore") STMFlowStoreImpl stmFlowStore,
             @Qualifier("cartDefaultPostSaveHook") DefaultPostSaveHook<Cart> postSaveHook) {
-        GenericEntryAction<Cart> entryAction = new GenericEntryAction<Cart>(entityStore, cartInfoProvider,
-                postSaveHook);
+        GenericEntryAction<Cart> entryAction = new GenericEntryAction<>(entityStore, cartInfoProvider, postSaveHook);
         stmFlowStore.setEntryAction(entryAction);
         return entryAction;
     }
@@ -114,7 +130,7 @@ public class CartConfiguration {
 
     @Bean
     GenericExitAction<Cart> cartExitAction(@Qualifier("cartFlowStore") STMFlowStoreImpl stmFlowStore) {
-        GenericExitAction<Cart> exitAction = new GenericExitAction<Cart>();
+        GenericExitAction<Cart> exitAction = new GenericExitAction<>();
         stmFlowStore.setExitAction(exitAction);
         return exitAction;
     }
@@ -126,10 +142,9 @@ public class CartConfiguration {
         return flowReader;
     }
 
-    @Bean
-    CartHealthChecker cartHealthChecker() {
-        return new CartHealthChecker();
-    }
+    // ═══════════════════════════════════════════════════════════════════
+    // Transition Action Resolver
+    // ═══════════════════════════════════════════════════════════════════
 
     @Bean
     STMTransitionAction<Cart> defaultcartSTMTransitionAction() {
@@ -170,158 +185,18 @@ public class CartConfiguration {
         return new AreActivitiesComplete(activityChecker);
     }
 
-    // Create the specific transition actions here. Make sure that these actions are
-    // inheriting from
-    // AbstractSTMTransitionMachine (The sample classes provide an example of this).
-    // To automatically wire
-    // them into the STM use the convention of "cart" + eventId + "Action" for the
-    // method name. (cart is the
-    // prefix passed to the TransitionActionResolver above.)
-    // This will ensure that these are detected automatically by the Workflow
-    // system.
-    // The payload types will be detected as well so that there is no need to
-    // introduce an <event-information/>
-    // segment in src/main/resources/com/homebase/cart/cart-states.xml
+    // ═══════════════════════════════════════════════════════════════════
+    // Health checker
+    // ═══════════════════════════════════════════════════════════════════
 
     @Bean
-    AddItemCartAction cartAddItemAction() {
-        return new AddItemCartAction();
+    CartHealthChecker cartHealthChecker() {
+        return new CartHealthChecker();
     }
 
-    @Bean
-    CartPolicyValidator cartPolicyValidator(CconfigClient cconfigClient, CurrencyResolver currencyResolver) {
-        return new CartPolicyValidator(cconfigClient, currencyResolver);
-    }
-
-    @Bean
-    RemoveItemCartAction cartRemoveItemAction() {
-        return new RemoveItemCartAction();
-    }
-
-    @Bean
-    UpdateQuantityCartAction cartUpdateQuantityAction() {
-        return new UpdateQuantityCartAction();
-    }
-
-    @Bean
-    CompletePaymentCartAction cartCompletePaymentAction() {
-        return new CompletePaymentCartAction();
-    }
-
-    @Bean
-    AbandonCheckoutCartAction cartAbandonCheckoutAction() {
-        return new AbandonCheckoutCartAction();
-    }
-
-    @Bean
-    InitiateCheckoutCartAction cartInitiateCheckoutAction() {
-        return new InitiateCheckoutCartAction();
-    }
-
-    @Bean
-    AddDeliveryAddressAction cartAddDeliveryAddressAction() {
-        return new AddDeliveryAddressAction();
-    }
-
-    @Bean
-    CreatePaymentSessionAction cartCreatePaymentSessionAction() {
-        return new CreatePaymentSessionAction();
-    }
-
-    @Bean
-    PaymentSuccessCartAction cartPaymentSuccessAction() {
-        return new PaymentSuccessCartAction();
-    }
-
-    @Bean
-    PaymentFailedCartAction cartPaymentFailedAction() {
-        return new PaymentFailedCartAction();
-    }
-
-    @Bean
-    RevertToActiveCartAction cartRevertToActiveAction() {
-        return new RevertToActiveCartAction();
-    }
-
-    @Bean
-    AbandonCartCartAction cartAbandonCartAction() {
-        return new AbandonCartCartAction();
-    }
-
-    @Bean
-    OrderCreatedFromCartAction cartOrderCreatedFromCartAction() {
-        return new OrderCreatedFromCartAction();
-    }
-
-    @Bean
-    ClearCartAction cartClearCartAction() {
-        return new ClearCartAction();
-    }
-
-    @Bean
-    MergeCartAction cartMergeCartAction() {
-        return new MergeCartAction();
-    }
-
-    @Bean
-    ReconciliationPendingCartAction cartReconciliationPendingAction() {
-        return new ReconciliationPendingCartAction();
-    }
-
-    @Bean
-    ExpiredCartAction cartExpiredAction() {
-        return new ExpiredCartAction();
-    }
-
-    @Bean
-    ApplyPromoCodeAction cartApplyPromoCodeAction() {
-        return new ApplyPromoCodeAction();
-    }
-
-    @Bean
-    MoveToWishlistAction cartMoveToWishlistAction() {
-        return new MoveToWishlistAction();
-    }
-
-    @Bean
-    SessionTimeoutAction cartSessionTimeoutAction() {
-        return new SessionTimeoutAction();
-    }
-
-    @Bean
-    MoveToCartAction cartMoveToCartAction() {
-        return new MoveToCartAction();
-    }
-
-    @Bean
-    LockTimeoutAction cartLockTimeoutAction() {
-        return new LockTimeoutAction();
-    }
-
-    @Bean
-    InventoryReservationFailedAction cartInventoryReservationFailedAction() {
-        return new InventoryReservationFailedAction();
-    }
-
-    @Bean
-    ReserveTimeoutAction cartReserveTimeoutAction() {
-        return new ReserveTimeoutAction();
-    }
-
-    @Bean
-    RecoverCartAction cartRecoverCartAction() {
-        return new RecoverCartAction();
-    }
-
-    @Bean
-    InventoryReserveAction inventoryReserveAction() {
-        return new InventoryReserveAction();
-    }
-
-    @Bean
-    CartInventoryReleaseAction cartInventoryReleaseAction() {
-        return new CartInventoryReleaseAction();
-    }
+    // ═══════════════════════════════════════════════════════════════════
+    // Enablement strategy (cconfig)
+    // ═══════════════════════════════════════════════════════════════════
 
     @Bean
     ConfigProviderImpl cartConfigProvider() {
@@ -338,24 +213,117 @@ public class CartConfiguration {
         return enablementStrategy;
     }
 
+    // ═══════════════════════════════════════════════════════════════════
+    // STM Transition Actions (convention: cart + eventId + Action)
+    // ═══════════════════════════════════════════════════════════════════
+
     @Bean
-    CHECKOUT_IN_PROGRESSCartPostSaveHook cartCHECKOUT_IN_PROGRESSPostSaveHook() {
-        return new CHECKOUT_IN_PROGRESSCartPostSaveHook();
+    AddItemCartAction cartAddItemAction() {
+        return new AddItemCartAction();
     }
 
     @Bean
-    ORDER_CREATEDCartPostSaveHook cartORDER_CREATEDPostSaveHook() {
-        return new ORDER_CREATEDCartPostSaveHook();
+    RemoveItemCartAction cartRemoveItemAction() {
+        return new RemoveItemCartAction();
     }
 
     @Bean
-    CREATEDCartPostSaveHook cartCREATEDPostSaveHook() {
-        return new CREATEDCartPostSaveHook();
+    UpdateQuantityCartAction cartUpdateQuantityAction() {
+        return new UpdateQuantityCartAction();
     }
+
+    @Bean
+    ApplyCouponCartAction cartApplyCouponAction() {
+        return new ApplyCouponCartAction();
+    }
+
+    @Bean
+    RemoveCouponCartAction cartRemoveCouponAction() {
+        return new RemoveCouponCartAction();
+    }
+
+    @Bean
+    InitiateCheckoutCartAction cartInitiateCheckoutAction() {
+        return new InitiateCheckoutCartAction();
+    }
+
+    @Bean
+    CompleteCheckoutCartAction cartCompleteCheckoutAction() {
+        return new CompleteCheckoutCartAction();
+    }
+
+    @Bean
+    AbandonCartAction cartAbandonAction() {
+        return new AbandonCartAction();
+    }
+
+    @Bean
+    ExpireCartAction cartExpireAction() {
+        return new ExpireCartAction();
+    }
+
+    @Bean
+    CancelCheckoutCartAction cartCancelCheckoutAction() {
+        return new CancelCheckoutCartAction();
+    }
+
+    @Bean
+    ReactivateCartAction cartReactivateAction() {
+        return new ReactivateCartAction();
+    }
+
+    @Bean
+    MergeCartAction cartMergeAction() {
+        return new MergeCartAction();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Policy validator
+    // ═══════════════════════════════════════════════════════════════════
+
+    @Bean
+    CartPolicyValidator cartPolicyValidator() {
+        return new CartPolicyValidator();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Hexagonal ports — infrastructure adapters
+    // ═══════════════════════════════════════════════════════════════════
+
+    @Bean
+    InventoryCheckPort inventoryCheckPort(SearchService searchService) {
+        return new InventoryCheckAdapter(searchService);
+    }
+
+    @Bean
+    @ConditionalOnBean(PricingService.class)
+    PricingPort pricingPort(PricingService pricingServiceClient) {
+        return new PricingAdapter(pricingServiceClient);
+    }
+
+    @Bean
+    ProductCheckPort productCheckPort(SearchService searchService) {
+        return new ProductCheckAdapter(searchService);
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Post-Save Hooks (convention: cart + STATE_ID + PostSaveHook)
+    // ═══════════════════════════════════════════════════════════════════
 
     @Bean
     ACTIVECartPostSaveHook cartACTIVEPostSaveHook() {
         return new ACTIVECartPostSaveHook();
+    }
+
+    @Bean
+    CHECKOUT_INITIATEDCartPostSaveHook cartCHECKOUT_INITIATEDPostSaveHook() {
+        return new CHECKOUT_INITIATEDCartPostSaveHook();
+    }
+
+    @Bean
+    CHECKOUT_COMPLETEDCartPostSaveHook cartCHECKOUT_COMPLETEDPostSaveHook() {
+        return new CHECKOUT_COMPLETEDCartPostSaveHook();
     }
 
     @Bean
@@ -368,4 +336,30 @@ public class CartConfiguration {
         return new EXPIREDCartPostSaveHook();
     }
 
+    @Bean
+    MERGEDCartPostSaveHook cartMERGEDPostSaveHook() {
+        return new MERGEDCartPostSaveHook();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ACL: STM Authorities Builder
+    // ═══════════════════════════════════════════════════════════════════
+
+    @Bean
+    Function<ChenileExchange, String[]> cartEventAuthoritiesSupplier(
+            @Qualifier("cartActionsInfoProvider") STMActionsInfoProvider cartInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(cartInfoProvider, false);
+        return builder.build();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Chenile-Kafka event handler
+    // ═══════════════════════════════════════════════════════════════════
+
+    @Bean("cartEventService")
+    @ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
+    CartEventHandler cartEventService(org.chenile.pubsub.ChenilePub chenilePub,
+                                      tools.jackson.databind.ObjectMapper objectMapper) {
+        return new CartEventHandler(chenilePub, objectMapper);
+    }
 }

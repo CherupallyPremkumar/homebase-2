@@ -28,10 +28,8 @@ public class DiscontinueProductProductAction extends AbstractSTMTransitionAction
         log.info("Discontinuing product '{}' (id={})", product.getName(), product.getId());
 
         product.getTransientMap().put("previousPayload", payload);
-        // Store the discontinue reason for the PostSaveHook event
-        String reason = payload.getComment() != null ? payload.getComment() : "Product end-of-life";
-        product.getTransientMap().put("discontinueReason", reason);
+        product.getTransientMap().put("discontinueReason", payload.getReason());
 
-        log.info("Product '{}' discontinued permanently. Reason: {}", product.getName(), reason);
+        log.info("Product '{}' discontinued permanently. Reason: {}", product.getName(), payload.getReason());
     }
 }

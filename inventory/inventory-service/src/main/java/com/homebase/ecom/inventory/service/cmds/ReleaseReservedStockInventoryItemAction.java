@@ -1,7 +1,6 @@
 package com.homebase.ecom.inventory.service.cmds;
 
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
-import com.homebase.ecom.inventory.domain.model.InventoryStatus;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
@@ -30,11 +29,6 @@ public class ReleaseReservedStockInventoryItemAction extends AbstractSTMTransiti
         inventory.releaseReservation(payload.getOrderId());
 
         int released = prevReserved - inventory.getReservedQuantity();
-
-        // Update status if stock is no longer low
-        if (inventory.getAvailableQuantity() > inventory.getLowStockThreshold()) {
-            inventory.setStatus(InventoryStatus.AVAILABLE);
-        }
 
         log.info("Released reservation for productId={}, orderId={}, releasedQty={}, newAvailable={}",
                 inventory.getProductId(), payload.getOrderId(), released, inventory.getAvailableQuantity());

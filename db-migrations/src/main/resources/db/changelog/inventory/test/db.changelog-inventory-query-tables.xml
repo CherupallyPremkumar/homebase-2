@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Test-only: creates inventory domain tables needed by inventory-query BDD tests.
+        Mirrors the production schema from V47 inventory_item_schema.
+        Uses preConditions so this is safe to run alongside production changelogs.
+    -->
+
+    <!-- Inventory Item: raw SQL to preserve camelCase "stateId"/"flowId" column names -->
+    <changeSet id="inventory-query-test-inventory-item" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="inventory_item"/></not>
+        </preConditions>
+        <sql>
+            CREATE TABLE inventory_item (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                description VARCHAR(255),
+                sku VARCHAR(255),
+                asin VARCHAR(255),
+                product_id VARCHAR(255),
+                variant_id VARCHAR(255) UNIQUE,
+                quantity INT DEFAULT 0,
+                available_quantity INT DEFAULT 0,
+                reserved_quantity INT DEFAULT 0,
+                inbound_quantity INT DEFAULT 0,
+                damaged_quantity INT DEFAULT 0,
+                primary_fc VARCHAR(255),
+                is_fba BOOLEAN DEFAULT FALSE,
+                is_merchant_fulfilled BOOLEAN DEFAULT TRUE,
+                low_stock_threshold INT DEFAULT 10,
+                out_of_stock_threshold INT DEFAULT 0,
+                status VARCHAR(50) DEFAULT 'AVAILABLE',
+                last_sale_at TIMESTAMP,
+                last_restock_at TIMESTAMP,
+                "stateId" VARCHAR(100),
+                "flowId" VARCHAR(100),
+                version BIGINT DEFAULT 0,
+                created_time TIMESTAMP,
+                last_modified_time TIMESTAMP,
+                created_by VARCHAR(255),
+                last_modified_by VARCHAR(255),
+                tenant VARCHAR(255),
+                state_entry_time TIMESTAMP
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Inventory Reservations -->
+    <changeSet id="inventory-query-test-reservations" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="inventory_reservations"/></not>
+        </preConditions>
+        <createTable tableName="inventory_reservations">
+            <column name="inventory_item_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="session_id" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT" defaultValueNumeric="0"/>
+            <column name="reserved_at" type="TIMESTAMP"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+            <column name="status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Inventory Movements -->
+    <changeSet id="inventory-query-test-movements" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="inventory_movements"/></not>
+        </preConditions>
+        <createTable tableName="inventory_movements">
+            <column name="inventory_item_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(50)"/>
+            <column name="quantity" type="INT" defaultValueNumeric="0"/>
+            <column name="reference_id" type="VARCHAR(255)"/>
+            <column name="fulfillment_center_id" type="VARCHAR(255)"/>
+            <column name="movement_time" type="TIMESTAMP"/>
+            <column name="reason" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Inventory Damage Records -->
+    <changeSet id="inventory-query-test-damage-records" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="inventory_damage_records"/></not>
+        </preConditions>
+        <createTable tableName="inventory_damage_records">
+            <column name="inventory_item_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_identifier" type="VARCHAR(255)"/>
+            <column name="location" type="VARCHAR(255)"/>
+            <column name="damage_type" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="discovered_at" type="TIMESTAMP"/>
+            <column name="status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

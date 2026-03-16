@@ -1,7 +1,9 @@
 package com.homebase.ecom.cart.exception;
 
-public class QuantityLimitExceededException extends RuntimeException {
+import org.chenile.base.exception.ErrorNumException;
+
+public class QuantityLimitExceededException extends ErrorNumException {
     public QuantityLimitExceededException(String message) {
-        super(message);
+        super(400, 4002, message);
     }
 }

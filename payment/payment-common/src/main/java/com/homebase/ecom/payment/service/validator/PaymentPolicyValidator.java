@@ -1,7 +1,8 @@
 package com.homebase.ecom.payment.service.validator;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import com.homebase.ecom.payment.domain.model.Payment;
 import org.chenile.cconfig.sdk.CconfigClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,54 +17,112 @@ import java.util.Map;
 /**
  * Central component enforcing all payment lifecycle policies and rules.
  *
- * <h3>Policies (throw exceptions / enforce constraints)</h3>
+ * <h3>Two-layer validation:</h3>
  * <ul>
- * <li>Gateway whitelist validation</li>
- * <li>Refund window validation</li>
- * <li>High-value transaction flagging</li>
+ *   <li><b>Layer 1 -- Cconfig thresholds:</b> reads configurable rules from
+ *       {@code org/chenile/config/payment.json} (overridable per tenant in DB).
+ *       Used for amount limits, method validation, retry limits.</li>
+ *   <li><b>Layer 2 -- Business rules:</b> enforced directly in STM transition actions
+ *       via calls to this validator.</li>
  * </ul>
  *
- * <h3>Rules (return config values)</h3>
- * <ul>
- * <li>Retry: max retries, payment retry window minutes</li>
- * <li>Refund: processing days, partial refund allowed</li>
- * <li>Fraud: thresholds for flagging and blocking</li>
- * </ul>
- *
- * All values sourced from {@code payment.json} via {@code CconfigClient}.
+ * Policies sourced from {@code payment.json} via {@code CconfigClient}:
+ * - paymentTimeoutMinutes(30), maxRetryAttempts(3), retryDelayMinutes(5)
+ * - minPaymentAmount(1), maxPaymentAmount(1000000)
+ * - supportedMethods(CARD, UPI, NET_BANKING, WALLET), autoSettleDays(7)
  */
 @Component
 public class PaymentPolicyValidator {
 
     private static final Logger log = LoggerFactory.getLogger(PaymentPolicyValidator.class);
 
-    @Autowired
+    @Autowired(required = false)
     private CconfigClient cconfigClient;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private JsonNode getPaymentConfig() {
-        try {
-            Map<String, Object> map = cconfigClient.value("payment", null);
-            if (map != null)
-                return mapper.valueToTree(map);
-        } catch (Exception e) {
-            log.warn("Failed to load payment.json from cconfig, using defaults: {}", e.getMessage());
-        }
-        return mapper.createObjectNode();
-    }
-
-    // ===========================================================
-    // POLICY: Gateway validation
-    // ===========================================================
+    // ═══════════════════════════════════════════════════════════════════════
+    // POLICY: Amount limits
+    // ═══════════════════════════════════════════════════════════════════════
 
     /**
-     * Validates that the payment gateway is in the platform's allowed list.
-     * Controlled by: payment.json → policies.transaction.allowedGateways
+     * Validates the payment amount is within configured bounds.
+     * minPaymentAmount(1) <= amount <= maxPaymentAmount(1000000)
      */
+    public void validateAmount(BigDecimal amount) {
+        if (amount == null) {
+            throw new IllegalArgumentException("Payment amount is required");
+        }
+        JsonNode config = getPaymentConfig();
+        int min = configInt(config, "/policies/transaction/minPaymentAmount", 1);
+        int max = configInt(config, "/policies/transaction/maxPaymentAmount", 1000000);
+        if (amount.compareTo(BigDecimal.valueOf(min)) < 0) {
+            throw new IllegalArgumentException("Payment amount " + amount + " is below minimum " + min);
+        }
+        if (amount.compareTo(BigDecimal.valueOf(max)) > 0) {
+            throw new IllegalArgumentException("Payment amount " + amount + " exceeds maximum " + max);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // POLICY: Payment method validation
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Validates the payment method is in the supported list.
+     * Default: CARD, UPI, NET_BANKING, WALLET
+     */
+    public void validatePaymentMethod(String method) {
+        if (method == null || method.isBlank()) {
+            throw new IllegalArgumentException("Payment method is required");
+        }
+        JsonNode config = getPaymentConfig();
+        List<String> supported = new ArrayList<>();
+        JsonNode node = config.at("/policies/transaction/supportedMethods");
+        if (!node.isMissingNode() && node.isArray()) {
+            node.forEach(m -> supported.add(m.asText().toUpperCase()));
+        }
+        if (supported.isEmpty()) {
+            // defaults
+            supported.addAll(List.of("CARD", "UPI", "NET_BANKING", "WALLET"));
+        }
+        if (!supported.contains(method.toUpperCase())) {
+            throw new IllegalArgumentException(
+                    "Payment method '" + method + "' is not supported. Use: " + supported);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // POLICY: Retry limits
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Validates that retry count has not exceeded the maximum.
+     */
+    public void validateRetryAllowed(Payment payment) {
+        int maxRetries = getMaxRetryAttempts();
+        if (payment.getRetryCount() >= maxRetries) {
+            throw new IllegalStateException(
+                    "Payment retry limit exceeded. Current: " + payment.getRetryCount() + ", max: " + maxRetries);
+        }
+    }
+
+    public int getMaxRetryAttempts() {
+        JsonNode config = getPaymentConfig();
+        return configInt(config, "/policies/retry/maxRetryAttempts", 3);
+    }
+
+    public int getRetryDelayMinutes() {
+        JsonNode config = getPaymentConfig();
+        return configInt(config, "/policies/retry/retryDelayMinutes", 5);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // POLICY: Gateway validation
+    // ═══════════════════════════════════════════════════════════════════════
+
     public void validateGateway(String gateway) {
-        if (gateway == null || gateway.isBlank())
-            return;
+        if (gateway == null || gateway.isBlank()) return;
         JsonNode config = getPaymentConfig();
         List<String> allowed = new ArrayList<>();
         JsonNode node = config.at("/policies/transaction/allowedGateways");
@@ -76,62 +135,76 @@ public class PaymentPolicyValidator {
         }
     }
 
-    /**
-     * Returns true if a high-value transaction should be flagged for review.
-     * Controlled by: payment.json → rules.fraud.flagHighValueTransactionAboveInr
-     */
+    // ═══════════════════════════════════════════════════════════════════════
+    // RULES: Timeout and Settlement
+    // ═══════════════════════════════════════════════════════════════════════
+
+    public int getPaymentTimeoutMinutes() {
+        JsonNode config = getPaymentConfig();
+        return configInt(config, "/policies/timeout/paymentTimeoutMinutes", 30);
+    }
+
+    public int getAutoSettleDays() {
+        JsonNode config = getPaymentConfig();
+        return configInt(config, "/policies/settlement/autoSettleDays", 7);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // RULES: Fraud
+    // ═══════════════════════════════════════════════════════════════════════
+
     public boolean isFlaggedHighValue(BigDecimal amount) {
         JsonNode node = getPaymentConfig().at("/rules/fraud/flagHighValueTransactionAboveInr");
         double threshold = (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 50000.0;
         return amount != null && amount.doubleValue() > threshold;
     }
 
-    /**
-     * Returns true if a transaction requires additional verification.
-     * Controlled by: payment.json → rules.fraud.requireVerificationAboveInr
-     */
     public boolean requiresVerification(BigDecimal amount) {
         JsonNode node = getPaymentConfig().at("/rules/fraud/requireVerificationAboveInr");
         double threshold = (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 100000.0;
         return amount != null && amount.doubleValue() > threshold;
     }
 
-    // ===========================================================
-    // RULE: Retry
-    // ===========================================================
+    // ═══════════════════════════════════════════════════════════════════════
+    // RULES: Refund
+    // ═══════════════════════════════════════════════════════════════════════
 
-    /** Returns max payment retry window in minutes. */
-    public int getPaymentRetryWindowMinutes() {
-        JsonNode node = getPaymentConfig().at("/rules/retry/paymentRetryWindowMinutes");
-        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 30;
-    }
-
-    /** Returns max allowed payment retry count. */
-    public int getMaxPaymentRetries() {
-        JsonNode node = getPaymentConfig().at("/rules/retry/maxPaymentRetries");
-        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 3;
-    }
-
-    // ===========================================================
-    // RULE: Refund
-    // ===========================================================
-
-    /** Returns refund processing days. */
     public int getRefundProcessingDays() {
         JsonNode node = getPaymentConfig().at("/rules/refund/processingDays");
         return (!node.isMissingNode() && node.isInt()) ? node.asInt() : 5;
     }
 
-    /** Returns true if partial refunds are allowed. */
     public boolean isPartialRefundAllowed() {
         JsonNode node = getPaymentConfig().at("/rules/refund/partialRefundAllowed");
         return node.isMissingNode() || node.asBoolean(true);
     }
 
-    /** Returns true if refund requires approval above a threshold. */
     public boolean requiresApproval(BigDecimal amount) {
-        JsonNode node = getPaymentConfig().at("/policies/transaction/requireRefundApprovalAboveInr");
+        JsonNode node = getPaymentConfig().at("/policies/refund/requireRefundApprovalAboveInr");
         double threshold = (!node.isMissingNode() && node.isNumber()) ? node.asDouble() : 5000.0;
         return amount != null && amount.doubleValue() > threshold;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // INTERNAL: Config helpers
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private JsonNode getPaymentConfig() {
+        try {
+            if (cconfigClient != null) {
+                Map<String, Object> map = cconfigClient.value("payment", null);
+                if (map != null) {
+                    return mapper.valueToTree(map);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to load payment.json from cconfig, using defaults: {}", e.getMessage());
+        }
+        return mapper.createObjectNode();
+    }
+
+    private int configInt(JsonNode config, String path, int defaultVal) {
+        JsonNode node = config.at(path);
+        return (!node.isMissingNode() && node.isInt()) ? node.asInt() : defaultVal;
     }
 }

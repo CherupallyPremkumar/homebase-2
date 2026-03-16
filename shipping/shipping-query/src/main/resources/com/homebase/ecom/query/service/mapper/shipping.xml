@@ -2,19 +2,27 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="Shipping">
 
-    <select id="getAll" resultType="com.homebase.ecom.dto.ShippingDto">
-        SELECT 
-            id, 
-            order_id as "orderId", 
-            carrier, 
-            tracking_number as "trackingNumber", 
-            status, 
-            state_id as "stateId", 
+    <!-- Dashboard: getAll -->
+    <select id="getAll" resultType="com.homebase.ecom.shipping.dto.ShippingDto">
+        SELECT
+            id,
+            order_id as "orderId",
+            customer_id as "customerId",
+            carrier,
+            tracking_number as "trackingNumber",
+            shipping_method as "shippingMethod",
+            state_id as "stateId",
+            delivery_attempts as "deliveryAttempts",
+            estimated_delivery_date as "estimatedDeliveryDate",
+            actual_delivery_date as "actualDeliveryDate",
+            current_location as "currentLocation",
             created_at as "createdAt"
         FROM shipments
         <where>
             <if test="orderId != null">AND order_id = #{orderId}</if>
-            <if test="status != null">AND status = #{status}</if>
+            <if test="customerId != null">AND customer_id = #{customerId}</if>
+            <if test="carrier != null">AND carrier = #{carrier}</if>
+            <if test="shippingMethod != null">AND shipping_method = #{shippingMethod}</if>
             <if test="stateId != null">AND state_id = #{stateId}</if>
         </where>
         ${orderby} ${pagination}
@@ -24,9 +32,120 @@
         SELECT count(*) FROM shipments
         <where>
             <if test="orderId != null">AND order_id = #{orderId}</if>
-            <if test="status != null">AND status = #{status}</if>
+            <if test="customerId != null">AND customer_id = #{customerId}</if>
+            <if test="carrier != null">AND carrier = #{carrier}</if>
+            <if test="shippingMethod != null">AND shipping_method = #{shippingMethod}</if>
             <if test="stateId != null">AND state_id = #{stateId}</if>
         </where>
+    </select>
+
+    <!-- Dashboard: getById -->
+    <select id="getById" resultType="com.homebase.ecom.shipping.dto.ShippingDto">
+        SELECT
+            id,
+            order_id as "orderId",
+            customer_id as "customerId",
+            carrier,
+            tracking_number as "trackingNumber",
+            shipping_method as "shippingMethod",
+            state_id as "stateId",
+            delivery_attempts as "deliveryAttempts",
+            estimated_delivery_date as "estimatedDeliveryDate",
+            actual_delivery_date as "actualDeliveryDate",
+            current_location as "currentLocation",
+            from_address as "fromAddress",
+            to_address as "toAddress",
+            weight,
+            dimensions,
+            delivery_instructions as "deliveryInstructions",
+            created_at as "createdAt"
+        FROM shipments
+        WHERE id = #{id}
+    </select>
+
+    <!-- Dashboard: getStateCounts -->
+    <select id="getStateCounts" resultType="map">
+        SELECT state_id as "stateId", count(*) as "count"
+        FROM shipments
+        GROUP BY state_id
+        ORDER BY count(*) DESC
+    </select>
+
+    <!-- Dashboard: getByCarrier -->
+    <select id="getByCarrier" resultType="com.homebase.ecom.shipping.dto.ShippingDto">
+        SELECT
+            id,
+            order_id as "orderId",
+            carrier,
+            tracking_number as "trackingNumber",
+            shipping_method as "shippingMethod",
+            state_id as "stateId",
+            current_location as "currentLocation",
+            created_at as "createdAt"
+        FROM shipments
+        WHERE carrier = #{carrier}
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getByCarrier-count" resultType="int">
+        SELECT count(*) FROM shipments
+        WHERE carrier = #{carrier}
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+    </select>
+
+    <!-- Dashboard: getPendingShipments (PENDING and LABEL_CREATED) -->
+    <select id="getPendingShipments" resultType="com.homebase.ecom.shipping.dto.ShippingDto">
+        SELECT
+            id,
+            order_id as "orderId",
+            carrier,
+            tracking_number as "trackingNumber",
+            shipping_method as "shippingMethod",
+            state_id as "stateId",
+            current_location as "currentLocation",
+            created_at as "createdAt"
+        FROM shipments
+        WHERE state_id IN ('PENDING', 'LABEL_CREATED')
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getPendingShipments-count" resultType="int">
+        SELECT count(*) FROM shipments
+        WHERE state_id IN ('PENDING', 'LABEL_CREATED')
+    </select>
+
+    <!-- Customer: getByOrderId -->
+    <select id="getByOrderId" resultType="com.homebase.ecom.shipping.dto.ShippingDto">
+        SELECT
+            id,
+            order_id as "orderId",
+            carrier,
+            tracking_number as "trackingNumber",
+            shipping_method as "shippingMethod",
+            state_id as "stateId",
+            estimated_delivery_date as "estimatedDeliveryDate",
+            actual_delivery_date as "actualDeliveryDate",
+            current_location as "currentLocation"
+        FROM shipments
+        WHERE order_id = #{orderId}
+    </select>
+
+    <!-- Customer: trackShipment -->
+    <select id="trackShipment" resultType="com.homebase.ecom.shipping.dto.ShippingDto">
+        SELECT
+            id,
+            order_id as "orderId",
+            carrier,
+            tracking_number as "trackingNumber",
+            shipping_method as "shippingMethod",
+            state_id as "stateId",
+            estimated_delivery_date as "estimatedDeliveryDate",
+            actual_delivery_date as "actualDeliveryDate",
+            current_location as "currentLocation",
+            delivery_attempts as "deliveryAttempts"
+        FROM shipments
+        WHERE tracking_number = #{trackingNumber}
     </select>
 
 </mapper>

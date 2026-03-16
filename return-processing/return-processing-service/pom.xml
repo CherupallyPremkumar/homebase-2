@@ -42,6 +42,10 @@
             <artifactId>workflow-service</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.homebase.ecom.build</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>owiz</artifactId>
         </dependency>
@@ -95,12 +99,34 @@
 		</dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
+			<artifactId>chenile-security-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-security</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
 			<artifactId>security-interceptor</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.dasniko</groupId>
+			<artifactId>testcontainers-keycloak</artifactId>
+			<version>3.4.0</version>
+			<scope>test</scope>
+		</dependency>
+			<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>db-migrations</artifactId>
+			<version>${revision}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

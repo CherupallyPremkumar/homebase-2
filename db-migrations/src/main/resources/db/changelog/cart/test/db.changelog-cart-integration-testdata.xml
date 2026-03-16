@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Cart integration test data: inventory entries for product variant IDs
+        so that cart addItem can verify availability via check-availability query.
+        Product test data uses var-1a, var-1b, etc. Inventory needs matching entries.
+    -->
+    <changeSet id="cart-integration-inventory-for-product-variants" author="homebase-test">
+        <sql>
+            <!-- prod-1 Wireless Headphones (PUBLISHED) — var-1a available, var-1b available -->
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, primary_fc, "stateId", "flowId", tenant)
+            VALUES ('inv-cart-1a', 'WH-BLK-001', 'prod-1', 'var-1a', 100, 80, 5, 10, 'AVAILABLE', 'FC-CHENNAI', 'IN_WAREHOUSE', 'inventory-flow', 'tenant0');
+
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, primary_fc, "stateId", "flowId", tenant)
+            VALUES ('inv-cart-1b', 'WH-WHT-001', 'prod-1', 'var-1b', 50, 40, 0, 10, 'AVAILABLE', 'FC-CHENNAI', 'IN_WAREHOUSE', 'inventory-flow', 'tenant0');
+
+            <!-- prod-2 Cotton T-Shirt (PUBLISHED) — var-2a available -->
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, primary_fc, "stateId", "flowId", tenant)
+            VALUES ('inv-cart-2a', 'TS-BLK-S', 'prod-2', 'var-2a', 200, 180, 0, 10, 'AVAILABLE', 'FC-MUMBAI', 'IN_WAREHOUSE', 'inventory-flow', 'tenant0');
+
+            <!-- prod-5 Bluetooth Speaker (PUBLISHED) — var-5a available -->
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, primary_fc, "stateId", "flowId", tenant)
+            VALUES ('inv-cart-5a', 'BS-RED-001', 'prod-5', 'var-5a', 30, 25, 0, 5, 'AVAILABLE', 'FC-BANGALORE', 'IN_WAREHOUSE', 'inventory-flow', 'tenant0');
+
+            <!-- prod-4 Smartphone (DRAFT — NOT sellable) — var-4a has stock but product won't pass variant-exists -->
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, primary_fc, "stateId", "flowId", tenant)
+            VALUES ('inv-cart-4a', 'SP-X200-128', 'prod-4', 'var-4a', 50, 50, 0, 10, 'AVAILABLE', 'FC-CHENNAI', 'IN_WAREHOUSE', 'inventory-flow', 'tenant0');
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

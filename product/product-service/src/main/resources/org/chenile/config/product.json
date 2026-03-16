@@ -1,0 +1,39 @@
+{
+  "policies": {
+    "lifecycle": {
+      "rejectionRequiresComment": true,
+      "minRejectionCommentLength": 10
+    },
+    "submitForReview": {
+      "minNameLength": 3,
+      "minDescriptionLength": 20,
+      "categoryRequired": true
+    },
+    "publish": {
+      "minImages": 1,
+      "minDescriptionLength": 50,
+      "brandRequired": true,
+      "minVariants": 1,
+      "minAttributes": 0
+    },
+    "recall": {
+      "minReasonLength": 10,
+      "referenceNumberRequired": true
+    }
+  },
+  "media": {
+    "maxFileSizeBytes": 10485760,
+    "maxImagesPerProduct": 20,
+    "maxImagesPerVariant": 10,
+    "allowedMimeTypes": ["image/jpeg", "image/png", "image/webp", "image/gif"],
+    "presignedUrlExpirySeconds": 900,
+    "minWidth": 200,
+    "minHeight": 200,
+    "maxWidth": 8000,
+    "maxHeight": 8000
+  },
+  "policyEngine": {
+    "pim-submit-review": "policy-pim-submit-001",
+    "pim-publish-approved": "policy-pim-publish-001"
+  }
+}

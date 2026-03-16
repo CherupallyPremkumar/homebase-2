@@ -2,25 +2,29 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="Support">
 
+    <!-- ================================================================ -->
+    <!-- Dashboard: getAll — paginated list with filters                   -->
+    <!-- ================================================================ -->
     <select id="getAll" resultType="java.util.HashMap">
         SELECT
             st.id as id,
-            st.user_id as userId,
+            st.customer_id as customerId,
             st.subject as subject,
             st.category as category,
             st.priority as priority,
             st.state_id as stateId,
-            st.assigned_to as assignedTo,
+            st.assigned_agent_id as assignedAgentId,
+            st.reopen_count as reopenCount,
             st.created_at as createdAt
         FROM support_tickets st
         <where>
             <if test="id != null">AND st.id = #{id}</if>
-            <if test="userId != null">AND st.user_id = #{userId}</if>
+            <if test="customerId != null">AND st.customer_id = #{customerId}</if>
             <if test="subject != null">AND st.subject LIKE CONCAT('%', #{subject}, '%')</if>
             <if test="category != null">AND st.category = #{category}</if>
             <if test="priority != null">AND st.priority = #{priority}</if>
             <if test="stateId != null">AND st.state_id = #{stateId}</if>
-            <if test="assignedTo != null">AND st.assigned_to = #{assignedTo}</if>
+            <if test="assignedAgentId != null">AND st.assigned_agent_id = #{assignedAgentId}</if>
             <if test="startDate != null">AND st.created_at &gt;= #{startDate}</if>
             <if test="endDate != null">AND st.created_at &lt;= #{endDate}</if>
         </where>
@@ -32,32 +36,149 @@
         FROM support_tickets st
         <where>
             <if test="id != null">AND st.id = #{id}</if>
-            <if test="userId != null">AND st.user_id = #{userId}</if>
+            <if test="customerId != null">AND st.customer_id = #{customerId}</if>
             <if test="subject != null">AND st.subject LIKE CONCAT('%', #{subject}, '%')</if>
             <if test="category != null">AND st.category = #{category}</if>
             <if test="priority != null">AND st.priority = #{priority}</if>
             <if test="stateId != null">AND st.state_id = #{stateId}</if>
-            <if test="assignedTo != null">AND st.assigned_to = #{assignedTo}</if>
+            <if test="assignedAgentId != null">AND st.assigned_agent_id = #{assignedAgentId}</if>
             <if test="startDate != null">AND st.created_at &gt;= #{startDate}</if>
             <if test="endDate != null">AND st.created_at &lt;= #{endDate}</if>
         </where>
     </select>
 
+    <!-- ================================================================ -->
+    <!-- Dashboard: getById — single ticket with full detail               -->
+    <!-- ================================================================ -->
     <select id="getById" resultType="java.util.HashMap">
         SELECT
             st.id as id,
-            st.user_id as userId,
+            st.customer_id as customerId,
             st.order_id as orderId,
             st.subject as subject,
             st.category as category,
             st.priority as priority,
             st.state_id as stateId,
-            st.assigned_to as assignedTo,
+            st.assigned_agent_id as assignedAgentId,
             st.description as description,
             st.resolved_at as resolvedAt,
+            st.reopen_count as reopenCount,
             st.created_at as createdAt
         FROM support_tickets st
         WHERE st.id = #{id}
+    </select>
+
+    <!-- ================================================================ -->
+    <!-- Dashboard: getStateCounts — ticket count per state                -->
+    <!-- ================================================================ -->
+    <select id="getStateCounts" resultType="java.util.HashMap">
+        SELECT
+            st.state_id as stateId,
+            COUNT(*) as ticketCount
+        FROM support_tickets st
+        GROUP BY st.state_id
+    </select>
+
+    <!-- ================================================================ -->
+    <!-- Dashboard: getOverdueTickets — tickets beyond SLA threshold       -->
+    <!-- ================================================================ -->
+    <select id="getOverdueTickets" resultType="java.util.HashMap">
+        SELECT
+            st.id as id,
+            st.customer_id as customerId,
+            st.subject as subject,
+            st.category as category,
+            st.priority as priority,
+            st.state_id as stateId,
+            st.assigned_agent_id as assignedAgentId,
+            st.created_at as createdAt,
+            TIMESTAMPDIFF(HOUR, st.created_at, CURRENT_TIMESTAMP) as hoursOpen
+        FROM support_tickets st
+        WHERE st.state_id NOT IN ('CLOSED', 'RESOLVED')
+          AND TIMESTAMPDIFF(HOUR, st.created_at, CURRENT_TIMESTAMP) &gt; COALESCE(#{slaHours}, 24)
+        ORDER BY st.created_at ASC
+        ${pagination}
+    </select>
+
+    <select id="getOverdueTickets-count" resultType="int">
+        SELECT COUNT(*)
+        FROM support_tickets st
+        WHERE st.state_id NOT IN ('CLOSED', 'RESOLVED')
+          AND TIMESTAMPDIFF(HOUR, st.created_at, CURRENT_TIMESTAMP) &gt; COALESCE(#{slaHours}, 24)
+    </select>
+
+    <!-- ================================================================ -->
+    <!-- Dashboard: getByAgent — tickets assigned to a specific agent      -->
+    <!-- ================================================================ -->
+    <select id="getByAgent" resultType="java.util.HashMap">
+        SELECT
+            st.id as id,
+            st.customer_id as customerId,
+            st.subject as subject,
+            st.category as category,
+            st.priority as priority,
+            st.state_id as stateId,
+            st.assigned_agent_id as assignedAgentId,
+            st.created_at as createdAt
+        FROM support_tickets st
+        WHERE st.assigned_agent_id = #{assignedAgentId}
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getByAgent-count" resultType="int">
+        SELECT COUNT(*)
+        FROM support_tickets st
+        WHERE st.assigned_agent_id = #{assignedAgentId}
+    </select>
+
+    <!-- ================================================================ -->
+    <!-- Dashboard: getByPriority — tickets filtered by priority           -->
+    <!-- ================================================================ -->
+    <select id="getByPriority" resultType="java.util.HashMap">
+        SELECT
+            st.id as id,
+            st.customer_id as customerId,
+            st.subject as subject,
+            st.category as category,
+            st.priority as priority,
+            st.state_id as stateId,
+            st.assigned_agent_id as assignedAgentId,
+            st.created_at as createdAt
+        FROM support_tickets st
+        WHERE st.priority = #{priority}
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getByPriority-count" resultType="int">
+        SELECT COUNT(*)
+        FROM support_tickets st
+        WHERE st.priority = #{priority}
+    </select>
+
+    <!-- ================================================================ -->
+    <!-- Customer: getByCustomerId — tickets for a specific customer       -->
+    <!-- ================================================================ -->
+    <select id="getByCustomerId" resultType="java.util.HashMap">
+        SELECT
+            st.id as id,
+            st.customer_id as customerId,
+            st.order_id as orderId,
+            st.subject as subject,
+            st.category as category,
+            st.priority as priority,
+            st.state_id as stateId,
+            st.assigned_agent_id as assignedAgentId,
+            st.resolved_at as resolvedAt,
+            st.created_at as createdAt
+        FROM support_tickets st
+        WHERE st.customer_id = #{customerId}
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getByCustomerId-count" resultType="int">
+        SELECT COUNT(*)
+        FROM support_tickets st
+        WHERE st.customer_id = #{customerId}
     </select>
 
 </mapper>

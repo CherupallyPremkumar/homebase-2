@@ -1,7 +1,7 @@
 package com.homebase.ecom.product.service.postSaveHooks;
 
 import com.homebase.ecom.product.domain.model.Product;
-import com.homebase.ecom.product.service.event.ProductEventPublisher;
+import com.homebase.ecom.product.service.event.ProductEventHandler;
 import com.homebase.ecom.shared.event.ProductDisabledEvent;
 import org.chenile.stm.State;
 import org.chenile.workflow.model.TransientMap;
@@ -20,7 +20,7 @@ public class DISABLEDProductPostSaveHook implements PostSaveHook<Product> {
     private static final Logger log = LoggerFactory.getLogger(DISABLEDProductPostSaveHook.class);
 
     @Autowired
-    private ProductEventPublisher productEventPublisher;
+    private ProductEventHandler productEventHandler;
 
     @Override
     public void execute(State startState, State endState, Product product, TransientMap map) {
@@ -33,7 +33,7 @@ public class DISABLEDProductPostSaveHook implements PostSaveHook<Product> {
         ProductDisabledEvent event = new ProductDisabledEvent(
                 product.getId(),
                 reason);
-        productEventPublisher.publishProductDisabled(event);
+        productEventHandler.publishProductDisabled(event);
 
         log.info("ProductDisabledEvent scheduled for product '{}'. Reason: {}", product.getName(), reason);
     }

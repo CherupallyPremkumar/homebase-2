@@ -9,10 +9,8 @@
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>cart-client</artifactId>
-    <name>Cart Service - Client</name>
-
+    <name>Cart Client — ProxyBuilder-based service client</name>
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom.cart</groupId>
@@ -20,12 +18,8 @@
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.github.resilience4j</groupId>
-            <artifactId>resilience4j-feign</artifactId>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-proxy</artifactId>
         </dependency>
     </dependencies>
 </project>

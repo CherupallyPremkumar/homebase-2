@@ -5,6 +5,10 @@ Feature: Inventory Business Logic Validation — tests policy enforcement and ed
 # REJECTION WITHOUT COMMENT: Should fail with policy violation
 # ===============================================================================
 
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
 Scenario: Create inventory for rejection validation
 Given that "flowName" equals "inventory-flow"
 And that "initialState" equals "STOCK_PENDING"
@@ -218,7 +222,7 @@ When I PATCH a REST request to URL "/inventory/${lcId}/${event}" with payload
     "orderId": "ORD-LC-001"
 }
 """
-Then the REST response key "mutatedEntity.currentState.stateId" is "PARTIALLY_RESERVED"
+Then the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
 
 Scenario: Full lifecycle - sell all reserved
 Given that "event" equals "soldAllReserved"
@@ -227,6 +231,16 @@ When I PATCH a REST request to URL "/inventory/${lcId}/${event}" with payload
 {
     "comment": "Order fulfilled",
     "orderId": "ORD-LC-001"
+}
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "IN_WAREHOUSE"
+
+Scenario: Full lifecycle - sell all remaining stock
+Given that "event" equals "sellAllStock"
+When I PATCH a REST request to URL "/inventory/${lcId}/${event}" with payload
+"""json
+{
+    "comment": "Clearing out remaining stock"
 }
 """
 Then the REST response key "mutatedEntity.currentState.stateId" is "OUT_OF_STOCK"

@@ -1,63 +1,125 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
+
+  <!-- Event definitions with ACLs and payload types -->
+  <event-information eventId='reviewReturn' meta-acls="SUPPORT,ADMIN" meta-bodyType="com.homebase.ecom.returnrequest.dto.ReviewReturnReturnrequestPayload"/>
+  <event-information eventId='approveReturn' meta-acls="SUPPORT,ADMIN" meta-bodyType="com.homebase.ecom.returnrequest.dto.ApproveReturnReturnrequestPayload"/>
+  <event-information eventId='rejectReturn' meta-acls="SUPPORT,ADMIN" meta-bodyType="com.homebase.ecom.returnrequest.dto.RejectReturnReturnrequestPayload"/>
+  <event-information eventId='partialApprove' meta-acls="SUPPORT,ADMIN" meta-bodyType="com.homebase.ecom.returnrequest.dto.PartialApproveReturnrequestPayload"/>
+  <event-information eventId='receiveItem' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.returnrequest.dto.ReceiveItemReturnrequestPayload"/>
+  <event-information eventId='inspectItem' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.returnrequest.dto.InspectItemReturnrequestPayload"/>
+  <event-information eventId='initiateRefund' meta-acls="SYSTEM,FINANCE" meta-bodyType="com.homebase.ecom.returnrequest.dto.InitiateRefundReturnrequestPayload"/>
+
   <flow id='return-request-flow' default='true'>
-    <security-strategy componentName="returnrequestSecurityStrategy"/>
+    <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="returnrequestEntryAction" />
 
-    <manual-state id='REQUESTED' initialState='true' meta-mainPath="true" description="Return requested by customer, awaiting inspection">
-      <entry-action componentName="returnRequestedNotificationAction" />
-      <on eventId='inspectReturn'
-          componentName='returnrequestInspectReturnAction'
-          newStateId='UNDER_REVIEW'
+    <!-- ================================================================ -->
+    <!-- HAPPY PATH: REQUESTED -> CHECK_AUTO_APPROVE -> UNDER_REVIEW ->   -->
+    <!--   APPROVED -> ITEM_RECEIVED -> INSPECTED -> REFUND_INITIATED ->  -->
+    <!--   COMPLETED                                                       -->
+    <!-- ================================================================ -->
+
+    <!-- Customer submits return request -->
+    <manual-state id='REQUESTED' initialState='true' meta-mainPath="true"
+                  description="Return requested by customer, pending auto-approve check">
+      <on eventId='reviewReturn'
+          componentName='returnrequestReviewReturnAction'
+          newStateId='CHECK_AUTO_APPROVE'
           meta-mainPath="true"
-          meta-acls="QUALITY_CHECKER"/>
+          meta-acls="SUPPORT,ADMIN"/>
     </manual-state>
 
-    <manual-state id='UNDER_REVIEW' meta-mainPath="true" description="Return under quality review">
+    <!--
+      OGNL auto-state: check if return value qualifies for auto-approval.
+      If totalRefundAmount <= autoApproveUnderValue (500) -> auto-approve
+      Else -> manual review required
+    -->
+    <auto-state id='CHECK_AUTO_APPROVE'
+                componentName='ifAction'
+                condition='totalRefundAmount != null and totalRefundAmount.doubleValue() &lt;= 500.0'
+                then='autoApprove'
+                else='manualReview'>
+      <on eventId='autoApprove' newStateId='APPROVED'/>
+      <on eventId='manualReview' newStateId='UNDER_REVIEW'/>
+    </auto-state>
+
+    <!-- Support/Admin reviews return request -->
+    <manual-state id='UNDER_REVIEW' meta-mainPath="true"
+                  description="Return under review by support team">
       <on eventId='approveReturn'
           componentName='returnrequestApproveReturnAction'
           newStateId='APPROVED'
           meta-mainPath="true"
-          meta-acls="QUALITY_CHECKER,ADMIN"/>
+          meta-acls="SUPPORT,ADMIN"/>
       <on eventId='rejectReturn'
           componentName='returnrequestRejectReturnAction'
           newStateId='REJECTED'
-          meta-acls="QUALITY_CHECKER,ADMIN"/>
+          meta-acls="SUPPORT,ADMIN"/>
+      <on eventId='partialApprove'
+          componentName='returnrequestPartialApproveAction'
+          newStateId='PARTIALLY_APPROVED'
+          meta-acls="SUPPORT,ADMIN"/>
     </manual-state>
 
-    <manual-state id='APPROVED' meta-mainPath="true" description="Return approved, awaiting pickup">
-      <entry-action componentName="approvedReturnNotificationAction" />
-      <on eventId='pickupInitiated'
-          componentName='returnrequestPickupInitiatedAction'
-          newStateId='IN_TRANSIT_BACK'
-          meta-mainPath="true"
-          meta-acls="SYSTEM"/>
-    </manual-state>
-
-    <manual-state id='IN_TRANSIT_BACK' meta-mainPath="true" description="Return item in transit back to warehouse">
-      <on eventId='itemReceived'
-          componentName='returnrequestItemReceivedAction'
-          newStateId='RECEIVED'
+    <!-- Return approved, awaiting item receipt at warehouse -->
+    <manual-state id='APPROVED' meta-mainPath="true"
+                  description="Return approved, awaiting item receipt at warehouse">
+      <on eventId='receiveItem'
+          componentName='returnrequestReceiveItemAction'
+          newStateId='ITEM_RECEIVED'
           meta-mainPath="true"
           meta-acls="WAREHOUSE"/>
     </manual-state>
 
-    <manual-state id='RECEIVED' meta-mainPath="true" description="Returned item received at warehouse">
-      <entry-action componentName="returnItemReceivedAction" />
-      <on eventId='processRefund'
-          componentName='returnrequestProcessRefundAction'
-          newStateId='REFUNDED'
+    <!-- Partially approved - some items accepted, awaiting receipt -->
+    <manual-state id='PARTIALLY_APPROVED'
+                  description="Return partially approved, some items accepted">
+      <on eventId='receiveItem'
+          componentName='returnrequestReceiveItemAction'
+          newStateId='ITEM_RECEIVED'
+          meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <!-- Item received at warehouse, awaiting inspection -->
+    <manual-state id='ITEM_RECEIVED' meta-mainPath="true"
+                  description="Item received at warehouse, awaiting inspection">
+      <on eventId='inspectItem'
+          componentName='returnrequestInspectItemAction'
+          newStateId='INSPECTED'
           meta-mainPath="true"
-          meta-acls="SYSTEM"/>
+          meta-acls="WAREHOUSE"/>
     </manual-state>
 
-    <manual-state id='REFUNDED' description="Refund processed for the returned item">
-      <entry-action componentName="refundProcessedNotificationAction" />
-      <exit-action componentName="returnrequestAdjustSettlementAction" />
+    <!-- Item inspected, ready for refund -->
+    <manual-state id='INSPECTED' meta-mainPath="true"
+                  description="Item inspected, ready for refund processing">
+      <on eventId='initiateRefund'
+          componentName='returnrequestInitiateRefundAction'
+          newStateId='REFUND_INITIATED'
+          meta-mainPath="true"
+          meta-acls="SYSTEM,FINANCE"/>
     </manual-state>
 
-    <manual-state id='REJECTED' description="Return request rejected">
-      <entry-action componentName="returnRejectedNotificationAction" />
+    <!-- Refund initiated, processing payment -->
+    <manual-state id='REFUND_INITIATED' meta-mainPath="true"
+                  description="Refund initiated, awaiting payment processing completion">
+      <exit-action componentName="returnrequestCompletedExitAction" />
+    </manual-state>
+
+    <!-- Return completed - terminal state -->
+    <manual-state id='COMPLETED' meta-mainPath="true"
+                  description="Return completed, refund processed and inventory updated">
+    </manual-state>
+
+    <!-- Return rejected - terminal state -->
+    <manual-state id='REJECTED'
+                  description="Return request rejected">
+    </manual-state>
+
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
     </manual-state>
   </flow>
 </states>

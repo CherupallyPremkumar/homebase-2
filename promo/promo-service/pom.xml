@@ -21,12 +21,17 @@
         <dependency>
             <groupId>com.homebase.ecom.promo</groupId>
             <artifactId>promo-api</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom.promo</groupId>
             <artifactId>promo-domain</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.promo</groupId>
+            <artifactId>promo-infrastructure</artifactId>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
@@ -42,10 +47,32 @@
             <artifactId>chenile-http</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>service-registry-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.build</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
     <dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-security-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-security</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>security-interceptor</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>cucumber-sec-utils</artifactId>
 			<scope>test</scope>
@@ -68,6 +95,24 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.promo</groupId>
+			<artifactId>promo-query-api</artifactId>
+			<version>${revision}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.dasniko</groupId>
+			<artifactId>testcontainers-keycloak</artifactId>
+			<version>3.4.0</version>
+			<scope>test</scope>
+		</dependency>
+			<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>db-migrations</artifactId>
+			<version>${revision}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

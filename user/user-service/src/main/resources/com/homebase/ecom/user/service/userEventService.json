@@ -1,0 +1,12 @@
+{
+	"name": "userEventService",
+	"id": "userEventService",
+	"serviceName": "userEventService",
+	"operations": [
+		{
+			"name": "handleOrderEvent",
+			"input": "com.homebase.ecom.shared.event.EventEnvelope",
+			"eventSubscribedTo": ["order.events"]
+		}
+	]
+}

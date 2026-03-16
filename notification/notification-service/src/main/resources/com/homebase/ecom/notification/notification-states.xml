@@ -1,47 +1,136 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
-  <default-transition-action componentName="notificationBaseTransitionAction"/>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
 
-  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
+  <!-- Event definitions with ACLs and payload types -->
+  <event-information eventId='create' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.notification.dto.CreateNotificationPayload"/>
+  <event-information eventId='queue' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.notification.dto.QueueNotificationPayload"/>
+  <event-information eventId='send' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.notification.dto.SendNotificationPayload"/>
+  <event-information eventId='markDelivered' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.notification.dto.MarkDeliveredNotificationPayload"/>
+  <event-information eventId='fail' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.notification.dto.FailNotificationPayload"/>
+  <event-information eventId='retry' meta-acls="SYSTEM,ADMIN" meta-bodyType="com.homebase.ecom.notification.dto.RetryNotificationPayload"/>
+  <event-information eventId='markBounced' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.notification.dto.MarkBouncedNotificationPayload"/>
+  <event-information eventId='unsubscribe' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.notification.dto.UnsubscribeNotificationPayload"/>
 
   <flow id='notification-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="notificationEntryAction" />
     <exit-action componentName="notificationExitAction" />
 
-    <!-- ========== INITIAL STATE ========== -->
-    <status id='CREATED' initialState='true' meta-mainPath="true" description="Notification created, ready to be sent">
+    <!-- ================================================================ -->
+    <!-- CREATED: Initial state — notification record created              -->
+    <!-- ================================================================ -->
+    <manual-state id='CREATED' initialState='true' meta-mainPath="true"
+                  description="Notification created, pending validation and queueing">
+      <on eventId='queue'
+          componentName='notificationQueueAction'
+          newStateId='QUEUED'
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- QUEUED: Validated and queued for delivery                         -->
+    <!-- ================================================================ -->
+    <manual-state id='QUEUED' meta-mainPath="true"
+                  description="Notification validated and queued for sending">
       <on eventId='send'
           componentName='notificationSendAction'
+          newStateId='SENDING'
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- SENDING: Dispatch in progress                                     -->
+    <!-- ================================================================ -->
+    <manual-state id='SENDING' meta-mainPath="true"
+                  description="Notification being dispatched via channel adapter">
+      <on eventId='markDelivered'
+          componentName='notificationMarkDeliveredAction'
           newStateId='SENT'
-          meta-mainPath="true"
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='fail'
+          componentName='notificationFailAction'
+          newStateId='FAILED'
+          meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- SENT: Successfully sent by channel adapter                        -->
+    <!-- ================================================================ -->
+    <manual-state id='SENT' meta-mainPath="true"
+                  description="Notification successfully sent to recipient">
+      <on eventId='markDelivered'
+          componentName='notificationMarkDeliveredAction'
+          newStateId='DELIVERED'
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- DELIVERED: Confirmed delivery (terminal for happy path)           -->
+    <!-- ================================================================ -->
+    <manual-state id='DELIVERED' meta-mainPath="true"
+                  description="Notification confirmed delivered to recipient">
+      <!-- Terminal state for happy path -->
+    </manual-state>
+
+    <!-- ================================================================ -->
+    <!-- FAILED: Delivery failed — can retry or bounce                     -->
+    <!-- ================================================================ -->
+    <manual-state id='FAILED'
+                  description="Notification delivery failed">
+      <on eventId='retry'
+          componentName='notificationRetryAction'
+          newStateId='CHECK_RETRY'
+          meta-acls="SYSTEM,ADMIN"/>
+    </manual-state>
+
+    <!--
+      OGNL auto-state: After retry, check if retries are exhausted.
+      retryCount >= maxRetryAttempts (3) → BOUNCED (permanently failed)
+      else → RETRY (queue for re-send)
+    -->
+    <auto-state id='CHECK_RETRY'
+                componentName='ifAction'
+                condition='retryCount &gt;= 3'
+                then='exhausted'
+                else='canRetry'>
+      <on eventId='exhausted' newStateId='BOUNCED'/>
+      <on eventId='canRetry' newStateId='RETRY'/>
+    </auto-state>
+
+    <!-- ================================================================ -->
+    <!-- RETRY: Queued for re-delivery attempt                             -->
+    <!-- ================================================================ -->
+    <manual-state id='RETRY'
+                  description="Notification queued for retry delivery">
+      <on eventId='send'
+          componentName='notificationSendAction'
+          newStateId='SENDING'
           meta-acls="SYSTEM"/>
       <on eventId='fail'
           componentName='notificationFailAction'
           newStateId='FAILED'
           meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <!-- ========== SENT ========== -->
-    <status id='SENT' meta-mainPath="true" description="Notification successfully delivered to recipient">
-      <on eventId='markRead'
-          componentName='notificationMarkReadAction'
-          newStateId='READ'
-          meta-mainPath="true"
-          meta-acls="CUSTOMER"/>
-    </status>
+    <!-- ================================================================ -->
+    <!-- TERMINAL STATES                                                   -->
+    <!-- ================================================================ -->
 
-    <!-- ========== FAILED ========== -->
-    <status id='FAILED' description="Notification delivery failed">
-      <on eventId='retry'
-          componentName='notificationRetryAction'
-          newStateId='CREATED'
-          meta-acls="SYSTEM"/>
-    </status>
-
-    <!-- ========== READ (TERMINAL) ========== -->
-    <status id='READ' description="Notification read by recipient">
+    <!-- Permanently failed — all retries exhausted -->
+    <manual-state id='BOUNCED'
+                  description="Notification permanently failed, all retries exhausted">
       <!-- Terminal state -->
-    </status>
+    </manual-state>
+
+    <!-- Customer unsubscribed from this notification channel -->
+    <manual-state id='UNSUBSCRIBED'
+                  description="Customer unsubscribed from notification channel">
+      <!-- Terminal state -->
+    </manual-state>
+
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
+    </manual-state>
   </flow>
 </states>

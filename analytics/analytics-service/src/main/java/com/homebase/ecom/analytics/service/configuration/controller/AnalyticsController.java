@@ -7,11 +7,13 @@ import com.homebase.ecom.analytics.service.AnalyticsService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @RestController
+@Tag(name = "Analytics", description = "Sales and performance analytics")
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;

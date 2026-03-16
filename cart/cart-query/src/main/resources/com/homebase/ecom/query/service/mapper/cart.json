@@ -3,8 +3,9 @@
 		"id": "Cart.getAll",
 		"name": "carts",
 		"workflowName": "cart",
+		"flowColumn": "flowId",
 		"stateColumn": "stateId",
-		"responseClass": "com.homebase.ecom.cart.dto.CartDto",
+		"responseClass": "com.homebase.ecom.dto.CartDto",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -12,22 +13,72 @@
 				"columnType": "Text"
 			},
 			"userId": {
-				"name": "user_id",
+				"name": "customer_id",
 				"columnType": "Text",
 				"filterable": true
 			},
-			"status": {
-				"name": "status",
-				"filterable": true,
-				"columnType": "Text"
-			},
 			"stateId": {
-				"name": "stateId",
+				"name": "stateid",
 				"filterable": true,
 				"columnType": "Text"
 			},
-			"createdAt": {
-				"name": "created_at",
+			"createdTime": {
+				"name": "created_time",
+				"columnType": "Date",
+				"sortable": true
+			},
+			"lastModifiedTime": {
+				"name": "last_modified_time",
+				"columnType": "Date",
+				"sortable": true
+			},
+			"subtotal": {
+				"name": "subtotal",
+				"columnType": "Number"
+			},
+			"currency": {
+				"name": "currency",
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cart.getStateCounts",
+		"name": "cartStateCounts",
+		"responseClass": "java.util.Map",
+		"columnMetadata": {
+			"stateId": {
+				"name": "stateid",
+				"filterable": false,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getAbandonedCarts",
+		"name": "abandonedCarts",
+		"workflowName": "cart",
+		"flowColumn": "flowId",
+		"stateColumn": "stateId",
+		"responseClass": "com.homebase.ecom.dto.CartDto",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"userId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"lastModifiedTime": {
+				"name": "last_modified_time",
 				"columnType": "Date",
 				"sortable": true
 			}
@@ -37,18 +88,63 @@
 		"sortable": true
 	},
 	{
-		"id": "Cart.getIdleCarts",
-		"name": "idleCarts",
-		"responseClass": "com.homebase.ecom.cart.dto.CartTimeoutDto",
+		"id": "Cart.getExpiredCarts",
+		"name": "expiredCarts",
+		"workflowName": "cart",
+		"flowColumn": "flowId",
+		"stateColumn": "stateId",
+		"responseClass": "com.homebase.ecom.dto.CartDto",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
 				"filterable": true,
 				"columnType": "Text"
 			},
-			"lastModifiedTime": {
-				"name": "last_modified_time",
-				"columnType": "Date"
+			"userId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getByCustomerId",
+		"name": "cartsByCustomer",
+		"workflowName": "cart",
+		"flowColumn": "flowId",
+		"stateColumn": "stateId",
+		"responseClass": "com.homebase.ecom.dto.CartDto",
+		"columnMetadata": {
+			"userId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateid",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cart.getActiveCart",
+		"name": "activeCart",
+		"workflowName": "cart",
+		"flowColumn": "flowId",
+		"stateColumn": "stateId",
+		"responseClass": "com.homebase.ecom.dto.CartDto",
+		"columnMetadata": {
+			"userId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
 			}
 		},
 		"flexiblePropnames": false,
@@ -56,27 +152,204 @@
 		"sortable": false
 	},
 	{
-		"id": "Cart.getStuckCheckouts",
-		"name": "stuckCheckouts",
-		"responseClass": "com.homebase.ecom.cart.dto.CartTimeoutDto",
+		"id": "Cart.getItemsByCartId",
+		"name": "cartItems",
+		"responseClass": "com.homebase.ecom.dto.CartItemDto",
 		"columnMetadata": {
-			"id": {
-				"name": "id",
+			"cartId": {
+				"name": "cart_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"productName": {
+				"name": "product_name",
+				"filterable": false,
 				"columnType": "Text"
 			}
 		},
-		"paginated": false
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
 	},
 	{
-		"id": "Cart.getStuckPayments",
-		"name": "stuckPayments",
-		"responseClass": "com.homebase.ecom.cart.dto.CartTimeoutDto",
+		"id": "Cart.getAllItems",
+		"name": "allCartItems",
+		"responseClass": "com.homebase.ecom.dto.CartItemDto",
 		"columnMetadata": {
-			"id": {
-				"name": "id",
+			"cartId": {
+				"name": "cart_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"productId": {
+				"name": "product_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"sku": {
+				"name": "sku",
+				"filterable": true,
 				"columnType": "Text"
 			}
 		},
-		"paginated": false
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cart.getCartDetail",
+		"name": "cartDetail",
+		"workflowName": "cart",
+		"flowColumn": "flowId",
+		"stateColumn": "stateId",
+		"responseClass": "com.homebase.ecom.dto.CartDetailDto",
+		"columnMetadata": {
+			"cartId": {
+				"name": "c.id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"userId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateid",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"productId": {
+				"name": "product_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"sku": {
+				"name": "sku",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"cartCreatedTime": {
+				"name": "c.created_time",
+				"columnType": "Date",
+				"sortable": true
+			},
+			"itemCreatedTime": {
+				"name": "ci.created_time",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cart.getActivitiesByCartId",
+		"name": "cartActivities",
+		"responseClass": "com.homebase.ecom.dto.CartActivityDto",
+		"columnMetadata": {
+			"cartId": {
+				"name": "cart_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"activityName": {
+				"name": "activity_name",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"activitySuccess": {
+				"name": "activity_success",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdTime": {
+				"name": "created_time",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cart.getStorefrontCart",
+		"name": "storefrontCart",
+		"responseClass": "com.homebase.ecom.dto.StorefrontCartDto",
+		"columnMetadata": {
+			"userId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getStorefrontCartById",
+		"name": "storefrontCartById",
+		"responseClass": "com.homebase.ecom.dto.StorefrontCartDto",
+		"columnMetadata": {
+			"cartId": {
+				"name": "c.id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getCartFull",
+		"name": "cartFull",
+		"workflowName": "cart",
+		"flowColumn": "flowId",
+		"stateColumn": "stateId",
+		"responseClass": "com.homebase.ecom.dto.CartFullDto",
+		"columnMetadata": {
+			"cartId": {
+				"name": "c.id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"userId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateid",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"productId": {
+				"name": "product_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"sku": {
+				"name": "sku",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"activityName": {
+				"name": "activity_name",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"cartCreatedTime": {
+				"name": "c.created_time",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
 	}
 ]

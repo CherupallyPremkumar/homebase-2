@@ -15,15 +15,20 @@
 				"columnType": "Text",
 				"filterable": true
 			},
+			"customerId": {
+				"name": "customer_id",
+				"columnType": "Text",
+				"filterable": true
+			},
 			"carrier": {
 				"name": "carrier",
 				"columnType": "Text",
 				"filterable": true
 			},
-			"status": {
-				"name": "status",
-				"filterable": true,
-				"columnType": "Text"
+			"shippingMethod": {
+				"name": "shipping_method",
+				"columnType": "Text",
+				"filterable": true
 			},
 			"stateId": {
 				"name": "stateId",
@@ -39,5 +44,105 @@
 		"flexiblePropnames": false,
 		"paginated": true,
 		"sortable": true
+	},
+	{
+		"id": "Shipping.getById",
+		"name": "shippingById",
+		"workflowName": "shipping",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Shipping.getStateCounts",
+		"name": "shippingStateCounts",
+		"workflowName": "shipping",
+		"columnMetadata": {
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Shipping.getByCarrier",
+		"name": "shippingsByCarrier",
+		"workflowName": "shipping",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"carrier": {
+				"name": "carrier",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Shipping.getPendingShipments",
+		"name": "pendingShipments",
+		"workflowName": "shipping",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Shipping.getByOrderId",
+		"name": "shippingByOrderId",
+		"workflowName": "shipping",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"orderId": {
+				"name": "order_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Shipping.trackShipment",
+		"name": "trackShipment",
+		"workflowName": "shipping",
+		"stateColumn": "stateId",
+		"columnMetadata": {
+			"trackingNumber": {
+				"name": "tracking_number",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
 	}
 ]

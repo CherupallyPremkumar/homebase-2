@@ -1,105 +1,114 @@
 package com.homebase.ecom.shipping.service.event;
 
 import com.homebase.ecom.shared.event.KafkaTopics;
-import com.homebase.ecom.shared.event.OrderDeliveredEvent;
-import com.homebase.ecom.shared.event.OrderShippedEvent;
-import com.homebase.ecom.shared.event.ReturnInitiatedEvent;
 import com.homebase.ecom.shipping.model.Shipping;
+import org.chenile.pubsub.ChenilePub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.core.KafkaTemplate;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Publishes shipping domain events to Kafka.
- * Used by PostSaveHooks after state transitions are persisted.
+ * Publishes shipping domain events to Kafka via ChenilePub.
+ * PUBLISHES to shipping.events: SHIPPED, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED, DELIVERY_FAILED, RETURNED
  */
 public class ShippingEventPublisher {
 
     private static final Logger log = LoggerFactory.getLogger(ShippingEventPublisher.class);
 
     @Autowired(required = false)
-    private KafkaTemplate<String, Object> kafkaTemplate;
+    private ChenilePub chenilePub;
+
+    @Autowired(required = false)
+    private ObjectMapper objectMapper;
 
     /**
-     * Publishes event when a shipment is created and enters AWAITING_PICKUP.
+     * Publishes SHIPPED event when label is created and shipment enters LABEL_CREATED.
+     * Notifies customer + updates order status.
      */
-    public void publishShipmentCreated(Shipping shipping) {
-        log.info("ShipmentCreatedEvent: shipment={}, order={}, carrier={}",
-                shipping.getId(), shipping.getOrderId(), shipping.getCarrier());
-
-        if (kafkaTemplate != null) {
-            OrderShippedEvent event = new OrderShippedEvent(
-                    shipping.getOrderId(),
-                    shipping.getCarrier(),
-                    shipping.getTrackingNumber(),
-                    toLocalDateTime(shipping.getEstimatedDelivery()),
-                    LocalDateTime.now()
-            );
-            kafkaTemplate.send(KafkaTopics.SHIPPING_EVENTS, shipping.getOrderId(), event);
-        }
+    public void publishShipped(Shipping shipping) {
+        log.info("ShippedEvent: shipment={}, order={}, carrier={}, tracking={}",
+                shipping.getId(), shipping.getOrderId(), shipping.getCarrier(), shipping.getTrackingNumber());
+        publishEvent(shipping, "SHIPPED");
     }
 
     /**
-     * Publishes event when shipment enters IN_TRANSIT state.
+     * Publishes IN_TRANSIT event when shipment enters transit.
      */
-    public void publishShipmentInTransit(Shipping shipping) {
-        log.info("ShipmentInTransitEvent: shipment={}, order={}, location={}",
+    public void publishInTransit(Shipping shipping) {
+        log.info("InTransitEvent: shipment={}, order={}, location={}",
                 shipping.getId(), shipping.getOrderId(), shipping.getCurrentLocation());
-
-        if (kafkaTemplate != null) {
-            OrderShippedEvent event = new OrderShippedEvent(
-                    shipping.getOrderId(),
-                    shipping.getCarrier(),
-                    shipping.getTrackingNumber(),
-                    toLocalDateTime(shipping.getEstimatedDelivery()),
-                    toLocalDateTime(shipping.getShippedAt())
-            );
-            kafkaTemplate.send(KafkaTopics.SHIPPING_EVENTS, shipping.getOrderId(), event);
-        }
+        publishEvent(shipping, "IN_TRANSIT");
     }
 
     /**
-     * Publishes event when shipment is delivered.
+     * Publishes OUT_FOR_DELIVERY event.
      */
-    public void publishShipmentDelivered(Shipping shipping) {
-        log.info("ShipmentDeliveredEvent: shipment={}, order={}, deliveredAt={}",
-                shipping.getId(), shipping.getOrderId(), shipping.getDeliveredAt());
-
-        if (kafkaTemplate != null) {
-            OrderDeliveredEvent event = new OrderDeliveredEvent(
-                    shipping.getOrderId(),
-                    null, // customerId not available in shipping context
-                    toLocalDateTime(shipping.getDeliveredAt())
-            );
-            kafkaTemplate.send(KafkaTopics.SHIPPING_EVENTS, shipping.getOrderId(), event);
-        }
+    public void publishOutForDelivery(Shipping shipping) {
+        log.info("OutForDeliveryEvent: shipment={}, order={}",
+                shipping.getId(), shipping.getOrderId());
+        publishEvent(shipping, "OUT_FOR_DELIVERY");
     }
 
     /**
-     * Publishes event when a return shipment is created.
+     * Publishes DELIVERED event when shipment is delivered.
+     * Notifies customer + signals order completion.
      */
-    public void publishReturnShipmentCreated(Shipping shipping) {
-        log.info("ReturnShipmentCreatedEvent: shipment={}, order={}, returnReason={}",
-                shipping.getId(), shipping.getOrderId(), shipping.getReturnReason());
-
-        if (kafkaTemplate != null) {
-            ReturnInitiatedEvent event = new ReturnInitiatedEvent(
-                    shipping.getOrderId(),
-                    null, // customerId not available in shipping context
-                    shipping.getReturnReason(),
-                    LocalDateTime.now(),
-                    null // returnedItems not tracked at shipping level
-            );
-            kafkaTemplate.send(KafkaTopics.SHIPPING_EVENTS, shipping.getOrderId(), event);
-        }
+    public void publishDelivered(Shipping shipping) {
+        log.info("DeliveredEvent: shipment={}, order={}, deliveredAt={}",
+                shipping.getId(), shipping.getOrderId(), shipping.getActualDeliveryDate());
+        publishEvent(shipping, "DELIVERED");
     }
 
-    private LocalDateTime toLocalDateTime(java.util.Date date) {
-        if (date == null) return null;
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    /**
+     * Publishes DELIVERY_FAILED event when delivery attempt fails.
+     * Notifies customer of failed attempt.
+     */
+    public void publishDeliveryFailed(Shipping shipping) {
+        log.info("DeliveryFailedEvent: shipment={}, order={}, attempts={}",
+                shipping.getId(), shipping.getOrderId(), shipping.getDeliveryAttempts());
+        publishEvent(shipping, "DELIVERY_FAILED");
+    }
+
+    /**
+     * Publishes RETURNED event when shipment is returned to warehouse.
+     */
+    public void publishReturned(Shipping shipping) {
+        log.info("ReturnedEvent: shipment={}, order={}",
+                shipping.getId(), shipping.getOrderId());
+        publishEvent(shipping, "RETURNED");
+    }
+
+    // ── Internal ──
+
+    private void publishEvent(Shipping shipping, String eventType) {
+        if (chenilePub == null || objectMapper == null) return;
+
+        try {
+            Map<String, Object> event = new HashMap<>();
+            event.put("eventType", eventType);
+            event.put("shipmentId", shipping.getId());
+            event.put("orderId", shipping.getOrderId());
+            event.put("customerId", shipping.getCustomerId());
+            event.put("carrier", shipping.getCarrier());
+            event.put("trackingNumber", shipping.getTrackingNumber());
+            event.put("shippingMethod", shipping.getShippingMethod());
+            event.put("currentLocation", shipping.getCurrentLocation());
+            event.put("deliveryAttempts", shipping.getDeliveryAttempts());
+            event.put("estimatedDeliveryDate", shipping.getEstimatedDeliveryDate());
+            event.put("actualDeliveryDate", shipping.getActualDeliveryDate());
+
+            String body = objectMapper.writeValueAsString(event);
+            Map<String, Object> headers = new HashMap<>();
+            headers.put("key", shipping.getOrderId());
+            headers.put("eventType", eventType);
+            chenilePub.publish(KafkaTopics.SHIPPING_EVENTS, body, headers);
+        } catch (JacksonException e) {
+            log.error("Failed to serialize {} event for shipment={}", eventType, shipping.getId(), e);
+        }
     }
 }

@@ -10,6 +10,7 @@ import com.homebase.ecom.support.model.TicketMessage;
 import com.homebase.ecom.support.dto.ResolveTicketPayload;
 
 import java.util.Date;
+import java.util.UUID;
 
 public class ResolveSupportAction extends AbstractSTMTransitionAction<SupportTicket, ResolveTicketPayload> {
 
@@ -25,8 +26,6 @@ public class ResolveSupportAction extends AbstractSTMTransitionAction<SupportTic
 
         Date now = new Date();
         ticket.setResolvedAt(now);
-
-        // Store resolution timestamp for duration calculations
         ticket.getTransientMap().put("resolvedAt", now);
 
         // Append resolution to description
@@ -35,8 +34,9 @@ public class ResolveSupportAction extends AbstractSTMTransitionAction<SupportTic
 
         // Add resolution message
         TicketMessage resolveMsg = new TicketMessage();
-        resolveMsg.setId(java.util.UUID.randomUUID().toString());
+        resolveMsg.setId(UUID.randomUUID().toString());
         resolveMsg.setSenderType("SYSTEM");
+        resolveMsg.setTimestamp(now);
         resolveMsg.setMessage("Ticket resolved. Resolution: " + payload.getResolution());
         ticket.getMessages().add(resolveMsg);
 

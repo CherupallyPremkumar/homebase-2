@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * PostSaveHook for IN_TRANSIT state.
- * Publishes ShipmentInTransitEvent after transition is persisted.
+ * Publishes IN_TRANSIT event and notifies customer.
  */
 public class IN_TRANSITShippingPostSaveHook implements PostSaveHook<Shipping> {
 
@@ -18,6 +18,6 @@ public class IN_TRANSITShippingPostSaveHook implements PostSaveHook<Shipping> {
 
     @Override
     public void execute(State startState, State endState, Shipping shipping, TransientMap map) {
-        eventPublisher.publishShipmentInTransit(shipping);
+        eventPublisher.publishInTransit(shipping);
     }
 }

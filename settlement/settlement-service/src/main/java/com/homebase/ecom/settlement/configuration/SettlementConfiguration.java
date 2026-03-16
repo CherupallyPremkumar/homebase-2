@@ -5,15 +5,12 @@ import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.impl.*;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.chenile.proxy.builder.ProxyBuilder;
 
 import org.chenile.utils.entity.service.EntityStore;
-import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.settlement.model.Settlement;
 import com.homebase.ecom.settlement.service.cmds.*;
@@ -21,19 +18,26 @@ import com.homebase.ecom.settlement.service.healthcheck.SettlementHealthChecker;
 import com.homebase.ecom.settlement.infrastructure.persistence.ChenileSettlementEntityStore;
 import com.homebase.ecom.settlement.infrastructure.persistence.adapter.SettlementJpaRepository;
 import com.homebase.ecom.settlement.infrastructure.persistence.mapper.SettlementMapper;
+import com.homebase.ecom.settlement.infrastructure.adapter.PayoutAdapter;
+import com.homebase.ecom.settlement.infrastructure.adapter.NotificationAdapter;
+import com.homebase.ecom.settlement.domain.port.PayoutPort;
+import com.homebase.ecom.settlement.domain.port.NotificationPort;
+import com.homebase.ecom.settlement.service.event.SettlementEventHandler;
+import org.chenile.stm.action.scriptsupport.IfAction;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.workflow.api.WorkflowRegistry;
-import org.chenile.stm.State;
 import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
 import com.homebase.ecom.settlement.service.postSaveHooks.*;
+import com.homebase.ecom.settlement.service.validator.SettlementPolicyValidator;
 
 /**
- * This is where you will instantiate all the required classes in Spring
+ * Settlement module Spring configuration.
+ * Wires the STM, entity store, transition actions, post-save hooks,
+ * hexagonal ports/adapters, and chenile-kafka event handler.
  */
 @Configuration
 public class SettlementConfiguration {
-    @Autowired
-    private ProxyBuilder proxyBuilder;
 
     private static final String FLOW_DEFINITION_FILE = "com/homebase/ecom/settlement/settlement-states.xml";
     public static final String PREFIX_FOR_PROPERTIES = "Settlement";
@@ -80,20 +84,21 @@ public class SettlementConfiguration {
     }
 
     @Bean
-    StateEntityServiceImpl<Settlement> _settlementStateEntityService_(
+    HmStateEntityServiceImpl<Settlement> _settlementStateEntityService_(
             @Qualifier("settlementEntityStm") STM<Settlement> stm,
             @Qualifier("settlementActionsInfoProvider") STMActionsInfoProvider settlementInfoProvider,
             @Qualifier("settlementEntityStore") EntityStore<Settlement> entityStore) {
-        return new StateEntityServiceImpl<>(stm, settlementInfoProvider, entityStore);
+        return new HmStateEntityServiceImpl<>(stm, settlementInfoProvider, entityStore);
     }
 
-    // Now we start constructing the STM Components
+    // ═══════════════════════════════════════════════════════════════════════
+    // STM Components
+    // ═══════════════════════════════════════════════════════════════════════
 
     @Bean
     DefaultPostSaveHook<Settlement> settlementDefaultPostSaveHook(
             @Qualifier("settlementTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver) {
-        DefaultPostSaveHook<Settlement> postSaveHook = new DefaultPostSaveHook<>(stmTransitionActionResolver);
-        return postSaveHook;
+        return new DefaultPostSaveHook<>(stmTransitionActionResolver);
     }
 
     @Bean
@@ -102,8 +107,7 @@ public class SettlementConfiguration {
             @Qualifier("settlementActionsInfoProvider") STMActionsInfoProvider settlementInfoProvider,
             @Qualifier("settlementFlowStore") STMFlowStoreImpl stmFlowStore,
             @Qualifier("settlementDefaultPostSaveHook") DefaultPostSaveHook<Settlement> postSaveHook) {
-        GenericEntryAction<Settlement> entryAction = new GenericEntryAction<Settlement>(entityStore,
-                settlementInfoProvider, postSaveHook);
+        GenericEntryAction<Settlement> entryAction = new GenericEntryAction<>(entityStore, settlementInfoProvider, postSaveHook);
         stmFlowStore.setEntryAction(entryAction);
         return entryAction;
     }
@@ -112,16 +116,14 @@ public class SettlementConfiguration {
     DefaultAutomaticStateComputation<Settlement> settlementDefaultAutoState(
             @Qualifier("settlementTransitionActionResolver") STMTransitionActionResolver stmTransitionActionResolver,
             @Qualifier("settlementFlowStore") STMFlowStoreImpl stmFlowStore) {
-        DefaultAutomaticStateComputation<Settlement> autoState = new DefaultAutomaticStateComputation<>(
-                stmTransitionActionResolver);
+        DefaultAutomaticStateComputation<Settlement> autoState = new DefaultAutomaticStateComputation<>(stmTransitionActionResolver);
         stmFlowStore.setDefaultAutomaticStateComputation(autoState);
         return autoState;
     }
 
     @Bean
-    GenericExitAction<Settlement> settlementExitAction(
-            @Qualifier("settlementFlowStore") STMFlowStoreImpl stmFlowStore) {
-        GenericExitAction<Settlement> exitAction = new GenericExitAction<Settlement>();
+    GenericExitAction<Settlement> settlementExitAction(@Qualifier("settlementFlowStore") STMFlowStoreImpl stmFlowStore) {
+        GenericExitAction<Settlement> exitAction = new GenericExitAction<>();
         stmFlowStore.setExitAction(exitAction);
         return exitAction;
     }
@@ -136,6 +138,16 @@ public class SettlementConfiguration {
     @Bean
     SettlementHealthChecker settlementHealthChecker() {
         return new SettlementHealthChecker();
+    }
+
+    @Bean
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
+
+    @Bean
+    IfAction<Settlement> ifAction() {
+        return new IfAction<>();
     }
 
     @Bean
@@ -173,47 +185,9 @@ public class SettlementConfiguration {
     }
 
     @Bean
-    AreActivitiesComplete activitiesCompletionCheck(
+    AreActivitiesComplete settlementActivitiesCompletionCheck(
             @Qualifier("settlementActivityChecker") ActivityChecker activityChecker) {
         return new AreActivitiesComplete(activityChecker);
-    }
-
-    // Create the specific transition actions here. Make sure that these actions are
-    // inheriting from
-    // AbstractSTMTransitionMachine (The sample classes provide an example of this).
-    // To automatically wire
-    // them into the STM use the convention of "settlement" + eventId + "Action" for
-    // the method name. (settlement is the
-    // prefix passed to the TransitionActionResolver above.)
-    // This will ensure that these are detected automatically by the Workflow
-    // system.
-    // The payload types will be detected as well so that there is no need to
-    // introduce an <event-information/>
-    // segment in src/main/resources/com/homebase/settlement/settlement-states.xml
-
-    @Bean
-    RetrySettlementSettlementAction settlementRetrySettlementAction() {
-        return new RetrySettlementSettlementAction();
-    }
-
-    @Bean
-    MonthEndSettlementAction settlementMonthEndAction() {
-        return new MonthEndSettlementAction();
-    }
-
-    @Bean
-    RejectSettlementSettlementAction settlementRejectSettlementAction() {
-        return new RejectSettlementSettlementAction();
-    }
-
-    @Bean
-    CalculateSettlementSettlementAction settlementCalculateSettlementAction() {
-        return new CalculateSettlementSettlementAction();
-    }
-
-    @Bean
-    public ConfirmPayoutAction settlementConfirmPayoutAction() {
-        return new ConfirmPayoutAction();
     }
 
     @Bean
@@ -225,20 +199,92 @@ public class SettlementConfiguration {
     ConfigBasedEnablementStrategy settlementConfigBasedEnablementStrategy(
             @Qualifier("settlementConfigProvider") ConfigProvider configProvider,
             @Qualifier("settlementFlowStore") STMFlowStoreImpl stmFlowStore) {
-        ConfigBasedEnablementStrategy enablementStrategy = new ConfigBasedEnablementStrategy(configProvider,
-                PREFIX_FOR_PROPERTIES);
+        ConfigBasedEnablementStrategy enablementStrategy = new ConfigBasedEnablementStrategy(configProvider, PREFIX_FOR_PROPERTIES);
         stmFlowStore.setEnablementStrategy(enablementStrategy);
         return enablementStrategy;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // Transition Actions (convention: "settlement" + eventId + "Action")
+    // ═══════════════════════════════════════════════════════════════════════
+
     @Bean
-    READY_FOR_PAYMENTSettlementPostSaveHook settlementREADY_FOR_PAYMENTPostSaveHook() {
-        return new READY_FOR_PAYMENTSettlementPostSaveHook();
+    CalculateSettlementAction settlementCalculateAction() {
+        return new CalculateSettlementAction();
     }
 
     @Bean
-    SETTLEDSettlementPostSaveHook settlementSETTLEDPostSaveHook() {
-        return new SETTLEDSettlementPostSaveHook();
+    ApproveSettlementAction settlementApproveAction() {
+        return new ApproveSettlementAction();
+    }
+
+    @Bean
+    DisburseSettlementAction settlementDisburseAction() {
+        return new DisburseSettlementAction();
+    }
+
+    @Bean
+    DisputeSettlementAction settlementDisputeAction() {
+        return new DisputeSettlementAction();
+    }
+
+    @Bean
+    ResolveSettlementAction settlementResolveAction() {
+        return new ResolveSettlementAction();
+    }
+
+    @Bean
+    AdjustSettlementAction settlementAdjustAction() {
+        return new AdjustSettlementAction();
+    }
+
+    @Bean
+    RejectSettlementAction settlementRejectAction() {
+        return new RejectSettlementAction();
+    }
+
+    @Bean
+    RetrySettlementAction settlementRetryAction() {
+        return new RetrySettlementAction();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Post-Save Hooks (convention: "settlement" + STATE + "PostSaveHook")
+    // ═══════════════════════════════════════════════════════════════════════
+
+    @Bean
+    PENDINGSettlementPostSaveHook settlementPENDINGPostSaveHook() {
+        return new PENDINGSettlementPostSaveHook();
+    }
+
+    @Bean
+    CALCULATINGSettlementPostSaveHook settlementCALCULATINGPostSaveHook() {
+        return new CALCULATINGSettlementPostSaveHook();
+    }
+
+    @Bean
+    CALCULATEDSettlementPostSaveHook settlementCALCULATEDPostSaveHook() {
+        return new CALCULATEDSettlementPostSaveHook();
+    }
+
+    @Bean
+    APPROVEDSettlementPostSaveHook settlementAPPROVEDPostSaveHook() {
+        return new APPROVEDSettlementPostSaveHook();
+    }
+
+    @Bean
+    DISBURSEDSettlementPostSaveHook settlementDISBURSEDPostSaveHook() {
+        return new DISBURSEDSettlementPostSaveHook();
+    }
+
+    @Bean
+    COMPLETEDSettlementPostSaveHook settlementCOMPLETEDPostSaveHook() {
+        return new COMPLETEDSettlementPostSaveHook();
+    }
+
+    @Bean
+    DISPUTEDSettlementPostSaveHook settlementDISPUTEDPostSaveHook() {
+        return new DISPUTEDSettlementPostSaveHook();
     }
 
     @Bean
@@ -246,14 +292,55 @@ public class SettlementConfiguration {
         return new FAILEDSettlementPostSaveHook();
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // ACL / Security
+    // ═══════════════════════════════════════════════════════════════════════
+
     @Bean
-    PROCESSINGSettlementPostSaveHook settlementPROCESSINGPostSaveHook() {
-        return new PROCESSINGSettlementPostSaveHook();
+    java.util.function.Function<org.chenile.core.context.ChenileExchange, String[]> settlementEventAuthoritiesSupplier(
+            @Qualifier("settlementActionsInfoProvider") STMActionsInfoProvider settlementInfoProvider) throws Exception {
+        StmAuthoritiesBuilder builder = new StmAuthoritiesBuilder(settlementInfoProvider, false);
+        return builder.build();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Hexagonal Ports / Adapters
+    // ═══════════════════════════════════════════════════════════════════════
+
+    @Bean
+    PayoutPort settlementPayoutPort() {
+        return new PayoutAdapter();
     }
 
     @Bean
-    PENDINGSettlementPostSaveHook settlementPENDINGPostSaveHook() {
-        return new PENDINGSettlementPostSaveHook();
+    NotificationPort settlementNotificationPort() {
+        return new NotificationAdapter();
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // Validator
+    // ═══════════════════════════════════════════════════════════════════════
+
+    @Bean
+    SettlementPolicyValidator settlementPolicyValidator() {
+        return new SettlementPolicyValidator();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Chenile-Kafka Event Handler
+    // ═══════════════════════════════════════════════════════════════════════
+
+    @Bean("settlementEventService")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
+    SettlementEventHandler settlementEventService(
+            @Qualifier("_settlementStateEntityService_") HmStateEntityServiceImpl<Settlement> settlementStateEntityService,
+            SettlementJpaRepository settlementJpaRepository,
+            SettlementMapper settlementMapper,
+            org.chenile.pubsub.ChenilePub chenilePub,
+            tools.jackson.databind.ObjectMapper objectMapper,
+            com.homebase.ecom.shared.CurrencyResolver currencyResolver) {
+        return new SettlementEventHandler(
+                settlementStateEntityService, settlementJpaRepository,
+                settlementMapper, chenilePub, objectMapper, currencyResolver);
+    }
 }

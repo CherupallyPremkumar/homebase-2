@@ -21,28 +21,38 @@ public class SupplierMapper {
         model.setId(entity.getId());
         model.setCreatedTime(entity.getCreatedTime());
         model.setLastModifiedTime(entity.getLastModifiedTime());
-        model.setVersion(entity.getVersion());
+        model.setVersion(entity.getVersion() != null ? entity.getVersion() : 0L);
 
         // STM state
         model.setCurrentState(entity.getCurrentState());
 
-        // Supplier fields
-        model.setName(entity.getName());
+        // Identity & Business Info
         model.setUserId(entity.getUserId());
-        model.setEmail(entity.getEmail());
-        model.setDescription(entity.getDescription());
-        model.setPhone(entity.getPhone());
-        model.setUpiId(entity.getUpiId());
+        model.setBusinessName(entity.getBusinessName());
+        model.setBusinessType(entity.getBusinessType());
+        model.setTaxId(entity.getTaxId());
+        model.setBankAccountId(entity.getBankAccountId());
+        model.setContactEmail(entity.getContactEmail());
+        model.setContactPhone(entity.getContactPhone());
         model.setAddress(entity.getAddress());
-        model.setCommissionPercentage(entity.getCommissionPercentage());
 
-        // Lifecycle tracking fields
+        // Performance Metrics
+        model.setRating(entity.getRating());
+        model.setTotalOrders(entity.getTotalOrders());
+        model.setTotalReturns(entity.getTotalReturns());
+        model.setFulfillmentRate(entity.getFulfillmentRate());
+        model.setAvgShippingDays(entity.getAvgShippingDays());
+        model.setCommissionRate(entity.getCommissionRate());
+
+        // Lifecycle tracking
         model.setActiveDate(entity.getActiveDate());
         model.setRejectionReason(entity.getRejectionReason());
         model.setSuspensionReason(entity.getSuspensionReason());
-        model.setBlacklistReason(entity.getBlacklistReason());
+        model.setTerminationReason(entity.getTerminationReason());
+        model.setProbationReason(entity.getProbationReason());
         model.setSuspendedDate(entity.getSuspendedDate());
-        model.setBlacklistedDate(entity.getBlacklistedDate());
+        model.setTerminatedDate(entity.getTerminatedDate());
+        model.setProbationDate(entity.getProbationDate());
         model.setProductsDisabled(entity.isProductsDisabled());
 
         if (entity.getActivities() != null) {
@@ -62,28 +72,38 @@ public class SupplierMapper {
         entity.setId(model.getId());
         entity.setCreatedTime(model.getCreatedTime());
         entity.setLastModifiedTime(model.getLastModifiedTime());
-        entity.setVersion(model.getVersion());
+        entity.setVersion(model.getVersion() != null ? model.getVersion() : 0L);
 
         // STM state
         entity.setCurrentState(model.getCurrentState());
 
-        // Supplier fields
-        entity.setName(model.getName());
+        // Identity & Business Info
         entity.setUserId(model.getUserId());
-        entity.setEmail(model.getEmail());
-        entity.setDescription(model.getDescription());
-        entity.setPhone(model.getPhone());
-        entity.setUpiId(model.getUpiId());
+        entity.setBusinessName(model.getBusinessName());
+        entity.setBusinessType(model.getBusinessType());
+        entity.setTaxId(model.getTaxId());
+        entity.setBankAccountId(model.getBankAccountId());
+        entity.setContactEmail(model.getContactEmail());
+        entity.setContactPhone(model.getContactPhone());
         entity.setAddress(model.getAddress());
-        entity.setCommissionPercentage(model.getCommissionPercentage());
 
-        // Lifecycle tracking fields
+        // Performance Metrics
+        entity.setRating(model.getRating());
+        entity.setTotalOrders(model.getTotalOrders());
+        entity.setTotalReturns(model.getTotalReturns());
+        entity.setFulfillmentRate(model.getFulfillmentRate());
+        entity.setAvgShippingDays(model.getAvgShippingDays());
+        entity.setCommissionRate(model.getCommissionRate());
+
+        // Lifecycle tracking
         entity.setActiveDate(model.getActiveDate());
         entity.setRejectionReason(model.getRejectionReason());
         entity.setSuspensionReason(model.getSuspensionReason());
-        entity.setBlacklistReason(model.getBlacklistReason());
+        entity.setTerminationReason(model.getTerminationReason());
+        entity.setProbationReason(model.getProbationReason());
         entity.setSuspendedDate(model.getSuspendedDate());
-        entity.setBlacklistedDate(model.getBlacklistedDate());
+        entity.setTerminatedDate(model.getTerminatedDate());
+        entity.setProbationDate(model.getProbationDate());
         entity.setProductsDisabled(model.isProductsDisabled());
 
         if (model.obtainActivities() != null) {

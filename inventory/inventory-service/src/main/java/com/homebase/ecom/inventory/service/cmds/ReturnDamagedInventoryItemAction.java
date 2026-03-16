@@ -1,5 +1,6 @@
 package com.homebase.ecom.inventory.service.cmds;
 
+import com.homebase.ecom.inventory.domain.model.DamageRecord;
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
@@ -9,9 +10,12 @@ import com.homebase.ecom.inventory.dto.ReturnDamagedInventoryPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /**
  * STM action when damaged stock is discovered while stored in the warehouse.
- * Records the warehouse-level damage and adjusts available quantity.
+ * Records per-unit damage details, adjusts available quantity.
+ * Auto-state CHECK_DAMAGE_SEVERITY decides if stock stays IN_WAREHOUSE or moves to DAMAGED_AT_WAREHOUSE.
  */
 public class ReturnDamagedInventoryItemAction extends AbstractSTMTransitionAction<InventoryItem, ReturnDamagedInventoryPayload> {
 
@@ -25,8 +29,9 @@ public class ReturnDamagedInventoryItemAction extends AbstractSTMTransitionActio
 
         int damagedQty = payload.getDamagedQuantity() != null ? payload.getDamagedQuantity() : 0;
 
-        // Use domain method to record warehouse-level damage (adjusts available)
-        inventory.recordWarehouseDamage(damagedQty);
+        List<DamageRecord> unitDamages = DamageFoundInventoryItemAction.buildDamageRecords(
+                payload.getDamagedUnits(), damagedQty);
+        inventory.recordWarehouseDamage(damagedQty, unitDamages);
 
         log.info("Warehouse damage found for productId={}: {} units damaged, available now {}",
                 inventory.getProductId(), damagedQty, inventory.getAvailableQuantity());

@@ -1,137 +1,80 @@
-Feature: Testcase ID 5
-Tests the order Workflow Service using a REST client. Order service exists and is under test.
-It helps to create a order and manages the state of the order as documented in states xml
+Feature: Testcase ID 5 — Refund from COMPLETED state.
 
-Scenario: Create a new order
-Given that "flowName" equals "order-flow"
-And that "initialState" equals "CREATED"
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
+Scenario: Create an order
 When I POST a REST request to URL "/order" with payload
 """json
 {
-    "description": "Description"
+    "description": "Refund from completed",
+    "customerId": "cust-test5",
+    "totalAmount": 900,
+    "currency": "INR"
 }
 """
-Then the REST response contains key "mutatedEntity"
-And store "$.payload.mutatedEntity.id" from response to "id"
-And the REST response key "mutatedEntity.currentState.stateId" is "${initialState}"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
-And the REST response key "mutatedEntity.description" is "Description"
+Then store "$.payload.mutatedEntity.id" from response to "id"
 
-Scenario: Retrieve the order that just got created
-When I GET a REST request to URL "/order/${id}"
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${currentState}"
+Scenario: Pay -> Process -> Ship -> Deliver -> Complete
+Given that "event" equals "paymentSucceeded"
+When I PATCH a REST request to URL "/order/${id}/${event}" with payload
+"""json
+{ "comment": "Paid", "paymentId": "pay_005" }
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "PAID"
 
+Scenario: Start processing
+Given that "event" equals "startProcessing"
+When I PATCH a REST request to URL "/order/${id}/${event}" with payload
+"""json
+{ "comment": "Processing" }
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "PROCESSING"
 
-Scenario: Send the processPayment event to the order with comments
-Given that "comment" equals "Comment for processPayment"
-And that "event" equals "processPayment"
+Scenario: Ship
+Given that "event" equals "markShipped"
+When I PATCH a REST request to URL "/order/${id}/${event}" with payload
+"""json
+{ "comment": "Shipped" }
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "SHIPPED"
+
+Scenario: Deliver
+Given that "event" equals "markDelivered"
+When I PATCH a REST request to URL "/order/${id}/${event}" with payload
+"""json
+{ "comment": "Delivered" }
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "DELIVERED"
+
+Scenario: Confirm delivery
+Given that "event" equals "confirmDelivery"
+When I PATCH a REST request to URL "/order/${id}/${event}" with payload
+"""json
+{ "comment": "Confirmed" }
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "COMPLETED"
+
+Scenario: Request refund from COMPLETED
+Given that "event" equals "requestRefund"
 When I PATCH a REST request to URL "/order/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "Item defective",
+    "reason": "DEFECTIVE"
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PAYMENT_CONFIRMED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
+And the REST response key "mutatedEntity.currentState.stateId" is "REFUND_REQUESTED"
 
-Scenario: Send the startProcessing event to the order with comments
-Given that "comment" equals "Comment for startProcessing"
-And that "event" equals "startProcessing"
+Scenario: Complete refund
+Given that "event" equals "completeRefund"
 When I PATCH a REST request to URL "/order/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "Refund done",
+    "refundId": "ref_005"
 }
 """
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PROCESSING"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
-
-Scenario: Send the itemsPicked event to the order with comments
-Given that "comment" equals "Comment for itemsPicked"
-And that "event" equals "itemsPicked"
-When I PATCH a REST request to URL "/order/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PICKED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
-
-Scenario: Send the courierPickup event to the order with comments
-Given that "comment" equals "Comment for courierPickup"
-And that "event" equals "courierPickup"
-When I PATCH a REST request to URL "/order/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "SHIPPED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
-
-Scenario: Send the deliverOrder event to the order with comments
-Given that "comment" equals "Comment for deliverOrder"
-And that "event" equals "deliverOrder"
-When I PATCH a REST request to URL "/order/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "DELIVERED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
-
-Scenario: Send the initiateReturn event to the order with comments
-Given that "comment" equals "Comment for initiateReturn"
-And that "event" equals "initiateReturn"
-When I PATCH a REST request to URL "/order/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "RETURN_INITIATED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
-
-Scenario: Send the approveReturn event to the order with comments
-Given that "comment" equals "Comment for approveReturn"
-And that "event" equals "approveReturn"
-When I PATCH a REST request to URL "/order/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "REFUND_INITIATED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
-
-Scenario: Send the refundComplete event to the order with comments
-Given that "comment" equals "Comment for refundComplete"
-And that "event" equals "refundComplete"
-When I PATCH a REST request to URL "/order/${id}/${event}" with payload
-"""json
-{
-    "comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "REFUNDED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
+Then the REST response key "mutatedEntity.currentState.stateId" is "REFUNDED"

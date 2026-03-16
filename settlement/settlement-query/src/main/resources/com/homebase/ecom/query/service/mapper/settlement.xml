@@ -3,23 +3,25 @@
 <mapper namespace="Settlement">
 
     <select id="getAll" resultType="com.homebase.ecom.dto.SettlementDto">
-        SELECT 
-            id, 
-            supplier_id as "supplierId", 
-            period_month as "periodMonth", 
-            period_year as "periodYear", 
-            status, 
-            state_id as "stateId", 
-            total_sales_amount as "totalSalesAmount", 
-            commission_amount as "commissionAmount", 
-            net_payout_amount as "netPayoutAmount"
+        SELECT
+            id,
+            supplier_id as "supplierId",
+            order_id as "orderId",
+            state_id as "stateId",
+            order_amount as "orderAmount",
+            commission_amount as "commissionAmount",
+            platform_fee as "platformFee",
+            net_amount as "netAmount",
+            currency,
+            settlement_period_start as "settlementPeriodStart",
+            settlement_period_end as "settlementPeriodEnd",
+            disbursement_reference as "disbursementReference"
         FROM settlements
         <where>
             <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
-            <if test="status != null">AND status = #{status}</if>
             <if test="stateId != null">AND state_id = #{stateId}</if>
-            <if test="periodMonth != null">AND period_month = #{periodMonth}</if>
-            <if test="periodYear != null">AND period_year = #{periodYear}</if>
+            <if test="orderId != null">AND order_id = #{orderId}</if>
+            <if test="currency != null">AND currency = #{currency}</if>
         </where>
         ${orderby} ${pagination}
     </select>
@@ -28,11 +30,122 @@
         SELECT count(*) FROM settlements
         <where>
             <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
-            <if test="status != null">AND status = #{status}</if>
             <if test="stateId != null">AND state_id = #{stateId}</if>
-            <if test="periodMonth != null">AND period_month = #{periodMonth}</if>
-            <if test="periodYear != null">AND period_year = #{periodYear}</if>
+            <if test="orderId != null">AND order_id = #{orderId}</if>
         </where>
+    </select>
+
+    <select id="getById" resultType="com.homebase.ecom.dto.SettlementDto">
+        SELECT
+            id,
+            supplier_id as "supplierId",
+            order_id as "orderId",
+            state_id as "stateId",
+            order_amount as "orderAmount",
+            commission_amount as "commissionAmount",
+            platform_fee as "platformFee",
+            net_amount as "netAmount",
+            currency,
+            settlement_period_start as "settlementPeriodStart",
+            settlement_period_end as "settlementPeriodEnd",
+            disbursement_reference as "disbursementReference"
+        FROM settlements
+        WHERE id = #{id}
+    </select>
+
+    <select id="getStateCounts" resultType="com.homebase.ecom.dto.SettlementDto">
+        SELECT state_id as "stateId", count(*) as "orderAmount"
+        FROM settlements
+        GROUP BY state_id
+    </select>
+
+    <select id="getBySupplier" resultType="com.homebase.ecom.dto.SettlementDto">
+        SELECT
+            id,
+            supplier_id as "supplierId",
+            order_id as "orderId",
+            state_id as "stateId",
+            order_amount as "orderAmount",
+            commission_amount as "commissionAmount",
+            platform_fee as "platformFee",
+            net_amount as "netAmount",
+            currency,
+            settlement_period_start as "settlementPeriodStart",
+            settlement_period_end as "settlementPeriodEnd",
+            disbursement_reference as "disbursementReference"
+        FROM settlements
+        WHERE supplier_id = #{supplierId}
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getBySupplier-count" resultType="int">
+        SELECT count(*) FROM settlements
+        WHERE supplier_id = #{supplierId}
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+    </select>
+
+    <select id="getPendingSettlements" resultType="com.homebase.ecom.dto.SettlementDto">
+        SELECT
+            id,
+            supplier_id as "supplierId",
+            order_id as "orderId",
+            state_id as "stateId",
+            order_amount as "orderAmount",
+            net_amount as "netAmount",
+            currency,
+            settlement_period_start as "settlementPeriodStart",
+            settlement_period_end as "settlementPeriodEnd"
+        FROM settlements
+        WHERE state_id IN ('PENDING', 'CALCULATING', 'CALCULATED', 'APPROVED')
+        <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getPendingSettlements-count" resultType="int">
+        SELECT count(*) FROM settlements
+        WHERE state_id IN ('PENDING', 'CALCULATING', 'CALCULATED', 'APPROVED')
+        <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+    </select>
+
+    <select id="getSettlementSummary" resultType="com.homebase.ecom.dto.SettlementDto">
+        SELECT
+            supplier_id as "supplierId",
+            count(*) as "orderAmount",
+            sum(net_amount) as "netAmount",
+            sum(commission_amount) as "commissionAmount",
+            sum(platform_fee) as "platformFee"
+        FROM settlements
+        <where>
+            <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+        </where>
+        GROUP BY supplier_id
+    </select>
+
+    <select id="getByVendorId" resultType="com.homebase.ecom.dto.SettlementDto">
+        SELECT
+            id,
+            supplier_id as "supplierId",
+            order_id as "orderId",
+            state_id as "stateId",
+            order_amount as "orderAmount",
+            commission_amount as "commissionAmount",
+            platform_fee as "platformFee",
+            net_amount as "netAmount",
+            currency,
+            settlement_period_start as "settlementPeriodStart",
+            settlement_period_end as "settlementPeriodEnd",
+            disbursement_reference as "disbursementReference"
+        FROM settlements
+        WHERE supplier_id = #{supplierId}
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getByVendorId-count" resultType="int">
+        SELECT count(*) FROM settlements
+        WHERE supplier_id = #{supplierId}
+        <if test="stateId != null">AND state_id = #{stateId}</if>
     </select>
 
 </mapper>

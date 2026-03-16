@@ -20,10 +20,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.chenile.workflow.dto.StateEntityServiceResponse;
 import com.homebase.ecom.supplierlifecycle.domain.model.SupplierLifecycleSaga;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @ChenileController(value = "supplierLifecycleService", serviceName = "_supplierLifecycleStateEntityService_",
         healthCheckerName = "supplierLifecycleHealthChecker")
+@Tag(name = "Supplier Lifecycle", description = "Supplier lifecycle saga")
 public class SupplierLifecycleController extends ControllerSupport {
 
     @GetMapping("/supplier-lifecycle/{id}")

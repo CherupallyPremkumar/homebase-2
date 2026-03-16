@@ -1,6 +1,9 @@
 Feature: Testcase ID 2
-Tests the settlement Workflow Service using a REST client. Settlement service exists and is under test.
-It helps to create a settlement and manages the state of the settlement as documented in states xml
+Tests the settlement happy path to COMPLETED state.
+
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
 
 Scenario: Create a new settlement
 Given that "flowName" equals "settlement-flow"
@@ -8,64 +11,61 @@ And that "initialState" equals "PENDING"
 When I POST a REST request to URL "/settlement" with payload
 """json
 {
-    "description": "Description",
+    "description": "Test2 Settlement",
     "supplierId": "SUP-TEST2",
-    "periodMonth": 4,
-    "periodYear": 2026
+    "orderId": "ORD-TEST2",
+    "orderAmount": {"amount": 5000, "currency": "INR"},
+    "currency": "INR",
+    "settlementPeriodStart": "2026-04-01",
+    "settlementPeriodEnd": "2026-04-15"
 }
 """
 Then the REST response contains key "mutatedEntity"
 And store "$.payload.mutatedEntity.id" from response to "id"
 And the REST response key "mutatedEntity.currentState.stateId" is "${initialState}"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "currentState"
-And the REST response key "mutatedEntity.description" is "Description"
 
-Scenario: Retrieve the settlement that just got created
+Scenario: Retrieve the settlement
 When I GET a REST request to URL "/settlement/${id}"
 Then the REST response contains key "mutatedEntity"
 And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${currentState}"
+And the REST response key "mutatedEntity.currentState.stateId" is "PENDING"
 
-
-Scenario: Send the monthEnd event to the settlement with comments
-Given that "comment" equals "Comment for monthEnd"
-And that "event" equals "monthEnd"
+Scenario: Calculate step 1 (PENDING -> CALCULATING)
+Given that "event" equals "calculate"
 When I PATCH a REST request to URL "/settlement/${id}/${event}" with payload
 """json
-{
-    "comment": "${comment}"
-}
+{ "comment": "Calculate step 1" }
 """
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "PROCESSING"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
+Then the REST response key "mutatedEntity.currentState.stateId" is "CALCULATING"
 
-Scenario: Send the calculateSettlement event to the settlement with comments
-Given that "comment" equals "Comment for calculateSettlement"
-And that "event" equals "calculateSettlement"
+Scenario: Calculate step 2 (CALCULATING -> CALCULATED)
+Given that "event" equals "calculate"
 When I PATCH a REST request to URL "/settlement/${id}/${event}" with payload
 """json
-{
-    "comment": "${comment}"
-}
+{ "comment": "Calculate step 2" }
 """
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "READY_FOR_PAYMENT"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
+Then the REST response key "mutatedEntity.currentState.stateId" is "CALCULATED"
 
-Scenario: Send the confirmPayout event to the settlement with comments
-Given that "comment" equals "Comment for confirmPayout"
-And that "event" equals "confirmPayout"
+Scenario: Approve (CALCULATED -> APPROVED)
+Given that "event" equals "approve"
 When I PATCH a REST request to URL "/settlement/${id}/${event}" with payload
 """json
-{
-    "paymentReference": "BANK-REF-456",
-    "notes": "Payout confirmed"
-}
+{ "comment": "Approved" }
 """
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "SETTLED"
-And store "$.payload.mutatedEntity.currentState.stateId" from response to "finalState"
+Then the REST response key "mutatedEntity.currentState.stateId" is "APPROVED"
+
+Scenario: Disburse (APPROVED -> DISBURSED)
+Given that "event" equals "disburse"
+When I PATCH a REST request to URL "/settlement/${id}/${event}" with payload
+"""json
+{ "comment": "Disbursed" }
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "DISBURSED"
+
+Scenario: Complete (DISBURSED -> COMPLETED)
+Given that "event" equals "approve"
+When I PATCH a REST request to URL "/settlement/${id}/${event}" with payload
+"""json
+{ "comment": "Completed" }
+"""
+Then the REST response key "mutatedEntity.currentState.stateId" is "COMPLETED"

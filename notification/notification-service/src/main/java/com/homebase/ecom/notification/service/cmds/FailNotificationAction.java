@@ -10,8 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * STM action for marking a notification as failed (CREATED -> FAILED).
- * Records the error details and increments the retry count.
+ * STM action for marking a notification as failed (SENDING -> FAILED).
+ * Records the failure reason and increments the retry count.
  */
 public class FailNotificationAction extends AbstractSTMTransitionAction<Notification, FailNotificationPayload> {
 
@@ -21,17 +21,14 @@ public class FailNotificationAction extends AbstractSTMTransitionAction<Notifica
     public void transitionTo(Notification notification, FailNotificationPayload payload, State startState,
             String eventId, State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-        // Record the error message from the payload errorMessage, comment, or a default
-        String errorMsg = payload.getErrorMessage() != null ? payload.getErrorMessage()
+        String failureReason = payload.getFailureReason() != null ? payload.getFailureReason()
                 : (payload.getComment() != null ? payload.getComment() : "Delivery failed");
-        notification.setErrorMessage(errorMsg);
-
-        // Increment retry count
+        notification.setFailureReason(failureReason);
         notification.setRetryCount(notification.getRetryCount() + 1);
 
-        log.warn("Notification {} failed (attempt #{}): channel={}, error={}",
+        log.warn("Notification {} failed (attempt #{}): channel={}, reason={}",
                 notification.getId(), notification.getRetryCount(),
-                notification.getChannel(), errorMsg);
+                notification.getChannel(), failureReason);
 
         notification.getTransientMap().put("previousPayload", payload);
     }

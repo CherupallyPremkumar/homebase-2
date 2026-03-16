@@ -1,0 +1,9 @@
+{
+    "minRatingForApproval": 3.0,
+    "maxProductsPerSupplier": 500,
+    "commissionRateDefault": 15,
+    "reviewPeriodDays": 30,
+    "performanceReviewIntervalDays": 90,
+    "autoSuspendBelowRating": 2.0,
+    "minFulfillmentRate": 85
+}
