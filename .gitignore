@@ -64,6 +64,17 @@ web/src/main/resources/certs/
 .flattened-pom.xml
 */.flattened-pom.xml
 **/.flattened-pom.xml
+**/.flattened-pom*.xml
+
+# Build junk extracted to root
+LICENSE-junit.txt
+Log4j-charsets.properties
+activities.xml
+validation-mapping-*.xsd
+validation-configuration-*.xsd
+
+# Brain scripts (scratch/temp)
+brain/*.sh
 
 # Build artifacts
 **/classpath.txt
