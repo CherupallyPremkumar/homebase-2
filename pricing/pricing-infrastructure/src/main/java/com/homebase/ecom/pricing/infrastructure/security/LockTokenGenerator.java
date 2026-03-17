@@ -1,14 +1,15 @@
 package com.homebase.ecom.pricing.infrastructure.security;
 
-import org.springframework.stereotype.Component;
+import com.homebase.ecom.pricing.domain.service.ILockTokenGenerator;
+
 import java.security.SecureRandom;
 import java.util.Base64;
 
-@Component
-public class LockTokenGenerator {
+public class LockTokenGenerator implements ILockTokenGenerator {
     private static final int TOKEN_LENGTH_BYTES = 32;
     private final SecureRandom secureRandom = new SecureRandom();
 
+    @Override
     public String generateLockToken() {
         byte[] randomBytes = new byte[TOKEN_LENGTH_BYTES];
         secureRandom.nextBytes(randomBytes);

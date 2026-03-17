@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import org.chenile.cconfig.sdk.CconfigClient;
+import com.homebase.ecom.cconfig.sdk.CconfigClient;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 

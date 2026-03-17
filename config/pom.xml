@@ -17,7 +17,7 @@
 	<properties>
 	</properties>
 	
-	<groupId>org.chenile.cconfig</groupId>
+	<groupId>com.homebase.ecom.cconfig</groupId>
 	<version>${revision}</version>
 	<artifactId>cconfig-parent</artifactId>
 	<name>Chenile config</name>

@@ -13,6 +13,7 @@ public class CartItemDto implements Serializable {
     private int quantity;
     private long unitPrice;
     private long lineTotal;
+    private boolean available = true;
 
     public String getProductId() { return productId; }
     public void setProductId(String productId) { this.productId = productId; }
@@ -37,4 +38,7 @@ public class CartItemDto implements Serializable {
 
     public long getLineTotal() { return lineTotal; }
     public void setLineTotal(long lineTotal) { this.lineTotal = lineTotal; }
+
+    public boolean isAvailable() { return available; }
+    public void setAvailable(boolean available) { this.available = available; }
 }

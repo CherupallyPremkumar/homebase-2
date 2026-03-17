@@ -56,6 +56,9 @@
     <!-- Analytics (V45) -->
     <include file="db/changelog/analytics/db.changelog-analytics.xml"/>
 
+    <!-- Rules Engine (V50) — Java: rules-engine, DB tables: policy* -->
+    <include file="db/changelog/rules-engine/db.changelog-rules-engine.xml"/>
+
     <!-- Cart -->
     <include file="db/changelog/cart/db.changelog-cart.xml"/>
 

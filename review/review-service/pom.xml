@@ -37,10 +37,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
-			<artifactId>service-registry-service</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
 			<artifactId>chenile-security-api</artifactId>
 		</dependency>
 		<dependency>
@@ -53,7 +49,7 @@
 			<artifactId>shared-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.chenile.cconfig</groupId>
+			<groupId>com.homebase.ecom.cconfig</groupId>
 			<artifactId>cconfig-api</artifactId>
 		</dependency>
 		<dependency>

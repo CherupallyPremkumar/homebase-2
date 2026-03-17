@@ -1,6 +1,6 @@
 package com.homebase.ecom.returnrequest;
 
-import org.chenile.cconfig.sdk.CconfigClient;
+import com.homebase.ecom.cconfig.sdk.CconfigClient;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Bean;

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.homebase.ecom</groupId>
+        <artifactId>homebase-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.homebase.ecom.rulesengine</groupId>
+    <artifactId>rules-engine</artifactId>
+    <packaging>pom</packaging>
+    <name>Rules Engine Parent</name>
+
+
+    <modules>
+        <module>rules-engine-api</module>
+        <module>rules-engine-domain</module>
+        <module>rules-engine-infrastructure</module>
+        <module>rules-engine-query-api</module>
+        <module>rules-engine-service</module>
+        <module>rules-engine-query</module>
+        <module>rules-engine-app</module>
+        <module>rules-engine-client</module>
+        <module>rules-engine-web</module>
+        <module>rules-engine-k8s</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-web</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-app</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-k8s</artifactId>
+                <version>${revision}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

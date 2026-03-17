@@ -1,0 +1,18 @@
+services:
+  rules-engine-app:
+    build:
+      context: ..
+      dockerfile: rules-engine/rules-engine-app/Dockerfile
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  rules-engine-web:
+    build:
+      context: ./rules-engine-web
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      - rules-engine-app

@@ -19,7 +19,9 @@ public class CartDto implements Serializable {
     private long total;
     private LocalDateTime expiresAt;
     private String notes;
+    private String orderId;
     private String description;
+    private boolean priceChanged;
     private String currentState;
 
     public String getId() { return id; }
@@ -55,8 +57,14 @@ public class CartDto implements Serializable {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 
+    public String getOrderId() { return orderId; }
+    public void setOrderId(String orderId) { this.orderId = orderId; }
+
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public boolean isPriceChanged() { return priceChanged; }
+    public void setPriceChanged(boolean priceChanged) { this.priceChanged = priceChanged; }
 
     public String getCurrentState() { return currentState; }
     public void setCurrentState(String currentState) { this.currentState = currentState; }

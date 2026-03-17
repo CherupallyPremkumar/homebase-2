@@ -3,7 +3,7 @@ package com.homebase.ecom.shared.service.impl;
 import com.homebase.ecom.shared.Currency;
 import com.homebase.ecom.shared.CurrencyContext;
 import com.homebase.ecom.shared.CurrencyResolver;
-import org.chenile.cconfig.sdk.CconfigClient;
+import com.homebase.ecom.cconfig.sdk.CconfigClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;

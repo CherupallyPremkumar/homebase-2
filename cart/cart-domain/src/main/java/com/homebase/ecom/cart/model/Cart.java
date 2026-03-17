@@ -25,6 +25,8 @@ public class Cart extends AbstractExtendedStateEntity implements ActivityEnabled
     private Money total = Money.ZERO_INR;
     private LocalDateTime expiresAt;
     private String notes;
+    private String orderId;
+    private boolean priceChanged;
 
     public String description;
 
@@ -111,6 +113,22 @@ public class Cart extends AbstractExtendedStateEntity implements ActivityEnabled
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public boolean isPriceChanged() {
+        return priceChanged;
+    }
+
+    public void setPriceChanged(boolean priceChanged) {
+        this.priceChanged = priceChanged;
     }
 
     // ── Domain logic ───────────────────────────────────────────────────

@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- V50: Rules Engine tables (Java class: RuleSet, DB table: policy)   -->
+    <!-- DB table names kept as "policy*" — Java was renamed to rules-engine-->
+    <!-- ================================================================== -->
+    <changeSet id="V50__create_rules_engine_tables" author="homebase" runOnChange="false">
+
+        <!-- 1. policy (RuleSetEntity extends AbstractJpaStateEntity) -->
+        <createTable tableName="policy">
+            <!-- BaseJpaEntity fields -->
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+
+            <!-- AbstractJpaStateEntity fields -->
+            <column name="flow_id" type="VARCHAR(255)"/>
+            <column name="state_id" type="VARCHAR(255)"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+
+            <!-- RuleSetEntity-specific fields -->
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="description" type="TEXT"/>
+            <column name="default_effect" type="VARCHAR(20)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="target_module" type="VARCHAR(100)"/>
+        </createTable>
+
+        <createIndex indexName="idx_policy_target_module_active" tableName="policy">
+            <column name="target_module"/>
+            <column name="active"/>
+        </createIndex>
+        <createIndex indexName="idx_policy_state" tableName="policy">
+            <column name="state_id"/>
+        </createIndex>
+
+        <!-- 2. policy_rule (RuleEntity extends BaseJpaEntity) -->
+        <createTable tableName="policy_rule">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+
+            <!-- RuleEntity-specific fields -->
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="expression" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effect" type="VARCHAR(20)"/>
+            <column name="priority" type="INT" defaultValueNumeric="0"/>
+            <column name="policy_id" type="VARCHAR(36)">
+                <constraints nullable="false" foreignKeyName="fk_policy_rule_policy"
+                             referencedTableName="policy" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_policy_rule_policy_id" tableName="policy_rule">
+            <column name="policy_id"/>
+        </createIndex>
+
+        <!-- 3. policy_rule_metadata (ElementCollection for RuleEntity.metadata) -->
+        <createTable tableName="policy_rule_metadata">
+            <column name="rule_id" type="VARCHAR(36)">
+                <constraints nullable="false" foreignKeyName="fk_policy_rule_metadata_rule"
+                             referencedTableName="policy_rule" referencedColumnNames="id"/>
+            </column>
+            <column name="meta_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="meta_value" type="VARCHAR(1000)"/>
+        </createTable>
+
+        <createIndex indexName="idx_policy_rule_metadata_rule_id" tableName="policy_rule_metadata">
+            <column name="rule_id"/>
+        </createIndex>
+
+        <!-- 4. policy_activity_log (RuleSetActivityLogEntity extends BaseJpaEntity) -->
+        <createTable tableName="policy_activity_log">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+
+            <!-- ActivityLog fields -->
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="activity_comment" type="TEXT"/>
+            <column name="policy_id" type="VARCHAR(36)">
+                <constraints foreignKeyName="fk_policy_activity_log_policy"
+                             referencedTableName="policy" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_policy_activity_log_policy_id" tableName="policy_activity_log">
+            <column name="policy_id"/>
+        </createIndex>
+
+        <!-- 5. decisions (DecisionEntity extends BaseJpaEntity) -->
+        <createTable tableName="decisions">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+
+            <!-- DecisionEntity-specific fields -->
+            <column name="policy_id" type="VARCHAR(36)"/>
+            <column name="subject_id" type="VARCHAR(255)"/>
+            <column name="resource" type="VARCHAR(255)"/>
+            <column name="action" type="VARCHAR(100)"/>
+            <column name="effect" type="VARCHAR(20)"/>
+            <column name="reasons" type="TEXT"/>
+            <column name="target_module" type="VARCHAR(100)"/>
+            <column name="timestamp" type="TIMESTAMP"/>
+        </createTable>
+
+        <createIndex indexName="idx_decisions_policy_id" tableName="decisions">
+            <column name="policy_id"/>
+        </createIndex>
+        <createIndex indexName="idx_decisions_target_module" tableName="decisions">
+            <column name="target_module"/>
+        </createIndex>
+
+        <!-- 6. decision_metadata (ElementCollection for DecisionEntity.metadata) -->
+        <createTable tableName="decision_metadata">
+            <column name="decision_id" type="VARCHAR(36)">
+                <constraints nullable="false" foreignKeyName="fk_decision_metadata_decision"
+                             referencedTableName="decisions" referencedColumnNames="id"/>
+            </column>
+            <column name="meta_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="meta_value" type="VARCHAR(1000)"/>
+        </createTable>
+
+        <createIndex indexName="idx_decision_metadata_decision_id" tableName="decision_metadata">
+            <column name="decision_id"/>
+        </createIndex>
+
+        <!-- 7. fact_definition (FactDefinitionEntity extends BaseJpaEntity) -->
+        <createTable tableName="fact_definition">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+
+            <!-- FactDefinitionEntity-specific fields -->
+            <column name="module_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attribute" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_type" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_fact_definition_module" tableName="fact_definition">
+            <column name="module_name"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>

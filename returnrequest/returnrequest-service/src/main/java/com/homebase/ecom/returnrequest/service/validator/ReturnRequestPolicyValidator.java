@@ -2,7 +2,7 @@ package com.homebase.ecom.returnrequest.service.validator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.chenile.cconfig.sdk.CconfigClient;
+import com.homebase.ecom.cconfig.sdk.CconfigClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

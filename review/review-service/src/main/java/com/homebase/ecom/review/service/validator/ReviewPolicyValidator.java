@@ -4,7 +4,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import com.homebase.ecom.review.dto.SubmitReviewPayload;
 import com.homebase.ecom.review.dto.ResubmitReviewPayload;
-import org.chenile.cconfig.sdk.CconfigClient;
+import com.homebase.ecom.cconfig.sdk.CconfigClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

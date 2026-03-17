@@ -16,7 +16,7 @@ import com.homebase.ecom.catalog.infrastructure.integration.DynamicCollectionEve
 import com.homebase.ecom.catalog.infrastructure.integration.ProductClientAdapter;
 import com.homebase.ecom.catalog.service.impl.CatalogProjectorServiceImpl;
 import com.homebase.ecom.catalog.service.impl.DynamicCollectionProjectorImpl;
-import org.chenile.cconfig.sdk.CconfigClient;
+import com.homebase.ecom.cconfig.sdk.CconfigClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

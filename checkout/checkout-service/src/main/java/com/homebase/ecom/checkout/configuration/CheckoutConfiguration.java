@@ -15,6 +15,7 @@ import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import org.chenile.workflow.api.WorkflowRegistry;
 
+import com.homebase.ecom.checkout.domain.port.*;
 import com.homebase.ecom.checkout.model.Checkout;
 import com.homebase.ecom.checkout.service.cmds.*;
 import com.homebase.ecom.checkout.service.saga.*;
@@ -22,10 +23,11 @@ import com.homebase.ecom.checkout.infrastructure.persistence.ChenileCheckoutEnti
 import com.homebase.ecom.checkout.infrastructure.persistence.repository.CheckoutJpaRepository;
 import com.homebase.ecom.checkout.infrastructure.persistence.mapper.CheckoutMapper;
 
+
 /**
  * Checkout module Spring configuration.
- * Wires STM, entity store, OWIZ saga commands, transition actions,
- * and hexagonal port adapters — following the same pattern as CartConfiguration.
+ * Wires STM, entity store, OWIZ saga commands (with hexagonal ports),
+ * transition actions, and stub adapters for testing.
  */
 @Configuration
 public class CheckoutConfiguration {
@@ -203,8 +205,14 @@ public class CheckoutConfiguration {
     }
 
     @Bean
-    CompensateCheckoutAction checkoutCompensateAction() {
-        return new CompensateCheckoutAction();
+    CompensateCheckoutAction checkoutCompensateAction(
+            CartLockPort cartLockPort,
+            InventoryReservePort inventoryReservePort,
+            OrderCreationPort orderCreationPort,
+            PromoCommitPort promoCommitPort,
+            PaymentInitiationPort paymentInitiationPort) {
+        return new CompensateCheckoutAction(cartLockPort, inventoryReservePort,
+                orderCreationPort, promoCommitPort, paymentInitiationPort);
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -212,39 +220,47 @@ public class CheckoutConfiguration {
     // ═══════════════════════════════════════════════════════════════════
 
     @Bean
-    LockCartCommand lockCartCommand() {
-        return new LockCartCommand();
+    LockCartCommand lockCartCommand(CartLockPort cartLockPort) {
+        return new LockCartCommand(cartLockPort);
     }
 
     @Bean
-    LockPriceCommand lockPriceCommand() {
-        return new LockPriceCommand();
+    LockPriceCommand lockPriceCommand(PriceLockPort priceLockPort) {
+        return new LockPriceCommand(priceLockPort);
     }
 
     @Bean
-    ReserveInventoryCommand reserveInventoryCommand() {
-        return new ReserveInventoryCommand();
+    ReserveInventoryCommand reserveInventoryCommand(InventoryReservePort inventoryReservePort) {
+        return new ReserveInventoryCommand(inventoryReservePort);
     }
 
     @Bean
-    ValidateShippingCommand validateShippingCommand() {
-        return new ValidateShippingCommand();
+    ValidateShippingCommand validateShippingCommand(ShippingValidationPort shippingValidationPort) {
+        return new ValidateShippingCommand(shippingValidationPort);
     }
 
     @Bean
-    CreateOrderCommand createOrderCommand() {
-        return new CreateOrderCommand();
+    CreateOrderCommand createOrderCommand(OrderCreationPort orderCreationPort) {
+        return new CreateOrderCommand(orderCreationPort);
     }
 
     @Bean
-    CommitPromoCommand commitPromoCommand() {
-        return new CommitPromoCommand();
+    CommitPromoCommand commitPromoCommand(PromoCommitPort promoCommitPort) {
+        return new CommitPromoCommand(promoCommitPort);
     }
 
     @Bean
-    InitiatePaymentCommand initiatePaymentCommand() {
-        return new InitiatePaymentCommand();
+    InitiatePaymentCommand initiatePaymentCommand(PaymentInitiationPort paymentInitiationPort) {
+        return new InitiatePaymentCommand(paymentInitiationPort);
     }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Port beans are NOT provided here — they MUST come from:
+    //   - checkout-infrastructure (real adapters calling other services)
+    //   - SpringTestConfig (test stubs)
+    // No @ConditionalOnMissingBean stubs — production must fail-fast
+    // if a real adapter is not wired.
+    // ═══════════════════════════════════════════════════════════════════
 
     // ═══════════════════════════════════════════════════════════════════
     // ACL: STM Authorities Builder

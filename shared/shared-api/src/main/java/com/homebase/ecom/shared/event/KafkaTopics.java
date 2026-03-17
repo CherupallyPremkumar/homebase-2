@@ -14,6 +14,7 @@ public final class KafkaTopics {
     public static final String INVENTORY_EVENTS = "inventory.events";
     public static final String AUDIT_EVENTS = "audit.events";
     public static final String CART_EVENTS = "cart.events";
+    public static final String CHECKOUT_EVENTS = "checkout.events";
     public static final String SUPPLIER_EVENTS = "supplier.events";
     public static final String SETTLEMENT_EVENTS = "settlement.events";
     public static final String SHIPPING_EVENTS = "shipping.events";

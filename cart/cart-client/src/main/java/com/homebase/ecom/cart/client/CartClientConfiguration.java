@@ -4,6 +4,7 @@ import com.homebase.ecom.cart.client.delegate.CartManagerClient;
 import com.homebase.ecom.cart.client.delegate.CartManagerClientImpl;
 import com.homebase.ecom.cart.service.CartService;
 import org.chenile.proxy.builder.ProxyBuilder;
+import org.chenile.query.service.SearchService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -31,5 +32,16 @@ public class CartClientConfiguration {
     @Bean
     public CartManagerClient cartManagerClient() {
         return new CartManagerClientImpl();
+    }
+
+    @Bean
+    public SearchService cartSearchServiceClient(ProxyBuilder proxyBuilder) {
+        return proxyBuilder.buildProxy(
+            SearchService.class,
+            "searchService",
+            null,
+            ProxyBuilder.ProxyMode.COMPUTE_DYNAMICALLY,
+            null
+        );
     }
 }

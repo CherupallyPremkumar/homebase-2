@@ -2,7 +2,6 @@ package com.homebase.ecom.pricing.infrastructure.security;
 
 import com.homebase.ecom.pricing.domain.service.IHashCalculator;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -10,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Objects;
 
-@Component
 public class HashCalculator implements IHashCalculator {
 
     private static final String HMAC_SHA256 = "HmacSHA256";

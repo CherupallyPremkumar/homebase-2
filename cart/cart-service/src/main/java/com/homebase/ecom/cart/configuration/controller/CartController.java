@@ -7,6 +7,7 @@ import org.chenile.http.annotation.BodyTypeSelector;
 import org.chenile.http.annotation.ChenileController;
 import org.chenile.http.annotation.ChenileParamType;
 import org.chenile.http.handler.ControllerSupport;
+import org.chenile.pubsub.model.ChenilePubSub;
 import org.chenile.security.model.SecurityConfig;
 import org.springframework.http.ResponseEntity;
 
@@ -23,6 +24,7 @@ import com.homebase.ecom.cart.model.Cart;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
+@ChenilePubSub
 @ChenileController(value = "cartService", serviceName = "_cartStateEntityService_", healthCheckerName = "cartHealthChecker")
 @Tag(name = "Cart", description = "Shopping cart management")
 public class CartController extends ControllerSupport {

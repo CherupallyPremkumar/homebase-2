@@ -11,7 +11,7 @@ public class PricingClientConfiguration {
     public PricingService pricingServiceClient(ProxyBuilder proxyBuilder) {
         return proxyBuilder.buildProxy(
             PricingService.class,
-            "pricingServiceImpl",
+            "_pricingService_",
             null,
             ProxyBuilder.ProxyMode.COMPUTE_DYNAMICALLY,
             null

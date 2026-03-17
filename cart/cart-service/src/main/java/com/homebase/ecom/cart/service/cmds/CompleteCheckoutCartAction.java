@@ -22,8 +22,7 @@ public class CompleteCheckoutCartAction extends AbstractCartAction<CompleteCheck
             throw new IllegalArgumentException("orderId is required for completeCheckout");
         }
 
-        // Store the order reference
-        cart.description = "Order: " + payload.orderId;
+        cart.setOrderId(payload.orderId);
 
         logActivity(cart, "completeCheckout",
                 "Checkout completed, orderId: " + payload.orderId

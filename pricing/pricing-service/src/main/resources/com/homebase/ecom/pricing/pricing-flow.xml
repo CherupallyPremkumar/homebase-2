@@ -1,0 +1,41 @@
+<flows>
+  <flow id="pricing-flow" defaultFlow="true">
+    <chain id="pricingChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Set base prices from cart snapshot -->
+    <command id="resolveBasePrices" componentName="resolveBasePricesCommand">
+      <attach-to index="1" parentId="pricingChain"/>
+    </command>
+
+    <!-- Step 2: ALL rule-based discounts via centralized rules engine (volume, tier, dynamic, flash sale) -->
+    <command id="rulesEngineDiscount" componentName="rulesEngineDiscountCommand">
+      <attach-to index="2" parentId="pricingChain"/>
+    </command>
+
+    <!-- Step 3: Apply offer/sale prices from Offer service -->
+    <command id="applyPromoPrice" componentName="applyPromoPriceCommand">
+      <attach-to index="3" parentId="pricingChain"/>
+    </command>
+
+    <!-- Step 4: Validate and apply coupon codes -->
+    <command id="applyCoupon" componentName="applyCouponCommand">
+      <attach-to index="4" parentId="pricingChain"/>
+    </command>
+
+    <!-- Step 5: Cap total discount at max percentage -->
+    <command id="enforceDiscountCap" componentName="enforceDiscountCapCommand">
+      <attach-to index="5" parentId="pricingChain"/>
+    </command>
+
+    <!-- Step 6: Calculate GST via TaxCalculationPort -->
+    <command id="calculateTax" componentName="calculateTaxCommand">
+      <attach-to index="6" parentId="pricingChain"/>
+    </command>
+
+    <!-- Step 7: Assemble immutable PriceBreakdown with integrity hash -->
+    <command id="buildResponse" componentName="buildPricingResponseCommand">
+      <attach-to index="7" parentId="pricingChain"/>
+    </command>
+  </flow>
+</flows>

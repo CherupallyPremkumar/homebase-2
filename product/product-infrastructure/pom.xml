@@ -29,8 +29,8 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.homebase.ecom.policy</groupId>
-			<artifactId>policy-client</artifactId>
+			<groupId>com.homebase.ecom.rulesengine</groupId>
+			<artifactId>rules-engine-client</artifactId>
 		</dependency>
 	</dependencies>
 </project>

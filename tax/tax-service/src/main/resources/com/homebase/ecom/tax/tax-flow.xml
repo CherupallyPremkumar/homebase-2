@@ -1,0 +1,31 @@
+<flows>
+  <flow id="tax-flow" defaultFlow="true">
+    <chain id="taxChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Resolve HSN codes from product category -->
+    <command id="resolveHsnCodes" componentName="resolveHsnCodesCommand">
+      <attach-to index="1" parentId="taxChain"/>
+    </command>
+
+    <!-- Step 2: Determine INTRA_STATE vs INTER_STATE -->
+    <command id="determineTaxType" componentName="determineTaxTypeCommand">
+      <attach-to index="2" parentId="taxChain"/>
+    </command>
+
+    <!-- Step 3: Look up tax rates for each HSN code -->
+    <command id="lookupTaxRates" componentName="lookupTaxRatesCommand">
+      <attach-to index="3" parentId="taxChain"/>
+    </command>
+
+    <!-- Step 4: Calculate CGST/SGST or IGST + cess amounts -->
+    <command id="calculateTaxAmounts" componentName="calculateTaxAmountsCommand">
+      <attach-to index="4" parentId="taxChain"/>
+    </command>
+
+    <!-- Step 5: Build final tax response -->
+    <command id="buildTaxResponse" componentName="buildTaxResponseCommand">
+      <attach-to index="5" parentId="taxChain"/>
+    </command>
+  </flow>
+</flows>

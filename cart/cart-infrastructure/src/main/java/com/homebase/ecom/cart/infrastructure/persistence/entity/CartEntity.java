@@ -41,6 +41,12 @@ public class CartEntity extends AbstractJpaStateEntity {
     @Column(name = "notes", length = 1000)
     private String notes;
 
+    @Column(name = "order_id")
+    private String orderId;
+
+    @Column(name = "price_changed")
+    private boolean priceChanged;
+
     @Column(name = "description")
     public String description;
 
@@ -120,6 +126,22 @@ public class CartEntity extends AbstractJpaStateEntity {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public boolean isPriceChanged() {
+        return priceChanged;
+    }
+
+    public void setPriceChanged(boolean priceChanged) {
+        this.priceChanged = priceChanged;
     }
 
     public LocalDateTime getExpiresAt() {

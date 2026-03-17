@@ -46,11 +46,11 @@
 			<version>${revision}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.chenile.cconfig</groupId>
+			<groupId>com.homebase.ecom.cconfig</groupId>
 			<artifactId>cconfig-api</artifactId>
 		</dependency>
         <dependency>
-            <groupId>org.chenile.cconfig</groupId>
+            <groupId>com.homebase.ecom.cconfig</groupId>
             <artifactId>cconfig-service</artifactId>
         </dependency>
         <dependency>
@@ -77,55 +77,22 @@
             <artifactId>cucumber-workflow-utils</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.chenile</groupId>
-            <artifactId>service-registry-service</artifactId>
-        </dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>chenile-kafka</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>service-registry-delegate</artifactId>
+		</dependency>
         <dependency>
             <groupId>com.homebase.ecom</groupId>
             <artifactId>cart-query-service</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>chenile-query-service</artifactId>
-            <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom</groupId>
-            <artifactId>product-query-service</artifactId>
-            <version>${revision}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom</groupId>
-            <artifactId>inventory-query-service</artifactId>
-            <version>${revision}</version>
-            <scope>test</scope>
-        </dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.testcontainers</groupId>-->
-<!--			<artifactId>testcontainers</artifactId>-->
-<!--			<version>1.20.4</version>-->
-<!--			<scope>test</scope>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>org.testcontainers</groupId>-->
-<!--			<artifactId>junit-jupiter</artifactId>-->
-<!--			<version>1.20.4</version>-->
-<!--			<scope>test</scope>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>org.testcontainers</groupId>-->
-<!--			<artifactId>postgresql</artifactId>-->
-<!--			<version>1.20.4</version>-->
-<!--			<scope>test</scope>-->
-<!--		</dependency>-->
 		<dependency>
 			<groupId>com.homebase.ecom.cart</groupId>
 			<artifactId>cart-infrastructure</artifactId>
@@ -142,7 +109,6 @@
 		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>chenile-security</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.github.dasniko</groupId>
@@ -154,7 +120,6 @@
 			<groupId>com.homebase.ecom</groupId>
 			<artifactId>db-migrations</artifactId>
 			<version>${revision}</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

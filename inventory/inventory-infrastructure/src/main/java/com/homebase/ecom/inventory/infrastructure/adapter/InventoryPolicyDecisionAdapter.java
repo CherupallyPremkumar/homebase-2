@@ -1,8 +1,8 @@
 package com.homebase.ecom.inventory.infrastructure.adapter;
 
-import com.homebase.ecom.policy.api.dto.EvaluateRequest;
-import com.homebase.ecom.policy.api.dto.DecisionDto;
-import com.homebase.ecom.policy.api.service.DecisionService;
+import com.homebase.ecom.rulesengine.api.dto.EvaluateRequest;
+import com.homebase.ecom.rulesengine.api.dto.DecisionDto;
+import com.homebase.ecom.rulesengine.api.service.DecisionService;
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
 import com.homebase.ecom.inventory.domain.port.InventoryPolicyPort;
 
@@ -34,7 +34,7 @@ public class InventoryPolicyDecisionAdapter implements InventoryPolicyPort {
         request.setAction(eventId);
 
         if (additionalContext != null && additionalContext.containsKey("policyId")) {
-            request.setPolicyId((String) additionalContext.get("policyId"));
+            request.setRuleSetId((String) additionalContext.get("policyId"));
         } else {
             request.setTargetModule("INVENTORY");
         }
@@ -64,7 +64,7 @@ public class InventoryPolicyDecisionAdapter implements InventoryPolicyPort {
 
         DecisionDto decisionDto = decisionService.evaluate(request);
 
-        boolean allowed = decisionDto.getEffect() == com.homebase.ecom.policy.api.enums.Effect.ALLOW;
+        boolean allowed = decisionDto.getEffect() == com.homebase.ecom.rulesengine.api.enums.Effect.ALLOW;
         return new PolicyDecision(allowed, decisionDto.getReasons());
     }
 }

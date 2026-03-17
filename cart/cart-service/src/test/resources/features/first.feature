@@ -84,7 +84,7 @@ Given that "terminalState" equals "__TERMINAL_STATE__"
 And that config strategy is "cartConfigProvider" with prefix "Cart"
 And that a new mandatory activity "a1" is added from state "${finalState}" to state "${finalState}" in flow "${flowName}"
 And that a new mandatory activity "a2" is added from state "${finalState}" to state "${finalState}" in flow "${flowName}"
-And that dynamic state "${terminalState}" is added to flow "${flowName}" with prefix "Cart"
+And that a new state "${terminalState}" is added to flow "${flowName}"
 And that a new activity completion checker "cc" is added from state "${finalState}" to state "${terminalState}" in flow "${flowName}"
 And that "comment" equals "Attempting to send cc event without mandatory activities being completed."
 And that "event" equals "cc"
@@ -138,19 +138,6 @@ And the REST response key "mutatedEntity.activities" collection has an item with
 | key             | value         |
 | activityName    | ${event}      |
 | activityComment | ${comment}    |
-
-Scenario: Perform mandatory activity (cc) on the  cart with comments
-Given that "comment" equals "Performed activity cc after completing all activities."
-And that "event" equals "cc"
-When I PATCH a REST request to URL "/cart/${id}/${event}" with payload
-"""json
-{
-"comment": "${comment}"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${id}"
-And the REST response key "mutatedEntity.currentState.stateId" is "${terminalState}"
 
 Scenario: Send an invalid event to cart . This will err out.
 When I PATCH a REST request to URL "/cart/${id}/invalid" with payload

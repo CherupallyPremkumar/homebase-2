@@ -43,17 +43,13 @@
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom.cart</groupId>
-            <artifactId>cart-event-consumer</artifactId>
+            <artifactId>cart-jobs</artifactId>
         </dependency>
 
         <!-- Spring Boot and Chenile Infrastructure -->
         <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>chenile-http</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.chenile</groupId>
-            <artifactId>service-registry-service</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

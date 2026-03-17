@@ -2,12 +2,9 @@ package com.homebase.ecom.pricing.infrastructure.cache;
 
 import com.homebase.ecom.pricing.domain.model.LockedPriceBreakdown;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
-
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-@Component
 public class PriceLockCacheManager {
     
     private static final String LOCK_PREFIX = "price_lock:";

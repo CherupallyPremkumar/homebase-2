@@ -19,7 +19,7 @@
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>org.chenile.cconfig</groupId>
+            <groupId>com.homebase.ecom.cconfig</groupId>
             <artifactId>cconfig-api</artifactId>
         </dependency>
         <dependency>

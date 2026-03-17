@@ -75,6 +75,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.github.dasniko</groupId>
             <artifactId>testcontainers-keycloak</artifactId>
             <version>3.4.0</version>
@@ -86,47 +91,10 @@
             <version>${revision}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.chenile</groupId>
-            <artifactId>service-registry-service</artifactId>
-        </dependency>
 
-        <!-- Module clients: checkout saga calls these services directly -->
-        <dependency>
-            <groupId>com.homebase.ecom.cart</groupId>
-            <artifactId>cart-client</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.order</groupId>
-            <artifactId>order-client</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.inventory</groupId>
-            <artifactId>inventory-client</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.pricing</groupId>
-            <artifactId>pricing-client</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.shipping</groupId>
-            <artifactId>shipping-client</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.promo</groupId>
-            <artifactId>promo-client</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.payment</groupId>
-            <artifactId>payment-client</artifactId>
-            <version>${revision}</version>
-        </dependency>
+        <!-- Port interfaces are in checkout-domain. Real adapters (calling
+             cart-client, pricing-client, etc.) live in checkout-infrastructure
+             and are wired only in checkout-app (runtime). Tests use stub ports. -->
     </dependencies>
 
     <build>

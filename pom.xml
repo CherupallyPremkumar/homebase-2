@@ -44,7 +44,7 @@
         <module>product</module>
         <module>promo</module>
         <module>review</module>
-        <module>policy</module>
+        <module>rules-engine</module>
         <module>pricing</module>
         <module>return-processing</module>
         <module>returnrequest</module>
@@ -240,33 +240,33 @@
             </dependency>
 
             <dependency>
-                <groupId>com.homebase.ecom.policy</groupId>
-                <artifactId>policy-api</artifactId>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-api</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.homebase.ecom.policy</groupId>
-                <artifactId>policy-domain</artifactId>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-domain</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.homebase.ecom.policy</groupId>
-                <artifactId>policy-infrastructure</artifactId>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-infrastructure</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.homebase.ecom.policy</groupId>
-                <artifactId>policy-service</artifactId>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-service</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.homebase.ecom.policy</groupId>
-                <artifactId>policy-client</artifactId>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-client</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.homebase.ecom.policy</groupId>
-                <artifactId>policy-app</artifactId>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-app</artifactId>
                 <version>${revision}</version>
             </dependency>
 
@@ -437,12 +437,12 @@
 
             <!-- Chenile Config Modules -->
             <dependency>
-                <groupId>org.chenile.cconfig</groupId>
+                <groupId>com.homebase.ecom.cconfig</groupId>
                 <artifactId>cconfig-api</artifactId>
                 <version>${chenile.config.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.chenile.cconfig</groupId>
+                <groupId>com.homebase.ecom.cconfig</groupId>
                 <artifactId>cconfig-service</artifactId>
                 <version>${chenile.config.version}</version>
             </dependency>

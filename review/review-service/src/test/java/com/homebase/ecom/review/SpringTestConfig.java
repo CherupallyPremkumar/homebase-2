@@ -9,9 +9,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
 @PropertySource("classpath:com/homebase/ecom/review/TestService.properties")
-@SpringBootApplication(scanBasePackages = { "org.chenile.configuration", "com.homebase.ecom.review.configuration", "org.chenile.service.registry.configuration", "org.chenile.cconfig.**" })
-@EnableJpaRepositories(basePackages = {"com.homebase.ecom.review", "org.chenile.service.registry.configuration.dao", "org.chenile.cconfig.configuration.dao"})
-@EntityScan(basePackages = {"com.homebase.ecom.review", "org.chenile.service.registry.model", "org.chenile.cconfig.model"})
+@SpringBootApplication(scanBasePackages = { "org.chenile.configuration", "com.homebase.ecom.review.configuration", "org.chenile.service.registry.configuration", "com.homebase.ecom.cconfig.**" })
+@EnableJpaRepositories(basePackages = {"com.homebase.ecom.review", "org.chenile.service.registry.configuration.dao", "com.homebase.ecom.cconfig.configuration.dao"})
+@EntityScan(basePackages = {"com.homebase.ecom.review", "org.chenile.service.registry.model", "com.homebase.ecom.cconfig.model"})
 @ActiveProfiles("unittest")
 public class SpringTestConfig {
 

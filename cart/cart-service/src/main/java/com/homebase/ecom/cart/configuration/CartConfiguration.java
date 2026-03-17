@@ -1,7 +1,9 @@
 package com.homebase.ecom.cart.configuration;
 
 import org.chenile.core.context.ChenileExchange;
+import org.chenile.pubsub.ChenilePub;
 import org.chenile.stm.*;
+import tools.jackson.databind.ObjectMapper;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.impl.*;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
@@ -23,21 +25,11 @@ import com.homebase.ecom.cart.service.healthcheck.CartHealthChecker;
 import com.homebase.ecom.cart.infrastructure.persistence.ChenileCartEntityStore;
 import com.homebase.ecom.cart.infrastructure.persistence.repository.CartJpaRepository;
 import com.homebase.ecom.cart.infrastructure.persistence.mapper.CartMapper;
-import com.homebase.ecom.cart.infrastructure.adapter.InventoryCheckAdapter;
-import com.homebase.ecom.cart.infrastructure.adapter.PricingAdapter;
-import com.homebase.ecom.cart.infrastructure.adapter.ProductCheckAdapter;
-import com.homebase.ecom.cart.domain.port.InventoryCheckPort;
-import com.homebase.ecom.cart.domain.port.PricingPort;
-import com.homebase.ecom.cart.domain.port.ProductCheckPort;
-import com.homebase.ecom.pricing.api.service.PricingService;
-import org.chenile.query.service.SearchService;
 import com.homebase.ecom.cart.service.validator.CartPolicyValidator;
-import com.homebase.ecom.cart.service.event.CartEventHandler;
 import com.homebase.ecom.cart.service.postSaveHooks.*;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
-
 import java.util.function.Function;
 
 /**
@@ -277,6 +269,26 @@ public class CartConfiguration {
         return new MergeCartAction();
     }
 
+    @Bean
+    MarkMergedCartAction cartMarkMergedAction() {
+        return new MarkMergedCartAction();
+    }
+
+    @Bean
+    FlagUnavailableCartAction cartFlagUnavailableAction() {
+        return new FlagUnavailableCartAction();
+    }
+
+    @Bean
+    RefreshPricingCartAction cartRefreshPricingAction() {
+        return new RefreshPricingCartAction();
+    }
+
+    @Bean
+    ExpireCouponCartAction cartExpireCouponAction() {
+        return new ExpireCouponCartAction();
+    }
+
     // ═══════════════════════════════════════════════════════════════════
     // Policy validator
     // ═══════════════════════════════════════════════════════════════════
@@ -285,27 +297,6 @@ public class CartConfiguration {
     CartPolicyValidator cartPolicyValidator() {
         return new CartPolicyValidator();
     }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Hexagonal ports — infrastructure adapters
-    // ═══════════════════════════════════════════════════════════════════
-
-    @Bean
-    InventoryCheckPort inventoryCheckPort(SearchService searchService) {
-        return new InventoryCheckAdapter(searchService);
-    }
-
-    @Bean
-    @ConditionalOnBean(PricingService.class)
-    PricingPort pricingPort(PricingService pricingServiceClient) {
-        return new PricingAdapter(pricingServiceClient);
-    }
-
-    @Bean
-    ProductCheckPort productCheckPort(SearchService searchService) {
-        return new ProductCheckAdapter(searchService);
-    }
-
 
     // ═══════════════════════════════════════════════════════════════════
     // Post-Save Hooks (convention: cart + STATE_ID + PostSaveHook)
@@ -317,28 +308,28 @@ public class CartConfiguration {
     }
 
     @Bean
-    CHECKOUT_INITIATEDCartPostSaveHook cartCHECKOUT_INITIATEDPostSaveHook() {
-        return new CHECKOUT_INITIATEDCartPostSaveHook();
+    CHECKOUT_INITIATEDCartPostSaveHook cartCHECKOUT_INITIATEDPostSaveHook(ChenilePub chenilePub, ObjectMapper objectMapper) {
+        return new CHECKOUT_INITIATEDCartPostSaveHook(chenilePub, objectMapper);
     }
 
     @Bean
-    CHECKOUT_COMPLETEDCartPostSaveHook cartCHECKOUT_COMPLETEDPostSaveHook() {
-        return new CHECKOUT_COMPLETEDCartPostSaveHook();
+    CHECKOUT_COMPLETEDCartPostSaveHook cartCHECKOUT_COMPLETEDPostSaveHook(ChenilePub chenilePub, ObjectMapper objectMapper) {
+        return new CHECKOUT_COMPLETEDCartPostSaveHook(chenilePub, objectMapper);
     }
 
     @Bean
-    ABANDONEDCartPostSaveHook cartABANDONEDPostSaveHook() {
-        return new ABANDONEDCartPostSaveHook();
+    ABANDONEDCartPostSaveHook cartABANDONEDPostSaveHook(ChenilePub chenilePub, ObjectMapper objectMapper) {
+        return new ABANDONEDCartPostSaveHook(chenilePub, objectMapper);
     }
 
     @Bean
-    EXPIREDCartPostSaveHook cartEXPIREDPostSaveHook() {
-        return new EXPIREDCartPostSaveHook();
+    EXPIREDCartPostSaveHook cartEXPIREDPostSaveHook(ChenilePub chenilePub, ObjectMapper objectMapper) {
+        return new EXPIREDCartPostSaveHook(chenilePub, objectMapper);
     }
 
     @Bean
-    MERGEDCartPostSaveHook cartMERGEDPostSaveHook() {
-        return new MERGEDCartPostSaveHook();
+    MERGEDCartPostSaveHook cartMERGEDPostSaveHook(ChenilePub chenilePub, ObjectMapper objectMapper) {
+        return new MERGEDCartPostSaveHook(chenilePub, objectMapper);
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -352,14 +343,4 @@ public class CartConfiguration {
         return builder.build();
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    // Chenile-Kafka event handler
-    // ═══════════════════════════════════════════════════════════════════
-
-    @Bean("cartEventService")
-    @ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
-    CartEventHandler cartEventService(org.chenile.pubsub.ChenilePub chenilePub,
-                                      tools.jackson.databind.ObjectMapper objectMapper) {
-        return new CartEventHandler(chenilePub, objectMapper);
-    }
 }

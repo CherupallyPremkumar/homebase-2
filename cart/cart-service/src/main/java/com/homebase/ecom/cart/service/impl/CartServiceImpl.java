@@ -48,4 +48,9 @@ public class CartServiceImpl extends HmStateEntityServiceImpl<Cart> implements C
         StateEntityServiceResponse<Cart> response = super.processById(cartId, eventId, payload);
         return cartDtoMapper.toDto(response.getMutatedEntity());
     }
+
+    @Override
+    public StateEntityServiceResponse<Cart> create(Cart entity) {
+        return super.create(entity);
+    }
 }

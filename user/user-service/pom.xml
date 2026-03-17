@@ -16,7 +16,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.chenile.cconfig</groupId>
+			<groupId>com.homebase.ecom.cconfig</groupId>
 			<artifactId>cconfig-api</artifactId>
 		</dependency>
 		<dependency>
@@ -60,10 +60,6 @@
 			<groupId>org.chenile</groupId>
 			<artifactId>chenile-proxy</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>org.chenile</groupId>
-            <artifactId>service-registry-service</artifactId>
-        </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>

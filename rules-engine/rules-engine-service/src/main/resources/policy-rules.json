@@ -1,0 +1,670 @@
+{
+  "policies": [
+    {
+      "id": "pricing-volume-discount",
+      "name": "Volume Discount Rules",
+      "description": "Quantity-based discounts — replaces hardcoded cconfig thresholds with dynamic rules",
+      "active": true,
+      "tenant": "homebase",
+      "targetModule": "PRICING",
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "vol-discount-20pct",
+          "name": "Bulk Order 20% Discount",
+          "expression": "#totalQuantity >= 10",
+          "effect": "ALLOW",
+          "priority": 10,
+          "active": true,
+          "metadata": {
+            "discountAction": "PERCENTAGE",
+            "discountValue": "20",
+            "discountScope": "LINE_ITEM",
+            "ruleName": "Bulk Order 20%"
+          }
+        },
+        {
+          "id": "vol-discount-10pct",
+          "name": "Multi-Buy 10% Discount",
+          "expression": "#totalQuantity >= 3 && #totalQuantity < 10",
+          "effect": "ALLOW",
+          "priority": 5,
+          "active": true,
+          "metadata": {
+            "discountAction": "PERCENTAGE",
+            "discountValue": "10",
+            "discountScope": "LINE_ITEM",
+            "ruleName": "Multi-Buy 10%"
+          }
+        }
+      ]
+    },
+    {
+      "id": "pricing-tier-discount",
+      "name": "Customer Tier Discount Rules",
+      "description": "Discounts based on customer membership tier",
+      "active": true,
+      "tenant": "homebase",
+      "targetModule": "PRICING",
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "tier-wholesale-15pct",
+          "name": "Wholesale Tier 15% Discount",
+          "expression": "#customerTier == 'WHOLESALE'",
+          "effect": "ALLOW",
+          "priority": 10,
+          "active": true,
+          "metadata": {
+            "discountAction": "PERCENTAGE",
+            "discountValue": "15",
+            "discountScope": "LINE_ITEM",
+            "ruleName": "Wholesale 15%"
+          }
+        },
+        {
+          "id": "tier-vip-5pct",
+          "name": "VIP Tier 5% Discount",
+          "expression": "#customerTier == 'VIP'",
+          "effect": "ALLOW",
+          "priority": 5,
+          "active": true,
+          "metadata": {
+            "discountAction": "PERCENTAGE",
+            "discountValue": "5",
+            "discountScope": "LINE_ITEM",
+            "ruleName": "VIP 5%"
+          }
+        },
+        {
+          "id": "tier-premium-3pct",
+          "name": "Premium Tier 3% Discount",
+          "expression": "#customerTier == 'PREMIUM'",
+          "effect": "ALLOW",
+          "priority": 3,
+          "active": true,
+          "metadata": {
+            "discountAction": "PERCENTAGE",
+            "discountValue": "3",
+            "discountScope": "LINE_ITEM",
+            "ruleName": "Premium 3%"
+          }
+        }
+      ]
+    },
+    {
+      "id": "pricing-category-discount",
+      "name": "Category Promotion Rules",
+      "description": "Category-specific promotional discounts managed by merchandising team",
+      "active": true,
+      "tenant": "homebase",
+      "targetModule": "PRICING",
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "cat-electronics-5pct",
+          "name": "Electronics Category 5% Off",
+          "expression": "#category == 'ELECTRONICS' && #subtotal >= 5000",
+          "effect": "ALLOW",
+          "priority": 5,
+          "active": true,
+          "metadata": {
+            "discountAction": "PERCENTAGE",
+            "discountValue": "5",
+            "discountScope": "LINE_ITEM",
+            "targetCategory": "ELECTRONICS",
+            "ruleName": "Electronics 5%"
+          }
+        },
+        {
+          "id": "cat-clothing-flat-200",
+          "name": "Clothing Flat ₹200 Off on ₹1000+",
+          "expression": "#category == 'CLOTHING' && #subtotal >= 1000",
+          "effect": "ALLOW",
+          "priority": 5,
+          "active": true,
+          "metadata": {
+            "discountAction": "FLAT",
+            "discountValue": "200",
+            "discountScope": "LINE_ITEM",
+            "targetCategory": "CLOTHING",
+            "ruleName": "Clothing ₹200 off"
+          }
+        }
+      ]
+    },
+    {
+      "id": "checkout-validation",
+      "name": "Checkout Validation Rules",
+      "description": "Pre-checkout validation — COD limits, payment restrictions, blacklist checks",
+      "active": true,
+      "tenant": "homebase",
+      "targetModule": "CHECKOUT",
+      "defaultEffect": "ALLOW",
+      "rules": [
+        {
+          "id": "checkout-block-cod-10k",
+          "name": "Block COD Above ₹10,000",
+          "expression": "#orderTotal > 1000000 && #paymentMethod == 'COD'",
+          "effect": "DENY",
+          "priority": 10,
+          "active": true,
+          "metadata": {
+            "reason": "COD not available for orders above ₹10,000",
+            "ruleName": "COD Limit"
+          }
+        },
+        {
+          "id": "checkout-block-blacklisted",
+          "name": "Block Blacklisted Customers",
+          "expression": "#customerStatus == 'BLACKLISTED'",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "reason": "Account suspended — contact support",
+            "ruleName": "Blacklist Check"
+          }
+        },
+        {
+          "id": "checkout-high-value-verification",
+          "name": "High Value Order Requires KYC",
+          "expression": "#orderTotal > 5000000 && #kycVerified != true",
+          "effect": "DENY",
+          "priority": 8,
+          "active": true,
+          "metadata": {
+            "reason": "Orders above ₹50,000 require KYC verification",
+            "ruleName": "High Value KYC"
+          }
+        }
+      ]
+    },
+    {
+      "id": "order-cancellation",
+      "name": "Order Cancellation Rules",
+      "description": "Controls when an order can be cancelled based on fulfillment state and time window",
+      "active": true,
+      "tenant": "homebase",
+      "targetModule": "ORDER",
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "order-cancel-pre-ship",
+          "name": "Free Cancellation Before Shipping",
+          "expression": "#fulfillmentStatus == 'PENDING' || #fulfillmentStatus == 'PROCESSING'",
+          "effect": "ALLOW",
+          "priority": 10,
+          "active": true,
+          "metadata": {
+            "refundType": "FULL",
+            "ruleName": "Pre-Ship Cancel"
+          }
+        },
+        {
+          "id": "order-cancel-shipped-24h",
+          "name": "Cancel Within 24h of Shipping",
+          "expression": "#fulfillmentStatus == 'SHIPPED' && #hoursSinceShipped <= 24",
+          "effect": "ALLOW",
+          "priority": 5,
+          "active": true,
+          "metadata": {
+            "refundType": "FULL_MINUS_SHIPPING",
+            "ruleName": "Post-Ship 24h Cancel"
+          }
+        },
+        {
+          "id": "order-cancel-block-delivered",
+          "name": "Block Cancel After Delivery",
+          "expression": "#fulfillmentStatus == 'DELIVERED'",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "reason": "Use return request instead",
+            "ruleName": "Delivered Block"
+          }
+        }
+      ]
+    },
+    {
+      "id": "return-eligibility",
+      "name": "Return Eligibility Rules",
+      "description": "Determines if a product is eligible for return based on time window, category, and condition",
+      "active": true,
+      "tenant": "homebase",
+      "targetModule": "RETURN",
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "return-digital-block",
+          "name": "Digital Products Non-Returnable",
+          "expression": "#category == 'DIGITAL'",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "reason": "Digital products cannot be returned",
+            "ruleName": "Digital Block"
+          }
+        },
+        {
+          "id": "return-perishable-block",
+          "name": "Perishable Products Non-Returnable",
+          "expression": "#category == 'PERISHABLE' || #category == 'GROCERY'",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "reason": "Perishable items cannot be returned",
+            "ruleName": "Perishable Block"
+          }
+        },
+        {
+          "id": "return-clothing-30d",
+          "name": "Clothing 30-Day Return",
+          "expression": "#category == 'CLOTHING' && #daysSinceDelivery <= 30",
+          "effect": "ALLOW",
+          "priority": 10,
+          "active": true,
+          "metadata": {
+            "returnWindow": "30",
+            "shippingPaidBy": "BUYER",
+            "ruleName": "Clothing 30d Return"
+          }
+        },
+        {
+          "id": "return-electronics-15d",
+          "name": "Electronics 15-Day Return",
+          "expression": "#category == 'ELECTRONICS' && #daysSinceDelivery <= 15",
+          "effect": "ALLOW",
+          "priority": 10,
+          "active": true,
+          "metadata": {
+            "returnWindow": "15",
+            "shippingPaidBy": "SELLER",
+            "ruleName": "Electronics 15d Return"
+          }
+        },
+        {
+          "id": "return-premium-extended-60d",
+          "name": "Premium Members Extended 60-Day Return",
+          "expression": "#customerTier == 'PREMIUM' && #daysSinceDelivery <= 60",
+          "effect": "ALLOW",
+          "priority": 15,
+          "active": true,
+          "metadata": {
+            "returnWindow": "60",
+            "shippingPaidBy": "SELLER",
+            "ruleName": "Premium 60d Return"
+          }
+        },
+        {
+          "id": "return-defective-no-limit",
+          "name": "Defective Product Return — No Time Limit",
+          "expression": "#returnReason == 'DEFECTIVE' && #daysSinceDelivery <= 365",
+          "effect": "ALLOW",
+          "priority": 20,
+          "active": true,
+          "metadata": {
+            "returnWindow": "365",
+            "shippingPaidBy": "SELLER",
+            "refundType": "FULL_WITH_SHIPPING",
+            "ruleName": "Defective Return"
+          }
+        }
+      ]
+    },
+    {
+      "id": "offer-listing-validation",
+      "name": "Offer Listing Validation Rules",
+      "description": "Controls which sellers can list products — tier requirements, category restrictions, MAP enforcement",
+      "active": true,
+      "tenant": "homebase",
+      "targetModule": "OFFER",
+      "defaultEffect": "ALLOW",
+      "rules": [
+        {
+          "id": "offer-block-unverified-electronics",
+          "name": "Block Unverified Sellers from Electronics",
+          "expression": "#category == 'ELECTRONICS' && #sellerTier != 'VERIFIED' && #sellerTier != 'PREMIUM'",
+          "effect": "DENY",
+          "priority": 10,
+          "active": true,
+          "metadata": {
+            "reason": "Electronics requires VERIFIED or PREMIUM seller tier",
+            "ruleName": "Electronics Seller Gate"
+          }
+        },
+        {
+          "id": "offer-map-enforcement",
+          "name": "MAP Price Floor Enforcement",
+          "expression": "#listingPrice < #mapPrice",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "reason": "Listing price below Minimum Advertised Price",
+            "ruleName": "MAP Enforcement"
+          }
+        },
+        {
+          "id": "offer-block-suspended-seller",
+          "name": "Block Suspended Sellers",
+          "expression": "#sellerStatus == 'SUSPENDED'",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "reason": "Seller account is suspended",
+            "ruleName": "Suspended Seller Block"
+          }
+        }
+      ]
+    },
+    {
+      "id": "product-pim-submit",
+      "name": "PIM Submit for Review Rules",
+      "description": "Validates product data completeness before submission for review",
+      "active": true,
+      "tenant": "homebase",
+      "targetModule": "PRODUCT",
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "pim-submit-name-short",
+          "name": "Product Name Too Short",
+          "expression": "#productName == null || #productName.length() < 3",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "reason": "Product name must be at least 3 characters",
+            "field": "productName",
+            "ruleName": "Name Length Check"
+          }
+        },
+        {
+          "id": "pim-submit-desc-short",
+          "name": "Description Too Short",
+          "expression": "#productDescription == null || #productDescription.length() < 20",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "reason": "Description must be at least 20 characters",
+            "field": "productDescription",
+            "ruleName": "Description Length Check"
+          }
+        },
+        {
+          "id": "pim-submit-category-missing",
+          "name": "Category Required",
+          "expression": "#categoryId == null || #categoryId.isEmpty()",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "reason": "Category is required",
+            "field": "categoryId",
+            "ruleName": "Category Required"
+          }
+        },
+        {
+          "id": "pim-submit-all-pass",
+          "name": "All Submit Checks Pass",
+          "expression": "#productName != null && #productName.length() >= 3 && #productDescription != null && #productDescription.length() >= 20 && #categoryId != null && !#categoryId.isEmpty()",
+          "effect": "ALLOW",
+          "priority": 1,
+          "active": true,
+          "metadata": {
+            "ruleName": "Submit Approved"
+          }
+        }
+      ]
+    },
+    {
+      "id": "product-pim-publish",
+      "name": "PIM Publish Approval Rules",
+      "description": "Validates product readiness for catalog publication",
+      "active": true,
+      "tenant": "homebase",
+      "targetModule": "PRODUCT",
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "pim-publish-no-images",
+          "name": "At Least One Image Required",
+          "expression": "#mediaCount == null || #mediaCount < 1",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "reason": "At least one product image is required",
+            "field": "media",
+            "ruleName": "Image Required"
+          }
+        },
+        {
+          "id": "pim-publish-no-brand",
+          "name": "Brand Required for Publish",
+          "expression": "#brand == null || #brand.isEmpty()",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "reason": "Brand is required for publishing",
+            "field": "brand",
+            "ruleName": "Brand Required"
+          }
+        },
+        {
+          "id": "pim-publish-no-variant",
+          "name": "At Least One Variant Required",
+          "expression": "#variantCount == null || #variantCount < 1",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "reason": "At least one variant is required",
+            "field": "variants",
+            "ruleName": "Variant Required"
+          }
+        },
+        {
+          "id": "pim-publish-all-pass",
+          "name": "All Publish Checks Pass",
+          "expression": "#mediaCount != null && #mediaCount >= 1 && #brand != null && !#brand.isEmpty() && #variantCount != null && #variantCount >= 1",
+          "effect": "ALLOW",
+          "priority": 1,
+          "active": true,
+          "metadata": {
+            "ruleName": "Publish Approved"
+          }
+        }
+      ]
+    },
+    {
+      "id": "inventory-restock",
+      "name": "Inventory Restock Rules",
+      "description": "Triggers restock alerts based on demand velocity and stock levels",
+      "active": true,
+      "tenant": "homebase",
+      "targetModule": "INVENTORY",
+      "defaultEffect": "DENY",
+      "rules": [
+        {
+          "id": "inv-critical-restock",
+          "name": "Critical Stock — Immediate Reorder",
+          "expression": "#currentStock <= #reorderPoint && #demandVelocity >= 10",
+          "effect": "ALLOW",
+          "priority": 10,
+          "active": true,
+          "metadata": {
+            "urgency": "CRITICAL",
+            "reorderMultiplier": "3",
+            "ruleName": "Critical Restock"
+          }
+        },
+        {
+          "id": "inv-low-stock-restock",
+          "name": "Low Stock — Standard Reorder",
+          "expression": "#currentStock <= #reorderPoint",
+          "effect": "ALLOW",
+          "priority": 5,
+          "active": true,
+          "metadata": {
+            "urgency": "STANDARD",
+            "reorderMultiplier": "2",
+            "ruleName": "Standard Restock"
+          }
+        }
+      ]
+    },
+    {
+      "id": "payment-method-validation",
+      "name": "Payment Method Validation Rules",
+      "description": "Controls which payment methods are allowed per customer segment and order value",
+      "active": true,
+      "tenant": "homebase",
+      "targetModule": "PAYMENT",
+      "defaultEffect": "ALLOW",
+      "rules": [
+        {
+          "id": "pay-block-cod-high-value",
+          "name": "Block COD Above ₹10,000",
+          "expression": "#paymentMethod == 'COD' && #orderTotal > 1000000",
+          "effect": "DENY",
+          "priority": 10,
+          "active": true,
+          "metadata": {
+            "reason": "COD not available for orders above ₹10,000",
+            "ruleName": "COD Limit"
+          }
+        },
+        {
+          "id": "pay-block-expired-card",
+          "name": "Block Expired Cards",
+          "expression": "#paymentMethod == 'CREDIT_CARD' && #cardExpired == true",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "reason": "Credit card has expired",
+            "ruleName": "Expired Card"
+          }
+        },
+        {
+          "id": "pay-emi-min-amount",
+          "name": "EMI Requires Minimum ₹3,000",
+          "expression": "#paymentMethod == 'EMI' && #orderTotal < 300000",
+          "effect": "DENY",
+          "priority": 10,
+          "active": true,
+          "metadata": {
+            "reason": "EMI available on orders ₹3,000 and above",
+            "ruleName": "EMI Min Amount"
+          }
+        }
+      ]
+    },
+    {
+      "id": "supplier-performance",
+      "name": "Supplier Performance Rules",
+      "description": "Evaluates supplier performance for listing privileges and tier changes",
+      "active": true,
+      "tenant": "homebase",
+      "targetModule": "SUPPLIER",
+      "defaultEffect": "ALLOW",
+      "rules": [
+        {
+          "id": "supplier-odr-violation",
+          "name": "Order Defect Rate Violation",
+          "expression": "#orderDefectRate > 1.0",
+          "effect": "DENY",
+          "priority": 100,
+          "active": true,
+          "metadata": {
+            "action": "SUSPEND",
+            "reason": "ODR exceeds 1% threshold",
+            "ruleName": "ODR Violation"
+          }
+        },
+        {
+          "id": "supplier-late-ship-violation",
+          "name": "Late Shipment Rate Violation",
+          "expression": "#lateShipmentRate > 4.0",
+          "effect": "DENY",
+          "priority": 90,
+          "active": true,
+          "metadata": {
+            "action": "WARNING",
+            "reason": "Late shipment rate exceeds 4% threshold",
+            "ruleName": "Late Ship Warning"
+          }
+        },
+        {
+          "id": "supplier-premium-eligible",
+          "name": "Premium Tier Eligibility",
+          "expression": "#orderDefectRate < 0.5 && #lateShipmentRate < 2.0 && #totalOrders >= 100 && #customerRating >= 4.5",
+          "effect": "ALLOW",
+          "priority": 5,
+          "active": true,
+          "metadata": {
+            "action": "UPGRADE",
+            "targetTier": "PREMIUM",
+            "ruleName": "Premium Eligible"
+          }
+        }
+      ]
+    },
+    {
+      "id": "shipping-method-validation",
+      "name": "Shipping Method Rules",
+      "description": "Controls available shipping methods based on weight, destination, and order value",
+      "active": true,
+      "tenant": "homebase",
+      "targetModule": "SHIPPING",
+      "defaultEffect": "ALLOW",
+      "rules": [
+        {
+          "id": "ship-free-threshold",
+          "name": "Free Shipping on ₹499+",
+          "expression": "#orderTotal >= 49900 && #shippingMethod == 'STANDARD'",
+          "effect": "ALLOW",
+          "priority": 10,
+          "active": true,
+          "metadata": {
+            "shippingCost": "0",
+            "ruleName": "Free Shipping"
+          }
+        },
+        {
+          "id": "ship-block-heavy-express",
+          "name": "Block Express for Heavy Items",
+          "expression": "#totalWeightKg > 25 && #shippingMethod == 'EXPRESS'",
+          "effect": "DENY",
+          "priority": 10,
+          "active": true,
+          "metadata": {
+            "reason": "Express shipping not available for items over 25kg",
+            "ruleName": "Heavy Item Block"
+          }
+        },
+        {
+          "id": "ship-remote-surcharge",
+          "name": "Remote Area Surcharge",
+          "expression": "#pincode != null && #isRemoteArea == true",
+          "effect": "ALLOW",
+          "priority": 5,
+          "active": true,
+          "metadata": {
+            "surchargeAmount": "5000",
+            "ruleName": "Remote Surcharge"
+          }
+        }
+      ]
+    }
+  ],
+  "decisions": []
+}

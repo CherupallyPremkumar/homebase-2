@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+<!-- Enablement and default actions are manually wired in RulesEngineConfiguration -->
+
+  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
+
+  <flow id='ruleSet-flow' default='true'>
+    <entry-action componentName="ruleSetEntryAction" />
+    <exit-action componentName="ruleSetExitAction" />
+
+    <!-- ========== INITIAL STATE ========== -->
+    <status id='DRAFT' initialState='true' description="New rule set, not yet submitted">
+      <on eventId='submit' componentName="ruleSetSubmitAction" newStateId='REVIEW'/>
+      <on eventId='activate' componentName="ruleSetActivateAction" newStateId='ACTIVE'/>
+    </status>
+
+    <!-- ========== REVIEW STATE ========== -->
+    <status id='REVIEW' description="Rule set under review">
+      <on eventId='approve' componentName="ruleSetApproveAction" newStateId='ACTIVE'/>
+      <on eventId='revert' componentName="ruleSetRevertAction" newStateId='DRAFT'/>
+    </status>
+
+    <!-- ========== ACTIVE STATE ========== -->
+    <status id='ACTIVE' description="Rule set is active and being enforced">
+      <on eventId='deprecate' componentName="ruleSetDeprecateAction" newStateId='DEPRECATED'/>
+      <on eventId='deactivate' componentName="ruleSetDeactivateAction" newStateId='DRAFT'/>
+    </status>
+
+    <!-- ========== DEPRECATED STATE ========== -->
+    <status id='DEPRECATED' description="Rule set is deprecated and no longer enforced">
+      <on eventId='activate' componentName="ruleSetActivateAction" newStateId='ACTIVE'/>
+    </status>
+
+  </flow>
+</states>

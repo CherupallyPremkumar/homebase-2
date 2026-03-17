@@ -12,15 +12,17 @@ public class StockDepletedEvent implements Serializable {
 
     private String inventoryId;
     private String productId;
+    private String variantId;
     private String eventType = EVENT_TYPE;
     private LocalDateTime timestamp = LocalDateTime.now();
 
     public StockDepletedEvent() {
     }
 
-    public StockDepletedEvent(String inventoryId, String productId) {
+    public StockDepletedEvent(String inventoryId, String productId, String variantId) {
         this.inventoryId = inventoryId;
         this.productId = productId;
+        this.variantId = variantId;
     }
 
     // --- Getters & Setters ---
@@ -39,6 +41,14 @@ public class StockDepletedEvent implements Serializable {
 
     public void setProductId(String productId) {
         this.productId = productId;
+    }
+
+    public String getVariantId() {
+        return variantId;
+    }
+
+    public void setVariantId(String variantId) {
+        this.variantId = variantId;
     }
 
     public String getEventType() {

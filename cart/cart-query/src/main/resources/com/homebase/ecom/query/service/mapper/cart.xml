@@ -170,6 +170,44 @@
 </select>
 
 <!-- ================================================================ -->
+<!-- CART-JOBS QUERIES: used by schedulers and event translators       -->
+<!-- Return cart IDs only for fan-out event publishing                 -->
+<!-- ================================================================ -->
+
+<!-- Find ACTIVE carts containing a specific variant -->
+<select id="getActiveCartIdsWithVariant" resultType="string">
+    SELECT DISTINCT c.id
+    FROM cart c
+    INNER JOIN cart_item ci ON ci.cart_id = c.id
+    WHERE ci.variant_id = #{variantId}
+    AND c.stateid IN ('ACTIVE', 'CHECKOUT_INITIATED')
+</select>
+
+<!-- Find ACTIVE carts that have a specific coupon applied -->
+<select id="getActiveCartIdsWithCoupon" resultType="string">
+    SELECT id
+    FROM cart
+    WHERE coupon_codes LIKE CONCAT('%', #{couponCode}, '%')
+    AND stateid IN ('ACTIVE', 'CHECKOUT_INITIATED')
+</select>
+
+<!-- Find carts past their expiresAt (eligible for expiration) -->
+<select id="getExpiredCartIds" resultType="string">
+    SELECT id
+    FROM cart
+    WHERE expires_at &lt; NOW()
+    AND stateid IN ('ACTIVE', 'ABANDONED', 'CHECKOUT_INITIATED')
+</select>
+
+<!-- Find ACTIVE carts idle longer than threshold hours -->
+<select id="getIdleCartIds" resultType="string">
+    SELECT id
+    FROM cart
+    WHERE stateid = 'ACTIVE'
+    AND last_modified_time &lt; (NOW() - INTERVAL #{thresholdHours} HOUR)
+</select>
+
+<!-- ================================================================ -->
 <!-- CART ITEM QUERIES                                                 -->
 <!-- ================================================================ -->
 

@@ -21,6 +21,16 @@ public class AddItemCartAction extends AbstractCartAction<AddItemCartPayload> {
             State startState, String eventId,
             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
+        // Quantity must be positive
+        if (payload.quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be positive");
+        }
+
+        // Unit price must be positive
+        if (payload.unitPrice <= 0) {
+            throw new IllegalArgumentException("Unit price must be positive");
+        }
+
         // variantId is required — it's the cart line item key
         if (payload.variantId == null || payload.variantId.isBlank()) {
             throw new IllegalArgumentException("variantId is required");
@@ -67,10 +77,14 @@ public class AddItemCartAction extends AbstractCartAction<AddItemCartPayload> {
         newItem.setVariantId(payload.variantId);
         newItem.setSku(payload.sku);
         newItem.setProductName(payload.productName);
+        newItem.setSupplierId(payload.supplierId);
         newItem.setQuantity(payload.quantity);
         newItem.setUnitPrice(Money.of(payload.unitPrice, cart.getCurrency()));
 
         cart.addItem(newItem);
+
+        // Recalculate pricing (volume discounts may kick in) and validate max cart value
+        recalculatePricingAndValidateValue(cart);
 
         // Set expiration if not already set
         if (cart.getExpiresAt() == null) {

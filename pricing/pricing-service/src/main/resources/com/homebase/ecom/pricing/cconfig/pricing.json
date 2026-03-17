@@ -1,0 +1,59 @@
+{
+  "policies": {
+    "currency": {
+      "defaultCurrency": "INR",
+      "supportedCurrencies": ["INR", "USD"]
+    },
+    "discount": {
+      "maxDiscountPercentage": 50,
+      "discountStackingMode": "MULTIPLICATIVE",
+      "maxCouponsPerCart": 1
+    },
+    "volumeDiscountTiers": [
+      {"minQty": 3, "discountPct": 10},
+      {"minQty": 10, "discountPct": 20},
+      {"minQty": 50, "discountPct": 30}
+    ],
+    "customerTierDiscounts": {
+      "VIP": 5,
+      "WHOLESALE": 15,
+      "PREMIUM": 8,
+      "REGULAR": 0
+    },
+    "tax": {
+      "defaultGstRate": 18,
+      "gstRateByCategory": {
+        "ELECTRONICS": 18,
+        "CLOTHING": 5,
+        "FOOD": 0,
+        "LUXURY": 28
+      }
+    },
+    "priceLock": {
+      "ttlMinutes": 15,
+      "maxLocksPerUser": 3
+    }
+  },
+  "dynamicRules": [
+    {
+      "id": "min-spend-500",
+      "name": "Spend Rs.5000+ get Rs.500 off",
+      "scope": "CART_LEVEL",
+      "condition": "subtotal >= 500000",
+      "action": "FLAT",
+      "value": 50000,
+      "active": true,
+      "priority": 10
+    },
+    {
+      "id": "bulk-order-5plus",
+      "name": "5+ items: extra 5% off",
+      "scope": "CART_LEVEL",
+      "condition": "totalQuantity >= 5",
+      "action": "PERCENTAGE",
+      "value": 5,
+      "active": true,
+      "priority": 20
+    }
+  ]
+}

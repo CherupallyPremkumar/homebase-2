@@ -305,6 +305,60 @@
 		"sortable": false
 	},
 	{
+		"id": "Cart.getActiveCartIdsWithVariant",
+		"name": "activeCartIdsWithVariant",
+		"responseClass": "java.util.Map",
+		"columnMetadata": {
+			"variantId": {
+				"name": "variant_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getActiveCartIdsWithCoupon",
+		"name": "activeCartIdsWithCoupon",
+		"responseClass": "java.util.Map",
+		"columnMetadata": {
+			"couponCode": {
+				"name": "coupon_codes",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getExpiredCartIds",
+		"name": "expiredCartIds",
+		"responseClass": "java.util.Map",
+		"columnMetadata": {},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getIdleCartIds",
+		"name": "idleCartIds",
+		"responseClass": "java.util.Map",
+		"columnMetadata": {
+			"thresholdHours": {
+				"name": "threshold_hours",
+				"filterable": true,
+				"columnType": "Number"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
 		"id": "Cart.getCartFull",
 		"name": "cartFull",
 		"workflowName": "cart",

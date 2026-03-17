@@ -6,9 +6,11 @@ import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
 import org.chenile.workflow.param.MinimalPayload;
 
+import java.time.LocalDateTime;
+
 /**
  * STM transition action for cancelCheckout event.
- * Releases inventory reservation and returns cart to ACTIVE.
+ * Resets cart expiration back to standard TTL and returns cart to ACTIVE.
  */
 public class CancelCheckoutCartAction extends AbstractCartAction<MinimalPayload> {
 
@@ -17,8 +19,10 @@ public class CancelCheckoutCartAction extends AbstractCartAction<MinimalPayload>
             State startState, String eventId,
             State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
 
-        // TODO: Call InventoryReservationPort.releaseItems() when wired
+        // Reset expiration from checkout reservation (15 min) back to standard cart TTL
+        int expirationHours = cartPolicyValidator.getCartExpirationHours();
+        cart.setExpiresAt(LocalDateTime.now().plusHours(expirationHours));
 
-        logActivity(cart, "cancelCheckout", "Checkout cancelled, cart returned to ACTIVE");
+        logActivity(cart, "cancelCheckout", "Checkout cancelled, cart returned to ACTIVE, expiry reset to " + expirationHours + "h");
     }
 }

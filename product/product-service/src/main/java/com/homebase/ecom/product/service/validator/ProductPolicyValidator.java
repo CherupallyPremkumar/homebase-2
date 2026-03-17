@@ -5,7 +5,7 @@ import tools.jackson.databind.ObjectMapper;
 import com.homebase.ecom.product.domain.model.Product;
 import com.homebase.ecom.product.domain.port.PimPolicyPort;
 import com.homebase.ecom.product.service.exception.*;
-import org.chenile.cconfig.sdk.CconfigClient;
+import com.homebase.ecom.cconfig.sdk.CconfigClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -25,6 +25,8 @@ public class CartDtoMapper {
         dto.setTotal(cart.getTotal().getAmount());
         dto.setExpiresAt(cart.getExpiresAt());
         dto.setNotes(cart.getNotes());
+        dto.setOrderId(cart.getOrderId());
+        dto.setPriceChanged(cart.isPriceChanged());
         dto.setDescription(cart.description);
         if (cart.getCurrentState() != null) {
             dto.setCurrentState(cart.getCurrentState().getStateId());
@@ -51,6 +53,7 @@ public class CartDtoMapper {
         dto.setQuantity(item.getQuantity());
         dto.setUnitPrice(item.getUnitPrice().getAmount());
         dto.setLineTotal(item.getLineTotal().getAmount());
+        dto.setAvailable(item.isAvailable());
 
         return dto;
     }

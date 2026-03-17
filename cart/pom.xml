@@ -10,7 +10,7 @@
 		<module>cart-infrastructure</module>
 		<module>cart-service</module>
 		<module>cart-query</module>
-		<module>cart-event-consumer</module>
+		<module>cart-jobs</module>
 		<module>cart-client</module>
 		<module>cart-build</module>
 		<module>cart-web</module>
@@ -65,7 +65,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.homebase.ecom.cart</groupId>
-			<artifactId>cart-event-consumer</artifactId>
+			<artifactId>cart-jobs</artifactId>
 			<version>${revision}</version>
 		</dependency>
 		<dependency>

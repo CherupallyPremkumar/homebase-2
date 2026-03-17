@@ -1,10 +1,7 @@
 package com.homebase.ecom.checkout.service.cmds;
 
-import com.homebase.ecom.cart.client.CartManagerClient;
+import com.homebase.ecom.checkout.domain.port.*;
 import com.homebase.ecom.checkout.model.Checkout;
-import com.homebase.ecom.inventory.service.InventoryService;
-import com.homebase.ecom.order.service.OrderService;
-import com.homebase.ecom.payment.gateway.service.PaymentService;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
@@ -12,21 +9,33 @@ import org.chenile.workflow.param.MinimalPayload;
 import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * STM action for 'compensate' event.
  * Rolls back saga steps in reverse order based on lastCompletedStep.
- * Uses module clients directly (typed delegates where available).
+ * Uses domain ports (hexagonal) — never concrete clients.
  */
 public class CompensateCheckoutAction extends AbstractSTMTransitionAction<Checkout, MinimalPayload> {
 
     private static final Logger log = LoggerFactory.getLogger(CompensateCheckoutAction.class);
 
-    @Autowired(required = false) private PaymentService paymentServiceClient;
-    @Autowired(required = false) private OrderService orderServiceClient;
-    @Autowired(required = false) private InventoryService inventoryServiceClient;
-    @Autowired(required = false) private CartManagerClient cartManagerClient;
+    private final CartLockPort cartLockPort;
+    private final InventoryReservePort inventoryReservePort;
+    private final OrderCreationPort orderCreationPort;
+    private final PromoCommitPort promoCommitPort;
+    private final PaymentInitiationPort paymentInitiationPort;
+
+    public CompensateCheckoutAction(CartLockPort cartLockPort,
+                                     InventoryReservePort inventoryReservePort,
+                                     OrderCreationPort orderCreationPort,
+                                     PromoCommitPort promoCommitPort,
+                                     PaymentInitiationPort paymentInitiationPort) {
+        this.cartLockPort = cartLockPort;
+        this.inventoryReservePort = inventoryReservePort;
+        this.orderCreationPort = orderCreationPort;
+        this.promoCommitPort = promoCommitPort;
+        this.paymentInitiationPort = paymentInitiationPort;
+    }
 
     @Override
     public void transitionTo(Checkout checkout, MinimalPayload payload,
@@ -36,29 +45,31 @@ public class CompensateCheckoutAction extends AbstractSTMTransitionAction<Checko
         String lastStep = checkout.getLastCompletedStep();
         log.info("[CHECKOUT] Compensating checkoutId={}, lastStep={}", checkout.getId(), lastStep);
 
-        if (reachedStep(lastStep, "initiatePayment") && paymentServiceClient != null && checkout.getPaymentId() != null) {
-            safeCompensate("cancelPayment", () -> {
-                MinimalPayload cancelPayload = new MinimalPayload();
-                cancelPayload.setComment("Compensating checkout " + checkout.getId());
-                paymentServiceClient.processById(checkout.getPaymentId(), "cancel", cancelPayload);
-            });
+        if (reachedStep(lastStep, "initiatePayment") && checkout.getPaymentId() != null) {
+            safeCompensate("cancelPayment", () ->
+                    paymentInitiationPort.cancelPayment(checkout.getPaymentId()));
         }
-        // commitPromo rollback — will be added when PromotionService exposes rollback API
-        if (reachedStep(lastStep, "createOrder") && orderServiceClient != null) {
-            safeCompensate("cancelOrder", () -> {
-                orderServiceClient.proceed(checkout.getOrderId(), "cancel", null);
-            });
+
+        if (reachedStep(lastStep, "commitPromo") && checkout.getCouponCodes() != null && !checkout.getCouponCodes().isEmpty()) {
+            safeCompensate("releaseCoupons", () ->
+                    promoCommitPort.releaseCoupons(checkout.getId(), checkout.getCouponCodes()));
         }
-        if (reachedStep(lastStep, "reserveInventory") && inventoryServiceClient != null) {
-            safeCompensate("releaseInventory", () -> {
-                inventoryServiceClient.release(checkout.getId());
-            });
+
+        if (reachedStep(lastStep, "createOrder") && checkout.getOrderId() != null) {
+            safeCompensate("cancelOrder", () ->
+                    orderCreationPort.cancelOrder(checkout.getOrderId()));
         }
-        // lockPrice — no explicit unlock needed (snapshot expires)
-        if (reachedStep(lastStep, "lockCart") && cartManagerClient != null) {
-            safeCompensate("unlockCart", () -> {
-                cartManagerClient.cancelCheckout(checkout.getCartId());
-            });
+
+        if (reachedStep(lastStep, "reserveInventory")) {
+            safeCompensate("releaseInventory", () ->
+                    inventoryReservePort.release(checkout.getId()));
+        }
+
+        // lockPrice — no explicit unlock needed (price lock expires via TTL)
+
+        if (reachedStep(lastStep, "lockCart")) {
+            safeCompensate("unlockCart", () ->
+                    cartLockPort.unlockCart(checkout.getCartId()));
         }
 
         log.info("[CHECKOUT] Compensation complete for checkoutId={}", checkout.getId());

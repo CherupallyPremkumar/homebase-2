@@ -2,7 +2,7 @@ package com.homebase.ecom.settlement;
 
 import com.homebase.ecom.shared.Currency;
 import com.homebase.ecom.shared.CurrencyResolver;
-import org.chenile.cconfig.sdk.CconfigClient;
+import com.homebase.ecom.cconfig.sdk.CconfigClient;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

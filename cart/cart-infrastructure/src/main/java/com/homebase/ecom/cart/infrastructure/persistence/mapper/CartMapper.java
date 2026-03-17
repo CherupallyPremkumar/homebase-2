@@ -31,6 +31,8 @@ public class CartMapper {
         entity.setTotal(model.getTotal().getAmount());
         entity.setExpiresAt(model.getExpiresAt());
         entity.setNotes(model.getNotes());
+        entity.setOrderId(model.getOrderId());
+        entity.setPriceChanged(model.isPriceChanged());
         entity.description = model.description;
         entity.setCurrentState(model.getCurrentState());
 
@@ -66,6 +68,8 @@ public class CartMapper {
         model.setTotal(Money.of(entity.getTotal(), currency));
         model.setExpiresAt(entity.getExpiresAt());
         model.setNotes(entity.getNotes());
+        model.setOrderId(entity.getOrderId());
+        model.setPriceChanged(entity.isPriceChanged());
         model.description = entity.description;
         model.setCurrentState(entity.getCurrentState());
 
@@ -104,6 +108,7 @@ public class CartMapper {
         entity.setQuantity(model.getQuantity());
         entity.setUnitPrice(model.getUnitPrice().getAmount());
         entity.setLineTotal(model.getLineTotal().getAmount());
+        entity.setAvailable(model.isAvailable());
         return entity;
     }
 
@@ -121,6 +126,8 @@ public class CartMapper {
         existing.setCouponCodes(updated.getCouponCodes());
         existing.setExpiresAt(updated.getExpiresAt());
         existing.setNotes(updated.getNotes());
+        existing.setOrderId(updated.getOrderId());
+        existing.setPriceChanged(updated.isPriceChanged());
         existing.description = updated.description;
         existing.setCurrentState(updated.getCurrentState());
 
@@ -144,6 +151,7 @@ public class CartMapper {
                     existingItem.setQuantity(updatedItem.getQuantity());
                     existingItem.setUnitPrice(updatedItem.getUnitPrice());
                     existingItem.setLineTotal(updatedItem.getLineTotal());
+                    existingItem.setAvailable(updatedItem.isAvailable());
                     existingItem.setCart(existing);
                     mergedItems.add(existingItem);
                 } else {
@@ -192,6 +200,7 @@ public class CartMapper {
         model.setQuantity(entity.getQuantity());
         model.setUnitPrice(Money.of(entity.getUnitPrice(), currency));
         model.setLineTotal(Money.of(entity.getLineTotal(), currency));
+        model.setAvailable(entity.isAvailable());
         return model;
     }
 

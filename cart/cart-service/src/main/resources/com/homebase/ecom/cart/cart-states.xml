@@ -17,6 +17,10 @@
   <event-information eventId='expire' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
   <event-information eventId='reactivate' meta-acls="CUSTOMER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
   <event-information eventId='merge' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.cart.dto.MergeCartPayload"/>
+  <event-information eventId='markMerged' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='flagUnavailable' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.cart.dto.FlagUnavailableCartPayload"/>
+  <event-information eventId='refreshPricing' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='expireCoupon' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.cart.dto.ExpireCouponCartPayload"/>
 
   <flow id='cart-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
@@ -63,6 +67,22 @@
       <on eventId='expire'
           componentName='cartExpireAction'
           newStateId='EXPIRED'
+          meta-acls="SYSTEM"/>
+      <on eventId='markMerged'
+          componentName='cartMarkMergedAction'
+          newStateId='MERGED'
+          meta-acls="SYSTEM"/>
+      <on eventId='flagUnavailable'
+          componentName='cartFlagUnavailableAction'
+          newStateId='ACTIVE'
+          meta-acls="SYSTEM"/>
+      <on eventId='refreshPricing'
+          componentName='cartRefreshPricingAction'
+          newStateId='ACTIVE'
+          meta-acls="SYSTEM"/>
+      <on eventId='expireCoupon'
+          componentName='cartExpireCouponAction'
+          newStateId='ACTIVE'
           meta-acls="SYSTEM"/>
     </manual-state>
 

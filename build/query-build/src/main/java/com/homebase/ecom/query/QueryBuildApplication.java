@@ -10,9 +10,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
 @ComponentScan(basePackages = { "com.homebase.ecom",
-        "org.chenile","org.chenile.service.registry.configuration","org.chenile.cconfig.configuration" })
-@EntityScan(basePackages = { "com.homebase.ecom", "org.chenile.service.registry.model","org.chenile.cconfig.model" })
-@EnableJpaRepositories(basePackages = { "com.homebase.ecom", "org.chenile.service.registry.configuration.dao","org.chenile.cconfig.configuration.dao" })
+        "org.chenile","org.chenile.service.registry.configuration","com.homebase.ecom.cconfig.configuration" })
+@EntityScan(basePackages = { "com.homebase.ecom", "org.chenile.service.registry.model","com.homebase.ecom.cconfig.model" })
+@EnableJpaRepositories(basePackages = { "com.homebase.ecom", "org.chenile.service.registry.configuration.dao","com.homebase.ecom.cconfig.configuration.dao" })
 @EnableTransactionManagement
 public class QueryBuildApplication extends SpringBootServletInitializer {
 

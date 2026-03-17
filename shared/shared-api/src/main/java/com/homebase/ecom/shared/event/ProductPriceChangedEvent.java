@@ -9,14 +9,16 @@ import java.time.LocalDateTime;
  */
 public class ProductPriceChangedEvent implements Serializable {
     private String productId;
+    private String variantId;
     private Money newPrice;
     private String sellerId;
     private LocalDateTime timestamp = LocalDateTime.now();
 
     public ProductPriceChangedEvent() {}
 
-    public ProductPriceChangedEvent(String productId, Money newPrice, String sellerId) {
+    public ProductPriceChangedEvent(String productId, String variantId, Money newPrice, String sellerId) {
         this.productId = productId;
+        this.variantId = variantId;
         this.newPrice = newPrice;
         this.sellerId = sellerId;
     }
@@ -27,6 +29,14 @@ public class ProductPriceChangedEvent implements Serializable {
 
     public void setProductId(String productId) {
         this.productId = productId;
+    }
+
+    public String getVariantId() {
+        return variantId;
+    }
+
+    public void setVariantId(String variantId) {
+        this.variantId = variantId;
     }
 
     public Money getNewPrice() {

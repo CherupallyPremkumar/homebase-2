@@ -52,7 +52,7 @@
             <artifactId>user-service</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.chenile.cconfig</groupId>
+            <groupId>com.homebase.ecom.cconfig</groupId>
             <artifactId>cconfig-service</artifactId>
         </dependency>
 		<dependency>

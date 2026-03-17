@@ -18,6 +18,7 @@
     <modules>
         <module>pricing-domain</module>
         <module>pricing-infrastructure</module>
+        <module>pricing-service</module>
         <module>pricing-api</module>
         <module>pricing-client</module>
         <module>pricing-app</module>
@@ -42,7 +43,22 @@
             </dependency>
             <dependency>
                 <groupId>com.homebase.ecom.pricing</groupId>
+                <artifactId>pricing-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.pricing</groupId>
                 <artifactId>pricing-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-client</artifactId>
                 <version>${revision}</version>
             </dependency>
         </dependencies>

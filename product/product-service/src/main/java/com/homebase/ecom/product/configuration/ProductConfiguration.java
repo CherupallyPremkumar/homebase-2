@@ -91,8 +91,8 @@ public class ProductConfiguration {
     }
 
     @Bean
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(com.homebase.ecom.policy.api.service.DecisionService.class)
-    public PimPolicyPort pimPolicyPort(com.homebase.ecom.policy.api.service.DecisionService decisionService) {
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(com.homebase.ecom.rulesengine.api.service.DecisionService.class)
+    public PimPolicyPort pimPolicyPort(com.homebase.ecom.rulesengine.api.service.DecisionService decisionService) {
         return new PolicyDecisionAdapter(decisionService);
     }
 

@@ -1,0 +1,306 @@
+[
+  {
+    "id": "fact_total_quantity",
+    "module": "PRICING",
+    "entityName": "PricingRequest",
+    "displayName": "Total Item Quantity",
+    "attribute": "#totalQuantity",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_customer_tier",
+    "module": "PRICING",
+    "entityName": "PricingRequest",
+    "displayName": "Customer Tier",
+    "attribute": "#customerTier",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_subtotal",
+    "module": "PRICING",
+    "entityName": "PricingRequest",
+    "displayName": "Cart Subtotal (paise)",
+    "attribute": "#subtotal",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_category",
+    "module": "PRICING",
+    "entityName": "PricingRequest",
+    "displayName": "Product Category",
+    "attribute": "#category",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_order_total",
+    "module": "CHECKOUT",
+    "entityName": "CheckoutRequest",
+    "displayName": "Order Total (paise)",
+    "attribute": "#orderTotal",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_payment_method",
+    "module": "CHECKOUT",
+    "entityName": "CheckoutRequest",
+    "displayName": "Payment Method",
+    "attribute": "#paymentMethod",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_customer_status",
+    "module": "CHECKOUT",
+    "entityName": "CheckoutRequest",
+    "displayName": "Customer Account Status",
+    "attribute": "#customerStatus",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_kyc_verified",
+    "module": "CHECKOUT",
+    "entityName": "CheckoutRequest",
+    "displayName": "KYC Verified",
+    "attribute": "#kycVerified",
+    "dataType": "BOOLEAN"
+  },
+  {
+    "id": "fact_fulfillment_status",
+    "module": "ORDER",
+    "entityName": "Order",
+    "displayName": "Fulfillment Status",
+    "attribute": "#fulfillmentStatus",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_hours_since_shipped",
+    "module": "ORDER",
+    "entityName": "Order",
+    "displayName": "Hours Since Shipped",
+    "attribute": "#hoursSinceShipped",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_days_since_delivery",
+    "module": "RETURN",
+    "entityName": "ReturnRequest",
+    "displayName": "Days Since Delivery",
+    "attribute": "#daysSinceDelivery",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_return_reason",
+    "module": "RETURN",
+    "entityName": "ReturnRequest",
+    "displayName": "Return Reason",
+    "attribute": "#returnReason",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_return_category",
+    "module": "RETURN",
+    "entityName": "ReturnRequest",
+    "displayName": "Product Category",
+    "attribute": "#category",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_return_customer_tier",
+    "module": "RETURN",
+    "entityName": "ReturnRequest",
+    "displayName": "Customer Tier",
+    "attribute": "#customerTier",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_seller_tier",
+    "module": "OFFER",
+    "entityName": "Offer",
+    "displayName": "Seller Tier",
+    "attribute": "#sellerTier",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_seller_status",
+    "module": "OFFER",
+    "entityName": "Offer",
+    "displayName": "Seller Status",
+    "attribute": "#sellerStatus",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_listing_price",
+    "module": "OFFER",
+    "entityName": "Offer",
+    "displayName": "Listing Price (paise)",
+    "attribute": "#listingPrice",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_map_price",
+    "module": "OFFER",
+    "entityName": "Offer",
+    "displayName": "MAP Price (paise)",
+    "attribute": "#mapPrice",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_product_name",
+    "module": "PRODUCT",
+    "entityName": "Product",
+    "displayName": "Product Name",
+    "attribute": "#productName",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_product_description",
+    "module": "PRODUCT",
+    "entityName": "Product",
+    "displayName": "Product Description",
+    "attribute": "#productDescription",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_category_id",
+    "module": "PRODUCT",
+    "entityName": "Product",
+    "displayName": "Category ID",
+    "attribute": "#categoryId",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_media_count",
+    "module": "PRODUCT",
+    "entityName": "Product",
+    "displayName": "Number of Images",
+    "attribute": "#mediaCount",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_brand",
+    "module": "PRODUCT",
+    "entityName": "Product",
+    "displayName": "Brand Name",
+    "attribute": "#brand",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_variant_count",
+    "module": "PRODUCT",
+    "entityName": "Product",
+    "displayName": "Number of Variants",
+    "attribute": "#variantCount",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_current_stock",
+    "module": "INVENTORY",
+    "entityName": "InventoryItem",
+    "displayName": "Current Stock",
+    "attribute": "#currentStock",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_reorder_point",
+    "module": "INVENTORY",
+    "entityName": "InventoryItem",
+    "displayName": "Reorder Point",
+    "attribute": "#reorderPoint",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_demand_velocity",
+    "module": "INVENTORY",
+    "entityName": "InventoryItem",
+    "displayName": "Demand Velocity (units/day)",
+    "attribute": "#demandVelocity",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_card_expired",
+    "module": "PAYMENT",
+    "entityName": "PaymentRequest",
+    "displayName": "Card Expired",
+    "attribute": "#cardExpired",
+    "dataType": "BOOLEAN"
+  },
+  {
+    "id": "fact_pay_order_total",
+    "module": "PAYMENT",
+    "entityName": "PaymentRequest",
+    "displayName": "Order Total (paise)",
+    "attribute": "#orderTotal",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_pay_method",
+    "module": "PAYMENT",
+    "entityName": "PaymentRequest",
+    "displayName": "Payment Method",
+    "attribute": "#paymentMethod",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_order_defect_rate",
+    "module": "SUPPLIER",
+    "entityName": "SupplierMetrics",
+    "displayName": "Order Defect Rate (%)",
+    "attribute": "#orderDefectRate",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_late_shipment_rate",
+    "module": "SUPPLIER",
+    "entityName": "SupplierMetrics",
+    "displayName": "Late Shipment Rate (%)",
+    "attribute": "#lateShipmentRate",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_total_orders",
+    "module": "SUPPLIER",
+    "entityName": "SupplierMetrics",
+    "displayName": "Total Orders Fulfilled",
+    "attribute": "#totalOrders",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_customer_rating",
+    "module": "SUPPLIER",
+    "entityName": "SupplierMetrics",
+    "displayName": "Customer Rating",
+    "attribute": "#customerRating",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_shipping_method",
+    "module": "SHIPPING",
+    "entityName": "ShippingRequest",
+    "displayName": "Shipping Method",
+    "attribute": "#shippingMethod",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_total_weight_kg",
+    "module": "SHIPPING",
+    "entityName": "ShippingRequest",
+    "displayName": "Total Weight (kg)",
+    "attribute": "#totalWeightKg",
+    "dataType": "NUMBER"
+  },
+  {
+    "id": "fact_is_remote_area",
+    "module": "SHIPPING",
+    "entityName": "ShippingRequest",
+    "displayName": "Remote Area Flag",
+    "attribute": "#isRemoteArea",
+    "dataType": "BOOLEAN"
+  },
+  {
+    "id": "fact_ship_order_total",
+    "module": "SHIPPING",
+    "entityName": "ShippingRequest",
+    "displayName": "Order Total (paise)",
+    "attribute": "#orderTotal",
+    "dataType": "NUMBER"
+  }
+]

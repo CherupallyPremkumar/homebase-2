@@ -1,11 +1,11 @@
 package com.homebase.ecom.checkout.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
-import org.chenile.jpautils.entity.AbstractJpaEntity;
+import org.chenile.jpautils.entity.BaseJpaEntity;
 
 @Entity
 @Table(name = "checkout_item")
-public class CheckoutItemEntity extends AbstractJpaEntity {
+public class CheckoutItemEntity extends BaseJpaEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "checkout_id")

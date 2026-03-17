@@ -1,8 +1,8 @@
 package com.homebase.ecom.product.infrastructure.adapter;
 
-import com.homebase.ecom.policy.api.dto.EvaluateRequest;
-import com.homebase.ecom.policy.api.dto.DecisionDto;
-import com.homebase.ecom.policy.api.service.DecisionService;
+import com.homebase.ecom.rulesengine.api.dto.EvaluateRequest;
+import com.homebase.ecom.rulesengine.api.dto.DecisionDto;
+import com.homebase.ecom.rulesengine.api.service.DecisionService;
 import com.homebase.ecom.product.domain.model.Product;
 import com.homebase.ecom.product.domain.port.PimPolicyPort;
 
@@ -35,7 +35,7 @@ public class PolicyDecisionAdapter implements PimPolicyPort {
 
         // Use policyId from context if provided (resolved by cconfig), otherwise fall back to targetModule
         if (additionalContext != null && additionalContext.containsKey("policyId")) {
-            request.setPolicyId((String) additionalContext.get("policyId"));
+            request.setRuleSetId((String) additionalContext.get("policyId"));
         } else {
             request.setTargetModule("PRODUCT");
         }
@@ -62,7 +62,7 @@ public class PolicyDecisionAdapter implements PimPolicyPort {
 
         DecisionDto decisionDto = decisionService.evaluate(request);
 
-        boolean allowed = decisionDto.getEffect() == com.homebase.ecom.policy.api.enums.Effect.ALLOW;
+        boolean allowed = decisionDto.getEffect() == com.homebase.ecom.rulesengine.api.enums.Effect.ALLOW;
         return new PolicyDecision(allowed, decisionDto.getReasons());
     }
 }

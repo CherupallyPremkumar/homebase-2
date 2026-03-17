@@ -35,6 +35,9 @@ public class CartItemEntity extends BaseJpaEntity {
     @Column(name = "line_total")
     private long lineTotal;
 
+    @Column(name = "available")
+    private boolean available = true;
+
     public CartEntity getCart() {
         return cart;
     }
@@ -105,5 +108,13 @@ public class CartItemEntity extends BaseJpaEntity {
 
     public void setLineTotal(long lineTotal) {
         this.lineTotal = lineTotal;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
     }
 }

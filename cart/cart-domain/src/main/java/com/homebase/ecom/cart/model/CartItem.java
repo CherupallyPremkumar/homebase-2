@@ -18,6 +18,7 @@ public class CartItem extends BaseEntity {
     private int quantity;
     private Money unitPrice = Money.ZERO_INR;
     private Money lineTotal = Money.ZERO_INR;
+    private boolean available = true;
 
     public String getCartId() {
         return cartId;
@@ -89,6 +90,14 @@ public class CartItem extends BaseEntity {
 
     public void setLineTotal(Money lineTotal) {
         this.lineTotal = lineTotal;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
     }
 
     public void recalculateLineTotal() {

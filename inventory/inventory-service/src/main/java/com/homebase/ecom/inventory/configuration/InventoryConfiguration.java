@@ -372,8 +372,8 @@ public class InventoryConfiguration {
     }
 
     @Bean
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(com.homebase.ecom.policy.api.service.DecisionService.class)
-    public InventoryPolicyPort inventoryPolicyPort(com.homebase.ecom.policy.api.service.DecisionService decisionService) {
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(com.homebase.ecom.rulesengine.api.service.DecisionService.class)
+    public InventoryPolicyPort inventoryPolicyPort(com.homebase.ecom.rulesengine.api.service.DecisionService decisionService) {
         return new InventoryPolicyDecisionAdapter(decisionService);
     }
 

@@ -1,42 +1,27 @@
 package com.homebase.ecom.cart.service.postSaveHooks;
 
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import com.homebase.ecom.cart.model.Cart;
 import com.homebase.ecom.shared.event.CartCheckoutInitiatedEvent;
-import com.homebase.ecom.shared.event.KafkaTopics;
 import org.chenile.pubsub.ChenilePub;
 import org.chenile.stm.State;
 import org.chenile.workflow.model.TransientMap;
-import org.chenile.workflow.service.stmcmds.PostSaveHook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * Post-save hook for CHECKOUT_INITIATED state.
  * Publishes CartCheckoutInitiatedEvent to cart.events topic after transaction commits.
  */
-public class CHECKOUT_INITIATEDCartPostSaveHook implements PostSaveHook<Cart> {
+public class CHECKOUT_INITIATEDCartPostSaveHook extends AbstractCartEventPostSaveHook {
 
-    private static final Logger log = LoggerFactory.getLogger(CHECKOUT_INITIATEDCartPostSaveHook.class);
-
-    @Autowired(required = false)
-    private ChenilePub chenilePub;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    public CHECKOUT_INITIATEDCartPostSaveHook(ChenilePub chenilePub, ObjectMapper objectMapper) {
+        super(chenilePub, objectMapper);
+    }
 
     @Override
-    public void execute(State startState, State endState, Cart cart, TransientMap map) {
-        if (chenilePub == null) return;
-
+    protected Object buildEvent(State startState, State endState, Cart cart, TransientMap map) {
         CartCheckoutInitiatedEvent event = new CartCheckoutInitiatedEvent();
         event.setCartId(cart.getId());
         event.setUserId(cart.getCustomerId());
@@ -61,30 +46,11 @@ public class CHECKOUT_INITIATEDCartPostSaveHook implements PostSaveHook<Cart> {
         }
         event.setDiscountAmount(cart.getDiscountAmount().getAmount());
 
-        publishAfterCommit(cart.getId(), event);
+        return event;
     }
 
-    private void publishAfterCommit(String cartId, CartCheckoutInitiatedEvent event) {
-        Runnable publishAction = () -> {
-            try {
-                String body = objectMapper.writeValueAsString(event);
-                chenilePub.publish(KafkaTopics.CART_EVENTS, body,
-                        Map.of("key", cartId, "eventType", CartCheckoutInitiatedEvent.EVENT_TYPE));
-                log.info("Published CHECKOUT_INITIATED event for cartId={}", cartId);
-            } catch (JacksonException e) {
-                log.error("Failed to serialize CartCheckoutInitiatedEvent for cartId={}", cartId, e);
-            }
-        };
-
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    publishAction.run();
-                }
-            });
-        } else {
-            publishAction.run();
-        }
+    @Override
+    protected String eventType() {
+        return CartCheckoutInitiatedEvent.EVENT_TYPE;
     }
 }

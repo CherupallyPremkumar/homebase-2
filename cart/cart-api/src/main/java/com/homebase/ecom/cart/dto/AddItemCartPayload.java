@@ -12,6 +12,7 @@ public class AddItemCartPayload extends MinimalPayload {
     public String variantId;
     public String sku;
     public String productName;
+    public String supplierId;
     public int quantity;
     public long unitPrice;
     public String currency;

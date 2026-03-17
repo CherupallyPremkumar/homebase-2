@@ -1,0 +1,43 @@
+logging:
+  level:
+    ROOT: INFO
+    org.chenile.*: DEBUG
+
+chenile:
+  base:
+    url:
+  security:
+    client:
+      id: authz-servlet
+      secret: secret
+    keycloak:
+      host: ${KEYCLOAK_HOST:http://localhost:8180}
+      port: ${KEYCLOAK_PORT:8180}
+      base:
+        realm: ${KEYCLOAK_REALM:tenant0}
+
+spring:
+  banner:
+    location: classpath:banner.txt
+  jackson:
+    serialization:
+      indent-output: true
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:h2:mem:checkout_test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    username: sa
+    password:
+    hikari:
+      poolName: Hikari
+      auto-commit: false
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  liquibase:
+    enabled: false
+
+server:
+  port: 8000
+  error:
+    whitelabel:
+      enabled: false
