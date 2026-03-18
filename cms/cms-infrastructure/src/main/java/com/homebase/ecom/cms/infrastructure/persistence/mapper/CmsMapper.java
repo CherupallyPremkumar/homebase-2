@@ -22,6 +22,7 @@ public class CmsMapper {
         model.setMetaDescription(entity.getMetaDescription());
         model.setPublished(entity.isPublished());
         model.setPublishedAt(entity.getPublishedAt());
+        model.setTenant(entity.tenant);
         return model;
     }
 
@@ -42,6 +43,7 @@ public class CmsMapper {
         entity.setMetaDescription(model.getMetaDescription());
         entity.setPublished(model.isPublished());
         entity.setPublishedAt(model.getPublishedAt());
+        entity.tenant = model.getTenant();
         return entity;
     }
 
@@ -59,6 +61,7 @@ public class CmsMapper {
         model.setActiveFrom(entity.getActiveFrom());
         model.setActiveTo(entity.getActiveTo());
         model.setActive(entity.isActive());
+        model.setTenant(entity.tenant);
         return model;
     }
 
@@ -80,6 +83,7 @@ public class CmsMapper {
         entity.setActiveFrom(model.getActiveFrom());
         entity.setActiveTo(model.getActiveTo());
         entity.setActive(model.isActive());
+        entity.tenant = model.getTenant();
         return entity;
     }
 }

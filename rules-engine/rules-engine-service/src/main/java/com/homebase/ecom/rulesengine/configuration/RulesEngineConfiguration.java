@@ -45,6 +45,7 @@ import com.homebase.ecom.rulesengine.service.loader.FactDataLoader;
 import com.homebase.ecom.rulesengine.api.service.DecisionService;
 import com.homebase.ecom.rulesengine.infrastructure.engine.SpelRuleEngineAdapter;
 import com.homebase.ecom.rulesengine.infrastructure.enricher.ContextEnricherAdapter;
+import com.homebase.ecom.rulesengine.service.cache.RuleSetCacheManager;
 import org.chenile.utils.entity.service.EntityStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -210,18 +211,24 @@ public class RulesEngineConfiguration {
         return enablementStrategy;
     }
 
-    // Post Save Hooks for States
+    // Cache Manager — 5 minute TTL, evicted by PostSaveHooks on state changes
     @Bean
-    DRAFTRuleSetPostSaveHook ruleSetDRAFTPostSaveHook() { return new DRAFTRuleSetPostSaveHook(); }
+    public RuleSetCacheManager ruleSetCacheManager() {
+        return new RuleSetCacheManager(5 * 60 * 1000L); // 5 minutes
+    }
+
+    // Post Save Hooks for States — evict cache on state transitions
+    @Bean
+    DRAFTRuleSetPostSaveHook ruleSetDRAFTPostSaveHook(RuleSetCacheManager cacheManager) { return new DRAFTRuleSetPostSaveHook(cacheManager); }
 
     @Bean
-    REVIEWRuleSetPostSaveHook ruleSetREVIEWPostSaveHook() { return new REVIEWRuleSetPostSaveHook(); }
+    REVIEWRuleSetPostSaveHook ruleSetREVIEWPostSaveHook(RuleSetCacheManager cacheManager) { return new REVIEWRuleSetPostSaveHook(cacheManager); }
 
     @Bean
-    ACTIVERuleSetPostSaveHook ruleSetACTIVEPostSaveHook() { return new ACTIVERuleSetPostSaveHook(); }
+    ACTIVERuleSetPostSaveHook ruleSetACTIVEPostSaveHook(RuleSetCacheManager cacheManager) { return new ACTIVERuleSetPostSaveHook(cacheManager); }
 
     @Bean
-    DEPRECATEDRuleSetPostSaveHook ruleSetDEPRECATEDPostSaveHook() { return new DEPRECATEDRuleSetPostSaveHook(); }
+    DEPRECATEDRuleSetPostSaveHook ruleSetDEPRECATEDPostSaveHook(RuleSetCacheManager cacheManager) { return new DEPRECATEDRuleSetPostSaveHook(cacheManager); }
 
     // Mappers
     @Bean
@@ -266,8 +273,10 @@ public class RulesEngineConfiguration {
     }
 
     @Bean
-    public DecisionService decisionService(RuleSetRepository repository, RuleEngine ruleEngine, DecisionRepository decisionRepository, ContextContainer contextContainer) {
-        return new DecisionServiceImpl(repository, ruleEngine, decisionRepository, contextContainer);
+    public DecisionService decisionService(RuleSetRepository repository, RuleEngine ruleEngine,
+            DecisionRepository decisionRepository, ContextContainer contextContainer,
+            RuleSetCacheManager cacheManager) {
+        return new DecisionServiceImpl(repository, ruleEngine, decisionRepository, contextContainer, cacheManager);
     }
 
     @Bean

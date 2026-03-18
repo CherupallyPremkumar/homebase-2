@@ -55,6 +55,8 @@ public class InventoryItem extends AbstractExtendedStateEntity
     // Damage tracking — individual unit-level records
     private List<DamageRecord> damageRecords = new ArrayList<>();
     
+    private String tenant;
+
     // Workflow related
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
@@ -404,4 +406,7 @@ public class InventoryItem extends AbstractExtendedStateEntity
         this.activities.add(activityLog);
         return activityLog;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

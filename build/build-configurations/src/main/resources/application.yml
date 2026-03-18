@@ -73,6 +73,18 @@ kafka:
     initial-interval-ms: 1000
     multiplier: 2.0
 
+# Chenile Security — Keycloak connection for OAuth2 + STM ACL
+chenile:
+  security:
+    keycloak:
+      host: ${KEYCLOAK_HOST:localhost}
+      port: ${KEYCLOAK_PORT:8180}
+      base:
+        realm: ${KEYCLOAK_REALM:homebase}
+    client:
+      id: ${KEYCLOAK_CLIENT_ID:homebase-backend}
+      secret: ${KEYCLOAK_CLIENT_SECRET:change-me}
+
 server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful

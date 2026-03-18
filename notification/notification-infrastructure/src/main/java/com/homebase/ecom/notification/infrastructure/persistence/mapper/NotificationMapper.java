@@ -27,6 +27,7 @@ public class NotificationMapper {
         model.setRetryCount(entity.getRetryCount());
         // For STM state
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
         return model;
     }
 
@@ -47,6 +48,7 @@ public class NotificationMapper {
         entity.setRetryCount(model.getRetryCount());
         // For STM state
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
         return entity;
     }
 }

@@ -26,6 +26,7 @@ public class AnalyticsMapper {
         model.setNewCustomers(entity.getNewCustomers());
         model.setReturningCustomers(entity.getReturningCustomers());
         model.setCurrency(entity.getCurrency());
+        model.setTenant(entity.tenant);
         return model;
     }
 
@@ -44,6 +45,7 @@ public class AnalyticsMapper {
         entity.setNewCustomers(model.getNewCustomers());
         entity.setReturningCustomers(model.getReturningCustomers());
         entity.setCurrency(model.getCurrency());
+        entity.tenant = model.getTenant();
         return entity;
     }
 
@@ -62,6 +64,7 @@ public class AnalyticsMapper {
         model.setRevenue(entity.getRevenue());
         model.setReturnsCount(entity.getReturnsCount());
         model.setAvgRating(entity.getAvgRating());
+        model.setTenant(entity.tenant);
         return model;
     }
 
@@ -78,6 +81,7 @@ public class AnalyticsMapper {
         entity.setRevenue(model.getRevenue());
         entity.setReturnsCount(model.getReturnsCount());
         entity.setAvgRating(model.getAvgRating());
+        entity.tenant = model.getTenant();
         return entity;
     }
 
@@ -96,6 +100,7 @@ public class AnalyticsMapper {
         model.setAvgFulfillmentDays(entity.getAvgFulfillmentDays());
         model.setAvgRating(entity.getAvgRating());
         model.setCancellationRate(entity.getCancellationRate());
+        model.setTenant(entity.tenant);
         return model;
     }
 
@@ -112,6 +117,7 @@ public class AnalyticsMapper {
         entity.setAvgFulfillmentDays(model.getAvgFulfillmentDays());
         entity.setAvgRating(model.getAvgRating());
         entity.setCancellationRate(model.getCancellationRate());
+        entity.tenant = model.getTenant();
         return entity;
     }
 }

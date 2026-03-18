@@ -48,6 +48,7 @@ public class Checkout extends AbstractExtendedStateEntity implements ContainsTra
     private LocalDateTime expiresAt;
 
     public String description;
+    private String tenant;
 
     public TransientMap transientMap = new TransientMap();
 
@@ -111,4 +112,7 @@ public class Checkout extends AbstractExtendedStateEntity implements ContainsTra
     public TransientMap getTransientMap() { return this.transientMap; }
 
     public void setTransientMap(TransientMap transientMap) { this.transientMap = transientMap; }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

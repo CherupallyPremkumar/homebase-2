@@ -1,0 +1,159 @@
+[
+  {
+    "id": "CatalogBrowse.browse",
+    "name": "browseCatalog",
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "productId": {
+        "name": "productId",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "name": {
+        "name": "name",
+        "columnType": "Text",
+        "likeQuery": true,
+        "filterable": true
+      },
+      "price": {
+        "name": "price",
+        "columnType": "Number",
+        "filterable": true,
+        "sortable": true
+      },
+      "featured": {
+        "name": "featured",
+        "filterable": true,
+        "columnType": "CheckBox"
+      },
+      "active": {
+        "name": "active",
+        "filterable": true,
+        "columnType": "CheckBox"
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "CatalogBrowse.getUserPicks",
+    "name": "userPicks",
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "productId": {
+        "name": "productId",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "name": {
+        "name": "name",
+        "columnType": "Text",
+        "likeQuery": true,
+        "filterable": true
+      },
+      "price": {
+        "name": "price",
+        "columnType": "Number",
+        "filterable": true
+      },
+      "featured": {
+        "name": "featured",
+        "filterable": true,
+        "columnType": "CheckBox"
+      },
+      "active": {
+        "name": "active",
+        "filterable": true,
+        "columnType": "CheckBox"
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "CatalogBrowse.getSuggestions",
+    "name": "itemSuggestions",
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "productId": {
+        "name": "productId",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "name": {
+        "name": "name",
+        "columnType": "Text",
+        "filterable": true
+      },
+      "price": {
+        "name": "price",
+        "columnType": "Number",
+        "filterable": true
+      },
+      "tags": {
+        "name": "tags",
+        "filterable": true,
+        "columnType": "Text",
+        "containsQuery": true
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "CatalogBrowse.getByCategory",
+    "name": "catalogByCategory",
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "productId": {
+        "name": "productId",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "name": {
+        "name": "name",
+        "columnType": "Text",
+        "likeQuery": true,
+        "filterable": true
+      },
+      "price": {
+        "name": "price",
+        "columnType": "Number",
+        "filterable": true,
+        "sortable": true
+      },
+      "categoryId": {
+        "name": "categoryId",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "active": {
+        "name": "active",
+        "filterable": true,
+        "columnType": "CheckBox"
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  }
+]

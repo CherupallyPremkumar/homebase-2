@@ -60,6 +60,7 @@ public class User extends AbstractExtendedStateEntity
     private Instant lastLoginAt;
     private String lockReason;
     private String suspendReason;
+    private String tenant;
 
     // --- Chenile STM: Activity log ---
     private List<UserActivityLog> activities = new ArrayList<>();
@@ -202,4 +203,7 @@ public class User extends AbstractExtendedStateEntity
     public int getFailedLoginAttempts() { return loginAttempts; }
     public void setFailedLoginAttempts(int f) { this.loginAttempts = f; }
     public void resetFailedLoginAttempts() { this.loginAttempts = 0; }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

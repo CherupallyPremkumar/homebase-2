@@ -34,6 +34,7 @@ public class OrderMapper {
         model.setCancelReason(entity.getCancelReason());
         model.description = entity.getDescription();
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
 
         if (entity.getItems() != null) {
             model.setItems(entity.getItems().stream()
@@ -68,6 +69,7 @@ public class OrderMapper {
         entity.setCancelReason(model.getCancelReason());
         entity.setDescription(model.description);
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
 
         if (model.getItems() != null) {
             entity.setItems(model.getItems().stream()

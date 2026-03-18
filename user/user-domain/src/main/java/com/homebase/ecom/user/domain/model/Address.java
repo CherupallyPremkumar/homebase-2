@@ -23,6 +23,7 @@ public class Address extends BaseEntity {
     private String postalCode;
     private String country;
     private boolean isDefault;
+    private String tenant;
 
     /** Called by User aggregate only to promote/demote default. */
     void markAsDefault() { this.isDefault = true; }
@@ -49,4 +50,7 @@ public class Address extends BaseEntity {
     // Backward compatibility aliases
     public String getZip()        { return postalCode; }
     public void setZip(String zip) { this.postalCode = zip; }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

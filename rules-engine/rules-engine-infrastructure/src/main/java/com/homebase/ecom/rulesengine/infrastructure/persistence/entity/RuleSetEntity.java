@@ -39,7 +39,7 @@ public class RuleSetEntity extends AbstractJpaStateEntity implements ActivityEna
     @Column(name = "target_module")
     private String targetModule;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "ruleSet")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "ruleSet", orphanRemoval = true)
     private List<RuleEntity> rules = new ArrayList<>();
 
     public String getName() {

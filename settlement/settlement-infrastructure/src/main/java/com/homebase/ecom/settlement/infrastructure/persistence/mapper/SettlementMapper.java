@@ -25,6 +25,7 @@ public class SettlementMapper {
         entity.setSettlementPeriodEnd(model.getSettlementPeriodEnd());
         entity.setDisbursementReference(model.getDisbursementReference());
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
 
         if (model.getAdjustments() != null) {
             entity.setAdjustments(model.getAdjustments().stream()
@@ -56,6 +57,7 @@ public class SettlementMapper {
         model.setSettlementPeriodEnd(entity.getSettlementPeriodEnd());
         model.setDisbursementReference(entity.getDisbursementReference());
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
 
         if (entity.getAdjustments() != null) {
             model.setAdjustments(entity.getAdjustments().stream()

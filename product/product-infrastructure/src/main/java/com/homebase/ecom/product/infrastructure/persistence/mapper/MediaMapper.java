@@ -21,6 +21,7 @@ public class MediaMapper {
         model.setHeight(entity.getHeight());
         model.setAltText(entity.getAltText());
         model.setProcessingStatus(entity.getProcessingStatus());
+        model.setTenant(entity.tenant);
         return model;
     }
 
@@ -40,6 +41,7 @@ public class MediaMapper {
         entity.setHeight(model.getHeight());
         entity.setAltText(model.getAltText());
         entity.setProcessingStatus(model.getProcessingStatus());
+        entity.tenant = model.getTenant();
         return entity;
     }
 }

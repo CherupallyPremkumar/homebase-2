@@ -37,6 +37,7 @@ public class Settlement extends AbstractExtendedStateEntity
     private LocalDate settlementPeriodEnd;
     private List<SettlementAdjustment> adjustments = new ArrayList<>();
     private String disbursementReference;
+    private String tenant;
 
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
@@ -105,4 +106,7 @@ public class Settlement extends AbstractExtendedStateEntity
                 .map(SettlementAdjustment::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

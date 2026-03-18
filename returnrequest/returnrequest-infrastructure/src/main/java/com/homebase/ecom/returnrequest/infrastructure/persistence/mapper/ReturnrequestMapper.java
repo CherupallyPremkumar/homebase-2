@@ -45,6 +45,7 @@ public class ReturnrequestMapper {
         model.orderDeliveryDate = entity.getOrderDeliveryDate();
         model.orderTotalValue = entity.getOrderTotalValue();
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
 
         if (entity.getActivities() != null) {
             for (ReturnrequestActivityLogEntity actEntity : entity.getActivities()) {
@@ -78,6 +79,7 @@ public class ReturnrequestMapper {
         entity.setOrderDeliveryDate(model.orderDeliveryDate);
         entity.setOrderTotalValue(model.orderTotalValue);
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
 
         if (model.obtainActivities() != null) {
             entity.setActivities(

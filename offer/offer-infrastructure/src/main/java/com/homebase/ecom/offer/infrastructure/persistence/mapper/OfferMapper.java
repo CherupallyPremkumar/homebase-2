@@ -85,6 +85,7 @@ public class OfferMapper {
         model.setSoldQuantity(entity.getSoldQuantity());
         model.setSellerRating(entity.getSellerRating());
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
 
         if (entity.getActivities() != null) {
             model.setActivities(entity.getActivities().stream()
@@ -114,6 +115,7 @@ public class OfferMapper {
         entity.setSoldQuantity(model.getSoldQuantity());
         entity.setSellerRating(model.getSellerRating());
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
 
         if (model.getActivities() != null) {
             entity.setActivities(model.getActivities().stream()

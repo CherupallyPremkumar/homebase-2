@@ -40,6 +40,7 @@ public class Payment extends AbstractExtendedStateEntity
     // ── Retry / Failure ────────────────────────────────────────────────────
     private int retryCount = 0;
     private String failureReason;
+    private String tenant;
 
     // ── Workflow ────────────────────────────────────────────────────────────
     private transient TransientMap transientMap = new TransientMap();
@@ -116,4 +117,7 @@ public class Payment extends AbstractExtendedStateEntity
         this.activities.add(activityLog);
         return activityLog;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

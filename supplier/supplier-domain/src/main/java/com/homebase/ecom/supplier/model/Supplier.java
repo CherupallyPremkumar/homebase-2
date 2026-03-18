@@ -44,6 +44,7 @@ public class Supplier extends AbstractExtendedStateEntity
     private LocalDateTime terminatedDate;
     private LocalDateTime probationDate;
     private boolean productsDisabled;
+    private String tenant;
 
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
@@ -149,4 +150,7 @@ public class Supplier extends AbstractExtendedStateEntity
         activities.add(activityLog);
         return activityLog;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

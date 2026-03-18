@@ -19,7 +19,6 @@
         <module>catalog-infrastructure</module>
         <module>catalog-query</module>
         <module>catalog-service</module> 
-        <module>catalog-web</module>
         <module>catalog-app</module>
         <module>catalog-client</module>
     </modules>

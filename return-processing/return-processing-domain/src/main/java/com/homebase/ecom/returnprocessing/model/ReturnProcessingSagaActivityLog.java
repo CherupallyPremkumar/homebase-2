@@ -11,6 +11,7 @@ public class ReturnProcessingSagaActivityLog extends BaseEntity implements Activ
     public String activityName;
     public boolean activitySuccess;
     public String activityComment;
+    private String tenant;
 
     @Override
     public String getName() {
@@ -26,4 +27,7 @@ public class ReturnProcessingSagaActivityLog extends BaseEntity implements Activ
     public String getComment() {
         return activityComment;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

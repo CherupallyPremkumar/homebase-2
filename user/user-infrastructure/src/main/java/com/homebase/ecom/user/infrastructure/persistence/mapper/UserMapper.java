@@ -41,6 +41,7 @@ public class UserMapper {
         model.setLastLoginAt(entity.getLastLoginAt());
         model.setLockReason(entity.getLockReason());
         model.setSuspendReason(entity.getSuspendReason());
+        model.setTenant(entity.tenant);
 
         if (entity.getPreferences() != null) {
             model.setPreferences(toModel(entity.getPreferences()));
@@ -85,6 +86,7 @@ public class UserMapper {
         entity.setLastLoginAt(model.getLastLoginAt());
         entity.setLockReason(model.getLockReason());
         entity.setSuspendReason(model.getSuspendReason());
+        entity.tenant = model.getTenant();
 
         if (model.getPreferences() != null) {
             entity.setPreferences(toEntity(model.getPreferences()));

@@ -33,6 +33,7 @@ public class SupplierLifecycleSaga extends AbstractExtendedStateEntity
     // Error handling
     private String errorMessage;
     private int retryCount;
+    private String tenant;
 
     // Workflow related
     private transient TransientMap transientMap = new TransientMap();
@@ -89,4 +90,7 @@ public class SupplierLifecycleSaga extends AbstractExtendedStateEntity
         this.activities.add(activityLog);
         return activityLog;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

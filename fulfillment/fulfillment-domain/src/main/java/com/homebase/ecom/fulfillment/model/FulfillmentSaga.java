@@ -24,6 +24,7 @@ public class FulfillmentSaga extends AbstractExtendedStateEntity
     private String trackingNumber;
     private String errorMessage;
     private int retryCount = 0;
+    private String tenant;
 
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
@@ -63,4 +64,7 @@ public class FulfillmentSaga extends AbstractExtendedStateEntity
         activities.add(activityLog);
         return activityLog;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

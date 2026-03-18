@@ -31,6 +31,7 @@ public class SupportTicketMapper {
         model.setSlaBreached(entity.isSlaBreached());
         model.setAutoCloseReady(entity.isAutoCloseReady());
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
 
         if (entity.getMessages() != null) {
             model.setMessages(entity.getMessages().stream()
@@ -63,6 +64,7 @@ public class SupportTicketMapper {
         entity.setSlaBreached(model.isSlaBreached());
         entity.setAutoCloseReady(model.isAutoCloseReady());
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
 
         if (model.getMessages() != null) {
             entity.setMessages(model.getMessages().stream()

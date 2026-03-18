@@ -10,7 +10,7 @@ Feature: Policy Evaluation Logic
       | tenantId | T1 |
       | userId   | U1 |
     Then the decision should be "ALLOWED"
-    And the reason should contain "Rule matched: R1"
+    And the reason should contain "Matched Rule 'R1'"
 
   Scenario: Policy denies access when a rule fails
     Given a policy "P2" exists with default effect "DENY"
@@ -28,4 +28,4 @@ Feature: Policy Evaluation Logic
     When I evaluate policy "P3" with context:
       | userId | U1 |
     Then the decision should be "DENIED"
-    And the reason should contain "Rule matched: R3 (DENY)"
+    And the reason should contain "Matched Rule 'R3'"

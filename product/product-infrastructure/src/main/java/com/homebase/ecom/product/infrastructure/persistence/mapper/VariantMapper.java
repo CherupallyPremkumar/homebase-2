@@ -16,6 +16,7 @@ public class VariantMapper {
         model.setId(entity.getId());
         model.setSku(entity.getSku());
         model.setAttributes(entity.getAttributes());
+        model.setTenant(entity.tenant);
         if (entity.getMedia() != null) {
             model.setMedia(entity.getMedia().stream()
                     .map(this::toMediaModel)
@@ -30,6 +31,7 @@ public class VariantMapper {
         entity.setId(model.getId());
         entity.setSku(model.getSku());
         entity.setAttributes(model.getAttributes());
+        entity.tenant = model.getTenant();
         if (model.getMedia() != null) {
             entity.setMedia(model.getMedia().stream()
                     .map(this::toMediaEntity)

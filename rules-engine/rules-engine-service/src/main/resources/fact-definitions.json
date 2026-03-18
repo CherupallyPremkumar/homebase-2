@@ -1,5 +1,29 @@
 [
   {
+    "id": "fact_tenant_id",
+    "module": "GLOBAL",
+    "entityName": "Context",
+    "displayName": "Tenant ID",
+    "attribute": "#tenantId",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_user_id",
+    "module": "GLOBAL",
+    "entityName": "Context",
+    "displayName": "User ID",
+    "attribute": "#userId",
+    "dataType": "STRING"
+  },
+  {
+    "id": "fact_user_role",
+    "module": "GLOBAL",
+    "entityName": "Context",
+    "displayName": "User Role",
+    "attribute": "#userRole",
+    "dataType": "STRING"
+  },
+  {
     "id": "fact_total_quantity",
     "module": "PRICING",
     "entityName": "PricingRequest",

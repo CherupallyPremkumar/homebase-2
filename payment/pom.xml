@@ -23,7 +23,6 @@
         <module>payment-service</module>
         <module>payment-ledger</module>
         <module>payment-batch</module>
-        <module>payment-web</module>
         <module>payment-app</module>
         <module>payment-client</module>
     </modules>
@@ -69,11 +68,6 @@
             <dependency>
                 <groupId>com.homebase.ecom</groupId>
                 <artifactId>payment-batch</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.homebase.ecom</groupId>
-                <artifactId>payment-web</artifactId>
                 <version>${revision}</version>
             </dependency>
         </dependencies>

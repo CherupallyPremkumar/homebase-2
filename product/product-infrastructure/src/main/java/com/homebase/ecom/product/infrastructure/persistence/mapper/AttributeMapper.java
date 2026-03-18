@@ -20,7 +20,8 @@ public class AttributeMapper {
         model.setSearchable(entity.isSearchable());
         model.setRequired(entity.isRequired());
         model.setDisplayOrder(entity.getDisplayOrder());
-        
+        model.setTenant(entity.tenant);
+
         if (entity.getOptions() != null) {
             model.setOptions(entity.getOptions().stream()
                 .map(this::optionToModel)
@@ -40,6 +41,7 @@ public class AttributeMapper {
         entity.setSearchable(model.isSearchable());
         entity.setRequired(model.isRequired());
         entity.setDisplayOrder(model.getDisplayOrder());
+        entity.tenant = model.getTenant();
 
         if (model.getOptions() != null) {
             entity.setOptions(model.getOptions().stream()

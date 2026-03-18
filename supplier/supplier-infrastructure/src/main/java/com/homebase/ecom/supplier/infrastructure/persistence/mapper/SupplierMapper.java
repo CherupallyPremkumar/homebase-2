@@ -54,6 +54,7 @@ public class SupplierMapper {
         model.setTerminatedDate(entity.getTerminatedDate());
         model.setProbationDate(entity.getProbationDate());
         model.setProductsDisabled(entity.isProductsDisabled());
+        model.setTenant(entity.tenant);
 
         if (entity.getActivities() != null) {
             for (SupplierActivityLogEntity logEntity : entity.getActivities()) {
@@ -105,6 +106,7 @@ public class SupplierMapper {
         entity.setTerminatedDate(model.getTerminatedDate());
         entity.setProbationDate(model.getProbationDate());
         entity.setProductsDisabled(model.isProductsDisabled());
+        entity.tenant = model.getTenant();
 
         if (model.obtainActivities() != null) {
             entity.setActivities(model.obtainActivities().stream()

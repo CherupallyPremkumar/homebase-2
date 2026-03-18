@@ -1,0 +1,198 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Dashboard">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- OVERVIEW STATS (Admin dashboard top-level KPIs)                       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Key metrics: total orders, revenue, customers, products -->
+<select id="overviewStats" resultType="map">
+    SELECT
+        (SELECT COUNT(*) FROM orders) as "totalOrders",
+        (SELECT COUNT(*) FROM orders WHERE "stateId" IN ('DELIVERED', 'SHIPPED', 'CONFIRMED')) as "activeOrders",
+        (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE "stateId" NOT IN ('CANCELLED', 'FAILED')) as "totalRevenue",
+        (SELECT COUNT(DISTINCT customer_id) FROM orders) as "totalCustomers",
+        (SELECT COUNT(*) FROM products WHERE "stateId" = 'PUBLISHED') as "publishedProducts",
+        (SELECT COUNT(*) FROM products WHERE "stateId" = 'UNDER_REVIEW') as "pendingReviewProducts",
+        (SELECT COUNT(*) FROM supplier WHERE "stateId" = 'ACTIVE') as "activeSuppliers",
+        (SELECT COUNT(*) FROM support_tickets WHERE state_id NOT IN ('CLOSED', 'RESOLVED')) as "openTickets"
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ORDER ANALYTICS                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Orders by state — for pie chart -->
+<select id="ordersByState" resultType="map">
+    SELECT
+        "stateId" as "state",
+        COUNT(*) as "count"
+    FROM orders
+    GROUP BY "stateId"
+    ORDER BY "count" DESC
+</select>
+
+<!-- Daily order count + revenue — for line chart -->
+<select id="dailyOrderStats-count" resultType="int">
+    SELECT count(DISTINCT DATE(created_time)) FROM orders
+    <where>
+        <if test="startDate != null">created_time >= #{startDate}</if>
+        <if test="endDate != null">AND created_time &lt;= #{endDate}</if>
+    </where>
+</select>
+
+<select id="dailyOrderStats" resultType="map">
+    SELECT
+        DATE(created_time) as "date",
+        COUNT(*) as "orderCount",
+        COALESCE(SUM(total_amount), 0) as "revenue"
+    FROM orders
+    <where>
+        "stateId" NOT IN ('CANCELLED', 'FAILED')
+        <if test="startDate != null">AND created_time >= #{startDate}</if>
+        <if test="endDate != null">AND created_time &lt;= #{endDate}</if>
+    </where>
+    GROUP BY DATE(created_time)
+    ORDER BY "date" ASC
+    ${pagination}
+</select>
+
+<!-- Recent orders — for dashboard table -->
+<select id="recentOrders-count" resultType="int">
+    SELECT count(*) FROM orders
+</select>
+
+<select id="recentOrders" resultType="map">
+    SELECT
+        o.id as "orderId",
+        o."stateId" as "orderState",
+        o.total_amount as "totalAmount",
+        o.currency as "currency",
+        o.created_time as "createdTime",
+        o.item_count as "itemCount",
+        o.customer_id as "customerId"
+    FROM orders o
+    ORDER BY o.created_time DESC
+    ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- INVENTORY HEALTH                                                       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Low stock alerts — variants below threshold -->
+<select id="lowStockAlerts-count" resultType="int">
+    SELECT count(*) FROM inventory_item inv
+    JOIN product_variants pv ON inv.variant_id = pv.id
+    JOIN products p ON pv.product_id = p.id
+    WHERE inv.available_quantity &lt;= inv.low_stock_threshold
+      AND p."stateId" = 'PUBLISHED'
+</select>
+
+<select id="lowStockAlerts" resultType="map">
+    SELECT
+        inv.variant_id as "variantId",
+        pv.sku as "sku",
+        p.id as "productId",
+        p.name as "productName",
+        inv.available_quantity as "availableQuantity",
+        inv.low_stock_threshold as "threshold",
+        inv.reserved_quantity as "reservedQuantity"
+    FROM inventory_item inv
+    JOIN product_variants pv ON inv.variant_id = pv.id
+    JOIN products p ON pv.product_id = p.id
+    WHERE inv.available_quantity &lt;= inv.low_stock_threshold
+      AND p."stateId" = 'PUBLISHED'
+    ORDER BY inv.available_quantity ASC
+    ${pagination}
+</select>
+
+<!-- Out of stock products -->
+<select id="outOfStock-count" resultType="int">
+    SELECT count(DISTINCT p.id) FROM products p
+    JOIN product_variants pv ON pv.product_id = p.id
+    LEFT JOIN inventory_item inv ON inv.variant_id = pv.id
+    WHERE p."stateId" = 'PUBLISHED'
+      AND (inv.available_quantity IS NULL OR inv.available_quantity = 0)
+</select>
+
+<select id="outOfStock" resultType="map">
+    SELECT
+        p.id as "productId",
+        p.name as "productName",
+        pv.id as "variantId",
+        pv.sku as "sku"
+    FROM products p
+    JOIN product_variants pv ON pv.product_id = p.id
+    LEFT JOIN inventory_item inv ON inv.variant_id = pv.id
+    WHERE p."stateId" = 'PUBLISHED'
+      AND (inv.available_quantity IS NULL OR inv.available_quantity = 0)
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SUPPLIER PERFORMANCE                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Supplier summary: order count, revenue, active offers -->
+<select id="supplierPerformance-count" resultType="int">
+    SELECT count(DISTINCT s.id) FROM supplier s
+    WHERE s."stateId" = 'ACTIVE'
+</select>
+
+<select id="supplierPerformance" resultType="map">
+    SELECT
+        s.id as "supplierId",
+        s.name as "businessName",
+        s."stateId" as "supplierState",
+        COUNT(DISTINCT o_offer.id) as "activeOffers",
+        COUNT(DISTINCT ord.id) as "totalOrders",
+        COALESCE(SUM(ord.total_amount), 0) as "totalRevenue"
+    FROM supplier s
+    LEFT JOIN offers o_offer ON o_offer.supplier_id = s.id AND o_offer."stateId" = 'ACTIVE'
+    LEFT JOIN order_items oi ON oi.supplier_id = s.id
+    LEFT JOIN orders ord ON oi.order_id = ord.id AND ord."stateId" NOT IN ('CANCELLED', 'FAILED')
+    WHERE s."stateId" = 'ACTIVE'
+    GROUP BY s.id, s.name, s."stateId"
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- RETURN / SUPPORT DASHBOARD                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Return requests by state -->
+<select id="returnsByState" resultType="map">
+    SELECT
+        "stateId" as "state",
+        COUNT(*) as "count"
+    FROM returnrequest
+    GROUP BY "stateId"
+    ORDER BY "count" DESC
+</select>
+
+<!-- Open support tickets needing attention -->
+<select id="openTickets-count" resultType="int">
+    SELECT count(*) FROM support_tickets
+    WHERE state_id NOT IN ('CLOSED', 'RESOLVED')
+</select>
+
+<select id="openTickets" resultType="map">
+    SELECT
+        t.id as "ticketId",
+        t.state_id as "ticketState",
+        t.subject as "subject",
+        t.priority as "priority",
+        t.customer_id as "customerId",
+        t.order_id as "orderId",
+        t.created_at as "createdTime",
+        t.assigned_agent_id as "assignedTo"
+    FROM support_tickets t
+    WHERE t.state_id NOT IN ('CLOSED', 'RESOLVED')
+    ORDER BY
+        CASE t.priority WHEN 'CRITICAL' THEN 1 WHEN 'HIGH' THEN 2 WHEN 'MEDIUM' THEN 3 ELSE 4 END,
+        t.created_at ASC
+    ${pagination}
+</select>
+
+</mapper>

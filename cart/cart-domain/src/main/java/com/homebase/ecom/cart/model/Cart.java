@@ -27,6 +27,7 @@ public class Cart extends AbstractExtendedStateEntity implements ActivityEnabled
     private String notes;
     private String orderId;
     private boolean priceChanged;
+    private String tenant;
 
     public String description;
 
@@ -228,5 +229,13 @@ public class Cart extends AbstractExtendedStateEntity implements ActivityEnabled
         activityLog.activitySuccess = true;
         activities.add(activityLog);
         return activityLog;
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
     }
 }

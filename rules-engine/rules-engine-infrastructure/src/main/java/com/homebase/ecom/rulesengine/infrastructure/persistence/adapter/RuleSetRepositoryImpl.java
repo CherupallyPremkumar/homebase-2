@@ -3,10 +3,9 @@ package com.homebase.ecom.rulesengine.infrastructure.persistence.adapter;
 import com.homebase.ecom.rulesengine.domain.model.RuleSet;
 import com.homebase.ecom.rulesengine.domain.repository.RuleSetRepository;
 import com.homebase.ecom.rulesengine.infrastructure.persistence.entity.RuleSetEntity;
+import com.homebase.ecom.rulesengine.infrastructure.persistence.entity.RuleEntity;
 import com.homebase.ecom.rulesengine.infrastructure.persistence.repository.RuleSetJpaRepository;
 import com.homebase.ecom.rulesengine.infrastructure.persistence.mapper.RuleSetMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +42,34 @@ public class RuleSetRepositoryImpl implements RuleSetRepository {
 
     @Override
     public RuleSet save(RuleSet ruleSet) {
-        RuleSetEntity entity = ruleSetMapper.toEntity(ruleSet);
+        RuleSetEntity entity;
+        if (ruleSet.getId() != null) {
+            Optional<RuleSetEntity> existing = ruleSetJpaRepository.findByIdWithRules(ruleSet.getId());
+            if (existing.isPresent()) {
+                // Update existing entity in-place to preserve JPA version
+                entity = existing.get();
+                entity.setName(ruleSet.getName());
+                entity.setDescription(ruleSet.getDescription());
+                entity.setDefaultEffect(ruleSet.getDefaultEffect());
+                entity.setActive(ruleSet.isActive());
+                entity.setTargetModule(ruleSet.getTargetModule());
+                entity.tenant = ruleSet.getTenant();
+
+                // Sync rules: clear existing and re-add
+                entity.getRules().clear();
+                if (ruleSet.getRules() != null) {
+                    for (var rule : ruleSet.getRules()) {
+                        RuleEntity re = ruleSetMapper.toEntity(rule);
+                        re.setRuleSet(entity);
+                        entity.getRules().add(re);
+                    }
+                }
+            } else {
+                entity = ruleSetMapper.toEntity(ruleSet);
+            }
+        } else {
+            entity = ruleSetMapper.toEntity(ruleSet);
+        }
         RuleSetEntity savedEntity = ruleSetJpaRepository.save(entity);
         return ruleSetMapper.toModel(savedEntity);
     }

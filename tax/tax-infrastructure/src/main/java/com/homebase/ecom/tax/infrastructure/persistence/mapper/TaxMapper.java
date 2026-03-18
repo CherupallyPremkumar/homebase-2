@@ -24,6 +24,7 @@ public class TaxMapper {
         model.setEffectiveFrom(entity.getEffectiveFrom());
         model.setEffectiveTo(entity.getEffectiveTo());
         model.setActive(entity.isActive());
+        model.setTenant(entity.tenant);
         return model;
     }
 
@@ -42,6 +43,7 @@ public class TaxMapper {
         entity.setEffectiveFrom(model.getEffectiveFrom());
         entity.setEffectiveTo(model.getEffectiveTo());
         entity.setActive(model.isActive());
+        entity.tenant = model.getTenant();
         return entity;
     }
 
@@ -54,6 +56,7 @@ public class TaxMapper {
         model.setCategoryId(entity.getCategoryId());
         model.setHsnCode(entity.getHsnCode());
         model.setTaxRateId(entity.getTaxRateId());
+        model.setTenant(entity.tenant);
         return model;
     }
 
@@ -68,6 +71,7 @@ public class TaxMapper {
         entity.setCategoryId(model.getCategoryId());
         entity.setHsnCode(model.getHsnCode());
         entity.setTaxRateId(model.getTaxRateId());
+        entity.tenant = model.getTenant();
         return entity;
     }
 
@@ -84,6 +88,7 @@ public class TaxMapper {
         model.setTaxableAmount(entity.getTaxableAmount());
         model.setTaxAmount(entity.getTaxAmount());
         model.setRateApplied(entity.getRateApplied());
+        model.setTenant(entity.tenant);
         return model;
     }
 
@@ -102,6 +107,7 @@ public class TaxMapper {
         entity.setTaxableAmount(model.getTaxableAmount());
         entity.setTaxAmount(model.getTaxAmount());
         entity.setRateApplied(model.getRateApplied());
+        entity.tenant = model.getTenant();
         return entity;
     }
 }

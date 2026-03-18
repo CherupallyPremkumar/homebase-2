@@ -31,6 +31,7 @@ public class ReviewMapper {
         model.setReportCount(entity.getReportCount());
         model.setModeratorNotes(entity.getModeratorNotes());
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
 
         // Deserialize images JSON to List<String>
         if (entity.getImagesJson() != null && !entity.getImagesJson().isEmpty()) {
@@ -61,6 +62,7 @@ public class ReviewMapper {
         entity.setReportCount(model.getReportCount());
         entity.setModeratorNotes(model.getModeratorNotes());
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
 
         // Serialize List<String> images to JSON
         if (model.getImages() != null && !model.getImages().isEmpty()) {

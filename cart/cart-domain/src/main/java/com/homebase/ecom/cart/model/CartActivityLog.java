@@ -8,6 +8,7 @@ public class CartActivityLog extends BaseEntity implements ActivityLog {
     public String activityName;
     public boolean activitySuccess;
     public String activityComment;
+    private String tenant;
 
     public String getName() {
         return activityName;
@@ -19,5 +20,13 @@ public class CartActivityLog extends BaseEntity implements ActivityLog {
 
     public String getComment() {
         return activityComment;
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
     }
 }
