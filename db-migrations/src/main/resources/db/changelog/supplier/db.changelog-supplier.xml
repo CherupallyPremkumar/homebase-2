@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="supplier-001-create-supplier" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="supplier"/></not></preConditions>
+        <createTable tableName="supplier">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="business_name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="business_type" type="VARCHAR(255)"/>
+            <column name="tax_id" type="VARCHAR(255)"/>
+            <column name="bank_account_id" type="VARCHAR(255)"/>
+            <column name="contact_email" type="VARCHAR(255)"/>
+            <column name="contact_phone" type="VARCHAR(255)"/>
+            <column name="address" type="VARCHAR(2000)"/>
+            <column name="rating" type="DOUBLE"/>
+            <column name="total_orders" type="INT"/>
+            <column name="total_returns" type="INT"/>
+            <column name="fulfillment_rate" type="DOUBLE"/>
+            <column name="avg_shipping_days" type="DOUBLE"/>
+            <column name="commission_rate" type="DOUBLE"/>
+            <column name="active_date" type="TIMESTAMP"/>
+            <column name="rejection_reason" type="VARCHAR(1000)"/>
+            <column name="suspension_reason" type="VARCHAR(1000)"/>
+            <column name="termination_reason" type="VARCHAR(1000)"/>
+            <column name="probation_reason" type="VARCHAR(1000)"/>
+            <column name="suspended_date" type="TIMESTAMP"/>
+            <column name="terminated_date" type="TIMESTAMP"/>
+            <column name="probation_date" type="TIMESTAMP"/>
+            <column name="products_disabled" type="BOOLEAN"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="supplier-002-create-supplier-activity" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="supplier_activity"/></not></preConditions>
+        <createTable tableName="supplier_activity">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="supplier_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

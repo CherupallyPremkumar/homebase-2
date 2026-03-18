@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- 1. MISSING FOREIGN KEYS — Data Integrity                          -->
+    <!-- ================================================================== -->
+
+    <changeSet id="harden-001-fk-cart-activity" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="cart_activity_log" columnName="cart_id"/>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_cart_activity_cart"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="cart_activity_log" baseColumnNames="cart_id"
+            referencedTableName="cart" referencedColumnNames="id"
+            constraintName="fk_cart_activity_cart"/>
+    </changeSet>
+
+    <changeSet id="harden-002-fk-user-address" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="user_address" columnName="user_id"/>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_user_address_user"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="user_address" baseColumnNames="user_id"
+            referencedTableName="user_profiles" referencedColumnNames="id"
+            constraintName="fk_user_address_user"/>
+    </changeSet>
+
+    <changeSet id="harden-003-fk-inventory-reservations" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="inventory_reservations" columnName="inventory_item_id"/>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_inv_reservations_item"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="inventory_reservations" baseColumnNames="inventory_item_id"
+            referencedTableName="inventory_item" referencedColumnNames="id"
+            constraintName="fk_inv_reservations_item"/>
+    </changeSet>
+
+    <changeSet id="harden-004-fk-inventory-movements" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="inventory_movements" columnName="inventory_item_id"/>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_inv_movements_item"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="inventory_movements" baseColumnNames="inventory_item_id"
+            referencedTableName="inventory_item" referencedColumnNames="id"
+            constraintName="fk_inv_movements_item"/>
+    </changeSet>
+
+    <changeSet id="harden-005-fk-inventory-damage" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="inventory_damage_records" columnName="inventory_item_id"/>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_inv_damage_item"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="inventory_damage_records" baseColumnNames="inventory_item_id"
+            referencedTableName="inventory_item" referencedColumnNames="id"
+            constraintName="fk_inv_damage_item"/>
+    </changeSet>
+
+    <changeSet id="harden-006-fk-notification-metadata" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="notification_metadata" columnName="notification_id"/>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_notif_metadata_notif"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="notification_metadata" baseColumnNames="notification_id"
+            referencedTableName="notifications" referencedColumnNames="id"
+            constraintName="fk_notif_metadata_notif"/>
+    </changeSet>
+
+    <changeSet id="harden-007-fk-product-specs" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="product_specifications" columnName="product_id"/>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_product_specs_product"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="product_specifications" baseColumnNames="product_id"
+            referencedTableName="products" referencedColumnNames="id"
+            constraintName="fk_product_specs_product"/>
+    </changeSet>
+
+    <changeSet id="harden-008-fk-product-questions" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="product_questions" columnName="product_id"/>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_product_questions_product"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="product_questions" baseColumnNames="product_id"
+            referencedTableName="products" referencedColumnNames="id"
+            constraintName="fk_product_questions_product"/>
+    </changeSet>
+
+    <changeSet id="harden-009-fk-product-tags" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="product_tags" columnName="product_id"/>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_product_tags_product"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="product_tags" baseColumnNames="product_id"
+            referencedTableName="products" referencedColumnNames="id"
+            constraintName="fk_product_tags_product"/>
+    </changeSet>
+
+    <changeSet id="harden-010-fk-order-activity" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="order_activity" columnName="order_id"/>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_order_activity_order"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="order_activity" baseColumnNames="order_id"
+            referencedTableName="orders" referencedColumnNames="id"
+            constraintName="fk_order_activity_order"/>
+    </changeSet>
+
+    <changeSet id="harden-011-fk-fulfillment-saga-activity" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="fulfillment_saga_activity"/>
+            <not><columnExists tableName="fulfillment_saga_activity" columnName="fulfillment_saga_id"/></not>
+        </preConditions>
+        <addColumn tableName="fulfillment_saga_activity">
+            <column name="fulfillment_saga_id" type="VARCHAR(255)"/>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="fulfillment_saga_activity" baseColumnNames="fulfillment_saga_id"
+            referencedTableName="fulfillment_saga" referencedColumnNames="id"
+            constraintName="fk_fs_activity_saga"/>
+    </changeSet>
+
+    <changeSet id="harden-012-fk-return-saga-activity" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="return_processing_saga_activity"/>
+            <not><columnExists tableName="return_processing_saga_activity" columnName="saga_id"/></not>
+        </preConditions>
+        <addColumn tableName="return_processing_saga_activity">
+            <column name="saga_id" type="VARCHAR(255)"/>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="return_processing_saga_activity" baseColumnNames="saga_id"
+            referencedTableName="return_processing_saga" referencedColumnNames="id"
+            constraintName="fk_rps_activity_saga"/>
+    </changeSet>
+
+    <changeSet id="harden-013-fk-supplier-saga-activity" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="supplier_lifecycle_saga_activity"/>
+            <not><columnExists tableName="supplier_lifecycle_saga_activity" columnName="supplier_lifecycle_saga_id"/></not>
+        </preConditions>
+        <addColumn tableName="supplier_lifecycle_saga_activity">
+            <column name="supplier_lifecycle_saga_id" type="VARCHAR(255)"/>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="supplier_lifecycle_saga_activity" baseColumnNames="supplier_lifecycle_saga_id"
+            referencedTableName="supplier_lifecycle_saga" referencedColumnNames="id"
+            constraintName="fk_sls_activity_saga"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 2. MISSING UNIQUE CONSTRAINTS — Business Key Integrity             -->
+    <!-- ================================================================== -->
+
+    <changeSet id="harden-020-uk-product-variants-sku" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="product_variants" columnName="sku"/>
+            <not><indexExists indexName="uk_product_variants_sku"/></not>
+        </preConditions>
+        <addUniqueConstraint tableName="product_variants" columnNames="sku"
+            constraintName="uk_product_variants_sku"/>
+    </changeSet>
+
+    <changeSet id="harden-021-uk-supplier-tax-id" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="supplier" columnName="tax_id"/>
+            <not><indexExists indexName="uk_supplier_tax_id"/></not>
+        </preConditions>
+        <addUniqueConstraint tableName="supplier" columnNames="tax_id"
+            constraintName="uk_supplier_tax_id"/>
+    </changeSet>
+
+    <changeSet id="harden-022-uk-inventory-sku" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="inventory_item" columnName="sku"/>
+            <not><indexExists indexName="uk_inventory_item_sku"/></not>
+        </preConditions>
+        <addUniqueConstraint tableName="inventory_item" columnNames="sku"
+            constraintName="uk_inventory_item_sku"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 3. MISSING PERFORMANCE INDEXES — 1 Lakh Concurrent Users           -->
+    <!-- Uses IF NOT EXISTS for H2/PostgreSQL compatibility                 -->
+    <!-- ================================================================== -->
+
+    <changeSet id="harden-030-performance-indexes" author="homebase">
+        <sql>CREATE INDEX IF NOT EXISTS idx_orders_customer_created ON orders(customer_id, created_time DESC);</sql>
+        <sql>CREATE INDEX IF NOT EXISTS idx_order_items_supplier_created ON order_items(supplier_id, created_time);</sql>
+        <sql>CREATE INDEX IF NOT EXISTS idx_notif_customer_state ON notifications(customer_id, state_id, created_time DESC);</sql>
+        <sql>CREATE INDEX IF NOT EXISTS idx_recently_viewed_user_time ON user_recently_viewed(user_id, viewed_at DESC);</sql>
+        <sql>CREATE INDEX IF NOT EXISTS idx_wishlist_user_added ON wishlist_items(user_id, added_at DESC);</sql>
+        <sql>CREATE INDEX IF NOT EXISTS idx_support_agent_state ON support_tickets(assigned_agent_id, state_id);</sql>
+        <sql>CREATE INDEX IF NOT EXISTS idx_coupon_usage_user ON coupon_usage_log(user_id, used_at DESC);</sql>
+        <sql>CREATE INDEX IF NOT EXISTS idx_review_votes_review ON review_votes(review_id, vote_type);</sql>
+        <sql>CREATE INDEX IF NOT EXISTS idx_cart_expires ON cart(expires_at);</sql>
+        <sql>CREATE INDEX IF NOT EXISTS idx_sli_order_created ON settlement_line_items(order_id, created_time);</sql>
+    </changeSet>
+
+    <changeSet id="harden-031-performance-indexes-conditional" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="offer" columnName="active"/>
+        </preConditions>
+        <sql>CREATE INDEX IF NOT EXISTS idx_offer_product_active ON offer(product_id, active);</sql>
+    </changeSet>
+
+    <changeSet id="harden-032-performance-indexes-conditional-2" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="shipments" columnName="customer_id"/>
+        </preConditions>
+        <sql>CREATE INDEX IF NOT EXISTS idx_shipments_customer ON shipments(customer_id, created_time DESC);</sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 4. MONEY FIELDS — BIGINT to DECIMAL for financial accuracy         -->
+    <!-- ================================================================== -->
+
+    <changeSet id="harden-050-cart-money-decimal" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="cart" columnName="subtotal"/>
+        </preConditions>
+        <modifyDataType tableName="cart" columnName="subtotal" newDataType="DECIMAL(19,2)"/>
+        <modifyDataType tableName="cart" columnName="discount_amount" newDataType="DECIMAL(19,2)"/>
+        <modifyDataType tableName="cart" columnName="total" newDataType="DECIMAL(19,2)"/>
+    </changeSet>
+
+    <changeSet id="harden-051-cart-item-money-decimal" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="cart_item" columnName="original_price"/>
+        </preConditions>
+        <modifyDataType tableName="cart_item" columnName="unit_price" newDataType="DECIMAL(19,2)"/>
+        <modifyDataType tableName="cart_item" columnName="line_total" newDataType="DECIMAL(19,2)"/>
+        <modifyDataType tableName="cart_item" columnName="original_price" newDataType="DECIMAL(19,2)"/>
+    </changeSet>
+
+    <changeSet id="harden-052-checkout-money-decimal" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="checkout" columnName="subtotal"/>
+        </preConditions>
+        <modifyDataType tableName="checkout" columnName="subtotal" newDataType="DECIMAL(19,2)"/>
+        <modifyDataType tableName="checkout" columnName="discount_amount" newDataType="DECIMAL(19,2)"/>
+        <modifyDataType tableName="checkout" columnName="shipping_cost" newDataType="DECIMAL(19,2)"/>
+        <modifyDataType tableName="checkout" columnName="tax_amount" newDataType="DECIMAL(19,2)"/>
+        <modifyDataType tableName="checkout" columnName="total" newDataType="DECIMAL(19,2)"/>
+    </changeSet>
+
+    <changeSet id="harden-053-checkout-item-money-decimal" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="checkout_item" columnName="unit_price"/>
+        </preConditions>
+        <modifyDataType tableName="checkout_item" columnName="unit_price" newDataType="DECIMAL(19,2)"/>
+        <modifyDataType tableName="checkout_item" columnName="line_total" newDataType="DECIMAL(19,2)"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 6. MISSING COLUMNS — Lifecycle, audit, soft delete                 -->
+    <!-- ================================================================== -->
+
+    <!-- Soft delete on master entities -->
+    <changeSet id="harden-060-soft-delete-products" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><columnExists tableName="products" columnName="deleted_at"/></not>
+        </preConditions>
+        <addColumn tableName="products"><column name="deleted_at" type="TIMESTAMP"/></addColumn>
+        <addColumn tableName="orders"><column name="deleted_at" type="TIMESTAMP"/></addColumn>
+        <addColumn tableName="user_profiles"><column name="deleted_at" type="TIMESTAMP"/></addColumn>
+        <addColumn tableName="supplier"><column name="deleted_at" type="TIMESTAMP"/></addColumn>
+        <addColumn tableName="offer"><column name="deleted_at" type="TIMESTAMP"/></addColumn>
+        <addColumn tableName="inventory_item"><column name="deleted_at" type="TIMESTAMP"/></addColumn>
+        <addColumn tableName="coupon"><column name="deleted_at" type="TIMESTAMP"/></addColumn>
+        <addColumn tableName="support_tickets"><column name="deleted_at" type="TIMESTAMP"/></addColumn>
+    </changeSet>
+
+    <!-- Product lifecycle timestamps -->
+    <changeSet id="harden-061-product-lifecycle" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><columnExists tableName="products" columnName="published_at"/></not>
+        </preConditions>
+        <addColumn tableName="products">
+            <column name="published_at" type="TIMESTAMP"/>
+            <column name="discontinued_at" type="TIMESTAMP"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Order event timestamps (separate from STM state_entry_time) -->
+    <changeSet id="harden-062-order-timestamps" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><columnExists tableName="orders" columnName="paid_at"/></not>
+        </preConditions>
+        <addColumn tableName="orders">
+            <column name="paid_at" type="TIMESTAMP"/>
+            <column name="shipped_at" type="TIMESTAMP"/>
+            <column name="delivered_at" type="TIMESTAMP"/>
+            <column name="cancelled_at" type="TIMESTAMP"/>
+            <column name="cancellation_window_ends_at" type="TIMESTAMP"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Checkout abandonment tracking -->
+    <changeSet id="harden-063-checkout-abandonment" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><columnExists tableName="checkout" columnName="abandoned_at"/></not>
+        </preConditions>
+        <addColumn tableName="checkout">
+            <column name="abandoned_at" type="TIMESTAMP"/>
+            <column name="abandoned_reason" type="VARCHAR(255)"/>
+            <column name="recovery_email_sent_at" type="TIMESTAMP"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Review moderation -->
+    <changeSet id="harden-064-review-moderation" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><columnExists tableName="product_reviews" columnName="moderation_status"/></not>
+        </preConditions>
+        <addColumn tableName="product_reviews">
+            <column name="moderation_status" type="VARCHAR(20)" defaultValue="PENDING"/>
+            <column name="moderated_at" type="TIMESTAMP"/>
+            <column name="moderated_by" type="VARCHAR(255)"/>
+        </addColumn>
+        <createIndex tableName="product_reviews" indexName="idx_reviews_moderation">
+            <column name="moderation_status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Support ticket escalation tracking -->
+    <changeSet id="harden-065-support-escalation" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><columnExists tableName="support_tickets" columnName="escalated_by"/></not>
+        </preConditions>
+        <addColumn tableName="support_tickets">
+            <column name="escalated_by" type="VARCHAR(255)"/>
+            <column name="escalated_to" type="VARCHAR(255)"/>
+            <column name="escalated_at" type="TIMESTAMP"/>
+            <column name="sla_breached_at" type="TIMESTAMP"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 7. TENANT CHECK CONSTRAINTS — prevent null tenant data leaks      -->
+    <!-- ================================================================== -->
+
+    <changeSet id="harden-070-tenant-check-products" author="homebase">
+        <sql>ALTER TABLE products ADD CONSTRAINT ck_products_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE product_activity_log ADD CONSTRAINT ck_product_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE brands ADD CONSTRAINT ck_brands_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE product_specifications ADD CONSTRAINT ck_product_specs_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE product_questions ADD CONSTRAINT ck_product_questions_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-071-tenant-check-orders" author="homebase">
+        <sql>ALTER TABLE orders ADD CONSTRAINT ck_orders_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE order_items ADD CONSTRAINT ck_order_items_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE order_activity ADD CONSTRAINT ck_order_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE order_addresses ADD CONSTRAINT ck_order_addresses_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE order_status_history ADD CONSTRAINT ck_order_status_history_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-072-tenant-check-user" author="homebase">
+        <sql>ALTER TABLE user_profiles ADD CONSTRAINT ck_user_profiles_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE user_address ADD CONSTRAINT ck_user_address_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE user_activity_log ADD CONSTRAINT ck_user_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE user_recently_viewed ADD CONSTRAINT ck_user_recently_viewed_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE wishlist_items ADD CONSTRAINT ck_wishlist_items_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-073-tenant-check-cart" author="homebase">
+        <sql>ALTER TABLE cart ADD CONSTRAINT ck_cart_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE cart_item ADD CONSTRAINT ck_cart_item_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE cart_activity_log ADD CONSTRAINT ck_cart_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-074-tenant-check-checkout" author="homebase">
+        <sql>ALTER TABLE checkout ADD CONSTRAINT ck_checkout_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE checkout_item ADD CONSTRAINT ck_checkout_item_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE checkout_saga_log ADD CONSTRAINT ck_checkout_saga_log_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-075-tenant-check-payment" author="homebase">
+        <sql>ALTER TABLE payment ADD CONSTRAINT ck_payment_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE payment_refunds ADD CONSTRAINT ck_payment_refunds_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE payment_webhook_log ADD CONSTRAINT ck_payment_webhook_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE saved_payment_methods ADD CONSTRAINT ck_saved_payment_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-076-tenant-check-inventory" author="homebase">
+        <sql>ALTER TABLE inventory_item ADD CONSTRAINT ck_inventory_item_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE inventory_item_activity ADD CONSTRAINT ck_inventory_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE fulfillment_centers ADD CONSTRAINT ck_fulfillment_centers_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-077-tenant-check-offer-supplier" author="homebase">
+        <sql>ALTER TABLE offer ADD CONSTRAINT ck_offer_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE offer_activity_log ADD CONSTRAINT ck_offer_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE supplier ADD CONSTRAINT ck_supplier_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE supplier_activity ADD CONSTRAINT ck_supplier_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE supplier_onboarding ADD CONSTRAINT ck_supplier_onboarding_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE supplier_performance ADD CONSTRAINT ck_supplier_performance_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-078-tenant-check-shipping" author="homebase">
+        <sql>ALTER TABLE shipments ADD CONSTRAINT ck_shipments_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE shipping_activity ADD CONSTRAINT ck_shipping_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE shipping_rates ADD CONSTRAINT ck_shipping_rates_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE shipping_tracking_events ADD CONSTRAINT ck_shipping_tracking_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-079-tenant-check-notification" author="homebase">
+        <sql>ALTER TABLE notifications ADD CONSTRAINT ck_notifications_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE notification_activity ADD CONSTRAINT ck_notification_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE notification_templates ADD CONSTRAINT ck_notification_templates_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE notification_preferences ADD CONSTRAINT ck_notification_preferences_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-080-tenant-check-promo-review-support" author="homebase">
+        <sql>ALTER TABLE coupon ADD CONSTRAINT ck_coupon_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE promo_code_activity_log ADD CONSTRAINT ck_promo_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE product_reviews ADD CONSTRAINT ck_product_reviews_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE review_activity ADD CONSTRAINT ck_review_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE support_tickets ADD CONSTRAINT ck_support_tickets_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE ticket_activity ADD CONSTRAINT ck_ticket_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE ticket_messages ADD CONSTRAINT ck_ticket_messages_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-081-tenant-check-settlement-pricing-tax" author="homebase">
+        <sql>ALTER TABLE settlements ADD CONSTRAINT ck_settlements_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE settlement_activity ADD CONSTRAINT ck_settlement_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE settlement_adjustments ADD CONSTRAINT ck_settlement_adjustments_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE settlement_line_items ADD CONSTRAINT ck_settlement_line_items_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE pricing_rules ADD CONSTRAINT ck_pricing_rules_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE tax_rates ADD CONSTRAINT ck_tax_rates_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-082-tenant-check-catalog-cms-analytics" author="homebase">
+        <sql>ALTER TABLE catalog_items ADD CONSTRAINT ck_catalog_items_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE catalog_categories ADD CONSTRAINT ck_catalog_categories_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE collections ADD CONSTRAINT ck_collections_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE banners ADD CONSTRAINT ck_banners_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE cms_pages ADD CONSTRAINT ck_cms_pages_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE daily_sales_summary ADD CONSTRAINT ck_daily_sales_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE product_performance ADD CONSTRAINT ck_product_performance_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-083-tenant-check-fulfillment-warehouse-recon" author="homebase">
+        <sql>ALTER TABLE fulfillment_orders ADD CONSTRAINT ck_fulfillment_orders_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE fulfillment_line_items ADD CONSTRAINT ck_fulfillment_line_items_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE pick_lists ADD CONSTRAINT ck_pick_lists_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE pack_slips ADD CONSTRAINT ck_pack_slips_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE fulfillment_order_activity ADD CONSTRAINT ck_fulfillment_order_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE warehouses ADD CONSTRAINT ck_warehouses_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE warehouse_locations ADD CONSTRAINT ck_warehouse_locations_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE warehouse_inventory ADD CONSTRAINT ck_warehouse_inventory_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE reconciliation_batches ADD CONSTRAINT ck_reconciliation_batches_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-084-tenant-check-saga" author="homebase">
+        <sql>ALTER TABLE fulfillment_saga ADD CONSTRAINT ck_fulfillment_saga_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE return_processing_saga ADD CONSTRAINT ck_return_processing_saga_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE supplier_lifecycle_saga ADD CONSTRAINT ck_supplier_lifecycle_saga_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE returnrequest ADD CONSTRAINT ck_returnrequest_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE returnrequest_activity ADD CONSTRAINT ck_returnrequest_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE onboarding_activity ADD CONSTRAINT ck_onboarding_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <changeSet id="harden-085-tenant-check-rules-config" author="homebase">
+        <sql>ALTER TABLE policy ADD CONSTRAINT ck_policy_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE policy_rule ADD CONSTRAINT ck_policy_rule_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE policy_activity_log ADD CONSTRAINT ck_policy_activity_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE decisions ADD CONSTRAINT ck_decisions_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE cconfig ADD CONSTRAINT ck_cconfig_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+</databaseChangeLog>

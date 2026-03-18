@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- cconfig — Chenile configuration store                              -->
+    <!-- ================================================================== -->
+    <changeSet id="config-001-create-cconfig" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="cconfig"/></not>
+        </preConditions>
+
+        <createTable tableName="cconfig">
+            <!-- BaseJpaEntity fields -->
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+
+            <!-- cconfig-specific fields -->
+            <column name="module_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="key_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="avalue" type="VARCHAR(2000)"/>
+            <column name="custom_attribute" type="VARCHAR(255)" defaultValue="__GLOBAL__">
+                <constraints nullable="false"/>
+            </column>
+            <column name="path" type="VARCHAR(500)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="config-002-indexes" author="homebase">
+        <createIndex tableName="cconfig" indexName="idx_cconfig_module_key_custom"
+                     unique="true">
+            <column name="module_name"/>
+            <column name="key_name"/>
+            <column name="custom_attribute"/>
+            <column name="tenant"/>
+        </createIndex>
+
+        <createIndex tableName="cconfig" indexName="idx_cconfig_module_custom_attr">
+            <column name="module_name"/>
+            <column name="custom_attribute"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

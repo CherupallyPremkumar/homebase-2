@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Test-only: creates products (FK target) and all catalog tables
+        needed by catalog-query. No FK constraints to unrelated domains.
+    -->
+    <changeSet id="catalog-query-test-products" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="products"/></not>
+        </preConditions>
+        <createTable tableName="products">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="catalog-query-test-catalog-categories" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="catalog_categories"/></not>
+        </preConditions>
+        <createTable tableName="catalog_categories">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="slug" type="VARCHAR(255)"/>
+            <column name="description" type="TEXT"/>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <column name="parent_id" type="VARCHAR(255)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="display_order" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="level" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="icon" type="VARCHAR(100)"/>
+            <column name="featured" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="product_count" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="meta_title" type="VARCHAR(200)"/>
+            <column name="meta_description" type="VARCHAR(500)"/>
+            <column name="meta_keywords" type="VARCHAR(500)"/>
+            <column name="banner_image_url" type="VARCHAR(500)"/>
+            <column name="show_in_menu" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="show_in_footer" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="catalog-query-test-collections" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="collections"/></not>
+        </preConditions>
+        <createTable tableName="collections">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="slug" type="VARCHAR(255)"/>
+            <column name="description" type="TEXT"/>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="display_order" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="type" type="VARCHAR(50)" defaultValue="CURATED"/>
+            <column name="start_date" type="DATE"/>
+            <column name="end_date" type="DATE"/>
+            <column name="featured" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="auto_update" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="rule_expression" type="TEXT"/>
+            <column name="product_count" type="INTEGER" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="catalog-query-test-catalog-items" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="catalog_items"/></not>
+        </preConditions>
+        <createTable tableName="catalog_items">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(36)"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(2000)"/>
+            <column name="brand" type="VARCHAR(255)"/>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <column name="price" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="featured" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="display_order" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="in_stock" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="available_qty" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="average_rating" type="DECIMAL(3,2)" defaultValueNumeric="0"/>
+            <column name="review_count" type="INTEGER" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="catalog-query-test-catalog-item-tags" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="catalog_item_tags"/></not>
+        </preConditions>
+        <createTable tableName="catalog_item_tags">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="catalog_item_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tag" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="catalog-query-test-category-product-mapping" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="category_product_mapping"/></not>
+        </preConditions>
+        <createTable tableName="category_product_mapping">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="category_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_order" type="INTEGER" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- PostgreSQL FTS: search_vector + pg_trgm -->
+    <changeSet id="catalog-query-test-fts" author="homebase-test" dbms="postgresql">
+        <sql>ALTER TABLE catalog_items ADD COLUMN search_vector tsvector</sql>
+        <sql>CREATE EXTENSION IF NOT EXISTS pg_trgm</sql>
+        <sql>CREATE INDEX idx_catalog_items_fts ON catalog_items USING GIN(search_vector)</sql>
+        <sql>CREATE INDEX idx_catalog_items_name_trgm ON catalog_items USING GIN(name gin_trgm_ops)</sql>
+        <sql>
+            CREATE OR REPLACE FUNCTION catalog_items_search_trigger() RETURNS trigger AS $$
+            BEGIN
+                NEW.search_vector :=
+                    setweight(to_tsvector('english', COALESCE(NEW.name, '')), 'A') ||
+                    setweight(to_tsvector('english', COALESCE(NEW.description, '')), 'B') ||
+                    setweight(to_tsvector('english', COALESCE(NEW.brand, '')), 'C');
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+        </sql>
+        <sql>
+            CREATE TRIGGER trg_catalog_items_search
+            BEFORE INSERT OR UPDATE
+            ON catalog_items
+            FOR EACH ROW EXECUTE FUNCTION catalog_items_search_trigger();
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Reconciliation Batches — audit trail of reconciliation runs        -->
+    <!-- ================================================================== -->
+    <changeSet id="recon-001-create-reconciliation-batches" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="reconciliation_batches"/></not>
+        </preConditions>
+        <createTable tableName="reconciliation_batches">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- AbstractJpaStateEntity -->
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <!-- Reconciliation-specific -->
+            <column name="batch_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="period_start" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="period_end" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="gateway_type" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="reconciliation_method" type="VARCHAR(30)" defaultValue="FULL"/>
+            <column name="matched_count" type="INT" defaultValueNumeric="0"/>
+            <column name="mismatch_count" type="INT" defaultValueNumeric="0"/>
+            <column name="auto_resolved_count" type="INT" defaultValueNumeric="0"/>
+            <column name="unresolved_count" type="INT" defaultValueNumeric="0"/>
+            <column name="total_gateway_amount" type="DECIMAL(19,2)"/>
+            <column name="total_system_amount" type="DECIMAL(19,2)"/>
+            <column name="variance_amount" type="DECIMAL(19,2)"/>
+            <column name="completed_at" type="TIMESTAMP"/>
+            <column name="error_message" type="VARCHAR(2000)"/>
+        </createTable>
+        <createIndex tableName="reconciliation_batches" indexName="idx_rb_batch_date">
+            <column name="batch_date"/>
+        </createIndex>
+        <createIndex tableName="reconciliation_batches" indexName="idx_rb_gateway_date">
+            <column name="gateway_type"/>
+            <column name="batch_date"/>
+        </createIndex>
+        <createIndex tableName="reconciliation_batches" indexName="idx_rb_state">
+            <column name="state_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Reconciliation Batch Activity Log                                  -->
+    <!-- ================================================================== -->
+    <changeSet id="recon-002-create-reconciliation-activity" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="reconciliation_activity"/></not>
+        </preConditions>
+        <createTable tableName="reconciliation_activity">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="batch_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="VARCHAR(2000)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="reconciliation_activity" baseColumnNames="batch_id"
+            referencedTableName="reconciliation_batches" referencedColumnNames="id"
+            constraintName="fk_ra_batch"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Gateway Transactions — pulled from payment gateway                 -->
+    <!-- ================================================================== -->
+    <changeSet id="recon-003-create-gateway-transactions" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="gateway_transactions"/></not>
+        </preConditions>
+        <createTable tableName="gateway_transactions">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="batch_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="gateway_transaction_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="gateway_type" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="transaction_date" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="amount" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="gateway_status" type="VARCHAR(50)"/>
+            <column name="payment_method" type="VARCHAR(50)"/>
+            <column name="customer_email" type="VARCHAR(255)"/>
+            <column name="merchant_reference_id" type="VARCHAR(255)"/>
+            <column name="fee_amount" type="DECIMAL(19,2)"/>
+            <column name="tax_on_fee" type="DECIMAL(19,2)"/>
+            <column name="settlement_amount" type="DECIMAL(19,2)"/>
+            <column name="raw_response_json" type="TEXT"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="gateway_transactions" baseColumnNames="batch_id"
+            referencedTableName="reconciliation_batches" referencedColumnNames="id"
+            constraintName="fk_gt_batch"/>
+        <createIndex tableName="gateway_transactions" indexName="idx_gt_gateway_txn_id">
+            <column name="gateway_transaction_id"/>
+        </createIndex>
+        <createIndex tableName="gateway_transactions" indexName="idx_gt_merchant_ref">
+            <column name="merchant_reference_id"/>
+        </createIndex>
+        <createIndex tableName="gateway_transactions" indexName="idx_gt_batch_id">
+            <column name="batch_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- System Transactions — pulled from payment service                  -->
+    <!-- ================================================================== -->
+    <changeSet id="recon-004-create-system-transactions" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="system_transactions"/></not>
+        </preConditions>
+        <createTable tableName="system_transactions">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="batch_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="payment_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="transaction_date" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="amount" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="system_status" type="VARCHAR(50)"/>
+            <column name="payment_method" type="VARCHAR(50)"/>
+            <column name="gateway_payment_id" type="VARCHAR(255)"/>
+            <column name="reconciliation_status" type="VARCHAR(30)" defaultValue="UNMATCHED"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="system_transactions" baseColumnNames="batch_id"
+            referencedTableName="reconciliation_batches" referencedColumnNames="id"
+            constraintName="fk_st_batch"/>
+        <createIndex tableName="system_transactions" indexName="idx_st_payment_id">
+            <column name="payment_id"/>
+        </createIndex>
+        <createIndex tableName="system_transactions" indexName="idx_st_order_id">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex tableName="system_transactions" indexName="idx_st_batch_status">
+            <column name="batch_id"/>
+            <column name="reconciliation_status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Transaction Matches — successfully matched transactions            -->
+    <!-- ================================================================== -->
+    <changeSet id="recon-005-create-transaction-matches" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="transaction_matches"/></not>
+        </preConditions>
+        <createTable tableName="transaction_matches">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="batch_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="gateway_transaction_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="system_transaction_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="match_confidence_pct" type="DECIMAL(5,2)"/>
+            <column name="match_method" type="VARCHAR(30)"/>
+            <column name="gateway_amount" type="DECIMAL(19,2)"/>
+            <column name="system_amount" type="DECIMAL(19,2)"/>
+            <column name="matched_at" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="transaction_matches" baseColumnNames="batch_id"
+            referencedTableName="reconciliation_batches" referencedColumnNames="id"
+            constraintName="fk_tm_batch"/>
+        <createIndex tableName="transaction_matches" indexName="idx_tm_batch">
+            <column name="batch_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Transaction Mismatches — unmatched or discrepant transactions      -->
+    <!-- ================================================================== -->
+    <changeSet id="recon-006-create-transaction-mismatches" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="transaction_mismatches"/></not>
+        </preConditions>
+        <createTable tableName="transaction_mismatches">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="batch_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="mismatch_type" type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <column name="gateway_transaction_id" type="VARCHAR(255)"/>
+            <column name="system_transaction_id" type="VARCHAR(255)"/>
+            <column name="gateway_amount" type="DECIMAL(19,2)"/>
+            <column name="system_amount" type="DECIMAL(19,2)"/>
+            <column name="variance_amount" type="DECIMAL(19,2)"/>
+            <column name="severity" type="VARCHAR(20)" defaultValue="MEDIUM"/>
+            <column name="investigation_status" type="VARCHAR(30)" defaultValue="OPEN"/>
+            <column name="assigned_to" type="VARCHAR(255)"/>
+            <column name="resolution_type" type="VARCHAR(30)"/>
+            <column name="resolution_notes" type="VARCHAR(2000)"/>
+            <column name="resolved_at" type="TIMESTAMP"/>
+            <column name="resolved_by" type="VARCHAR(255)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="transaction_mismatches" baseColumnNames="batch_id"
+            referencedTableName="reconciliation_batches" referencedColumnNames="id"
+            constraintName="fk_tmm_batch"/>
+        <createIndex tableName="transaction_mismatches" indexName="idx_tmm_batch_status">
+            <column name="batch_id"/>
+            <column name="investigation_status"/>
+        </createIndex>
+        <createIndex tableName="transaction_mismatches" indexName="idx_tmm_severity">
+            <column name="severity"/>
+            <column name="investigation_status"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

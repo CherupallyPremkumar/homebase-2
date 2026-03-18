@@ -1,0 +1,655 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Audit Log — centralized change tracking for compliance             -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-001-create-audit-log" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="audit_log"/></not>
+        </preConditions>
+        <createTable tableName="audit_log">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="entity_type" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="entity_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="action" type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <column name="field_name" type="VARCHAR(100)"/>
+            <column name="old_value" type="TEXT"/>
+            <column name="new_value" type="TEXT"/>
+            <column name="changed_by" type="VARCHAR(255)"/>
+            <column name="ip_address" type="VARCHAR(45)"/>
+            <column name="user_agent" type="VARCHAR(500)"/>
+            <column name="correlation_id" type="VARCHAR(255)"/>
+        </createTable>
+        <createIndex tableName="audit_log" indexName="idx_audit_entity">
+            <column name="entity_type"/>
+            <column name="entity_id"/>
+        </createIndex>
+        <createIndex tableName="audit_log" indexName="idx_audit_created">
+            <column name="created_time" descending="true"/>
+        </createIndex>
+        <createIndex tableName="audit_log" indexName="idx_audit_changed_by">
+            <column name="changed_by"/>
+        </createIndex>
+        <createIndex tableName="audit_log" indexName="idx_audit_tenant_entity">
+            <column name="tenant"/>
+            <column name="entity_type"/>
+            <column name="created_time" descending="true"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Price Lock Record — audit what prices were locked at checkout      -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-002-create-price-lock-record" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="price_lock_records"/></not>
+        </preConditions>
+        <createTable tableName="price_lock_records">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="checkout_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(100)"/>
+            <column name="locked_unit_price" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
+            <column name="locked_tax_amount" type="DECIMAL(19,2)"/>
+            <column name="locked_discount" type="DECIMAL(19,2)"/>
+            <column name="quantity" type="INT"><constraints nullable="false"/></column>
+            <column name="lock_token" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="locked_at" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="expires_at" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="released_at" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="price_lock_records" baseColumnNames="checkout_id"
+            referencedTableName="checkout" referencedColumnNames="id"
+            constraintName="fk_plr_checkout"/>
+        <createIndex tableName="price_lock_records" indexName="idx_plr_checkout">
+            <column name="checkout_id"/>
+        </createIndex>
+        <createIndex tableName="price_lock_records" indexName="idx_plr_token">
+            <column name="lock_token"/>
+        </createIndex>
+        <createIndex tableName="price_lock_records" indexName="idx_plr_expires">
+            <column name="expires_at"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Payment Attempts — each payment retry detail                       -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-003-create-payment-attempts" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="payment_attempts"/></not>
+        </preConditions>
+        <createTable tableName="payment_attempts">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="payment_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="attempt_number" type="INT"><constraints nullable="false"/></column>
+            <column name="gateway_name" type="VARCHAR(100)"/>
+            <column name="payment_method_type" type="VARCHAR(50)"/>
+            <column name="amount" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="gateway_request_id" type="VARCHAR(255)"/>
+            <column name="gateway_response_code" type="VARCHAR(50)"/>
+            <column name="gateway_response_message" type="VARCHAR(1000)"/>
+            <column name="status" type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <column name="error_code" type="VARCHAR(50)"/>
+            <column name="error_message" type="VARCHAR(1000)"/>
+            <column name="attempted_at" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="completed_at" type="TIMESTAMP"/>
+            <column name="ip_address" type="VARCHAR(45)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="payment_attempts" baseColumnNames="payment_id"
+            referencedTableName="payment" referencedColumnNames="id"
+            constraintName="fk_pa_payment"/>
+        <createIndex tableName="payment_attempts" indexName="idx_pa_payment">
+            <column name="payment_id"/>
+        </createIndex>
+        <createIndex tableName="payment_attempts" indexName="idx_pa_status">
+            <column name="status"/>
+            <column name="attempted_at"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Review Responses — seller/brand replies to customer reviews        -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-004-create-review-responses" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="review_responses"/></not>
+        </preConditions>
+        <createTable tableName="review_responses">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="review_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="responder_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="responder_type" type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <column name="responder_name" type="VARCHAR(255)"/>
+            <column name="response_text" type="TEXT"><constraints nullable="false"/></column>
+            <column name="is_official" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="moderation_status" type="VARCHAR(20)" defaultValue="PENDING"/>
+            <column name="moderated_at" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="review_responses" baseColumnNames="review_id"
+            referencedTableName="product_reviews" referencedColumnNames="id"
+            constraintName="fk_rr_review"/>
+        <createIndex tableName="review_responses" indexName="idx_rr_review">
+            <column name="review_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Supplier KYC Documents — structured document tracking              -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-005-create-supplier-kyc-documents" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="supplier_kyc_documents"/></not>
+        </preConditions>
+        <createTable tableName="supplier_kyc_documents">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="supplier_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="document_type" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="document_number" type="VARCHAR(100)"/>
+            <column name="document_url" type="VARCHAR(500)"><constraints nullable="false"/></column>
+            <column name="file_name" type="VARCHAR(255)"/>
+            <column name="file_size_bytes" type="BIGINT"/>
+            <column name="uploaded_at" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="verified" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="verified_by" type="VARCHAR(255)"/>
+            <column name="verified_at" type="TIMESTAMP"/>
+            <column name="rejection_reason" type="VARCHAR(500)"/>
+            <column name="expires_at" type="DATE"/>
+            <column name="is_current" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="supplier_kyc_documents" baseColumnNames="supplier_id"
+            referencedTableName="supplier" referencedColumnNames="id"
+            constraintName="fk_skd_supplier"/>
+        <createIndex tableName="supplier_kyc_documents" indexName="idx_skd_supplier">
+            <column name="supplier_id"/>
+        </createIndex>
+        <createIndex tableName="supplier_kyc_documents" indexName="idx_skd_type_verified">
+            <column name="document_type"/>
+            <column name="verified"/>
+        </createIndex>
+        <createIndex tableName="supplier_kyc_documents" indexName="idx_skd_expires">
+            <column name="expires_at"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Coupon Compatibility Matrix — which coupons can stack              -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-006-create-coupon-compatibility" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="coupon_compatibility"/></not>
+        </preConditions>
+        <createTable tableName="coupon_compatibility">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="coupon_id_a" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="coupon_id_b" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="compatible" type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="reason" type="VARCHAR(500)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="coupon_compatibility" baseColumnNames="coupon_id_a"
+            referencedTableName="coupon" referencedColumnNames="id" constraintName="fk_cc_coupon_a"/>
+        <addForeignKeyConstraint baseTableName="coupon_compatibility" baseColumnNames="coupon_id_b"
+            referencedTableName="coupon" referencedColumnNames="id" constraintName="fk_cc_coupon_b"/>
+        <addUniqueConstraint tableName="coupon_compatibility" columnNames="coupon_id_a, coupon_id_b"
+            constraintName="uk_cc_pair"/>
+        <createIndex tableName="coupon_compatibility" indexName="idx_cc_coupon_a">
+            <column name="coupon_id_a"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Warehouse Staff — who works where                                  -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-007-create-warehouse-staff" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="warehouse_staff"/></not>
+        </preConditions>
+        <createTable tableName="warehouse_staff">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="warehouse_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="user_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="employee_code" type="VARCHAR(50)"/>
+            <column name="role" type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <column name="department" type="VARCHAR(50)"/>
+            <column name="shift_pattern" type="VARCHAR(20)" defaultValue="DAY"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="joined_at" type="DATE"/>
+            <column name="left_at" type="DATE"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="warehouse_staff" baseColumnNames="warehouse_id"
+            referencedTableName="warehouses" referencedColumnNames="id" constraintName="fk_ws_warehouse"/>
+        <addUniqueConstraint tableName="warehouse_staff" columnNames="warehouse_id, user_id"
+            constraintName="uk_ws_warehouse_user"/>
+        <createIndex tableName="warehouse_staff" indexName="idx_ws_warehouse_active">
+            <column name="warehouse_id"/>
+            <column name="is_active"/>
+        </createIndex>
+        <createIndex tableName="warehouse_staff" indexName="idx_ws_role">
+            <column name="role"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Warehouse Staff Shifts — daily attendance and productivity         -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-008-create-warehouse-staff-shifts" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="warehouse_staff_shifts"/></not>
+        </preConditions>
+        <createTable tableName="warehouse_staff_shifts">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="staff_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="shift_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="clock_in" type="TIMESTAMP"/>
+            <column name="clock_out" type="TIMESTAMP"/>
+            <column name="tasks_completed" type="INT" defaultValueNumeric="0"/>
+            <column name="items_picked" type="INT" defaultValueNumeric="0"/>
+            <column name="items_packed" type="INT" defaultValueNumeric="0"/>
+            <column name="errors_count" type="INT" defaultValueNumeric="0"/>
+            <column name="notes" type="VARCHAR(500)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="warehouse_staff_shifts" baseColumnNames="staff_id"
+            referencedTableName="warehouse_staff" referencedColumnNames="id" constraintName="fk_wss_staff"/>
+        <addUniqueConstraint tableName="warehouse_staff_shifts" columnNames="staff_id, shift_date"
+            constraintName="uk_wss_staff_date"/>
+        <createIndex tableName="warehouse_staff_shifts" indexName="idx_wss_date">
+            <column name="shift_date"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- GST Reconciliation Periods — Indian tax compliance                 -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-009-create-gst-reconciliation" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="gst_reconciliation_periods"/></not>
+        </preConditions>
+        <createTable tableName="gst_reconciliation_periods">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="gstr_type" type="VARCHAR(10)"><constraints nullable="false"/></column>
+            <column name="period_start" type="DATE"><constraints nullable="false"/></column>
+            <column name="period_end" type="DATE"><constraints nullable="false"/></column>
+            <column name="total_taxable_value" type="DECIMAL(19,2)" defaultValueNumeric="0"/>
+            <column name="total_igst" type="DECIMAL(19,2)" defaultValueNumeric="0"/>
+            <column name="total_cgst" type="DECIMAL(19,2)" defaultValueNumeric="0"/>
+            <column name="total_sgst" type="DECIMAL(19,2)" defaultValueNumeric="0"/>
+            <column name="total_cess" type="DECIMAL(19,2)" defaultValueNumeric="0"/>
+            <column name="total_invoices" type="INT" defaultValueNumeric="0"/>
+            <column name="total_credit_notes" type="INT" defaultValueNumeric="0"/>
+            <column name="filing_status" type="VARCHAR(20)" defaultValue="PENDING"/>
+            <column name="filed_at" type="TIMESTAMP"/>
+            <column name="filed_by" type="VARCHAR(255)"/>
+            <column name="arn" type="VARCHAR(100)"/>
+            <column name="error_message" type="VARCHAR(2000)"/>
+        </createTable>
+        <addUniqueConstraint tableName="gst_reconciliation_periods" columnNames="tenant, gstr_type, period_start"
+            constraintName="uk_gst_tenant_type_period"/>
+        <createIndex tableName="gst_reconciliation_periods" indexName="idx_gst_status">
+            <column name="filing_status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Notification Batches — group related notifications                 -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-010-create-notification-batches" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="notification_batches"/></not>
+        </preConditions>
+        <createTable tableName="notification_batches">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="batch_type" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="trigger_event" type="VARCHAR(100)"/>
+            <column name="trigger_entity_type" type="VARCHAR(50)"/>
+            <column name="trigger_entity_id" type="VARCHAR(255)"/>
+            <column name="total_count" type="INT" defaultValueNumeric="0"/>
+            <column name="sent_count" type="INT" defaultValueNumeric="0"/>
+            <column name="failed_count" type="INT" defaultValueNumeric="0"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING"/>
+            <column name="started_at" type="TIMESTAMP"/>
+            <column name="completed_at" type="TIMESTAMP"/>
+            <column name="error_message" type="VARCHAR(2000)"/>
+        </createTable>
+        <createIndex tableName="notification_batches" indexName="idx_nb_status">
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="notification_batches" indexName="idx_nb_trigger">
+            <column name="trigger_entity_type"/>
+            <column name="trigger_entity_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Add batch_id FK column to notifications -->
+    <changeSet id="missing-010b-add-batch-id-to-notifications" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><columnExists tableName="notifications" columnName="batch_id"/></not>
+        </preConditions>
+        <addColumn tableName="notifications">
+            <column name="batch_id" type="VARCHAR(255)"/>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="notifications" baseColumnNames="batch_id"
+            referencedTableName="notification_batches" referencedColumnNames="id" constraintName="fk_notif_batch"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Integration Log — external API call audit trail                    -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-011-create-integration-log" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="integration_log"/></not>
+        </preConditions>
+        <createTable tableName="integration_log">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="service_name" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="endpoint" type="VARCHAR(500)"><constraints nullable="false"/></column>
+            <column name="http_method" type="VARCHAR(10)"/>
+            <column name="request_headers" type="TEXT"/>
+            <column name="request_body" type="TEXT"/>
+            <column name="response_status" type="INT"/>
+            <column name="response_body" type="TEXT"/>
+            <column name="latency_ms" type="BIGINT"/>
+            <column name="error_message" type="VARCHAR(2000)"/>
+            <column name="correlation_id" type="VARCHAR(255)"/>
+            <column name="idempotency_key" type="VARCHAR(255)"/>
+            <column name="retry_count" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex tableName="integration_log" indexName="idx_il_service_time">
+            <column name="service_name"/>
+            <column name="created_time" descending="true"/>
+        </createIndex>
+        <createIndex tableName="integration_log" indexName="idx_il_correlation">
+            <column name="correlation_id"/>
+        </createIndex>
+        <createIndex tableName="integration_log" indexName="idx_il_idempotency">
+            <column name="idempotency_key"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Customer Segments — for targeted marketing/coupons                 -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-012-create-customer-segments" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="customer_segments"/></not>
+        </preConditions>
+        <createTable tableName="customer_segments">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="description" type="VARCHAR(1000)"/>
+            <column name="segment_type" type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <column name="rule_expression" type="TEXT"/>
+            <column name="member_count" type="INT" defaultValueNumeric="0"/>
+            <column name="is_dynamic" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="last_computed_at" type="TIMESTAMP"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <addUniqueConstraint tableName="customer_segments" columnNames="tenant, name"
+            constraintName="uk_cs_tenant_name"/>
+    </changeSet>
+
+    <changeSet id="missing-013-create-customer-segment-members" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="customer_segment_members"/></not>
+        </preConditions>
+        <createTable tableName="customer_segment_members">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="segment_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="user_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="added_at" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="expires_at" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="customer_segment_members" baseColumnNames="segment_id"
+            referencedTableName="customer_segments" referencedColumnNames="id" constraintName="fk_csm_segment"/>
+        <addUniqueConstraint tableName="customer_segment_members" columnNames="segment_id, user_id"
+            constraintName="uk_csm_segment_user"/>
+        <createIndex tableName="customer_segment_members" indexName="idx_csm_user">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Gift Cards — prepaid gift card balances                            -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-014-create-gift-cards" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="gift_cards"/></not>
+        </preConditions>
+        <createTable tableName="gift_cards">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="code" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="original_amount" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
+            <column name="balance" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="purchased_by" type="VARCHAR(255)"/>
+            <column name="purchased_at" type="TIMESTAMP"/>
+            <column name="recipient_email" type="VARCHAR(255)"/>
+            <column name="recipient_name" type="VARCHAR(255)"/>
+            <column name="message" type="VARCHAR(500)"/>
+            <column name="redeemed_by" type="VARCHAR(255)"/>
+            <column name="redeemed_at" type="TIMESTAMP"/>
+            <column name="expires_at" type="DATE"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE"/>
+        </createTable>
+        <addUniqueConstraint tableName="gift_cards" columnNames="code" constraintName="uk_gc_code"/>
+        <createIndex tableName="gift_cards" indexName="idx_gc_status">
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="gift_cards" indexName="idx_gc_redeemed_by">
+            <column name="redeemed_by"/>
+        </createIndex>
+        <createIndex tableName="gift_cards" indexName="idx_gc_expires">
+            <column name="expires_at"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Store Credits — wallet balance per user                            -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-015-create-store-credits" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="store_credits"/></not>
+        </preConditions>
+        <createTable tableName="store_credits">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="user_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="amount" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
+            <column name="balance_after" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
+            <column name="transaction_type" type="VARCHAR(20)"><constraints nullable="false"/></column>
+            <column name="reason" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="reference_type" type="VARCHAR(50)"/>
+            <column name="reference_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="store_credits" indexName="idx_sc_user">
+            <column name="user_id"/>
+            <column name="created_time" descending="true"/>
+        </createIndex>
+        <createIndex tableName="store_credits" indexName="idx_sc_reference">
+            <column name="reference_type"/>
+            <column name="reference_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Commission Rules — category-wise commission rates                  -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-016-create-commission-rules" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="commission_rules"/></not>
+        </preConditions>
+        <createTable tableName="commission_rules">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="category_id" type="VARCHAR(255)"/>
+            <column name="supplier_tier" type="VARCHAR(30)"/>
+            <column name="commission_rate_pct" type="DECIMAL(5,2)"><constraints nullable="false"/></column>
+            <column name="min_commission" type="DECIMAL(19,2)"/>
+            <column name="max_commission" type="DECIMAL(19,2)"/>
+            <column name="effective_from" type="DATE"><constraints nullable="false"/></column>
+            <column name="effective_to" type="DATE"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="description" type="VARCHAR(500)"/>
+        </createTable>
+        <createIndex tableName="commission_rules" indexName="idx_cr_category_active">
+            <column name="category_id"/>
+            <column name="is_active"/>
+        </createIndex>
+        <createIndex tableName="commission_rules" indexName="idx_cr_effective">
+            <column name="effective_from"/>
+            <column name="effective_to"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Order Shipment Groups — multi-warehouse order splits               -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-017-create-order-shipment-groups" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="order_shipment_groups"/></not>
+        </preConditions>
+        <createTable tableName="order_shipment_groups">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="fulfillment_order_id" type="VARCHAR(255)"/>
+            <column name="warehouse_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="shipment_id" type="VARCHAR(255)"/>
+            <column name="group_number" type="INT"><constraints nullable="false"/></column>
+            <column name="item_count" type="INT" defaultValueNumeric="0"/>
+            <column name="status" type="VARCHAR(30)" defaultValue="PENDING"/>
+            <column name="estimated_ship_date" type="DATE"/>
+            <column name="estimated_delivery_date" type="DATE"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="order_shipment_groups" baseColumnNames="order_id"
+            referencedTableName="orders" referencedColumnNames="id" constraintName="fk_osg_order"/>
+        <createIndex tableName="order_shipment_groups" indexName="idx_osg_order">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex tableName="order_shipment_groups" indexName="idx_osg_warehouse">
+            <column name="warehouse_id"/>
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Risk Signals — fraud/risk detection pipeline                       -->
+    <!-- ================================================================== -->
+    <changeSet id="missing-018-create-risk-signals" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="risk_signals"/></not>
+        </preConditions>
+        <createTable tableName="risk_signals">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="entity_type" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="entity_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="signal_type" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="risk_score" type="DECIMAL(5,2)"/>
+            <column name="severity" type="VARCHAR(20)" defaultValue="LOW"/>
+            <column name="details" type="TEXT"/>
+            <column name="source" type="VARCHAR(100)"/>
+            <column name="ip_address" type="VARCHAR(45)"/>
+            <column name="user_agent" type="VARCHAR(500)"/>
+            <column name="action_taken" type="VARCHAR(30)"/>
+            <column name="reviewed_by" type="VARCHAR(255)"/>
+            <column name="reviewed_at" type="TIMESTAMP"/>
+            <column name="is_false_positive" type="BOOLEAN"/>
+        </createTable>
+        <createIndex tableName="risk_signals" indexName="idx_rs_entity">
+            <column name="entity_type"/>
+            <column name="entity_id"/>
+        </createIndex>
+        <createIndex tableName="risk_signals" indexName="idx_rs_severity">
+            <column name="severity"/>
+            <column name="created_time" descending="true"/>
+        </createIndex>
+        <createIndex tableName="risk_signals" indexName="idx_rs_signal_type">
+            <column name="signal_type"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
