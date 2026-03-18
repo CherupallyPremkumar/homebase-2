@@ -97,6 +97,8 @@ public class RuleSetServiceImpl implements RuleSetService {
         ruleSet.setName(dto.getName());
         ruleSet.setDescription(dto.getDescription());
         ruleSet.setActive(dto.isActive());
+        ruleSet.setDefaultEffect(dto.getDefaultEffect());
+        ruleSet.setTargetModule(dto.getTargetModule());
         if (dto.getRules() != null) {
             ruleSet.getRules().clear();
             ruleSet.getRules().addAll(dto.getRules().stream().map(this::mapToEntity).collect(Collectors.toList()));
@@ -110,6 +112,7 @@ public class RuleSetServiceImpl implements RuleSetService {
         rule.setExpression(dto.getExpression());
         rule.setEffect(dto.getEffect());
         rule.setPriority(dto.getPriority());
+        rule.setActive(dto.isActive());
         return rule;
     }
 
@@ -136,6 +139,7 @@ public class RuleSetServiceImpl implements RuleSetService {
         dto.setExpression(entity.getExpression());
         dto.setEffect(entity.getEffect());
         dto.setPriority(entity.getPriority());
+        dto.setActive(entity.isActive());
         return dto;
     }
 

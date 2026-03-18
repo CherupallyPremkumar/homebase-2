@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- 1. Create all cross-module tables (H2 test only) -->
+    <include file="db/changelog/ui-query/test/db.changelog-ui-query-tables.xml" />
+
+    <!-- 2. Product domain test data (categories, products, variants, attributes, media) -->
+    <include file="db/changelog/product/test/db.changelog-product-testdata.xml" />
+
+    <!-- 3. Offers with V61 column names (replaces product-testdata offers that use old names) -->
+    <include file="db/changelog/ui-query/test/db.changelog-ui-query-offers-testdata.xml" />
+
+    <!-- 4. Cross-module test data (inventory, reviews, orders, shipments, suppliers, support, returns) -->
+    <include file="db/changelog/ui-query/test/db.changelog-ui-query-testdata.xml" />
+
+</databaseChangeLog>

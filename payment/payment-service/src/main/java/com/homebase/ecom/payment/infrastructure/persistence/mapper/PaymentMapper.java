@@ -27,6 +27,7 @@ public class PaymentMapper {
         model.setRetryCount(entity.getRetryCount());
         model.setFailureReason(entity.getFailureReason());
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
         if (entity.getCreatedTime() != null) model.setCreatedTime(entity.getCreatedTime());
         if (entity.getLastModifiedTime() != null) model.setLastModifiedTime(entity.getLastModifiedTime());
 
@@ -53,6 +54,7 @@ public class PaymentMapper {
         entity.setRetryCount(model.getRetryCount());
         entity.setFailureReason(model.getFailureReason());
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
 
         if (model.getActivities() != null) {
             entity.setActivities(model.getActivities().stream()

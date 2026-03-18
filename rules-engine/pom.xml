@@ -25,17 +25,11 @@
         <module>rules-engine-query</module>
         <module>rules-engine-app</module>
         <module>rules-engine-client</module>
-        <module>rules-engine-web</module>
         <module>rules-engine-k8s</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>com.homebase.ecom.rulesengine</groupId>
-                <artifactId>rules-engine-web</artifactId>
-                <version>${revision}</version>
-            </dependency>
             <dependency>
                 <groupId>com.homebase.ecom.rulesengine</groupId>
                 <artifactId>rules-engine-api</artifactId>

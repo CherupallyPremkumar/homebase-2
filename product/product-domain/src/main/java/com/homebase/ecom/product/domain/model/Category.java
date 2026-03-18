@@ -14,6 +14,7 @@ public class Category extends BaseEntity {
     private int displayOrder;
     private boolean active;
     private List<String> attributeIds = new ArrayList<>();
+    private String tenant;
 
 
 
@@ -40,4 +41,7 @@ public class Category extends BaseEntity {
 
     public List<String> getAttributeIds() { return attributeIds; }
     public void setAttributeIds(List<String> attributeIds) { this.attributeIds = attributeIds; }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

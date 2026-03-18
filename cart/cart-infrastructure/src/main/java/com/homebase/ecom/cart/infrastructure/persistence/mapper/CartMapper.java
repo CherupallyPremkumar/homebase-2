@@ -35,6 +35,7 @@ public class CartMapper {
         entity.setPriceChanged(model.isPriceChanged());
         entity.description = model.description;
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
 
         // Coupon codes: List<String> -> comma-separated string
         if (model.getCouponCodes() != null && !model.getCouponCodes().isEmpty()) {
@@ -72,6 +73,7 @@ public class CartMapper {
         model.setPriceChanged(entity.isPriceChanged());
         model.description = entity.description;
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
 
         // Coupon codes: comma-separated string -> List<String>
         if (entity.getCouponCodes() != null && !entity.getCouponCodes().isEmpty()) {

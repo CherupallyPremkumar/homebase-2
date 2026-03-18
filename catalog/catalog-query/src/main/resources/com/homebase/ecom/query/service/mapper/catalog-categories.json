@@ -1,0 +1,83 @@
+[
+  {
+    "id": "CatalogCategories.getBanners",
+    "name": "categoryBanners",
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "name": {
+        "name": "name",
+        "columnType": "Text",
+        "filterable": true
+      },
+      "slug": {
+        "name": "slug",
+        "columnType": "Text"
+      },
+      "imageUrl": {
+        "name": "imageUrl",
+        "columnType": "Text"
+      },
+      "bannerImageUrl": {
+        "name": "bannerImageUrl",
+        "columnType": "Text"
+      },
+      "active": {
+        "name": "active",
+        "filterable": true,
+        "columnType": "CheckBox"
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true
+  },
+  {
+    "id": "CatalogCategories.getMenu",
+    "name": "categoryMenu",
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "name": {
+        "name": "name",
+        "columnType": "Text",
+        "filterable": true
+      },
+      "slug": {
+        "name": "slug",
+        "columnType": "Text"
+      },
+      "parentId": {
+        "name": "parentId",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "level": {
+        "name": "level",
+        "filterable": true,
+        "columnType": "Number"
+      },
+      "imageUrl": {
+        "name": "imageUrl",
+        "columnType": "Text"
+      },
+      "icon": {
+        "name": "icon",
+        "columnType": "Text"
+      },
+      "displayOrder": {
+        "name": "displayOrder",
+        "columnType": "Number",
+        "sortable": true
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  }
+]

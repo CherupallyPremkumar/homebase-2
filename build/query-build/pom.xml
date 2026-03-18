@@ -74,6 +74,11 @@
 			<artifactId>promo-query</artifactId>
 			<version>${revision}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>ui-query-service</artifactId>
+			<version>${revision}</version>
+		</dependency>
 
 		<!-- Chenile Query Infrastructure -->
 		<dependency>

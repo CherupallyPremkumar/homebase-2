@@ -1,0 +1,76 @@
+[
+	{
+		"id": "Storefront.productCards",
+		"name": "product-cards",
+		"columnMetadata": {
+			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" },
+			"brand": { "name": "brand", "filterable": true, "columnType": "Text", "sortable": true },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true },
+			"minPrice": { "name": "minPrice", "filterable": true, "columnType": "Numeric" },
+			"maxPrice": { "name": "maxPrice", "filterable": true, "columnType": "Numeric" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Storefront.productDetail",
+		"name": "product-detail",
+		"columnMetadata": {
+			"slug": { "name": "slug", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.productVariantsWithPrice",
+		"name": "product-variants-with-price",
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.featuredProducts",
+		"name": "featured-products",
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Storefront.myOrders",
+		"name": "my-orders",
+		"columnMetadata": {
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Storefront.orderDetail",
+		"name": "order-detail",
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" },
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.orderLineItems",
+		"name": "order-line-items",
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.brandList",
+		"name": "brand-list",
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.priceRanges",
+		"name": "price-ranges",
+		"columnMetadata": {},
+		"paginated": false
+	}
+]

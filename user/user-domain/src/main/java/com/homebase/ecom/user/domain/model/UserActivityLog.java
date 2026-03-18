@@ -16,6 +16,7 @@ public class UserActivityLog extends BaseEntity implements ActivityLog {
     public String activityName;
     public boolean activitySuccess;
     public String activityComment;
+    private String tenant;
 
     public String getActivityName() { return activityName; }
     public void setActivityName(String activityName) { this.activityName = activityName; }
@@ -34,4 +35,7 @@ public class UserActivityLog extends BaseEntity implements ActivityLog {
 
     @Override
     public String getComment() { return activityComment; }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

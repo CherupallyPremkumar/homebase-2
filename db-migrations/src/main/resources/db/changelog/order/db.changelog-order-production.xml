@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- V62: Orders production-grade — missing columns for storefront      -->
+    <!-- ================================================================== -->
+    <changeSet id="V62__orders_production_columns" author="homebase" runOnChange="false">
+        <addColumn tableName="orders">
+            <column name="item_count" type="INT" defaultValueNumeric="0"/>
+            <column name="discount_amount" type="DECIMAL(12,2)" defaultValueNumeric="0"/>
+            <column name="shipping_address" type="JSONB"/>
+        </addColumn>
+
+        <!-- Add supplier_id to order_items for supplier performance queries -->
+        <addColumn tableName="order_items">
+            <column name="supplier_id" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <createIndex indexName="idx_order_items_supplier" tableName="order_items">
+            <column name="supplier_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

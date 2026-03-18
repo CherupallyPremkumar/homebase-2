@@ -71,6 +71,7 @@ public class RuleSetSteps {
         dto.setId(id);
         dto.setName(id);
         dto.setActive(true);
+        dto.setDefaultEffect(Effect.valueOf(effect));
         dto.setRules(new ArrayList<>());
         ruleSetService.createRuleSet(dto);
     }
@@ -82,6 +83,9 @@ public class RuleSetSteps {
         rule.setId(ruleId);
         rule.setName(ruleId);
         rule.setExpression(expression);
+        rule.setEffect(Effect.valueOf(effect));
+        rule.setPriority(100 - ruleSet.getRules().size());
+        rule.setActive(true);
         ruleSet.getRules().add(rule);
         ruleSetService.updateRuleSet(ruleSetId, ruleSet);
     }

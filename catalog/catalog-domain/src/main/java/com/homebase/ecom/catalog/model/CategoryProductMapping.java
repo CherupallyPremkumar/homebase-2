@@ -11,6 +11,7 @@ public class CategoryProductMapping extends BaseEntity {
     private String productId;
     private Integer displayOrder;
     private String addedBy;
+    private String tenant;
 
     // Getters and Setters
 
@@ -44,5 +45,13 @@ public class CategoryProductMapping extends BaseEntity {
 
     public void setAddedBy(String addedBy) {
         this.addedBy = addedBy;
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
     }
 }

@@ -30,6 +30,7 @@ public class Review extends AbstractExtendedStateEntity
 
     // Moderation fields
     private String moderatorNotes;
+    private String tenant;
 
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
@@ -87,4 +88,7 @@ public class Review extends AbstractExtendedStateEntity
         activities.add(activityLog);
         return activityLog;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

@@ -31,6 +31,7 @@ public class ShippingMapper {
         model.setCurrentLocation(entity.getCurrentLocation());
         model.description = entity.getDescription();
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
 
         if (entity.getActivities() != null) {
             for (ShippingActivityLogEntity actEntity : entity.getActivities()) {
@@ -62,6 +63,7 @@ public class ShippingMapper {
         entity.setCurrentLocation(model.getCurrentLocation());
         entity.setDescription(model.description);
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
 
         if (model.obtainActivities() != null) {
             entity.activities = model.obtainActivities().stream()

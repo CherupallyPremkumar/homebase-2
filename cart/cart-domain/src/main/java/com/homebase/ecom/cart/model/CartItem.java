@@ -19,6 +19,7 @@ public class CartItem extends BaseEntity {
     private Money unitPrice = Money.ZERO_INR;
     private Money lineTotal = Money.ZERO_INR;
     private boolean available = true;
+    private String tenant;
 
     public String getCartId() {
         return cartId;
@@ -102,5 +103,13 @@ public class CartItem extends BaseEntity {
 
     public void recalculateLineTotal() {
         this.lineTotal = unitPrice.multiply(quantity);
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
     }
 }

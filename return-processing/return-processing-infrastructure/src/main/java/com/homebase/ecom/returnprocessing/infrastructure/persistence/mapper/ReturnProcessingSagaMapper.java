@@ -25,6 +25,7 @@ public class ReturnProcessingSagaMapper {
         entity.setErrorMessage(model.getErrorMessage());
         entity.setRetryCount(model.getRetryCount());
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
 
         if (model.activities != null) {
             entity.setActivities(model.activities.stream()
@@ -48,6 +49,7 @@ public class ReturnProcessingSagaMapper {
         model.setErrorMessage(entity.getErrorMessage());
         model.setRetryCount(entity.getRetryCount());
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
 
         if (entity.getActivities() != null) {
             model.activities = entity.getActivities().stream()

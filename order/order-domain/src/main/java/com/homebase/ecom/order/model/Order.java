@@ -36,6 +36,7 @@ public class Order extends AbstractExtendedStateEntity
     private String paymentMethodId;
     private String notes;
     private String cancelReason;
+    private String tenant;
 
     /** Flag set by requestCancellation action for CHECK_CANCELLATION_WINDOW auto-state */
     private boolean cancellationAllowed;
@@ -113,4 +114,7 @@ public class Order extends AbstractExtendedStateEntity
         activities.add(activityLog);
         return activityLog;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

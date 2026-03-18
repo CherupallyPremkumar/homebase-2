@@ -23,6 +23,7 @@ public class CatalogMapper {
         entity.setName(domain.getName());
         entity.setPrice(domain.getPrice());
         entity.setTags(domain.getTags());
+        entity.tenant = domain.getTenant();
         return entity;
     }
 
@@ -39,6 +40,7 @@ public class CatalogMapper {
         domain.setName(entity.getName());
         domain.setPrice(entity.getPrice());
         domain.setTags(entity.getTags());
+        domain.setTenant(entity.tenant);
         return domain;
     }
 
@@ -62,6 +64,7 @@ public class CatalogMapper {
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setUpdatedAt(domain.getUpdatedAt());
         entity.setMetadata(toEntity(domain.getMetadata()));
+        entity.tenant = domain.getTenant();
         return entity;
     }
 
@@ -83,6 +86,7 @@ public class CatalogMapper {
         domain.setCreatedAt(entity.getCreatedAt());
         domain.setUpdatedAt(entity.getUpdatedAt());
         domain.setMetadata(toDomain(entity.getMetadata()));
+        domain.setTenant(entity.tenant);
         return domain;
     }
 
@@ -131,6 +135,7 @@ public class CatalogMapper {
         entity.setProductCount(domain.getProductCount());
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setUpdatedAt(domain.getUpdatedAt());
+        entity.tenant = domain.getTenant();
         return entity;
     }
 
@@ -153,6 +158,7 @@ public class CatalogMapper {
         domain.setProductCount(entity.getProductCount());
         domain.setCreatedAt(entity.getCreatedAt());
         domain.setUpdatedAt(entity.getUpdatedAt());
+        domain.setTenant(entity.tenant);
         return domain;
     }
 
@@ -166,6 +172,7 @@ public class CatalogMapper {
         entity.setProductId(domain.getProductId());
         entity.setDisplayOrder(domain.getDisplayOrder());
         entity.setAddedBy(domain.getAddedBy());
+        entity.tenant = domain.getTenant();
         return entity;
     }
 
@@ -177,6 +184,7 @@ public class CatalogMapper {
         domain.setProductId(entity.getProductId());
         domain.setDisplayOrder(entity.getDisplayOrder());
         domain.setAddedBy(entity.getAddedBy());
+        domain.setTenant(entity.tenant);
         return domain;
     }
 
@@ -188,6 +196,7 @@ public class CatalogMapper {
         entity.setProductId(domain.getProductId());
         entity.setDisplayOrder(domain.getDisplayOrder());
         entity.setAddedBy(domain.getAddedBy());
+        entity.tenant = domain.getTenant();
         return entity;
     }
 
@@ -199,6 +208,7 @@ public class CatalogMapper {
         domain.setProductId(entity.getProductId());
         domain.setDisplayOrder(entity.getDisplayOrder());
         domain.setAddedBy(entity.getAddedBy());
+        domain.setTenant(entity.tenant);
         return domain;
     }
 }

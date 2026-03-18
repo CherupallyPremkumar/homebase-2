@@ -37,6 +37,7 @@ public class Notification extends AbstractExtendedStateEntity
     private Date deliveredAt;
     private String failureReason;
     private int retryCount;
+    private String tenant;
 
     // Workflow related
     private transient TransientMap transientMap = new TransientMap();
@@ -96,4 +97,7 @@ public class Notification extends AbstractExtendedStateEntity
         this.activities.add(activityLog);
         return activityLog;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

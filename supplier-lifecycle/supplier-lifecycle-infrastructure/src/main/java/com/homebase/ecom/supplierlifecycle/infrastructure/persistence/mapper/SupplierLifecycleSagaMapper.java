@@ -19,6 +19,7 @@ public class SupplierLifecycleSagaMapper {
         model.setErrorMessage(entity.getErrorMessage());
         model.setRetryCount(entity.getRetryCount());
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
         return model;
     }
 
@@ -36,6 +37,7 @@ public class SupplierLifecycleSagaMapper {
         entity.setErrorMessage(model.getErrorMessage());
         entity.setRetryCount(model.getRetryCount());
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
         return entity;
     }
 }

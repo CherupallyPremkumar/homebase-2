@@ -8,6 +8,7 @@ public class ProductAttributeValue extends BaseEntity {
     private String attributeId;
     private String optionId; // for SELECT/MULTISELECT
     private String rawValue; // for TEXT/NUMBER/DATE
+    private String tenant;
 
 
 
@@ -22,4 +23,7 @@ public class ProductAttributeValue extends BaseEntity {
 
     public String getRawValue() { return rawValue; }
     public void setRawValue(String rawValue) { this.rawValue = rawValue; }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

@@ -13,6 +13,7 @@ public class ProductActivityLog extends BaseEntity implements ActivityLog, Seria
     public String activityName;
     public String activityComment;
     public boolean activitySuccess;
+    private String tenant;
 
     public void setActivityName(String activityName) { this.activityName = activityName; }
     public void setActivityComment(String activityComment) { this.activityComment = activityComment; }
@@ -26,4 +27,7 @@ public class ProductActivityLog extends BaseEntity implements ActivityLog, Seria
 
     @Override
     public String getComment() { return activityComment; }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

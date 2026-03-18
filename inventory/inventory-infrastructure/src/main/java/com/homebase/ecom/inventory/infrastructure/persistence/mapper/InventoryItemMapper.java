@@ -42,6 +42,7 @@ public class InventoryItemMapper {
         if (entity.getCreatedTime() != null) model.setCreatedTime(entity.getCreatedTime());
         if (entity.getLastModifiedTime() != null) model.setLastModifiedTime(entity.getLastModifiedTime());
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
 
         if (entity.getActiveReservations() != null) {
             model.setActiveReservations(entity.getActiveReservations().stream()
@@ -93,6 +94,7 @@ public class InventoryItemMapper {
         entity.setLastSaleAt(model.getLastSaleAt());
         entity.setLastRestockAt(model.getLastRestockAt());
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
 
         if (model.getActiveReservations() != null) {
             entity.setActiveReservations(model.getActiveReservations().stream()

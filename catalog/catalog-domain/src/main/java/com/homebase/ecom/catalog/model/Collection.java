@@ -27,6 +27,7 @@ public class Collection extends BaseEntity {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<String> productIds = new ArrayList<>();
+    private String tenant;
 
     // Getters and Setters
 
@@ -167,5 +168,13 @@ public class Collection extends BaseEntity {
             return false;
         }
         return active;
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
     }
 }

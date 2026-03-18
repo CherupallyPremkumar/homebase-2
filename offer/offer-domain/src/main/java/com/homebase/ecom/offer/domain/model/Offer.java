@@ -36,6 +36,7 @@ public class Offer extends AbstractExtendedStateEntity
     private int maxQuantity;
     private int soldQuantity;
     private BigDecimal sellerRating;
+    private String tenant;
     private TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
 
@@ -132,4 +133,7 @@ public class Offer extends AbstractExtendedStateEntity
                 .divide(originalPrice, 4, java.math.RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

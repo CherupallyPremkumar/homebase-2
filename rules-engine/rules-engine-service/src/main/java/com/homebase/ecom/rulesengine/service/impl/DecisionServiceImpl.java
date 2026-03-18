@@ -10,10 +10,18 @@ import com.homebase.ecom.rulesengine.domain.repository.DecisionRepository;
 import com.homebase.ecom.rulesengine.domain.repository.RuleSetRepository;
 import com.homebase.ecom.rulesengine.domain.service.RuleEngine;
 import com.homebase.ecom.rulesengine.domain.model.Rule;
+import com.homebase.ecom.rulesengine.service.cache.RuleSetCacheManager;
+
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
 import org.chenile.core.context.ContextContainer;
-import org.chenile.core.context.HeaderUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -22,25 +30,64 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 public class DecisionServiceImpl implements DecisionService {
+    private static final Logger log = LoggerFactory.getLogger(DecisionServiceImpl.class);
+
     private final RuleSetRepository ruleSetRepository;
     private final RuleEngine ruleEngine;
     private final DecisionRepository decisionRepository;
     private final ContextContainer contextContainer;
+    private final RuleSetCacheManager cacheManager;
+    private final CircuitBreaker circuitBreaker;
 
     public DecisionServiceImpl(RuleSetRepository ruleSetRepository,
             RuleEngine ruleEngine,
             DecisionRepository decisionRepository,
-            ContextContainer contextContainer) {
+            ContextContainer contextContainer,
+            RuleSetCacheManager cacheManager) {
         this.ruleSetRepository = ruleSetRepository;
         this.ruleEngine = ruleEngine;
         this.decisionRepository = decisionRepository;
         this.contextContainer = contextContainer;
+        this.cacheManager = cacheManager;
+
+        // Programmatic circuit breaker — opens after 5 failures in 10 calls, half-open after 30s
+        CircuitBreakerConfig config = CircuitBreakerConfig.custom()
+                .failureRateThreshold(50)
+                .minimumNumberOfCalls(10)
+                .slidingWindowSize(10)
+                .waitDurationInOpenState(Duration.ofSeconds(30))
+                .permittedNumberOfCallsInHalfOpenState(3)
+                .build();
+        CircuitBreakerRegistry registry = CircuitBreakerRegistry.of(config);
+        this.circuitBreaker = registry.circuitBreaker("rulesEngine");
     }
 
     @Override
     public DecisionDto evaluate(EvaluateRequest request) {
+        Supplier<DecisionDto> decorated = CircuitBreaker.decorateSupplier(circuitBreaker, () -> doEvaluate(request));
+        try {
+            return decorated.get();
+        } catch (Exception e) {
+            log.warn("Circuit breaker triggered for evaluate, returning default effect", e);
+            return buildDefaultDecision(request);
+        }
+    }
+
+    @Override
+    public List<DecisionDto> evaluateAll(EvaluateRequest request) {
+        Supplier<List<DecisionDto>> decorated = CircuitBreaker.decorateSupplier(circuitBreaker, () -> doEvaluateAll(request));
+        try {
+            return decorated.get();
+        } catch (Exception e) {
+            log.warn("Circuit breaker triggered for evaluateAll, returning empty list", e);
+            return List.of();
+        }
+    }
+
+    private DecisionDto doEvaluate(EvaluateRequest request) {
         List<RuleSet> targetRuleSets = loadRuleSets(request);
         if (targetRuleSets.isEmpty()) {
             throw new RuleSetNotFoundException("No active rule sets found for module: " + request.getTargetModule());
@@ -73,39 +120,14 @@ public class DecisionServiceImpl implements DecisionService {
             }
         }
 
-        DecisionDto decisionDto = new DecisionDto();
-        decisionDto.setId("dec-" + UUID.randomUUID().toString().substring(0, 8));
-        decisionDto.setRuleSetId(matchedRuleSetId);
-        decisionDto.setTargetModule(request.getTargetModule());
-        decisionDto.setSubjectId(request.getSubjectId());
-        decisionDto.setResource(request.getResource());
-        decisionDto.setAction(request.getAction());
-        decisionDto.setEffect(finalEffect);
-        decisionDto.setReasons(reason.length() == 0 ? "Default effect applied: " + finalEffect : reason.toString());
-        decisionDto.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) + "Z");
+        DecisionDto decisionDto = buildDecisionDto(request, matchedRuleSetId, finalEffect, finalMetadata, reason.toString());
 
-        decisionDto.setMetadata(finalMetadata);
-
-        // Save to Audit Log
-        com.homebase.ecom.rulesengine.domain.model.Decision decisionDomain = new com.homebase.ecom.rulesengine.domain.model.Decision();
-        decisionDomain.setId(decisionDto.getId());
-        decisionDomain.setRuleSetId(decisionDto.getRuleSetId());
-        decisionDomain.setSubjectId(decisionDto.getSubjectId());
-        decisionDomain.setResource(decisionDto.getResource());
-        decisionDomain.setAction(decisionDto.getAction());
-        decisionDomain.setEffect(decisionDto.getEffect());
-        decisionDomain.setReasons(decisionDto.getReasons());
-        decisionDomain.setTargetModule(decisionDto.getTargetModule());
-        decisionDomain.setTimestamp(LocalDateTime.now());
-        decisionDomain.setMetadata(decisionDto.getMetadata());
-
-        decisionRepository.save(decisionDomain);
+        saveAuditLog(decisionDto);
 
         return decisionDto;
     }
 
-    @Override
-    public List<DecisionDto> evaluateAll(EvaluateRequest request) {
+    private List<DecisionDto> doEvaluateAll(EvaluateRequest request) {
         List<RuleSet> targetRuleSets = loadRuleSets(request);
         Map<String, Object> enrichedContext = request.getFacts() != null ? request.getFacts() : new HashMap<>();
         List<DecisionDto> decisions = new ArrayList<>();
@@ -118,33 +140,11 @@ public class DecisionServiceImpl implements DecisionService {
 
             for (Rule rule : activeRules) {
                 if (ruleEngine.execute(rule, enrichedContext)) {
-                    DecisionDto decision = new DecisionDto();
-                    decision.setId("dec-" + UUID.randomUUID().toString().substring(0, 8));
-                    decision.setRuleSetId(ruleSet.getId());
-                    decision.setTargetModule(request.getTargetModule());
-                    decision.setSubjectId(request.getSubjectId());
-                    decision.setResource(request.getResource());
-                    decision.setAction(request.getAction());
-                    decision.setEffect(rule.getEffect());
-                    decision.setReasons("Matched Rule '" + rule.getName() + "' (Priority "
-                            + rule.getPriority() + ") in RuleSet '" + ruleSet.getName() + "'.");
-                    decision.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) + "Z");
-                    decision.setMetadata(rule.getMetadata());
+                    String reasons = "Matched Rule '" + rule.getName() + "' (Priority "
+                            + rule.getPriority() + ") in RuleSet '" + ruleSet.getName() + "'.";
+                    DecisionDto decision = buildDecisionDto(request, ruleSet.getId(), rule.getEffect(), rule.getMetadata(), reasons);
                     decisions.add(decision);
-
-                    // Save audit log
-                    com.homebase.ecom.rulesengine.domain.model.Decision decisionDomain = new com.homebase.ecom.rulesengine.domain.model.Decision();
-                    decisionDomain.setId(decision.getId());
-                    decisionDomain.setRuleSetId(decision.getRuleSetId());
-                    decisionDomain.setSubjectId(decision.getSubjectId());
-                    decisionDomain.setResource(decision.getResource());
-                    decisionDomain.setAction(decision.getAction());
-                    decisionDomain.setEffect(decision.getEffect());
-                    decisionDomain.setReasons(decision.getReasons());
-                    decisionDomain.setTargetModule(decision.getTargetModule());
-                    decisionDomain.setTimestamp(LocalDateTime.now());
-                    decisionDomain.setMetadata(decision.getMetadata());
-                    decisionRepository.save(decisionDomain);
+                    saveAuditLog(decision);
                 }
             }
         }
@@ -159,18 +159,79 @@ public class DecisionServiceImpl implements DecisionService {
                     .orElseThrow(() -> new RuleSetNotFoundException("RuleSet not found: " + request.getRuleSetId()));
             return List.of(ruleSet);
         } else if (request.getTargetModule() != null) {
+            // Check cache first
+            String cacheKey = RuleSetCacheManager.cacheKey(request.getTargetModule(), tenant);
+            List<RuleSet> cached = cacheManager.get(cacheKey);
+            if (cached != null) {
+                return cached;
+            }
+
             List<RuleSet> ruleSets;
             if (tenant != null && !tenant.isBlank()) {
                 ruleSets = ruleSetRepository.findByTargetModuleAndActiveTrueAndTenant(request.getTargetModule(), tenant);
             } else {
                 ruleSets = ruleSetRepository.findByTargetModuleAndActiveTrue(request.getTargetModule());
             }
+
+            // Cache the result (even if empty)
+            cacheManager.put(cacheKey, ruleSets);
+
             if (ruleSets.isEmpty()) {
                 return List.of();
             }
             return ruleSets;
         }
         throw new IllegalArgumentException("Either ruleSetId or targetModule must be provided");
+    }
+
+    private DecisionDto buildDecisionDto(EvaluateRequest request, String ruleSetId, Effect effect,
+            Map<String, String> metadata, String reasons) {
+        DecisionDto dto = new DecisionDto();
+        dto.setId("dec-" + UUID.randomUUID().toString().substring(0, 8));
+        dto.setRuleSetId(ruleSetId);
+        dto.setTargetModule(request.getTargetModule());
+        dto.setSubjectId(request.getSubjectId());
+        dto.setResource(request.getResource());
+        dto.setAction(request.getAction());
+        dto.setEffect(effect);
+        dto.setReasons(reasons.isEmpty() ? "Default effect applied: " + effect : reasons);
+        dto.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) + "Z");
+        dto.setMetadata(metadata);
+        return dto;
+    }
+
+    private DecisionDto buildDefaultDecision(EvaluateRequest request) {
+        DecisionDto dto = new DecisionDto();
+        dto.setId("dec-" + UUID.randomUUID().toString().substring(0, 8));
+        dto.setRuleSetId("fallback");
+        dto.setTargetModule(request.getTargetModule());
+        dto.setSubjectId(request.getSubjectId());
+        dto.setResource(request.getResource());
+        dto.setAction(request.getAction());
+        dto.setEffect(Effect.DENY);
+        dto.setReasons("Circuit breaker open — default DENY applied");
+        dto.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) + "Z");
+        dto.setMetadata(new HashMap<>());
+        return dto;
+    }
+
+    private void saveAuditLog(DecisionDto decisionDto) {
+        try {
+            com.homebase.ecom.rulesengine.domain.model.Decision decisionDomain = new com.homebase.ecom.rulesengine.domain.model.Decision();
+            decisionDomain.setId(decisionDto.getId());
+            decisionDomain.setRuleSetId(decisionDto.getRuleSetId());
+            decisionDomain.setSubjectId(decisionDto.getSubjectId());
+            decisionDomain.setResource(decisionDto.getResource());
+            decisionDomain.setAction(decisionDto.getAction());
+            decisionDomain.setEffect(decisionDto.getEffect());
+            decisionDomain.setReasons(decisionDto.getReasons());
+            decisionDomain.setTargetModule(decisionDto.getTargetModule());
+            decisionDomain.setTimestamp(LocalDateTime.now());
+            decisionDomain.setMetadata(decisionDto.getMetadata());
+            decisionRepository.save(decisionDomain);
+        } catch (Exception e) {
+            log.error("Failed to save audit log for decision: {}", decisionDto.getId(), e);
+        }
     }
 
     @Override

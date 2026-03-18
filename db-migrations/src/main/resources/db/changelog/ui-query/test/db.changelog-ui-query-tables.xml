@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Test-only: creates all cross-module tables needed by ui-query BDD tests.
+        Uses preConditions so safe to run alongside production changelogs.
+    -->
+
+    <!-- Products -->
+    <changeSet id="ui-query-test-products" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="products"/></not></preConditions>
+        <sql>
+            CREATE TABLE products (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                name VARCHAR(255), description VARCHAR(2000), short_description VARCHAR(500),
+                brand VARCHAR(255), category_id VARCHAR(255), slug VARCHAR(300),
+                meta_title VARCHAR(200), meta_description VARCHAR(500),
+                "stateId" VARCHAR(100), "flowId" VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255),
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0, test_entity BOOLEAN DEFAULT FALSE
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Categories -->
+    <changeSet id="ui-query-test-categories" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="categories"/></not></preConditions>
+        <createTable tableName="categories">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="slug" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="parent_id" type="VARCHAR(255)"/>
+            <column name="path" type="VARCHAR(255)"/>
+            <column name="depth" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="display_order" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Product Variants -->
+    <changeSet id="ui-query-test-product-variants" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="product_variants"/></not></preConditions>
+        <createTable tableName="product_variants">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"><constraints nullable="false"/></column>
+        </createTable>
+    </changeSet>
+
+    <!-- Variant Attributes -->
+    <changeSet id="ui-query-test-variant-attributes" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="variant_attributes"/></not></preConditions>
+        <createTable tableName="variant_attributes">
+            <column name="variant_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="attribute_key" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="attribute_value" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Media Assets -->
+    <changeSet id="ui-query-test-media-assets" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="media_assets"/></not></preConditions>
+        <createTable tableName="media_assets">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="original_url" type="VARCHAR(1000)"/>
+            <column name="cdn_url" type="VARCHAR(1000)"/>
+            <column name="thumbnail_url" type="VARCHAR(1000)"/>
+            <column name="medium_url" type="VARCHAR(1000)"/>
+            <column name="zoom_url" type="VARCHAR(1000)"/>
+            <column name="type" type="VARCHAR(50)"/>
+            <column name="mime_type" type="VARCHAR(255)"/>
+            <column name="file_size_bytes" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="width" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="height" type="INTEGER" defaultValueNumeric="0"/>
+            <column name="alt_text" type="VARCHAR(255)"/>
+            <column name="processing_status" type="VARCHAR(50)" defaultValue="PENDING"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Product Media -->
+    <changeSet id="ui-query-test-product-media" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="product_media"/></not></preConditions>
+        <createTable tableName="product_media">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="asset_id" type="VARCHAR(255)"/>
+            <column name="is_primary" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="sort_order" type="INTEGER" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Variant Media -->
+    <changeSet id="ui-query-test-variant-media" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="variant_media"/></not></preConditions>
+        <createTable tableName="variant_media">
+            <column name="variant_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="asset_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="is_primary" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="sort_order" type="INTEGER" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Product Tags -->
+    <changeSet id="ui-query-test-product-tags" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="product_tags"/></not></preConditions>
+        <createTable tableName="product_tags">
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="tag" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Attribute Definitions -->
+    <changeSet id="ui-query-test-attribute-defs" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="attribute_definitions"/></not></preConditions>
+        <createTable tableName="attribute_definitions">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="code" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="label" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="input_type" type="VARCHAR(50)"/>
+            <column name="filterable" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="searchable" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="required" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="display_order" type="INTEGER" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Attribute Options -->
+    <changeSet id="ui-query-test-attribute-options" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="attribute_options"/></not></preConditions>
+        <createTable tableName="attribute_options">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="attribute_id" type="VARCHAR(255)"/>
+            <column name="value" type="VARCHAR(255)"/>
+            <column name="label" type="VARCHAR(255)"/>
+            <column name="color_swatch" type="VARCHAR(255)"/>
+            <column name="sort_order" type="INTEGER" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Category Attributes -->
+    <changeSet id="ui-query-test-category-attributes" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="category_attributes"/></not></preConditions>
+        <createTable tableName="category_attributes">
+            <column name="category_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="attribute_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+        </createTable>
+    </changeSet>
+
+    <!-- Product Attribute Values -->
+    <changeSet id="ui-query-test-product-attr-values" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="product_attribute_values"/></not></preConditions>
+        <createTable tableName="product_attribute_values">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="attribute_id" type="VARCHAR(255)"/>
+            <column name="option_id" type="VARCHAR(255)"/>
+            <column name="raw_value" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Product Activity Log -->
+    <changeSet id="ui-query-test-product-activity" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="product_activity_log"/></not></preConditions>
+        <createTable tableName="product_activity_log">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_comment" type="VARCHAR(2000)"/>
+            <column name="activity_success" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(255)"/>
+            <column name="last_modified_by" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!--
+        Offers table: includes BOTH old (seller_id, price) and new (supplier_id, selling_price)
+        column names so product-testdata inserts (old names) AND our queries (new names) both work.
+        In production, V61 migration renames columns. In H2 test, both exist side by side.
+    -->
+    <changeSet id="ui-query-test-offers" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="offers"/></not></preConditions>
+        <sql>
+            CREATE TABLE offers (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                product_id VARCHAR(255) NOT NULL,
+                variant_id VARCHAR(255),
+                -- Old column names (kept for product-testdata compatibility)
+                seller_id VARCHAR(255),
+                price NUMERIC(10,2),
+                -- New column names (V61 production schema)
+                supplier_id VARCHAR(255),
+                selling_price NUMERIC(10,2),
+                mrp NUMERIC(10,2),
+                discount_percent NUMERIC(5,2) DEFAULT 0,
+                currency VARCHAR(3) DEFAULT 'INR',
+                active BOOLEAN DEFAULT TRUE,
+                buy_box_winner BOOLEAN DEFAULT FALSE,
+                fulfillment_type VARCHAR(20) DEFAULT 'MERCHANT',
+                shipping_cost NUMERIC(10,2) DEFAULT 0,
+                delivery_days INT,
+                "stateId" VARCHAR(100),
+                "flowId" VARCHAR(100),
+                state_entry_time TIMESTAMP,
+                sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0,
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255),
+                test_entity BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Inventory Item -->
+    <changeSet id="ui-query-test-inventory-item" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="inventory_item"/></not></preConditions>
+        <sql>
+            CREATE TABLE inventory_item (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                sku VARCHAR(255), asin VARCHAR(255),
+                product_id VARCHAR(255), variant_id VARCHAR(255),
+                quantity INT DEFAULT 0, available_quantity INT DEFAULT 0,
+                reserved_quantity INT DEFAULT 0, inbound_quantity INT DEFAULT 0,
+                damaged_quantity INT DEFAULT 0,
+                primary_fc VARCHAR(255),
+                is_fba BOOLEAN DEFAULT FALSE, is_merchant_fulfilled BOOLEAN DEFAULT TRUE,
+                low_stock_threshold INT DEFAULT 10, out_of_stock_threshold INT DEFAULT 0,
+                status VARCHAR(50) DEFAULT 'AVAILABLE',
+                last_sale_at TIMESTAMP, last_restock_at TIMESTAMP,
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255),
+                "stateId" VARCHAR(100), "flowId" VARCHAR(100),
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0,
+                test_entity BOOLEAN DEFAULT FALSE, description VARCHAR(255)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Product Reviews -->
+    <changeSet id="ui-query-test-product-reviews" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="product_reviews"/></not></preConditions>
+        <createTable tableName="product_reviews">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="customer_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="rating" type="INT"><constraints nullable="false"/></column>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="body" type="TEXT"/>
+            <column name="images" type="TEXT"/>
+            <column name="verified_purchase" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="helpful_count" type="INT" defaultValueNumeric="0"/>
+            <column name="report_count" type="INT" defaultValueNumeric="0"/>
+            <column name="moderator_notes" type="TEXT"/>
+            <column name="state_id" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="tenant_id" type="VARCHAR(50)"/>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Orders (post V62: item_count, discount_amount, shipping_address) -->
+    <changeSet id="ui-query-test-orders" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="orders"/></not></preConditions>
+        <sql>
+            CREATE TABLE orders (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_number VARCHAR(255), customer_id VARCHAR(255) NOT NULL,
+                subtotal DECIMAL(12,2), tax_amount DECIMAL(12,2),
+                shipping_amount DECIMAL(12,2), discount_amount DECIMAL(12,2) DEFAULT 0,
+                total_amount DECIMAL(12,2) NOT NULL, currency VARCHAR(3) DEFAULT 'INR',
+                shipping_address_id VARCHAR(255), billing_address_id VARCHAR(255),
+                payment_method_id VARCHAR(255), notes TEXT, cancel_reason VARCHAR(1000),
+                description VARCHAR(2000), item_count INT DEFAULT 0,
+                shipping_address TEXT,
+                state_id VARCHAR(255),
+                "stateId" VARCHAR(100), "flowId" VARCHAR(100),
+                created_time TIMESTAMP, updated_time TIMESTAMP,
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Order Items (post V62: supplier_id) -->
+    <changeSet id="ui-query-test-order-items" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="order_items"/></not></preConditions>
+        <createTable tableName="order_items">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(500)"/>
+            <column name="quantity" type="INT"><constraints nullable="false"/></column>
+            <column name="unit_price" type="DECIMAL(12,2)"><constraints nullable="false"/></column>
+            <column name="total_price" type="DECIMAL(12,2)"><constraints nullable="false"/></column>
+            <column name="supplier_id" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Shipments -->
+    <changeSet id="ui-query-test-shipments" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="shipments"/></not></preConditions>
+        <sql>
+            CREATE TABLE shipments (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_id VARCHAR(255) NOT NULL,
+                carrier VARCHAR(50) DEFAULT 'HOMEBASE-LOGISTICS',
+                tracking_number VARCHAR(255), tracking_url VARCHAR(512),
+                shipped_at TIMESTAMP, estimated_delivery TIMESTAMP,
+                status VARCHAR(30) DEFAULT 'SHIPPED',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                customer_id VARCHAR(255), shipping_method VARCHAR(20) DEFAULT 'STANDARD',
+                delivery_attempts INT DEFAULT 0, current_location VARCHAR(255),
+                description VARCHAR(500),
+                estimated_delivery_date TIMESTAMP, actual_delivery_date TIMESTAMP,
+                "stateId" VARCHAR(100), "flowId" VARCHAR(100),
+                state_id VARCHAR(50), flow_id VARCHAR(50),
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Supplier -->
+    <changeSet id="ui-query-test-supplier" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="supplier"/></not></preConditions>
+        <sql>
+            CREATE TABLE supplier (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL, description TEXT, email VARCHAR(255),
+                status VARCHAR(50) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255),
+                tenant VARCHAR(255), version BIGINT DEFAULT 0,
+                test_entity BOOLEAN DEFAULT FALSE,
+                "stateId" VARCHAR(100), "flowId" VARCHAR(100),
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0,
+                user_id VARCHAR(255), phone_number VARCHAR(20),
+                upi_id VARCHAR(100), address VARCHAR(2000),
+                commission_percentage NUMERIC(5,2)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Support Tickets -->
+    <changeSet id="ui-query-test-support-tickets" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="support_tickets"/></not></preConditions>
+        <createTable tableName="support_tickets">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="customer_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="subject" type="VARCHAR(500)"><constraints nullable="false"/></column>
+            <column name="category" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="priority" type="VARCHAR(20)"><constraints nullable="false"/></column>
+            <column name="description" type="VARCHAR(4000)"/>
+            <column name="assigned_agent_id" type="VARCHAR(255)"/>
+            <column name="resolved_at" type="TIMESTAMP"/>
+            <column name="reopen_count" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_breached" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="auto_close_ready" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="state_id" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Return Requests -->
+    <changeSet id="ui-query-test-returnrequest" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="returnrequest"/></not></preConditions>
+        <sql>
+            CREATE TABLE returnrequest (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_id VARCHAR(255), order_item_id VARCHAR(255),
+                reason VARCHAR(1000), description VARCHAR(2000),
+                created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                last_modified_by VARCHAR(100), tenant VARCHAR(50),
+                created_by VARCHAR(100), version BIGINT DEFAULT 0,
+                test_entity BOOLEAN DEFAULT FALSE,
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0,
+                "flowId" VARCHAR(100), "stateId" VARCHAR(100),
+                quantity INT DEFAULT 1, refund_amount NUMERIC(10,2), return_type VARCHAR(50)
+            )
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

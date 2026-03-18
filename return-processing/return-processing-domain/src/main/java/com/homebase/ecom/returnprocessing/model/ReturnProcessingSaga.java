@@ -27,6 +27,7 @@ public class ReturnProcessingSaga extends AbstractExtendedStateEntity
     private String refundId;
     private String errorMessage;
     private int retryCount;
+    private String tenant;
 
     public TransientMap transientMap = new TransientMap();
     public List<ReturnProcessingSagaActivityLog> activities = new ArrayList<>();
@@ -130,4 +131,7 @@ public class ReturnProcessingSaga extends AbstractExtendedStateEntity
         activities.add(activityLog);
         return activityLog;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

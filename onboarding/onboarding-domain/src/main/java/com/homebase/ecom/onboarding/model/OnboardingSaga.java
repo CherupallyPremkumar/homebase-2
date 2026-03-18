@@ -30,6 +30,7 @@ public class OnboardingSaga extends AbstractExtendedStateEntity
     private int resubmissionCount;
     private LocalDateTime submittedAt = LocalDateTime.now();
     private String rejectionReason;
+    private String tenant;
 
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
@@ -117,4 +118,7 @@ public class OnboardingSaga extends AbstractExtendedStateEntity
         this.activities.add(activityLog);
         return activityLog;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

@@ -42,6 +42,7 @@ public class OnboardingSagaMapper {
 
         // STM state
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
         return model;
     }
 
@@ -67,6 +68,7 @@ public class OnboardingSagaMapper {
 
         // STM state
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
         return entity;
     }
 

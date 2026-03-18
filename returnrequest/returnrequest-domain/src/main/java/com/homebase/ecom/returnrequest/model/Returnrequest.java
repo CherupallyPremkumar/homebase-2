@@ -21,6 +21,7 @@ public class Returnrequest extends AbstractExtendedStateEntity
     public BigDecimal totalRefundAmount;
     public BigDecimal restockingFee;
     public String description;
+    private String tenant;
 
     // Review fields
     public String reviewerId;
@@ -57,4 +58,7 @@ public class Returnrequest extends AbstractExtendedStateEntity
         activities.add(activityLog);
         return activityLog;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

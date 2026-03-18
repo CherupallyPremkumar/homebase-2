@@ -29,7 +29,6 @@
     <module>cart-jobs</module>
     <module>cart-client</module>
     <module>cart-build</module>
-    <module>cart-web</module>
   </modules>
   <properties>
     <cart.version>${revision}</cart.version>
@@ -79,11 +78,6 @@
       <dependency>
         <groupId>com.homebase.ecom.cart</groupId>
         <artifactId>cart-build</artifactId>
-        <version>${revision}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.homebase.ecom.cart</groupId>
-        <artifactId>cart-web</artifactId>
         <version>${revision}</version>
       </dependency>
     </dependencies>

@@ -40,6 +40,7 @@ public class CheckoutMapper {
         entity.setExpiresAt(model.getExpiresAt());
         entity.description = model.description;
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
 
         if (model.getCouponCodes() != null && !model.getCouponCodes().isEmpty()) {
             entity.setCouponCodes(String.join(",", model.getCouponCodes()));
@@ -77,6 +78,7 @@ public class CheckoutMapper {
         model.setExpiresAt(entity.getExpiresAt());
         model.description = entity.description;
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
 
         if (entity.getCouponCodes() != null && !entity.getCouponCodes().isEmpty()) {
             model.setCouponCodes(new ArrayList<>(Arrays.asList(entity.getCouponCodes().split(","))));

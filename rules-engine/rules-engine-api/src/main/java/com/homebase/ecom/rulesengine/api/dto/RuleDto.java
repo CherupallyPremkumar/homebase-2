@@ -11,6 +11,7 @@ public class RuleDto implements Serializable {
     private Map<String, Object> metadata;
     private Effect effect;
     private int priority;
+    private boolean active = true;
 
     public String getId() {
         return id;
@@ -58,5 +59,13 @@ public class RuleDto implements Serializable {
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

@@ -20,6 +20,7 @@ public class FulfillmentSagaMapper {
         model.setErrorMessage(entity.getErrorMessage());
         model.setRetryCount(entity.getRetryCount());
         model.setCurrentState(entity.getCurrentState());
+        model.setTenant(entity.tenant);
 
         if (entity.getActivities() != null) {
             for (FulfillmentSagaActivityLogEntity actEntity : entity.getActivities()) {
@@ -41,6 +42,7 @@ public class FulfillmentSagaMapper {
         entity.setErrorMessage(model.getErrorMessage());
         entity.setRetryCount(model.getRetryCount());
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
 
         if (model.obtainActivities() != null) {
             ArrayList<FulfillmentSagaActivityLogEntity> actEntities = new ArrayList<>();

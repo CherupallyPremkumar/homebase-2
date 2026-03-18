@@ -37,6 +37,7 @@ public class SupportTicket extends AbstractExtendedStateEntity
     private boolean autoCloseReady = false;
 
     private List<TicketMessage> messages = new ArrayList<>();
+    private String tenant;
 
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
@@ -94,4 +95,7 @@ public class SupportTicket extends AbstractExtendedStateEntity
         activities.add(activityLog);
         return activityLog;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

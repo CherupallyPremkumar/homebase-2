@@ -32,6 +32,7 @@ public class ProductMapper {
         product.setMetaDescription(entity.getMetaDescription());
         product.setTags(entity.getTags() != null ? new ArrayList<>(entity.getTags()) : new ArrayList<>());
         product.setCurrentState(entity.getCurrentState());
+        product.setTenant(entity.tenant);
         // Base entity fields
         product.setVersion(entity.getVersion());
         product.setCreatedTime(entity.getCreatedTime());
@@ -83,6 +84,7 @@ public class ProductMapper {
         entity.setMetaDescription(model.getMetaDescription());
         entity.setTags(model.getTags() != null ? new ArrayList<>(model.getTags()) : new ArrayList<>());
         entity.setCurrentState(model.getCurrentState());
+        entity.tenant = model.getTenant();
         // Base entity fields
         if (model.getVersion() != null) entity.setVersion(model.getVersion());
         entity.setCreatedTime(model.getCreatedTime());

@@ -1,0 +1,131 @@
+[
+  {
+    "id": "CatalogSearch.search",
+    "name": "searchCatalog",
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "productId": {
+        "name": "productId",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "name": {
+        "name": "name",
+        "columnType": "Text"
+      },
+      "description": {
+        "name": "description",
+        "columnType": "Text"
+      },
+      "brand": {
+        "name": "brand",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "imageUrl": {
+        "name": "imageUrl",
+        "columnType": "Text"
+      },
+      "price": {
+        "name": "price",
+        "columnType": "Number",
+        "filterable": true,
+        "sortable": true
+      },
+      "searchTerm": {
+        "name": "searchTerm",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "minPrice": {
+        "name": "minPrice",
+        "filterable": true,
+        "columnType": "Number"
+      },
+      "maxPrice": {
+        "name": "maxPrice",
+        "filterable": true,
+        "columnType": "Number"
+      },
+      "inStock": {
+        "name": "inStock",
+        "filterable": true,
+        "columnType": "CheckBox"
+      },
+      "averageRating": {
+        "name": "averageRating",
+        "columnType": "Number",
+        "sortable": true
+      },
+      "reviewCount": {
+        "name": "reviewCount",
+        "columnType": "Number",
+        "sortable": true
+      },
+      "relevance": {
+        "name": "relevance",
+        "columnType": "Number",
+        "sortable": true
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "CatalogSearch.fuzzy",
+    "name": "fuzzyCatalog",
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "name": {
+        "name": "name",
+        "columnType": "Text"
+      },
+      "imageUrl": {
+        "name": "imageUrl",
+        "columnType": "Text"
+      },
+      "price": {
+        "name": "price",
+        "columnType": "Number",
+        "filterable": true
+      },
+      "searchTerm": {
+        "name": "searchTerm",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "minPrice": {
+        "name": "minPrice",
+        "filterable": true,
+        "columnType": "Number"
+      },
+      "maxPrice": {
+        "name": "maxPrice",
+        "filterable": true,
+        "columnType": "Number"
+      },
+      "inStock": {
+        "name": "inStock",
+        "filterable": true,
+        "columnType": "CheckBox"
+      },
+      "relevance": {
+        "name": "relevance",
+        "columnType": "Number",
+        "sortable": true
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  }
+]

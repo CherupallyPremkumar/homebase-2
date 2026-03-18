@@ -68,4 +68,13 @@
     <!-- Saga orchestrators (fulfillment, return-processing, supplier-lifecycle) -->
     <include file="db/changelog/saga/db.changelog-saga.xml"/>
 
+    <!-- Offer production readiness (V61) -->
+    <include file="db/changelog/offer/db.changelog-offer-production.xml"/>
+
+    <!-- Order production columns (V62) -->
+    <include file="db/changelog/order/db.changelog-order-production.xml"/>
+
+    <!-- Catalog production schema (V63) -->
+    <include file="db/changelog/catalog/db.changelog-catalog-production.xml"/>
+
 </databaseChangeLog>

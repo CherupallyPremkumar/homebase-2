@@ -17,6 +17,7 @@ public class CategoryMapper {
         model.setDisplayOrder(entity.getDisplayOrder());
         model.setActive(entity.isActive());
         model.setAttributeIds(entity.getAttributeIds());
+        model.setTenant(entity.tenant);
         return model;
     }
 
@@ -32,6 +33,7 @@ public class CategoryMapper {
         entity.setDisplayOrder(model.getDisplayOrder());
         entity.setActive(model.isActive());
         entity.setAttributeIds(model.getAttributeIds());
+        entity.tenant = model.getTenant();
         return entity;
     }
 }

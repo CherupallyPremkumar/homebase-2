@@ -11,6 +11,7 @@ public class Variant extends BaseEntity {
     private String sku;
     private Map<String, String> attributes = new HashMap<>(); // Standard attributes
     private List<VariantMedia> media = new ArrayList<>();
+    private String tenant;
 
     // Getters and Setters
 
@@ -23,4 +24,7 @@ public class Variant extends BaseEntity {
 
     public List<VariantMedia> getMedia() { return media; }
     public void setMedia(List<VariantMedia> media) { this.media = media; }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

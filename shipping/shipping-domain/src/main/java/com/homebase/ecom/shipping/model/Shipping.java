@@ -40,6 +40,7 @@ public class Shipping extends AbstractExtendedStateEntity
 
     // Description and general
     public String description;
+    private String tenant;
 
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
@@ -105,4 +106,7 @@ public class Shipping extends AbstractExtendedStateEntity
         activities.add(activityLog);
         return activityLog;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

@@ -1,0 +1,65 @@
+[
+	{
+		"id": "Dashboard.overviewStats",
+		"name": "overview-stats",
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Dashboard.ordersByState",
+		"name": "orders-by-state",
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Dashboard.dailyOrderStats",
+		"name": "daily-order-stats",
+		"columnMetadata": {
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Dashboard.recentOrders",
+		"name": "recent-orders",
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Dashboard.lowStockAlerts",
+		"name": "low-stock-alerts",
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Dashboard.outOfStock",
+		"name": "out-of-stock",
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Dashboard.supplierPerformance",
+		"name": "supplier-performance",
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Dashboard.returnsByState",
+		"name": "returns-by-state",
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Dashboard.openTickets",
+		"name": "open-tickets",
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": false
+	}
+]
