@@ -27,7 +27,7 @@
 	<groupId>com.homebase.ecom.review</groupId>
 	<version>${revision}</version>
 	<artifactId>review-parent</artifactId>
-	<name>All Modules that belong to the Review</name>
+	<name>review-parent</name>
 	<description>Modules execution project and Parent Pom</description>
 
 	<dependencyManagement>

@@ -2,25 +2,41 @@
 <states>
   <scripting-strategy componentName="ognlScriptingStrategy"/>
 
-  <!-- Event definitions with ACLs and payload types -->
-  <event-information eventId='createLabel' meta-acls="WAREHOUSE,SYSTEM" meta-bodyType="com.homebase.ecom.shipping.dto.CreateLabelShippingPayload"/>
-  <event-information eventId='pickUp' meta-acls="CARRIER,SYSTEM" meta-bodyType="com.homebase.ecom.shipping.dto.PickUpShippingPayload"/>
-  <event-information eventId='updateTransit' meta-acls="CARRIER,SYSTEM" meta-bodyType="com.homebase.ecom.shipping.dto.UpdateTransitShippingPayload"/>
-  <event-information eventId='outForDelivery' meta-acls="CARRIER,SYSTEM" meta-bodyType="com.homebase.ecom.shipping.dto.OutForDeliveryShippingPayload"/>
-  <event-information eventId='deliver' meta-acls="CARRIER" meta-bodyType="com.homebase.ecom.shipping.dto.DeliverShippingPayload"/>
-  <event-information eventId='failDelivery' meta-acls="CARRIER" meta-bodyType="com.homebase.ecom.shipping.dto.FailDeliveryShippingPayload"/>
-  <event-information eventId='retryDelivery' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.shipping.dto.RetryDeliveryShippingPayload"/>
-  <event-information eventId='cancelShipment' meta-acls="WAREHOUSE,SYSTEM" meta-bodyType="com.homebase.ecom.shipping.dto.CancelShipmentShippingPayload"/>
-  <event-information eventId='returnShipment' meta-acls="WAREHOUSE,SYSTEM" meta-bodyType="com.homebase.ecom.shipping.dto.ReturnShipmentShippingPayload"/>
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- Event definitions with ACLs and payload types                          -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (consumed via Kafka → PostSaveHook):                   -->
+  <!--   fulfillment.SHIPMENT_CREATED → createLabel (from fulfillment BC)     -->
+  <!--   order.CANCELLED              → cancelShipment (from order BC)        -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (published via PostSaveHook → Kafka):                  -->
+  <!--   shipping.DELIVERED           → order.markDelivered                   -->
+  <!--   shipping.RETURNED            → order.deliveryFailed                  -->
+  <!--   shipping.LOST                → order.deliveryFailed                  -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <event-information eventId='createLabel'     meta-acls="WAREHOUSE,SYSTEM"  meta-bodyType="com.homebase.ecom.shipping.dto.CreateLabelShippingPayload"/>
+  <event-information eventId='pickUp'          meta-acls="CARRIER,SYSTEM"    meta-bodyType="com.homebase.ecom.shipping.dto.PickUpShippingPayload"/>
+  <event-information eventId='updateTransit'   meta-acls="CARRIER,SYSTEM"    meta-bodyType="com.homebase.ecom.shipping.dto.UpdateTransitShippingPayload"/>
+  <event-information eventId='outForDelivery'  meta-acls="CARRIER,SYSTEM"    meta-bodyType="com.homebase.ecom.shipping.dto.OutForDeliveryShippingPayload"/>
+  <event-information eventId='deliver'         meta-acls="CARRIER"           meta-bodyType="com.homebase.ecom.shipping.dto.DeliverShippingPayload"/>
+  <event-information eventId='failDelivery'    meta-acls="CARRIER"           meta-bodyType="com.homebase.ecom.shipping.dto.FailDeliveryShippingPayload"/>
+  <event-information eventId='retryDelivery'   meta-acls="WAREHOUSE"         meta-bodyType="com.homebase.ecom.shipping.dto.RetryDeliveryShippingPayload"/>
+  <event-information eventId='cancelShipment'  meta-acls="WAREHOUSE,SYSTEM"  meta-bodyType="com.homebase.ecom.shipping.dto.CancelShipmentShippingPayload"/>
+  <event-information eventId='returnShipment'  meta-acls="WAREHOUSE,SYSTEM"  meta-bodyType="com.homebase.ecom.shipping.dto.ReturnShipmentShippingPayload"/>
+  <event-information eventId='markLost'        meta-acls="CARRIER,ADMIN"     meta-bodyType="com.homebase.ecom.shipping.dto.MarkLostShippingPayload"/>
+  <event-information eventId='holdAtHub'       meta-acls="CARRIER,SYSTEM"    meta-bodyType="com.homebase.ecom.shipping.dto.HoldAtHubShippingPayload"/>
+  <event-information eventId='releaseFromHub'  meta-acls="CUSTOMER,CARRIER"  meta-bodyType="com.homebase.ecom.shipping.dto.ReleaseFromHubShippingPayload"/>
+  <event-information eventId='updateAddress'   meta-acls="CUSTOMER,ADMIN"    meta-bodyType="com.homebase.ecom.shipping.dto.UpdateAddressShippingPayload"/>
 
   <flow id='shipping-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="shippingEntryAction" />
     <exit-action componentName="shippingExitAction" />
 
-    <!-- ================================================================ -->
-    <!-- FORWARD SHIPPING: Create Label -> Pickup -> Transit -> Deliver    -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- FORWARD SHIPPING: Pending → Label → Pickup → Transit → Deliver     -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <!-- Shipment created, awaiting label generation -->
     <manual-state id='PENDING' initialState='true' meta-mainPath="true"
@@ -68,7 +84,39 @@
           componentName='shippingUpdateTransitAction'
           newStateId='IN_TRANSIT'
           meta-acls="CARRIER,SYSTEM"/>
+      <on eventId='holdAtHub'
+          componentName='shippingHoldAtHubAction'
+          newStateId='HELD_AT_HUB'
+          meta-acls="CARRIER,SYSTEM"/>
+      <on eventId='markLost'
+          componentName='shippingMarkLostAction'
+          newStateId='LOST'
+          meta-acls="CARRIER,ADMIN"/>
+      <on eventId='updateAddress'
+          componentName='shippingUpdateAddressAction'
+          newStateId='IN_TRANSIT'
+          meta-acls="CUSTOMER,ADMIN"/>
     </manual-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- HUB HOLD: Package held at pickup hub / locker for customer          -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <manual-state id='HELD_AT_HUB'
+                  description="Package held at delivery hub or locker for customer pickup">
+      <on eventId='releaseFromHub'
+          componentName='shippingReleaseFromHubAction'
+          newStateId='DELIVERED'
+          meta-mainPath="true" meta-acls="CUSTOMER,CARRIER"/>
+      <on eventId='returnShipment'
+          componentName='shippingReturnShipmentAction'
+          newStateId='RETURNED'
+          meta-acls="WAREHOUSE,SYSTEM"/>
+    </manual-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- DELIVERY: Out for delivery → Delivered or Failed                    -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <!-- Shipment out for delivery to customer -->
     <manual-state id='OUT_FOR_DELIVERY' meta-mainPath="true"
@@ -88,11 +136,11 @@
                   description="Shipment delivered to customer">
     </manual-state>
 
-    <!-- ================================================================ -->
-    <!-- DELIVERY FAILURE: Failed -> Auto-check attempts -> Retry/Return  -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- DELIVERY FAILURE: Failed → Auto-check attempts → Retry/Return      -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
 
-    <!-- Delivery failed (customer not home, wrong address, etc.) -->
+    <!-- Delivery failed (customer not home, wrong address, refused, etc.) -->
     <manual-state id='DELIVERY_FAILED'
                   description="Delivery attempt failed">
       <on eventId='retryDelivery'
@@ -103,12 +151,16 @@
           componentName='shippingReturnShipmentAction'
           newStateId='RETURNED'
           meta-acls="WAREHOUSE,SYSTEM"/>
+      <on eventId='updateAddress'
+          componentName='shippingUpdateAddressAction'
+          newStateId='DELIVERY_FAILED'
+          meta-acls="CUSTOMER,ADMIN"/>
     </manual-state>
 
     <!--
       OGNL auto-state: after retry, check if max delivery attempts exceeded.
-      If deliveryAttempts >= 3 -> RETURNED (too many attempts, return to warehouse)
-      Else -> OUT_FOR_DELIVERY (retry delivery)
+      If deliveryAttempts >= 3 → RETURNED (too many attempts, return to warehouse)
+      Else → OUT_FOR_DELIVERY (retry delivery)
     -->
     <auto-state id='CHECK_DELIVERY_ATTEMPTS'
                 componentName='ifAction'
@@ -118,6 +170,19 @@
       <on eventId='maxAttemptsReached' newStateId='RETURNED'/>
       <on eventId='canRetry' newStateId='OUT_FOR_DELIVERY'/>
     </auto-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- LOST: Package lost in transit — triggers claim and refund           -->
+    <!-- PostSaveHook: publishes order.deliveryFailed                       -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <manual-state id='LOST'
+                  description="Shipment lost in transit, insurance claim initiated">
+    </manual-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- TERMINAL STATES                                                     -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <!-- Shipment returned to warehouse -->
     <manual-state id='RETURNED'

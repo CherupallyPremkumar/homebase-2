@@ -11,7 +11,7 @@
 
 	<artifactId>shipping-domain</artifactId>
 	<packaging>jar</packaging>
-	<name>Shipping Domain Entities and Logic</name>
+	<name>shipping-domain</name>
 
 	<dependencies>
 		<dependency>

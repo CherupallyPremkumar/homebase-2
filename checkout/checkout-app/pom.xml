@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>checkout-app</artifactId>
-    <name>Checkout Application</name>
+    <name>checkout-app</name>
 
     <dependencies>
         <dependency>

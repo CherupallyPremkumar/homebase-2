@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>return-processing-service</artifactId>
-    <name>Return Processing Service</name>
+    <name>return-processing-service</name>
 
     <dependencies>
         <dependency>

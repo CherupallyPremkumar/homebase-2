@@ -12,7 +12,7 @@
 	<artifactId>order-service</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Order Service Implementations</name>
+	<name>order-service</name>
 
 	<dependencies>
 		<dependency>

@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>rules-engine-client</artifactId>
-    <name>Rules Engine Client — ProxyBuilder-based service client</name>
+    <name>rules-engine-client</name>
 
     <dependencies>
         <dependency>

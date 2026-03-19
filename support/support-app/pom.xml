@@ -9,7 +9,7 @@
 	</parent>
 	<artifactId>support-app</artifactId>
 	<packaging>jar</packaging>
-	<name>Support App — Spring Boot Launcher</name>
+	<name>support-app</name>
 
 	<dependencies>
 		<dependency>

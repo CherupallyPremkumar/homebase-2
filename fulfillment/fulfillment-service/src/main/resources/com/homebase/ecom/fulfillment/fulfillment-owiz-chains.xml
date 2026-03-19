@@ -1,29 +1,117 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Fulfillment Saga Sub-Chains (OWIZ)
+  ════════════════════════════════════
+  Each chain is invoked by a saga STM transition action.
+  These break complex multi-step operations into configurable pipeline steps.
+-->
 <flows>
-  <!-- Chain for reserveInventory transition -->
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- Chain 1: Reserve Inventory (INITIATED → INVENTORY_RESERVED)        -->
+  <!-- Selects optimal warehouse, handles split-shipment, reserves stock  -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
   <flow id="reserve-inventory-chain">
-    <chain>
-      <command componentName="validateStockAvailability"/>
-      <command componentName="deductStockFromWarehouse"/>
-      <command componentName="confirmReservation"/>
+    <chain id="reserveInventoryChain" componentName="org.chenile.owiz.impl.Chain" first="true">
     </chain>
+
+    <!-- Step 1: Route to optimal warehouse based on customer location and stock -->
+    <command id="routeToWarehouse" componentName="routeToWarehouseCommand">
+      <attach-to index="1" parentId="reserveInventoryChain"/>
+    </command>
+
+    <!-- Step 2: Check if order requires split-shipment (items from different warehouses) -->
+    <command id="checkSplitShipment" componentName="checkSplitShipmentCommand">
+      <attach-to index="2" parentId="reserveInventoryChain"/>
+    </command>
+
+    <!-- Step 3: Validate stock availability at selected warehouse(s) -->
+    <command id="validateStockAvailability" componentName="validateStockAvailabilityCommand">
+      <attach-to index="3" parentId="reserveInventoryChain"/>
+    </command>
+
+    <!-- Step 4: Deduct stock and create reservation records per warehouse -->
+    <command id="deductStockFromWarehouse" componentName="deductStockFromWarehouseCommand">
+      <attach-to index="4" parentId="reserveInventoryChain"/>
+    </command>
+
+    <!-- Step 5: Confirm reservation and return reservation IDs -->
+    <command id="confirmReservation" componentName="confirmReservationCommand">
+      <attach-to index="5" parentId="reserveInventoryChain"/>
+    </command>
   </flow>
 
-  <!-- Chain for createShipment transition -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- Chain 2: Create Shipment (INVENTORY_RESERVED → SHIPMENT_CREATED)   -->
+  <!-- Validates dimensions, selects carrier, generates pick/pack lists   -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
   <flow id="create-shipment-chain">
-    <chain>
-      <command componentName="selectCarrier"/>
-      <command componentName="generateTrackingNumber"/>
-      <command componentName="createShipmentRecord"/>
+    <chain id="createShipmentChain" componentName="org.chenile.owiz.impl.Chain" first="true">
     </chain>
+
+    <!-- Step 1: Validate weight and dimensions for shipping compliance -->
+    <command id="validateWeightDimensions" componentName="validateWeightDimensionsCommand">
+      <attach-to index="1" parentId="createShipmentChain"/>
+    </command>
+
+    <!-- Step 2: Select carrier based on SLA, cost, and delivery promise -->
+    <command id="selectCarrier" componentName="selectCarrierCommand">
+      <attach-to index="2" parentId="createShipmentChain"/>
+    </command>
+
+    <!-- Step 3: Verify carrier can meet promised delivery date -->
+    <command id="checkCarrierSLA" componentName="checkCarrierSLACommand">
+      <attach-to index="3" parentId="createShipmentChain"/>
+    </command>
+
+    <!-- Step 4: Generate pick list for warehouse staff -->
+    <command id="generatePickList" componentName="generatePickListCommand">
+      <attach-to index="4" parentId="createShipmentChain"/>
+    </command>
+
+    <!-- Step 5: Generate pack slip with item details and shipping label -->
+    <command id="generatePackSlip" componentName="generatePackSlipCommand">
+      <attach-to index="5" parentId="createShipmentChain"/>
+    </command>
+
+    <!-- Step 6: Generate tracking number from carrier API -->
+    <command id="generateTrackingNumber" componentName="generateTrackingNumberCommand">
+      <attach-to index="6" parentId="createShipmentChain"/>
+    </command>
+
+    <!-- Step 7: Create shipment record in shipping BC -->
+    <command id="createShipmentRecord" componentName="createShipmentRecordCommand">
+      <attach-to index="7" parentId="createShipmentChain"/>
+    </command>
   </flow>
 
-  <!-- Chain for notifyCustomer transition -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- Chain 3: Notify Customer (SHIPPED → CUSTOMER_NOTIFIED)             -->
+  <!-- Resolves channel preference, formats message, dispatches           -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
   <flow id="notify-customer-chain">
-    <chain>
-      <command componentName="prepareShipmentNotification"/>
-      <command componentName="sendCustomerNotification"/>
-      <command componentName="updateNotificationStatus"/>
+    <chain id="notifyCustomerChain" componentName="org.chenile.owiz.impl.Chain" first="true">
     </chain>
+
+    <!-- Step 1: Resolve customer channel preference (email, SMS, push, WhatsApp) -->
+    <command id="resolveChannelPreference" componentName="resolveChannelPreferenceCommand">
+      <attach-to index="1" parentId="notifyCustomerChain"/>
+    </command>
+
+    <!-- Step 2: Prepare shipment notification with tracking link and ETA -->
+    <command id="prepareShipmentNotification" componentName="prepareShipmentNotificationCommand">
+      <attach-to index="2" parentId="notifyCustomerChain"/>
+    </command>
+
+    <!-- Step 3: Dispatch notification via notification BC -->
+    <command id="sendCustomerNotification" componentName="sendCustomerNotificationCommand">
+      <attach-to index="3" parentId="notifyCustomerChain"/>
+    </command>
+
+    <!-- Step 4: Update notification status in fulfillment record -->
+    <command id="updateNotificationStatus" componentName="updateNotificationStatusCommand">
+      <attach-to index="4" parentId="notifyCustomerChain"/>
+    </command>
   </flow>
+
 </flows>

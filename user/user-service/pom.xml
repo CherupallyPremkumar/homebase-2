@@ -12,7 +12,7 @@
 	<artifactId>user-service</artifactId>
 	<packaging>jar</packaging>
 
-	<name>User Service Implementations</name>
+	<name>user-service</name>
 
 	<dependencies>
 		<dependency>

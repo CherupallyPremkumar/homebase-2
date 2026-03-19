@@ -1,13 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Reconciliation Processing Pipeline (Stateless OWIZ Chain)
+  ══════════════════════════════════════════════════════════
+  Input:  ReconciliationBatch (date range, gateway IDs, batch config)
+  Output: ReconciliationReport (matches, mismatches, auto-resolved, manual review)
+
+  Called by: reconciliation STM PROCESSING → CHECK_MISMATCHES transition
+  Runs:     Daily batch (scheduled) or on-demand by finance team
+-->
 <flows>
-    <flow id="reconciliation-flow">
-        <chain>
-            <command componentName="fetchGatewayTransactions"/>
-            <command componentName="fetchSystemTransactions"/>
-            <command componentName="matchTransactions"/>
-            <command componentName="flagMismatches"/>
-            <command componentName="autoResolveCommand"/>
-            <command componentName="generateReconciliationReport"/>
-        </chain>
-    </flow>
+  <flow id="reconciliation-flow">
+    <chain id="reconciliationChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Fetch gateway transactions for the reconciliation period -->
+    <command id="fetchGatewayTransactions" componentName="fetchGatewayTransactionsCommand">
+      <attach-to index="1" parentId="reconciliationChain"/>
+    </command>
+
+    <!-- Step 2: Fetch system (HomeBase) transactions for the same period -->
+    <command id="fetchSystemTransactions" componentName="fetchSystemTransactionsCommand">
+      <attach-to index="2" parentId="reconciliationChain"/>
+    </command>
+
+    <!-- Step 3: Detect duplicate transactions (same reference ID reported multiple times) -->
+    <command id="detectDuplicates" componentName="detectDuplicatesCommand">
+      <attach-to index="3" parentId="reconciliationChain"/>
+    </command>
+
+    <!-- Step 4: Match gateway vs system transactions by reference ID + amount -->
+    <command id="matchTransactions" componentName="matchTransactionsCommand">
+      <attach-to index="4" parentId="reconciliationChain"/>
+    </command>
+
+    <!-- Step 5: Apply tolerance threshold — ignore mismatches below ₹1 (rounding differences) -->
+    <command id="applyToleranceThreshold" componentName="applyToleranceThresholdCommand">
+      <attach-to index="5" parentId="reconciliationChain"/>
+    </command>
+
+    <!-- Step 6: Flag remaining mismatches for review -->
+    <command id="flagMismatches" componentName="flagMismatchesCommand">
+      <attach-to index="6" parentId="reconciliationChain"/>
+    </command>
+
+    <!-- Step 7: Auto-resolve known patterns (timing delays, partial captures, etc.) -->
+    <command id="autoResolve" componentName="autoResolveCommand">
+      <attach-to index="7" parentId="reconciliationChain"/>
+    </command>
+
+    <!-- Step 8: Generate reconciliation report with summary statistics -->
+    <command id="generateReconciliationReport" componentName="generateReconciliationReportCommand">
+      <attach-to index="8" parentId="reconciliationChain"/>
+    </command>
+  </flow>
 </flows>

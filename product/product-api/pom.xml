@@ -13,7 +13,7 @@
 	<artifactId>product-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Product API Model and Interfaces</name>
+	<name>product-api</name>
 
 	<dependencies>
 		<dependency>

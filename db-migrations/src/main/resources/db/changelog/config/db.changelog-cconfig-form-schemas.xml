@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Form Validation Schemas — Amazon-standard backend-driven validation
+        Frontend fetches these via GET /config/{module}/{key} and renders forms dynamically.
+        Backend validates incoming payloads against the same schema.
+
+        Schema format per field:
+        - type: string|number|boolean|date|select|multiselect|textarea
+        - label: Display label
+        - inputType: text|password|email|tel|number|date|textarea
+        - required, minLength, maxLength, min, max, pattern, format
+        - options: [{value, label}] for select/multiselect
+        - dependsOn: {field, value} for conditional visibility
+        - errorMessages: {required, minLength, maxLength, pattern, format, min, max}
+    -->
+    <changeSet id="config-005-form-schemas" author="homebase">
+
+        <!-- ============================================================ -->
+        <!-- USER: Registration Form                                      -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-form-user-registration"/>
+            <column name="module_name" value="user"/>
+            <column name="key_name" value="registration.form.schema"/>
+            <column name="avalue" value='{"fields":{"username":{"type":"string","label":"Username","inputType":"text","minLength":6,"maxLength":30,"pattern":"^[a-zA-Z0-9_]+$","required":true,"errorMessages":{"required":"Username is required","minLength":"Username must be at least {0} characters","maxLength":"Username cannot exceed {0} characters","pattern":"Only letters, numbers, and underscore allowed"}},"email":{"type":"string","label":"Email Address","inputType":"email","format":"email","required":true,"errorMessages":{"required":"Email is required","format":"Please enter a valid email address"}},"password":{"type":"string","label":"Password","inputType":"password","minLength":8,"maxLength":128,"pattern":"^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&amp;*]).*$","required":true,"errorMessages":{"required":"Password is required","minLength":"Password must be at least {0} characters","pattern":"Must contain uppercase, number, and special character"}},"phone":{"type":"string","label":"Phone Number","inputType":"tel","pattern":"^[6-9]\\d{9}$","required":true,"errorMessages":{"required":"Phone number is required","pattern":"Enter valid 10-digit Indian mobile number"}},"fullName":{"type":"string","label":"Full Name","inputType":"text","minLength":2,"maxLength":100,"required":true,"errorMessages":{"required":"Full name is required","minLength":"Name must be at least {0} characters"}}},"fieldOrder":["fullName","email","phone","username","password"]}'/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- USER: Address Form                                           -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-form-user-address"/>
+            <column name="module_name" value="user"/>
+            <column name="key_name" value="address.form.schema"/>
+            <column name="avalue" value='{"fields":{"fullName":{"type":"string","label":"Full Name","inputType":"text","minLength":2,"maxLength":100,"required":true,"errorMessages":{"required":"Name is required"}},"phone":{"type":"string","label":"Phone Number","inputType":"tel","pattern":"^[6-9]\\d{9}$","required":true,"errorMessages":{"required":"Phone is required","pattern":"Enter valid 10-digit mobile number"}},"pincode":{"type":"string","label":"Pincode","inputType":"text","pattern":"^[1-9][0-9]{5}$","required":true,"errorMessages":{"required":"Pincode is required","pattern":"Enter valid 6-digit pincode"}},"addressLine1":{"type":"string","label":"Address Line 1","inputType":"text","minLength":5,"maxLength":200,"required":true,"errorMessages":{"required":"Address is required","minLength":"Address must be at least {0} characters"}},"addressLine2":{"type":"string","label":"Address Line 2","inputType":"text","maxLength":200,"required":false},"city":{"type":"string","label":"City","inputType":"text","minLength":2,"maxLength":50,"required":true,"errorMessages":{"required":"City is required"}},"state":{"type":"select","label":"State","required":true,"options":[{"value":"AN","label":"Andaman and Nicobar Islands"},{"value":"AP","label":"Andhra Pradesh"},{"value":"AR","label":"Arunachal Pradesh"},{"value":"AS","label":"Assam"},{"value":"BR","label":"Bihar"},{"value":"CG","label":"Chhattisgarh"},{"value":"CH","label":"Chandigarh"},{"value":"DD","label":"Dadra and Nagar Haveli and Daman and Diu"},{"value":"DL","label":"Delhi"},{"value":"GA","label":"Goa"},{"value":"GJ","label":"Gujarat"},{"value":"HP","label":"Himachal Pradesh"},{"value":"HR","label":"Haryana"},{"value":"JH","label":"Jharkhand"},{"value":"JK","label":"Jammu and Kashmir"},{"value":"KA","label":"Karnataka"},{"value":"KL","label":"Kerala"},{"value":"LA","label":"Ladakh"},{"value":"MH","label":"Maharashtra"},{"value":"ML","label":"Meghalaya"},{"value":"MN","label":"Manipur"},{"value":"MP","label":"Madhya Pradesh"},{"value":"MZ","label":"Mizoram"},{"value":"NL","label":"Nagaland"},{"value":"OD","label":"Odisha"},{"value":"PB","label":"Punjab"},{"value":"PY","label":"Puducherry"},{"value":"RJ","label":"Rajasthan"},{"value":"SK","label":"Sikkim"},{"value":"TN","label":"Tamil Nadu"},{"value":"TS","label":"Telangana"},{"value":"TR","label":"Tripura"},{"value":"UK","label":"Uttarakhand"},{"value":"UP","label":"Uttar Pradesh"},{"value":"WB","label":"West Bengal"}],"errorMessages":{"required":"State is required"}},"addressType":{"type":"select","label":"Address Type","required":true,"options":[{"value":"HOME","label":"Home"},{"value":"WORK","label":"Work"},{"value":"OTHER","label":"Other"}],"errorMessages":{"required":"Address type is required"}}},"fieldOrder":["fullName","phone","addressLine1","addressLine2","pincode","city","state","addressType"]}'/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- PRODUCT: Listing Form (Seller)                               -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-form-product-listing"/>
+            <column name="module_name" value="product"/>
+            <column name="key_name" value="listing.form.schema"/>
+            <column name="avalue" value='{"fields":{"title":{"type":"string","label":"Product Title","inputType":"text","minLength":10,"maxLength":200,"required":true,"errorMessages":{"required":"Product title is required","minLength":"Title must be at least {0} characters","maxLength":"Title cannot exceed {0} characters"}},"description":{"type":"textarea","label":"Product Description","minLength":50,"maxLength":5000,"required":true,"errorMessages":{"required":"Description is required","minLength":"Description must be at least {0} characters"}},"brand":{"type":"string","label":"Brand","inputType":"text","maxLength":100,"required":true,"errorMessages":{"required":"Brand is required"}},"categoryId":{"type":"select","label":"Category","required":true,"errorMessages":{"required":"Category is required"}},"basePrice":{"type":"number","label":"Base Price (INR)","min":1,"max":1000000,"required":true,"errorMessages":{"required":"Price is required","min":"Price must be at least Rs. {0}","max":"Price cannot exceed Rs. {0}"}},"mrp":{"type":"number","label":"MRP (INR)","min":1,"max":1000000,"required":true,"errorMessages":{"required":"MRP is required","min":"MRP must be at least Rs. {0}"}},"hsnCode":{"type":"string","label":"HSN Code","inputType":"text","pattern":"^[0-9]{4,8}$","required":true,"errorMessages":{"required":"HSN code is required for GST","pattern":"Enter valid 4-8 digit HSN code"}},"weight":{"type":"number","label":"Weight (grams)","min":1,"max":50000,"required":true,"errorMessages":{"required":"Weight is required","min":"Weight must be positive"}}},"fieldOrder":["title","description","brand","categoryId","basePrice","mrp","hsnCode","weight"]}'/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- PRODUCT: Variant Form                                        -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-form-product-variant"/>
+            <column name="module_name" value="product"/>
+            <column name="key_name" value="variant.form.schema"/>
+            <column name="avalue" value='{"fields":{"sku":{"type":"string","label":"SKU","inputType":"text","minLength":3,"maxLength":50,"pattern":"^[A-Za-z0-9-]+$","required":true,"errorMessages":{"required":"SKU is required","pattern":"Only letters, numbers, and hyphens allowed"}},"variantName":{"type":"string","label":"Variant Name","inputType":"text","maxLength":100,"required":true,"errorMessages":{"required":"Variant name is required"}},"price":{"type":"number","label":"Price (INR)","min":1,"max":1000000,"required":true,"errorMessages":{"required":"Price is required","min":"Price must be at least Rs. {0}"}},"stock":{"type":"number","label":"Stock Quantity","min":0,"max":999999,"required":true,"errorMessages":{"required":"Stock quantity is required","min":"Stock cannot be negative"}},"color":{"type":"string","label":"Color","inputType":"text","maxLength":30,"required":false},"size":{"type":"string","label":"Size","inputType":"text","maxLength":20,"required":false}},"fieldOrder":["sku","variantName","price","stock","color","size"]}'/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- OFFER: Create Offer Form (Seller)                            -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-form-offer-create"/>
+            <column name="module_name" value="offer"/>
+            <column name="key_name" value="create.form.schema"/>
+            <column name="avalue" value='{"fields":{"productId":{"type":"string","label":"Product ID","inputType":"text","required":true,"errorMessages":{"required":"Product ID is required"}},"sellingPrice":{"type":"number","label":"Selling Price (INR)","min":1,"max":1000000,"required":true,"errorMessages":{"required":"Selling price is required","min":"Price must be at least Rs. {0}"}},"stock":{"type":"number","label":"Available Stock","min":1,"max":999999,"required":true,"errorMessages":{"required":"Stock is required","min":"Stock must be at least {0}"}},"condition":{"type":"select","label":"Item Condition","required":true,"options":[{"value":"NEW","label":"New"},{"value":"REFURBISHED","label":"Refurbished"},{"value":"USED_LIKE_NEW","label":"Used - Like New"},{"value":"USED_GOOD","label":"Used - Good"}],"errorMessages":{"required":"Item condition is required"}},"fulfillmentType":{"type":"select","label":"Fulfillment","required":true,"options":[{"value":"SELLER","label":"Seller Fulfilled"},{"value":"PLATFORM","label":"Platform Fulfilled (FBA)"}],"errorMessages":{"required":"Fulfillment type is required"}},"maxDeliveryDays":{"type":"number","label":"Max Delivery Days","min":1,"max":30,"required":true,"errorMessages":{"required":"Delivery estimate is required","max":"Cannot exceed {0} days"}}},"fieldOrder":["productId","sellingPrice","stock","condition","fulfillmentType","maxDeliveryDays"]}'/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- SUPPLIER: Application Form (Onboarding)                      -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-form-supplier-application"/>
+            <column name="module_name" value="supplier"/>
+            <column name="key_name" value="application.form.schema"/>
+            <column name="avalue" value='{"fields":{"businessName":{"type":"string","label":"Business Name","inputType":"text","minLength":3,"maxLength":200,"required":true,"errorMessages":{"required":"Business name is required"}},"businessType":{"type":"select","label":"Business Type","required":true,"options":[{"value":"INDIVIDUAL","label":"Individual / Sole Proprietor"},{"value":"PARTNERSHIP","label":"Partnership"},{"value":"LLP","label":"LLP"},{"value":"PRIVATE_LIMITED","label":"Private Limited"},{"value":"PUBLIC_LIMITED","label":"Public Limited"}],"errorMessages":{"required":"Business type is required"}},"gstin":{"type":"string","label":"GSTIN","inputType":"text","pattern":"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$","required":true,"errorMessages":{"required":"GSTIN is required","pattern":"Enter valid 15-character GSTIN"}},"pan":{"type":"string","label":"PAN","inputType":"text","pattern":"^[A-Z]{5}[0-9]{4}[A-Z]{1}$","required":true,"errorMessages":{"required":"PAN is required","pattern":"Enter valid 10-character PAN"}},"contactEmail":{"type":"string","label":"Contact Email","inputType":"email","format":"email","required":true,"errorMessages":{"required":"Email is required","format":"Enter valid email address"}},"contactPhone":{"type":"string","label":"Contact Phone","inputType":"tel","pattern":"^[6-9]\\d{9}$","required":true,"errorMessages":{"required":"Phone is required","pattern":"Enter valid 10-digit mobile number"}},"bankAccountNumber":{"type":"string","label":"Bank Account Number","inputType":"text","minLength":9,"maxLength":18,"pattern":"^[0-9]+$","required":true,"errorMessages":{"required":"Bank account is required","pattern":"Enter valid account number"}},"ifscCode":{"type":"string","label":"IFSC Code","inputType":"text","pattern":"^[A-Z]{4}0[A-Z0-9]{6}$","required":true,"errorMessages":{"required":"IFSC code is required","pattern":"Enter valid 11-character IFSC code"}},"primaryCategory":{"type":"select","label":"Primary Selling Category","required":true,"errorMessages":{"required":"Category is required"}}},"fieldOrder":["businessName","businessType","gstin","pan","contactEmail","contactPhone","bankAccountNumber","ifscCode","primaryCategory"]}'/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- SUPPORT: Create Ticket Form                                  -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-form-support-ticket"/>
+            <column name="module_name" value="support"/>
+            <column name="key_name" value="ticket.form.schema"/>
+            <column name="avalue" value='{"fields":{"category":{"type":"select","label":"Issue Category","required":true,"options":[{"value":"ORDER","label":"Order Issue"},{"value":"PAYMENT","label":"Payment Issue"},{"value":"DELIVERY","label":"Delivery Issue"},{"value":"RETURN","label":"Return / Refund"},{"value":"PRODUCT","label":"Product Quality"},{"value":"ACCOUNT","label":"Account Issue"},{"value":"OTHER","label":"Other"}],"errorMessages":{"required":"Please select an issue category"}},"orderId":{"type":"string","label":"Order ID","inputType":"text","required":false,"dependsOn":{"field":"category","values":["ORDER","PAYMENT","DELIVERY","RETURN"]}},"subject":{"type":"string","label":"Subject","inputType":"text","minLength":10,"maxLength":200,"required":true,"errorMessages":{"required":"Subject is required","minLength":"Subject must be at least {0} characters"}},"description":{"type":"textarea","label":"Describe Your Issue","minLength":20,"maxLength":2000,"required":true,"errorMessages":{"required":"Description is required","minLength":"Please provide at least {0} characters of detail"}},"priority":{"type":"select","label":"Priority","required":true,"options":[{"value":"LOW","label":"Low"},{"value":"MEDIUM","label":"Medium"},{"value":"HIGH","label":"High"},{"value":"URGENT","label":"Urgent"}],"errorMessages":{"required":"Priority is required"}}},"fieldOrder":["category","orderId","subject","description","priority"]}'/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- REVIEW: Submit Review Form                                   -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-form-review-submit"/>
+            <column name="module_name" value="review"/>
+            <column name="key_name" value="submit.form.schema"/>
+            <column name="avalue" value='{"fields":{"rating":{"type":"number","label":"Rating","min":1,"max":5,"required":true,"errorMessages":{"required":"Rating is required","min":"Rating must be at least {0}","max":"Rating cannot exceed {0}"}},"title":{"type":"string","label":"Review Title","inputType":"text","minLength":5,"maxLength":100,"required":true,"errorMessages":{"required":"Review title is required","minLength":"Title must be at least {0} characters"}},"body":{"type":"textarea","label":"Your Review","minLength":20,"maxLength":5000,"required":true,"errorMessages":{"required":"Review body is required","minLength":"Review must be at least {0} characters"}},"pros":{"type":"string","label":"Pros","inputType":"text","maxLength":200,"required":false},"cons":{"type":"string","label":"Cons","inputType":"text","maxLength":200,"required":false}},"fieldOrder":["rating","title","body","pros","cons"]}'/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- PROMO: Create Coupon Form (Admin)                            -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-form-promo-coupon"/>
+            <column name="module_name" value="promo"/>
+            <column name="key_name" value="coupon.form.schema"/>
+            <column name="avalue" value='{"fields":{"code":{"type":"string","label":"Coupon Code","inputType":"text","minLength":4,"maxLength":20,"pattern":"^[A-Z0-9]+$","required":true,"errorMessages":{"required":"Coupon code is required","pattern":"Only uppercase letters and numbers allowed","minLength":"Code must be at least {0} characters"}},"discountType":{"type":"select","label":"Discount Type","required":true,"options":[{"value":"PERCENTAGE","label":"Percentage Off"},{"value":"FLAT","label":"Flat Amount Off"},{"value":"FREE_SHIPPING","label":"Free Shipping"}],"errorMessages":{"required":"Discount type is required"}},"discountValue":{"type":"number","label":"Discount Value","min":1,"max":100000,"required":true,"errorMessages":{"required":"Discount value is required","min":"Must be at least {0}"}},"minOrderValue":{"type":"number","label":"Minimum Order Value (INR)","min":0,"max":1000000,"required":false},"maxDiscount":{"type":"number","label":"Maximum Discount (INR)","min":1,"max":100000,"required":false,"dependsOn":{"field":"discountType","values":["PERCENTAGE"]}},"usageLimit":{"type":"number","label":"Total Usage Limit","min":1,"max":1000000,"required":true,"errorMessages":{"required":"Usage limit is required"}},"perUserLimit":{"type":"number","label":"Per User Limit","min":1,"max":100,"required":true,"errorMessages":{"required":"Per user limit is required"}},"validFrom":{"type":"date","label":"Valid From","required":true,"errorMessages":{"required":"Start date is required"}},"validTo":{"type":"date","label":"Valid Until","required":true,"errorMessages":{"required":"End date is required"}}},"fieldOrder":["code","discountType","discountValue","minOrderValue","maxDiscount","usageLimit","perUserLimit","validFrom","validTo"]}'/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- CHECKOUT: Address Step Form                                  -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-form-checkout-address"/>
+            <column name="module_name" value="checkout"/>
+            <column name="key_name" value="address.form.schema"/>
+            <column name="avalue" value='{"fields":{"fullName":{"type":"string","label":"Full Name","inputType":"text","minLength":2,"maxLength":100,"required":true,"errorMessages":{"required":"Name is required"}},"phone":{"type":"string","label":"Phone Number","inputType":"tel","pattern":"^[6-9]\\d{9}$","required":true,"errorMessages":{"required":"Phone is required","pattern":"Enter valid 10-digit mobile number"}},"pincode":{"type":"string","label":"Pincode","inputType":"text","pattern":"^[1-9][0-9]{5}$","required":true,"errorMessages":{"required":"Pincode is required","pattern":"Enter valid 6-digit pincode"}},"addressLine1":{"type":"string","label":"House No., Building, Street","inputType":"text","minLength":5,"maxLength":200,"required":true,"errorMessages":{"required":"Address is required"}},"addressLine2":{"type":"string","label":"Area, Colony","inputType":"text","maxLength":200,"required":false},"landmark":{"type":"string","label":"Landmark","inputType":"text","maxLength":100,"required":false},"city":{"type":"string","label":"City","inputType":"text","minLength":2,"maxLength":50,"required":true,"errorMessages":{"required":"City is required"}},"state":{"type":"string","label":"State","inputType":"text","required":true,"errorMessages":{"required":"State is required"}}},"fieldOrder":["fullName","phone","pincode","addressLine1","addressLine2","landmark","city","state"]}'/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- PAYMENT: UPI Form                                            -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-form-payment-upi"/>
+            <column name="module_name" value="payment"/>
+            <column name="key_name" value="upi.form.schema"/>
+            <column name="avalue" value='{"fields":{"upiId":{"type":"string","label":"UPI ID","inputType":"text","pattern":"^[a-zA-Z0-9.\\-_]+@[a-zA-Z]+$","required":true,"placeholder":"yourname@upi","errorMessages":{"required":"UPI ID is required","pattern":"Enter valid UPI ID (e.g., name@upi)"}}},"fieldOrder":["upiId"]}'/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- RETURNREQUEST: Return Request Form                           -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-form-returnrequest"/>
+            <column name="module_name" value="returnrequest"/>
+            <column name="key_name" value="request.form.schema"/>
+            <column name="avalue" value='{"fields":{"reason":{"type":"select","label":"Reason for Return","required":true,"options":[{"value":"DEFECTIVE","label":"Product is defective or damaged"},{"value":"WRONG_ITEM","label":"Wrong item received"},{"value":"SIZE_FIT","label":"Size / fit issue"},{"value":"NOT_AS_DESCRIBED","label":"Not as described"},{"value":"QUALITY","label":"Quality not satisfactory"},{"value":"CHANGED_MIND","label":"Changed my mind"},{"value":"OTHER","label":"Other reason"}],"errorMessages":{"required":"Please select a return reason"}},"description":{"type":"textarea","label":"Additional Details","minLength":10,"maxLength":1000,"required":true,"errorMessages":{"required":"Please describe the issue","minLength":"Please provide at least {0} characters"}},"refundMethod":{"type":"select","label":"Preferred Refund Method","required":true,"options":[{"value":"ORIGINAL","label":"Refund to original payment method"},{"value":"STORE_CREDIT","label":"Store Credit (instant)"},{"value":"BANK","label":"Bank Transfer"}],"errorMessages":{"required":"Refund method is required"}}},"fieldOrder":["reason","description","refundMethod"]}'/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

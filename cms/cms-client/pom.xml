@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>cms-client</artifactId>
-    <name>CMS Client — ProxyBuilder-based service client</name>
+    <name>cms-client</name>
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom.cms</groupId>

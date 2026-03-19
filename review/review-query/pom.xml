@@ -12,7 +12,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>review-query-service</artifactId>
-	<name>Query Service for Review</name>
+	<name>review-query-service</name>
 	<description>Query Service for Review</description>
 
 	<dependencies>

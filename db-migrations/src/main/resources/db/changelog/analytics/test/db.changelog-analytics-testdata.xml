@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Analytics test data: daily_sales_summary, product_performance, supplier_performance
+        7 days of daily sales data + per-product metrics
+        Realistic numbers for an Indian marketplace doing ~200 orders/day
+    -->
+    <changeSet id="analytics-test-data" author="homebase-test">
+
+        <!-- ============================================================ -->
+        <!-- DAILY SALES SUMMARY — 7 days (March 9-15, 2026)              -->
+        <!-- Realistic growth: weekday ~180-220 orders, weekend ~250-280   -->
+        <!-- ============================================================ -->
+
+        <!-- March 9 (Monday) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260309"/>
+            <column name="summary_date" valueDate="2026-03-09"/>
+            <column name="total_orders" valueNumeric="185"/>
+            <column name="total_revenue" valueNumeric="524750.00"/>
+            <column name="total_units_sold" valueNumeric="312"/>
+            <column name="total_discount" valueNumeric="34500.00"/>
+            <column name="total_tax" valueNumeric="94455.00"/>
+            <column name="total_shipping" valueNumeric="5680.00"/>
+            <column name="avg_order_value" valueNumeric="2836.00"/>
+            <column name="new_customers" valueNumeric="28"/>
+            <column name="returning_customers" valueNumeric="157"/>
+            <column name="currency" value="INR"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- March 10 (Tuesday) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260310"/>
+            <column name="summary_date" valueDate="2026-03-10"/>
+            <column name="total_orders" valueNumeric="198"/>
+            <column name="total_revenue" valueNumeric="578340.00"/>
+            <column name="total_units_sold" valueNumeric="345"/>
+            <column name="total_discount" valueNumeric="41200.00"/>
+            <column name="total_tax" valueNumeric="104101.20"/>
+            <column name="total_shipping" valueNumeric="4920.00"/>
+            <column name="avg_order_value" valueNumeric="2921.00"/>
+            <column name="new_customers" valueNumeric="35"/>
+            <column name="returning_customers" valueNumeric="163"/>
+            <column name="currency" value="INR"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- March 11 (Wednesday) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260311"/>
+            <column name="summary_date" valueDate="2026-03-11"/>
+            <column name="total_orders" valueNumeric="210"/>
+            <column name="total_revenue" valueNumeric="612300.00"/>
+            <column name="total_units_sold" valueNumeric="378"/>
+            <column name="total_discount" valueNumeric="45800.00"/>
+            <column name="total_tax" valueNumeric="110214.00"/>
+            <column name="total_shipping" valueNumeric="6120.00"/>
+            <column name="avg_order_value" valueNumeric="2916.00"/>
+            <column name="new_customers" valueNumeric="32"/>
+            <column name="returning_customers" valueNumeric="178"/>
+            <column name="currency" value="INR"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- March 12 (Thursday) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260312"/>
+            <column name="summary_date" valueDate="2026-03-12"/>
+            <column name="total_orders" valueNumeric="195"/>
+            <column name="total_revenue" valueNumeric="556275.00"/>
+            <column name="total_units_sold" valueNumeric="329"/>
+            <column name="total_discount" valueNumeric="38900.00"/>
+            <column name="total_tax" valueNumeric="100129.50"/>
+            <column name="total_shipping" valueNumeric="5340.00"/>
+            <column name="avg_order_value" valueNumeric="2852.00"/>
+            <column name="new_customers" valueNumeric="25"/>
+            <column name="returning_customers" valueNumeric="170"/>
+            <column name="currency" value="INR"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- March 13 (Friday) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260313"/>
+            <column name="summary_date" valueDate="2026-03-13"/>
+            <column name="total_orders" valueNumeric="234"/>
+            <column name="total_revenue" valueNumeric="702000.00"/>
+            <column name="total_units_sold" valueNumeric="412"/>
+            <column name="total_discount" valueNumeric="52600.00"/>
+            <column name="total_tax" valueNumeric="126360.00"/>
+            <column name="total_shipping" valueNumeric="7020.00"/>
+            <column name="avg_order_value" valueNumeric="3000.00"/>
+            <column name="new_customers" valueNumeric="42"/>
+            <column name="returning_customers" valueNumeric="192"/>
+            <column name="currency" value="INR"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- March 14 (Saturday — weekend spike) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260314"/>
+            <column name="summary_date" valueDate="2026-03-14"/>
+            <column name="total_orders" valueNumeric="267"/>
+            <column name="total_revenue" valueNumeric="854400.00"/>
+            <column name="total_units_sold" valueNumeric="489"/>
+            <column name="total_discount" valueNumeric="68200.00"/>
+            <column name="total_tax" valueNumeric="153792.00"/>
+            <column name="total_shipping" valueNumeric="3200.00"/>
+            <column name="avg_order_value" valueNumeric="3200.00"/>
+            <column name="new_customers" valueNumeric="58"/>
+            <column name="returning_customers" valueNumeric="209"/>
+            <column name="currency" value="INR"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- March 15 (Sunday — weekend spike) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260315"/>
+            <column name="summary_date" valueDate="2026-03-15"/>
+            <column name="total_orders" valueNumeric="281"/>
+            <column name="total_revenue" valueNumeric="898720.00"/>
+            <column name="total_units_sold" valueNumeric="523"/>
+            <column name="total_discount" valueNumeric="72100.00"/>
+            <column name="total_tax" valueNumeric="161769.60"/>
+            <column name="total_shipping" valueNumeric="2800.00"/>
+            <column name="avg_order_value" valueNumeric="3198.00"/>
+            <column name="new_customers" valueNumeric="65"/>
+            <column name="returning_customers" valueNumeric="216"/>
+            <column name="currency" value="INR"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- PRODUCT PERFORMANCE — Top products for March 15              -->
+        <!-- ============================================================ -->
+        <insert tableName="product_performance">
+            <column name="id" value="pp-prod1-0315"/>
+            <column name="product_id" value="prod-1"/>
+            <column name="period_date" valueDate="2026-03-15"/>
+            <column name="views" valueNumeric="1245"/>
+            <column name="add_to_cart_count" valueNumeric="186"/>
+            <column name="purchases" valueNumeric="45"/>
+            <column name="units_sold" valueNumeric="67"/>
+            <column name="revenue" valueNumeric="33500.00"/>
+            <column name="returns_count" valueNumeric="2"/>
+            <column name="avg_rating" valueNumeric="4.50"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="product_performance">
+            <column name="id" value="pp-prod2-0315"/>
+            <column name="product_id" value="prod-2"/>
+            <column name="period_date" valueDate="2026-03-15"/>
+            <column name="views" valueNumeric="2340"/>
+            <column name="add_to_cart_count" valueNumeric="312"/>
+            <column name="purchases" valueNumeric="78"/>
+            <column name="units_sold" valueNumeric="78"/>
+            <column name="revenue" valueNumeric="38922.00"/>
+            <column name="returns_count" valueNumeric="5"/>
+            <column name="avg_rating" valueNumeric="3.80"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="product_performance">
+            <column name="id" value="pp-prod3-0315"/>
+            <column name="product_id" value="prod-3"/>
+            <column name="period_date" valueDate="2026-03-15"/>
+            <column name="views" valueNumeric="890"/>
+            <column name="add_to_cart_count" valueNumeric="145"/>
+            <column name="purchases" valueNumeric="34"/>
+            <column name="units_sold" valueNumeric="89"/>
+            <column name="revenue" valueNumeric="71111.00"/>
+            <column name="returns_count" valueNumeric="1"/>
+            <column name="avg_rating" valueNumeric="4.20"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="product_performance">
+            <column name="id" value="pp-prod4-0315"/>
+            <column name="product_id" value="prod-4"/>
+            <column name="period_date" valueDate="2026-03-15"/>
+            <column name="views" valueNumeric="3567"/>
+            <column name="add_to_cart_count" valueNumeric="456"/>
+            <column name="purchases" valueNumeric="92"/>
+            <column name="units_sold" valueNumeric="92"/>
+            <column name="revenue" valueNumeric="459080.00"/>
+            <column name="returns_count" valueNumeric="3"/>
+            <column name="avg_rating" valueNumeric="4.40"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="product_performance">
+            <column name="id" value="pp-prod5-0315"/>
+            <column name="product_id" value="prod-5"/>
+            <column name="period_date" valueDate="2026-03-15"/>
+            <column name="views" valueNumeric="1890"/>
+            <column name="add_to_cart_count" valueNumeric="267"/>
+            <column name="purchases" valueNumeric="56"/>
+            <column name="units_sold" valueNumeric="56"/>
+            <column name="revenue" valueNumeric="195944.00"/>
+            <column name="returns_count" valueNumeric="8"/>
+            <column name="avg_rating" valueNumeric="3.50"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- SUPPLIER PERFORMANCE — Monthly March 2026                    -->
+        <!-- ============================================================ -->
+        <insert tableName="supplier_performance">
+            <column name="id" value="sp-s1-0326"/>
+            <column name="supplier_id" value="supplier-1"/>
+            <column name="period_month" valueNumeric="3"/>
+            <column name="period_year" valueNumeric="2026"/>
+            <column name="total_orders" valueNumeric="780"/>
+            <column name="total_revenue" valueNumeric="4560000.00"/>
+            <column name="total_returns" valueNumeric="7"/>
+            <column name="avg_fulfillment_days" valueNumeric="2.10"/>
+            <column name="avg_rating" valueNumeric="4.70"/>
+            <column name="cancellation_rate" valueNumeric="0.64"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="supplier_performance">
+            <column name="id" value="sp-s2-0326"/>
+            <column name="supplier_id" value="supplier-2"/>
+            <column name="period_month" valueNumeric="3"/>
+            <column name="period_year" valueNumeric="2026"/>
+            <column name="total_orders" valueNumeric="297"/>
+            <column name="total_revenue" valueNumeric="1890000.00"/>
+            <column name="total_returns" valueNumeric="26"/>
+            <column name="avg_fulfillment_days" valueNumeric="3.50"/>
+            <column name="avg_rating" valueNumeric="4.20"/>
+            <column name="cancellation_rate" valueNumeric="2.36"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

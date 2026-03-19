@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>ecommerce-payment</artifactId>
-    <name>eCommerce Payment</name>
+    <name>payment-parent</name>
     <description>Payment module aggregator and parent</description>
     <packaging>pom</packaging>
 

@@ -2,27 +2,47 @@
 <states>
   <scripting-strategy componentName="ognlScriptingStrategy"/>
 
-  <!-- ================================================================ -->
-  <!-- Event definitions with ACLs and payload types (Item 15: ACL)     -->
-  <!-- ================================================================ -->
-  <event-information eventId='process'     meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.ProcessPaymentPayload"/>
-  <event-information eventId='succeed'     meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.ProcessPaymentPayload"/>
-  <event-information eventId='fail'        meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.FailPaymentPayload"/>
-  <event-information eventId='retry'       meta-acls="SYSTEM,ADMIN"     meta-bodyType="com.homebase.ecom.payment.dto.RetryPaymentPayload"/>
-  <event-information eventId='abandon'     meta-acls="SYSTEM,ADMIN"     meta-bodyType="com.homebase.ecom.payment.dto.AbandonPaymentPayload"/>
-  <event-information eventId='settle'      meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.SettlePaymentPayload"/>
-  <event-information eventId='initiateRefund'  meta-acls="ADMIN,SYSTEM" meta-bodyType="com.homebase.ecom.payment.dto.InitiateRefundPayload"/>
-  <event-information eventId='processRefund'   meta-acls="SYSTEM"       meta-bodyType="com.homebase.ecom.payment.dto.ProcessRefundPayload"/>
-  <event-information eventId='completeRefund'  meta-acls="SYSTEM"       meta-bodyType="com.homebase.ecom.payment.dto.ProcessRefundPayload"/>
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- Event definitions with ACLs and payload types                          -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (consumed via Kafka → PostSaveHook):                   -->
+  <!--   checkout.AWAITING_PAYMENT → process (from checkout BC)               -->
+  <!--   order.CANCELLED           → initiateRefund (from order BC)           -->
+  <!--   returnrequest.INSPECTED   → initiateRefund (from returnrequest BC)   -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (published via PostSaveHook → Kafka):                  -->
+  <!--   payment.SUCCEEDED         → order.paymentSucceeded                   -->
+  <!--   payment.FAILED/ABANDONED  → order.paymentFailed                      -->
+  <!--   payment.REFUNDED          → order.completeRefund                     -->
+  <!--   payment.SETTLED           → settlement.calculate                     -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <event-information eventId='process'              meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.ProcessPaymentPayload"/>
+  <event-information eventId='requestAuthentication' meta-acls="SYSTEM"          meta-bodyType="com.homebase.ecom.payment.dto.RequestAuthenticationPayload"/>
+  <event-information eventId='completeAuthentication' meta-acls="SYSTEM,CUSTOMER" meta-bodyType="com.homebase.ecom.payment.dto.CompleteAuthenticationPayload"/>
+  <event-information eventId='failAuthentication'   meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.FailAuthenticationPayload"/>
+  <event-information eventId='succeed'              meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.ProcessPaymentPayload"/>
+  <event-information eventId='fail'                 meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.FailPaymentPayload"/>
+  <event-information eventId='timeout'              meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.TimeoutPaymentPayload"/>
+  <event-information eventId='retry'                meta-acls="SYSTEM,ADMIN"     meta-bodyType="com.homebase.ecom.payment.dto.RetryPaymentPayload"/>
+  <event-information eventId='abandon'              meta-acls="SYSTEM,ADMIN"     meta-bodyType="com.homebase.ecom.payment.dto.AbandonPaymentPayload"/>
+  <event-information eventId='settle'               meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.SettlePaymentPayload"/>
+  <event-information eventId='initiateRefund'       meta-acls="ADMIN,SYSTEM"     meta-bodyType="com.homebase.ecom.payment.dto.InitiateRefundPayload"/>
+  <event-information eventId='processRefund'        meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.ProcessRefundPayload"/>
+  <event-information eventId='completeRefund'       meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.ProcessRefundPayload"/>
+  <event-information eventId='failRefund'           meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.FailRefundPayload"/>
+  <event-information eventId='initiateChargeback'   meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.InitiateChargebackPayload"/>
+  <event-information eventId='resolveChargeback'    meta-acls="ADMIN"            meta-bodyType="com.homebase.ecom.payment.dto.ResolveChargebackPayload"/>
+  <event-information eventId='collectCod'           meta-acls="CARRIER,SYSTEM"   meta-bodyType="com.homebase.ecom.payment.dto.CollectCodPayload"/>
 
   <flow id='payment-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="paymentEntryAction" />
     <exit-action componentName="paymentExitAction" />
 
-    <!-- ================================================================ -->
-    <!-- HAPPY PATH: INITIATED → PROCESSING → SUCCEEDED → SETTLED        -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- HAPPY PATH: INITIATED → PROCESSING → SUCCEEDED → SETTLED           -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <!-- Payment created, awaiting gateway submission -->
     <manual-state id='INITIATED' initialState='true' meta-mainPath="true"
@@ -33,18 +53,69 @@
           meta-mainPath="true" meta-acls="SYSTEM"/>
     </manual-state>
 
-    <!-- Payment submitted to gateway, awaiting confirmation -->
+    <!-- Payment submitted to gateway, awaiting response -->
     <manual-state id='PROCESSING' meta-mainPath="true"
                   description="Payment being processed by gateway">
       <on eventId='succeed'
           componentName='paymentSucceedAction'
           newStateId='SUCCEEDED'
           meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='requestAuthentication'
+          componentName='paymentRequestAuthenticationAction'
+          newStateId='AWAITING_AUTHENTICATION'
+          meta-acls="SYSTEM"/>
       <on eventId='fail'
           componentName='paymentFailAction'
           newStateId='FAILED'
           meta-acls="SYSTEM"/>
+      <on eventId='timeout'
+          componentName='paymentTimeoutAction'
+          newStateId='TIMED_OUT'
+          meta-acls="SYSTEM"/>
     </manual-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- 3DS / OTP AUTHENTICATION FLOW                                       -->
+    <!-- Gateway requires additional customer authentication (3DS, OTP)      -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Awaiting customer to complete 3DS/OTP challenge -->
+    <manual-state id='AWAITING_AUTHENTICATION'
+                  description="Awaiting 3DS/OTP authentication from customer">
+      <on eventId='completeAuthentication'
+          componentName='paymentCompleteAuthenticationAction'
+          newStateId='PROCESSING'
+          meta-acls="SYSTEM,CUSTOMER"/>
+      <on eventId='failAuthentication'
+          componentName='paymentFailAuthenticationAction'
+          newStateId='FAILED'
+          meta-acls="SYSTEM"/>
+      <on eventId='timeout'
+          componentName='paymentTimeoutAction'
+          newStateId='TIMED_OUT'
+          meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- PAYMENT TIMEOUT                                                     -->
+    <!-- Gateway did not respond within SLA — auto-check if retryable        -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <manual-state id='TIMED_OUT'
+                  description="Payment timed out waiting for gateway response">
+      <on eventId='retry'
+          componentName='paymentRetryAction'
+          newStateId='CHECK_RETRY'
+          meta-acls="SYSTEM,ADMIN"/>
+      <on eventId='abandon'
+          componentName='paymentAbandonAction'
+          newStateId='ABANDONED'
+          meta-acls="SYSTEM,ADMIN"/>
+    </manual-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- SUCCESS → SETTLEMENT                                                -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <!-- Payment confirmed by gateway -->
     <manual-state id='SUCCEEDED' meta-mainPath="true"
@@ -57,20 +128,28 @@
           componentName='paymentInitiateRefundAction'
           newStateId='REFUND_INITIATED'
           meta-acls="ADMIN,SYSTEM"/>
+      <on eventId='initiateChargeback'
+          componentName='paymentInitiateChargebackAction'
+          newStateId='CHARGEBACK_INITIATED'
+          meta-acls="SYSTEM"/>
     </manual-state>
 
-    <!-- Payment settled (funds transferred) -->
+    <!-- Payment settled — funds transferred to platform -->
     <manual-state id='SETTLED' meta-mainPath="true"
                   description="Payment settled, funds transferred">
       <on eventId='initiateRefund'
           componentName='paymentInitiateRefundAction'
           newStateId='REFUND_INITIATED'
           meta-acls="ADMIN,SYSTEM"/>
+      <on eventId='initiateChargeback'
+          componentName='paymentInitiateChargebackAction'
+          newStateId='CHARGEBACK_INITIATED'
+          meta-acls="SYSTEM"/>
     </manual-state>
 
-    <!-- ================================================================ -->
-    <!-- FAILURE PATH: FAILED → CHECK_RETRY → RETRY or ABANDONED         -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- FAILURE PATH: FAILED → CHECK_RETRY → RETRY or ABANDONED            -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <manual-state id='FAILED'
                   description="Payment failed at gateway">
@@ -85,9 +164,10 @@
     </manual-state>
 
     <!--
-      Item 16: Auto-state CHECK_RETRY
-      OGNL condition: retryCount >= maxRetryAttempts(3) → ABANDONED, else → RETRY
-      The retry action increments retryCount before reaching this auto-state.
+      OGNL auto-state: CHECK_RETRY
+      After retry attempt, check if max retries (3) exceeded.
+      retryCount >= 3 → ABANDONED (give up)
+      else → RETRY (queue for re-submission)
     -->
     <auto-state id='CHECK_RETRY'
                 componentName='ifAction'
@@ -112,9 +192,39 @@
                   description="Payment abandoned after max retries or manual abandonment">
     </manual-state>
 
-    <!-- ================================================================ -->
-    <!-- REFUND PATH: REFUND_INITIATED → REFUND_PROCESSING → REFUNDED    -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- COD (CASH ON DELIVERY) PATH                                         -->
+    <!-- Order delivered first, carrier collects cash, then confirms          -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <manual-state id='COD_PENDING'
+                  description="Cash on delivery — awaiting collection at delivery">
+      <on eventId='collectCod'
+          componentName='paymentCollectCodAction'
+          newStateId='SUCCEEDED'
+          meta-mainPath="true" meta-acls="CARRIER,SYSTEM"/>
+      <on eventId='fail'
+          componentName='paymentFailAction'
+          newStateId='COD_FAILED'
+          meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!-- COD collection failed (customer refused, not home, etc.) -->
+    <manual-state id='COD_FAILED'
+                  description="COD collection failed at delivery">
+      <on eventId='retry'
+          componentName='paymentRetryAction'
+          newStateId='COD_PENDING'
+          meta-acls="SYSTEM,ADMIN"/>
+      <on eventId='abandon'
+          componentName='paymentAbandonAction'
+          newStateId='ABANDONED'
+          meta-acls="SYSTEM,ADMIN"/>
+    </manual-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- REFUND PATH: REFUND_INITIATED → REFUND_PROCESSING → REFUNDED       -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <manual-state id='REFUND_INITIATED'
                   description="Refund requested, awaiting gateway processing">
@@ -130,6 +240,10 @@
           componentName='paymentCompleteRefundAction'
           newStateId='REFUNDED'
           meta-acls="SYSTEM"/>
+      <on eventId='failRefund'
+          componentName='paymentFailRefundAction'
+          newStateId='REFUND_INITIATED'
+          meta-acls="SYSTEM"/>
     </manual-state>
 
     <!-- Terminal: refund completed -->
@@ -137,5 +251,36 @@
                   description="Refund completed successfully">
     </manual-state>
 
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- CHARGEBACK / DISPUTE PATH                                           -->
+    <!-- Card network initiates chargeback — platform must respond           -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <manual-state id='CHARGEBACK_INITIATED'
+                  description="Chargeback initiated by card network, evidence required">
+      <on eventId='resolveChargeback'
+          componentName='paymentResolveChargebackAction'
+          newStateId='CHECK_CHARGEBACK_OUTCOME'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!--
+      OGNL auto-state: CHECK_CHARGEBACK_OUTCOME
+      After admin submits evidence, check resolution.
+      chargebackWon == true → SETTLED (merchant won, funds restored)
+      else → REFUNDED (merchant lost, funds returned to customer)
+    -->
+    <auto-state id='CHECK_CHARGEBACK_OUTCOME'
+                componentName='ifAction'
+                condition='chargebackWon == true'
+                then='merchantWon'
+                else='merchantLost'>
+      <on eventId='merchantWon' newStateId='SETTLED'/>
+      <on eventId='merchantLost' newStateId='REFUNDED'/>
+    </auto-state>
+
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
+    </manual-state>
   </flow>
 </states>

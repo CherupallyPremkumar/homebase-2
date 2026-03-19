@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Compliance seed data — production regulations, agreements, policies:
+        - 6 regulations (Indian ecommerce laws)
+        - 5 agreements (STM states: PUBLISHED, DRAFT, LEGAL_REVIEW, SUPERSEDED)
+        - 4 acceptances (supplier + customer signed agreements)
+        - 6 platform policies (STM states: PUBLISHED, DRAFT, SUPERSEDED)
+        - 5 compliance mappings (regulation → rule → policy traceability)
+        - 2 compliance audits
+    -->
+    <changeSet id="compliance-013-seed-data" author="homebase">
+
+        <!-- ============================================================ -->
+        <!-- REGULATIONS — Indian ecommerce laws                          -->
+        <!-- ============================================================ -->
+
+        <!-- Consumer Protection Act 2019 -->
+        <insert tableName="regulations">
+            <column name="id" value="reg-cpa-2019"/>
+            <column name="act_name" value="Consumer Protection Act, 2019"/>
+            <column name="section" value="Section 44 — Liability of e-commerce entities"/>
+            <column name="requirement_summary" value="E-commerce entities must ensure no unfair trade practices, allow cancellation and returns within reasonable time, display total price including all charges, and provide grievance redressal mechanism."/>
+            <column name="full_text_url" value="https://legislative.gov.in/sites/default/files/A2019-35.pdf"/>
+            <column name="jurisdiction" value="INDIA"/>
+            <column name="applicable_to" value="MARKETPLACE"/>
+            <column name="enforcement_date" valueDate="2020-07-20"/>
+            <column name="category" value="CONSUMER_RIGHTS"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Consumer Protection (E-Commerce) Rules 2020 -->
+        <insert tableName="regulations">
+            <column name="id" value="reg-ecom-rules-2020"/>
+            <column name="act_name" value="Consumer Protection (E-Commerce) Rules, 2020"/>
+            <column name="section" value="Rule 4 — Duties of e-commerce entity"/>
+            <column name="requirement_summary" value="Must display seller details, country of origin, return/refund/exchange policy, grievance officer contact, delivery/shipment date, security of payment methods, and total price breakdown."/>
+            <column name="full_text_url" value="https://consumeraffairs.nic.in/sites/default/files/E-Commerce-Rules.pdf"/>
+            <column name="jurisdiction" value="INDIA"/>
+            <column name="applicable_to" value="MARKETPLACE"/>
+            <column name="enforcement_date" valueDate="2020-07-23"/>
+            <column name="category" value="CONSUMER_RIGHTS"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- GST Act -->
+        <insert tableName="regulations">
+            <column name="id" value="reg-gst-2017"/>
+            <column name="act_name" value="Central Goods and Services Tax Act, 2017"/>
+            <column name="section" value="Section 52 — TCS by e-commerce operator"/>
+            <column name="requirement_summary" value="E-commerce operator must collect TCS at 1% (0.5% CGST + 0.5% SGST) on net value of taxable supplies made through it. Must file GSTR-8 monthly."/>
+            <column name="full_text_url" value="https://www.cbic.gov.in/resources/htdocs-cbec/gst/cgst-act.pdf"/>
+            <column name="jurisdiction" value="INDIA"/>
+            <column name="applicable_to" value="MARKETPLACE"/>
+            <column name="enforcement_date" valueDate="2018-10-01"/>
+            <column name="category" value="TAXATION"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- IT Act 2000 -->
+        <insert tableName="regulations">
+            <column name="id" value="reg-it-act-2000"/>
+            <column name="act_name" value="Information Technology Act, 2000"/>
+            <column name="section" value="Section 43A — Compensation for failure to protect data"/>
+            <column name="requirement_summary" value="Body corporate possessing sensitive personal data must implement reasonable security practices. Failure to protect data makes them liable for compensation."/>
+            <column name="full_text_url" value="https://www.meity.gov.in/writereaddata/files/itbill2000.pdf"/>
+            <column name="jurisdiction" value="INDIA"/>
+            <column name="applicable_to" value="ALL"/>
+            <column name="enforcement_date" valueDate="2009-10-27"/>
+            <column name="category" value="DATA_PRIVACY"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Digital Personal Data Protection Act 2023 -->
+        <insert tableName="regulations">
+            <column name="id" value="reg-dpdp-2023"/>
+            <column name="act_name" value="Digital Personal Data Protection Act, 2023"/>
+            <column name="section" value="Section 6 — Consent for processing personal data"/>
+            <column name="requirement_summary" value="Personal data may be processed only with consent of the Data Principal. Consent must be free, specific, informed, unconditional, and unambiguous. Must provide notice before consent."/>
+            <column name="full_text_url" value="https://www.meity.gov.in/writereaddata/files/Digital%20Personal%20Data%20Protection%20Act%202023.pdf"/>
+            <column name="jurisdiction" value="INDIA"/>
+            <column name="applicable_to" value="ALL"/>
+            <column name="enforcement_date" valueDate="2024-01-01"/>
+            <column name="category" value="DATA_PRIVACY"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- FDI Policy for E-Commerce -->
+        <insert tableName="regulations">
+            <column name="id" value="reg-fdi-ecom"/>
+            <column name="act_name" value="Press Note 2 of 2018 — FDI Policy for E-Commerce"/>
+            <column name="section" value="Marketplace model conditions"/>
+            <column name="requirement_summary" value="Marketplace must not exercise ownership over inventory. No single vendor can contribute more than 25% of sales. Platform cannot influence pricing. Must provide equal treatment to all sellers."/>
+            <column name="full_text_url" value="https://dpiit.gov.in/sites/default/files/pn2_2018.pdf"/>
+            <column name="jurisdiction" value="INDIA"/>
+            <column name="applicable_to" value="MARKETPLACE"/>
+            <column name="enforcement_date" valueDate="2019-02-01"/>
+            <column name="category" value="FDI_POLICY"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- AGREEMENTS — Versioned legal contracts (STM)                  -->
+        <!-- States: DRAFT, LEGAL_REVIEW, APPROVED, PUBLISHED, SUPERSEDED -->
+        <!-- ============================================================ -->
+
+        <!-- Seller Agreement v3 — PUBLISHED (current) -->
+        <insert tableName="agreements">
+            <column name="id" value="agree-seller-v3"/>
+            <column name="name" value="HomeBase Seller Agreement"/>
+            <column name="agreement_type" value="SELLER_AGREEMENT"/>
+            <column name="version_number" value="3.0"/>
+            <column name="content_plain" value="This Seller Agreement governs the terms under which you list and sell products on the HomeBase marketplace. By registering as a seller, you agree to: (1) Provide accurate product information including MRP, manufacturing date, country of origin. (2) Ship orders within 2 business days. (3) Maintain return rate below 15%. (4) Comply with all applicable Indian laws including Consumer Protection Act 2019 and GST Act. (5) Accept HomeBase commission structure as per category rates..."/>
+            <column name="effective_from" valueDate="2026-01-01"/>
+            <column name="supersedes_id" value="agree-seller-v2"/>
+            <column name="requires_acceptance" valueBoolean="true"/>
+            <column name="acceptance_type" value="CLICK_THROUGH"/>
+            <column name="applicable_to" value="SUPPLIER"/>
+            <column name="legal_reviewer" value="legal-team"/>
+            <column name="legal_review_date" valueDate="2025-12-15"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="flow_id" value="agreement"/>
+            <column name="created_time" valueDate="2025-11-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="5"/>
+        </insert>
+
+        <!-- Seller Agreement v2 — SUPERSEDED -->
+        <insert tableName="agreements">
+            <column name="id" value="agree-seller-v2"/>
+            <column name="name" value="HomeBase Seller Agreement"/>
+            <column name="agreement_type" value="SELLER_AGREEMENT"/>
+            <column name="version_number" value="2.0"/>
+            <column name="content_plain" value="[Previous version — superseded by v3.0]"/>
+            <column name="effective_from" valueDate="2025-06-01"/>
+            <column name="effective_until" valueDate="2025-12-31"/>
+            <column name="requires_acceptance" valueBoolean="true"/>
+            <column name="applicable_to" value="SUPPLIER"/>
+            <column name="state_id" value="SUPERSEDED"/>
+            <column name="flow_id" value="agreement"/>
+            <column name="created_time" valueDate="2025-04-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="6"/>
+        </insert>
+
+        <!-- Buyer Terms of Service — PUBLISHED -->
+        <insert tableName="agreements">
+            <column name="id" value="agree-buyer-tos-v1"/>
+            <column name="name" value="HomeBase Terms of Service"/>
+            <column name="agreement_type" value="BUYER_TOS"/>
+            <column name="version_number" value="1.0"/>
+            <column name="content_plain" value="By using HomeBase, you agree to: (1) Provide accurate personal information. (2) Use the platform for lawful purchases only. (3) Not abuse return/refund policies. (4) Accept that product prices are set by sellers. (5) Resolve disputes through HomeBase grievance mechanism before legal action..."/>
+            <column name="effective_from" valueDate="2025-06-01"/>
+            <column name="requires_acceptance" valueBoolean="true"/>
+            <column name="acceptance_type" value="CLICK_THROUGH"/>
+            <column name="applicable_to" value="CUSTOMER"/>
+            <column name="legal_reviewer" value="legal-team"/>
+            <column name="legal_review_date" valueDate="2025-05-20"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="flow_id" value="agreement"/>
+            <column name="created_time" valueDate="2025-05-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <!-- Privacy Policy — PUBLISHED -->
+        <insert tableName="agreements">
+            <column name="id" value="agree-privacy-v1"/>
+            <column name="name" value="HomeBase Privacy Policy"/>
+            <column name="agreement_type" value="PRIVACY_POLICY"/>
+            <column name="version_number" value="1.0"/>
+            <column name="content_plain" value="HomeBase collects personal data in compliance with Digital Personal Data Protection Act 2023. We collect: name, email, phone, address, payment details, browsing history. Purpose: order fulfillment, customer service, marketing (with consent). Data retention: active account data retained until deletion request. You have the right to: access, correct, delete your data, withdraw consent..."/>
+            <column name="effective_from" valueDate="2025-06-01"/>
+            <column name="requires_acceptance" valueBoolean="true"/>
+            <column name="acceptance_type" value="CLICK_THROUGH"/>
+            <column name="applicable_to" value="ALL"/>
+            <column name="legal_reviewer" value="legal-team"/>
+            <column name="legal_review_date" valueDate="2025-05-25"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="flow_id" value="agreement"/>
+            <column name="created_time" valueDate="2025-05-10T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- Data Processing Agreement — DRAFT -->
+        <insert tableName="agreements">
+            <column name="id" value="agree-dpa-draft"/>
+            <column name="name" value="Data Processing Agreement"/>
+            <column name="agreement_type" value="DATA_PROCESSING"/>
+            <column name="version_number" value="1.0"/>
+            <column name="content_plain" value="[Draft — pending legal review] Agreement between HomeBase and third-party data processors regarding handling of customer personal data..."/>
+            <column name="applicable_to" value="VENDOR"/>
+            <column name="state_id" value="DRAFT"/>
+            <column name="flow_id" value="agreement"/>
+            <column name="created_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+        <!-- Agreement Activity -->
+        <insert tableName="agreement_activity">
+            <column name="id" value="aact-1"/>
+            <column name="activity_name" value="publish"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Seller Agreement v3 published after legal review"/>
+            <column name="created_time" valueDate="2026-01-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="agreement_activity">
+            <column name="id" value="aact-2"/>
+            <column name="activity_name" value="supersede"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Seller Agreement v2 superseded by v3"/>
+            <column name="created_time" valueDate="2026-01-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- AGREEMENT ACCEPTANCES — Legal proof                           -->
+        <!-- ============================================================ -->
+
+        <!-- Supplier-1 accepted seller agreement v3 -->
+        <insert tableName="agreement_acceptances">
+            <column name="id" value="accept-s1-seller"/>
+            <column name="agreement_id" value="agree-seller-v3"/>
+            <column name="user_id" value="supplier-1"/>
+            <column name="user_type" value="SUPPLIER"/>
+            <column name="accepted_at" valueDate="2026-01-15T10:30:00"/>
+            <column name="ip_address" value="103.42.65.12"/>
+            <column name="user_agent" value="Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120"/>
+            <column name="acceptance_method" value="CLICK_THROUGH"/>
+            <column name="is_current" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Supplier-2 accepted seller agreement v3 -->
+        <insert tableName="agreement_acceptances">
+            <column name="id" value="accept-s2-seller"/>
+            <column name="agreement_id" value="agree-seller-v3"/>
+            <column name="user_id" value="supplier-2"/>
+            <column name="user_type" value="SUPPLIER"/>
+            <column name="accepted_at" valueDate="2026-01-20T14:00:00"/>
+            <column name="ip_address" value="49.207.18.95"/>
+            <column name="user_agent" value="Mozilla/5.0 (Macintosh; Intel Mac OS X) Safari/17"/>
+            <column name="acceptance_method" value="CLICK_THROUGH"/>
+            <column name="is_current" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- User-1 accepted buyer TOS -->
+        <insert tableName="agreement_acceptances">
+            <column name="id" value="accept-u1-tos"/>
+            <column name="agreement_id" value="agree-buyer-tos-v1"/>
+            <column name="user_id" value="user-1"/>
+            <column name="user_type" value="CUSTOMER"/>
+            <column name="accepted_at" valueDate="2026-01-10T09:00:00"/>
+            <column name="ip_address" value="122.161.77.42"/>
+            <column name="user_agent" value="HomeBase/1.0 (Android 14; SM-S918B)"/>
+            <column name="acceptance_method" value="CLICK_THROUGH"/>
+            <column name="is_current" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- User-1 accepted privacy policy -->
+        <insert tableName="agreement_acceptances">
+            <column name="id" value="accept-u1-privacy"/>
+            <column name="agreement_id" value="agree-privacy-v1"/>
+            <column name="user_id" value="user-1"/>
+            <column name="user_type" value="CUSTOMER"/>
+            <column name="accepted_at" valueDate="2026-01-10T09:00:00"/>
+            <column name="ip_address" value="122.161.77.42"/>
+            <column name="user_agent" value="HomeBase/1.0 (Android 14; SM-S918B)"/>
+            <column name="acceptance_method" value="CLICK_THROUGH"/>
+            <column name="is_current" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- PLATFORM POLICIES — Customer-facing pages (STM)               -->
+        <!-- States: DRAFT, REVIEW, PUBLISHED, SUPERSEDED, ARCHIVED        -->
+        <!-- ============================================================ -->
+
+        <!-- Return & Refund Policy — PUBLISHED -->
+        <insert tableName="platform_policies">
+            <column name="id" value="pp-return"/>
+            <column name="name" value="Return &amp; Refund Policy"/>
+            <column name="policy_type" value="RETURN_REFUND"/>
+            <column name="slug" value="return-refund-policy"/>
+            <column name="content_plain" value="HomeBase Return Policy: Most items can be returned within 7 days of delivery. Electronics have a 10-day return window. Items must be unused and in original packaging. Non-returnable categories: innerwear, perishables, personal care, gift cards. Returns below Rs.2,000 are auto-approved. Refunds are processed within 5 business days to original payment method."/>
+            <column name="version_number" value="2.1"/>
+            <column name="effective_from" valueDate="2026-01-01"/>
+            <column name="category" value="CUSTOMER"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="is_footer_link" valueBoolean="true"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="flow_id" value="platformPolicy"/>
+            <column name="created_time" valueDate="2025-12-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- Shipping Policy — PUBLISHED -->
+        <insert tableName="platform_policies">
+            <column name="id" value="pp-shipping"/>
+            <column name="name" value="Shipping Policy"/>
+            <column name="policy_type" value="SHIPPING"/>
+            <column name="slug" value="shipping-policy"/>
+            <column name="content_plain" value="Free shipping on orders above Rs.499. Standard delivery within 5-10 business days. Express delivery available for Rs.99 surcharge (2-3 days). Cash on Delivery available for orders up to Rs.25,000. Maximum parcel weight: 30kg. We ship to all serviceable pincodes across India via Delhivery, Blue Dart, and Ecom Express."/>
+            <column name="version_number" value="1.0"/>
+            <column name="effective_from" valueDate="2025-06-01"/>
+            <column name="category" value="CUSTOMER"/>
+            <column name="display_order" valueNumeric="2"/>
+            <column name="is_footer_link" valueBoolean="true"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="flow_id" value="platformPolicy"/>
+            <column name="created_time" valueDate="2025-05-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- Cancellation Policy — PUBLISHED -->
+        <insert tableName="platform_policies">
+            <column name="id" value="pp-cancellation"/>
+            <column name="name" value="Cancellation Policy"/>
+            <column name="policy_type" value="CANCELLATION"/>
+            <column name="slug" value="cancellation-policy"/>
+            <column name="content_plain" value="Orders can be cancelled within 24 hours of placement if not yet shipped. Once shipped, cancellation is not possible — please use the return process instead. Refund for cancelled orders is processed within 3-5 business days. Seller-initiated cancellations are tracked and affect seller performance rating."/>
+            <column name="version_number" value="1.0"/>
+            <column name="effective_from" valueDate="2025-06-01"/>
+            <column name="category" value="CUSTOMER"/>
+            <column name="display_order" valueNumeric="3"/>
+            <column name="is_footer_link" valueBoolean="true"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="flow_id" value="platformPolicy"/>
+            <column name="created_time" valueDate="2025-05-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- Seller Code of Conduct — PUBLISHED -->
+        <insert tableName="platform_policies">
+            <column name="id" value="pp-seller-code"/>
+            <column name="name" value="Seller Code of Conduct"/>
+            <column name="policy_type" value="SELLER_CODE"/>
+            <column name="slug" value="seller-code-of-conduct"/>
+            <column name="content_plain" value="Sellers must: (1) List only genuine products with accurate descriptions. (2) Ship within 2 business days. (3) Maintain return rate below 15% and cancellation rate below 5%. (4) Respond to customer queries within 24 hours. (5) Comply with pricing guidelines — no artificial inflation. Violations result in probation (30 days) or suspension."/>
+            <column name="version_number" value="1.0"/>
+            <column name="effective_from" valueDate="2025-06-01"/>
+            <column name="category" value="SELLER"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="is_footer_link" valueBoolean="false"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="flow_id" value="platformPolicy"/>
+            <column name="created_time" valueDate="2025-05-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- Prohibited Items Policy — PUBLISHED -->
+        <insert tableName="platform_policies">
+            <column name="id" value="pp-prohibited"/>
+            <column name="name" value="Prohibited Items Policy"/>
+            <column name="policy_type" value="PROHIBITED_ITEMS"/>
+            <column name="slug" value="prohibited-items"/>
+            <column name="content_plain" value="The following items are prohibited on HomeBase: weapons, drugs, tobacco, alcohol, counterfeit goods, stolen property, hazardous chemicals, wildlife products, prescription medications without license, adult content, gambling equipment. Listings violating this policy will be removed and seller account may be suspended."/>
+            <column name="version_number" value="1.0"/>
+            <column name="effective_from" valueDate="2025-06-01"/>
+            <column name="category" value="SELLER"/>
+            <column name="display_order" valueNumeric="2"/>
+            <column name="is_footer_link" valueBoolean="false"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="flow_id" value="platformPolicy"/>
+            <column name="created_time" valueDate="2025-05-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- Content Guidelines — DRAFT -->
+        <insert tableName="platform_policies">
+            <column name="id" value="pp-content-draft"/>
+            <column name="name" value="Content &amp; Review Guidelines"/>
+            <column name="policy_type" value="CONTENT_GUIDELINES"/>
+            <column name="slug" value="content-guidelines"/>
+            <column name="content_plain" value="[Draft] Guidelines for product reviews, Q&amp;A, and seller descriptions..."/>
+            <column name="version_number" value="1.0"/>
+            <column name="category" value="CUSTOMER"/>
+            <column name="display_order" valueNumeric="4"/>
+            <column name="is_footer_link" valueBoolean="false"/>
+            <column name="state_id" value="DRAFT"/>
+            <column name="flow_id" value="platformPolicy"/>
+            <column name="created_time" valueDate="2026-03-10T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-10T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+        <!-- Platform Policy Activity -->
+        <insert tableName="platform_policy_activity">
+            <column name="id" value="ppact-1"/>
+            <column name="activity_name" value="publish"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Return policy v2.1 published — updated electronics window to 10 days"/>
+            <column name="created_time" valueDate="2026-01-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- COMPLIANCE MAPPINGS — Regulation → Rule traceability           -->
+        <!-- ============================================================ -->
+
+        <!-- CPA 2019 → 7-day return rule + return policy page -->
+        <insert tableName="compliance_mappings">
+            <column name="id" value="cmap-cpa-return"/>
+            <column name="regulation_id" value="reg-cpa-2019"/>
+            <column name="policy_rule_id" value="rule-return-7day"/>
+            <column name="platform_policy_id" value="pp-return"/>
+            <column name="cconfig_key" value="return.eligibility.days"/>
+            <column name="compliance_notes" value="7-day return window satisfies CPA Section 44 'reasonable time' requirement for general merchandise"/>
+            <column name="verified_by" value="legal-team"/>
+            <column name="verified_at" valueDate="2025-12-01"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- E-Commerce Rules 2020 → price display (shipping policy) -->
+        <insert tableName="compliance_mappings">
+            <column name="id" value="cmap-ecom-price"/>
+            <column name="regulation_id" value="reg-ecom-rules-2020"/>
+            <column name="platform_policy_id" value="pp-shipping"/>
+            <column name="cconfig_key" value="shipping.free.threshold"/>
+            <column name="compliance_notes" value="Shipping charges displayed transparently in checkout. Total price breakdown shown per E-Commerce Rules 2020 Rule 4(4)"/>
+            <column name="verified_by" value="legal-team"/>
+            <column name="verified_at" valueDate="2025-12-01"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- GST Act → TCS collection (settlement commission) -->
+        <insert tableName="compliance_mappings">
+            <column name="id" value="cmap-gst-tcs"/>
+            <column name="regulation_id" value="reg-gst-2017"/>
+            <column name="cconfig_key" value="settlement.tds.rate.percent"/>
+            <column name="compliance_notes" value="TCS at 1% collected per CGST Act Section 52. Settlement module deducts TCS before seller payout."/>
+            <column name="verified_by" value="legal-team"/>
+            <column name="verified_at" valueDate="2025-12-15"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- DPDP 2023 → Privacy policy agreement -->
+        <insert tableName="compliance_mappings">
+            <column name="id" value="cmap-dpdp-privacy"/>
+            <column name="regulation_id" value="reg-dpdp-2023"/>
+            <column name="compliance_notes" value="Privacy Policy agreement (agree-privacy-v1) required before data collection. Consent recorded in agreement_acceptances with IP and timestamp per DPDP Section 6."/>
+            <column name="verified_by" value="legal-team"/>
+            <column name="verified_at" valueDate="2025-12-20"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- FDI Policy → Seller commission rules -->
+        <insert tableName="compliance_mappings">
+            <column name="id" value="cmap-fdi-marketplace"/>
+            <column name="regulation_id" value="reg-fdi-ecom"/>
+            <column name="policy_rule_id" value="rule-comm-top-seller-discount"/>
+            <column name="compliance_notes" value="Commission discount for top sellers does not constitute influencing pricing per FDI Press Note 2. Discount is on platform commission only, not product price."/>
+            <column name="verified_by" value="legal-team"/>
+            <column name="verified_at" valueDate="2026-01-10"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- COMPLIANCE AUDITS                                             -->
+        <!-- ============================================================ -->
+
+        <insert tableName="compliance_audits">
+            <column name="id" value="caudit-1"/>
+            <column name="regulation_id" value="reg-cpa-2019"/>
+            <column name="audit_type" value="AUTOMATED"/>
+            <column name="audit_date" valueDate="2026-03-15"/>
+            <column name="result" value="COMPLIANT"/>
+            <column name="findings" value="All 4128 returns in March processed within 7-day window. Average return processing time: 3.2 days. Zero violations found."/>
+            <column name="evidence_url" value="s3://homebase-compliance/audits/cpa-march-2026.pdf"/>
+            <column name="auditor_id" value="system"/>
+            <column name="next_audit_date" valueDate="2026-04-15"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <insert tableName="compliance_audits">
+            <column name="id" value="caudit-2"/>
+            <column name="regulation_id" value="reg-gst-2017"/>
+            <column name="audit_type" value="MANUAL"/>
+            <column name="audit_date" valueDate="2026-03-01"/>
+            <column name="result" value="COMPLIANT"/>
+            <column name="findings" value="TCS collected at 1% on all marketplace transactions in February 2026. GSTR-8 filed on time. Total TCS collected: Rs.4,56,000."/>
+            <column name="auditor_id" value="user-8"/>
+            <column name="next_audit_date" valueDate="2026-04-01"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

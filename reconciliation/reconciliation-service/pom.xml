@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>reconciliation-service</artifactId>
-    <name>Reconciliation Service</name>
+    <name>reconciliation-service</name>
 
     <dependencies>
         <dependency>

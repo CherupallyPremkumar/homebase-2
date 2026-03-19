@@ -10,7 +10,7 @@
     </parent>
     <artifactId>supplier-lifecycle-domain</artifactId>
     <packaging>jar</packaging>
-    <name>Supplier Lifecycle Domain -- Aggregate Root, Entities, Value Objects, Ports</name>
+    <name>supplier-lifecycle-domain</name>
 
     <dependencies>
         <dependency>

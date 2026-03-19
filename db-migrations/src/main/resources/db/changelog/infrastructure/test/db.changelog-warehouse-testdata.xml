@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Warehouse test data: 3 fulfillment centers (Chennai, Mumbai, Bangalore)
+        + warehouse locations, inventory slots, staff
+
+        Shared IDs: FC-CHENNAI, FC-MUMBAI, FC-BANGALORE (referenced by inventory, shipping, fulfillment)
+    -->
+    <changeSet id="warehouse-test-data" author="homebase-test">
+
+        <!-- Fulfillment Centers -->
+        <insert tableName="fulfillment_centers">
+            <column name="id" value="FC-CHENNAI"/>
+            <column name="name" value="HomeBase Chennai FC"/>
+            <column name="code" value="CHN-01"/>
+            <column name="address" value="Sriperumbudur SEZ, Chennai 602105"/>
+            <column name="city" value="Chennai"/>
+            <column name="state" value="Tamil Nadu"/>
+            <column name="pincode" value="602105"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="fulfillment_centers">
+            <column name="id" value="FC-MUMBAI"/>
+            <column name="name" value="HomeBase Mumbai FC"/>
+            <column name="code" value="MUM-01"/>
+            <column name="address" value="Bhiwandi Warehouse Park, Thane 421302"/>
+            <column name="city" value="Mumbai"/>
+            <column name="state" value="Maharashtra"/>
+            <column name="pincode" value="421302"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="fulfillment_centers">
+            <column name="id" value="FC-BANGALORE"/>
+            <column name="name" value="HomeBase Bangalore FC"/>
+            <column name="code" value="BLR-01"/>
+            <column name="address" value="Nelamangala Industrial Area, Bangalore 562123"/>
+            <column name="city" value="Bangalore"/>
+            <column name="state" value="Karnataka"/>
+            <column name="pincode" value="562123"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Warehouses (same as FCs for now — 1:1 mapping) -->
+        <insert tableName="warehouses">
+            <column name="id" value="WH-CHENNAI"/>
+            <column name="name" value="Chennai Main Warehouse"/>
+            <column name="fulfillment_center_id" value="FC-CHENNAI"/>
+            <column name="address" value="Sriperumbudur SEZ, Chennai 602105"/>
+            <column name="city" value="Chennai"/>
+            <column name="state" value="Tamil Nadu"/>
+            <column name="pincode" value="602105"/>
+            <column name="total_capacity_sqft" valueNumeric="50000"/>
+            <column name="used_capacity_sqft" valueNumeric="32000"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="warehouses">
+            <column name="id" value="WH-MUMBAI"/>
+            <column name="name" value="Mumbai Main Warehouse"/>
+            <column name="fulfillment_center_id" value="FC-MUMBAI"/>
+            <column name="address" value="Bhiwandi Warehouse Park, Thane 421302"/>
+            <column name="city" value="Mumbai"/>
+            <column name="state" value="Maharashtra"/>
+            <column name="pincode" value="421302"/>
+            <column name="total_capacity_sqft" valueNumeric="75000"/>
+            <column name="used_capacity_sqft" valueNumeric="58000"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="warehouses">
+            <column name="id" value="WH-BANGALORE"/>
+            <column name="name" value="Bangalore Main Warehouse"/>
+            <column name="fulfillment_center_id" value="FC-BANGALORE"/>
+            <column name="address" value="Nelamangala Industrial Area, Bangalore 562123"/>
+            <column name="city" value="Bangalore"/>
+            <column name="state" value="Karnataka"/>
+            <column name="pincode" value="562123"/>
+            <column name="total_capacity_sqft" valueNumeric="40000"/>
+            <column name="used_capacity_sqft" valueNumeric="25000"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Warehouse Locations (zones/aisles/bins) -->
+        <insert tableName="warehouse_locations">
+            <column name="id" value="loc-chn-A1-01"/>
+            <column name="warehouse_id" value="WH-CHENNAI"/>
+            <column name="zone" value="A"/>
+            <column name="aisle" value="1"/>
+            <column name="rack" value="01"/>
+            <column name="bin" value="A"/>
+            <column name="location_code" value="CHN-A1-01-A"/>
+            <column name="capacity_units" valueNumeric="500"/>
+            <column name="current_units" valueNumeric="320"/>
+            <column name="location_type" value="STANDARD"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="warehouse_locations">
+            <column name="id" value="loc-mum-B2-03"/>
+            <column name="warehouse_id" value="WH-MUMBAI"/>
+            <column name="zone" value="B"/>
+            <column name="aisle" value="2"/>
+            <column name="rack" value="03"/>
+            <column name="bin" value="C"/>
+            <column name="location_code" value="MUM-B2-03-C"/>
+            <column name="capacity_units" valueNumeric="300"/>
+            <column name="current_units" valueNumeric="180"/>
+            <column name="location_type" value="BULK"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Warehouse Staff -->
+        <insert tableName="warehouse_staff">
+            <column name="id" value="staff-1"/>
+            <column name="warehouse_id" value="WH-CHENNAI"/>
+            <column name="user_id" value="user-8"/>
+            <column name="employee_code" value="CHN-EMP-001"/>
+            <column name="role" value="PICKER"/>
+            <column name="department" value="FULFILLMENT"/>
+            <column name="shift_pattern" value="DAY"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="joined_at" valueDate="2025-06-01"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

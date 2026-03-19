@@ -27,7 +27,7 @@
 	<groupId>com.homebase.ecom.shipping</groupId>
 	<version>${revision}</version>
 	<artifactId>shipping-parent</artifactId>
-	<name>All Modules that belong to the Shipping </name>
+	<name>shipping-parent</name>
 	<description>Modules execution project and Parent Pom</description>
 
 	<dependencyManagement>

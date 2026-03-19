@@ -96,6 +96,7 @@
             <column name="activity_name" type="VARCHAR(255)"/>
             <column name="activity_success" type="BOOLEAN" defaultValueBoolean="true"/>
             <column name="activity_comment" type="TEXT"/>
+            <column name="policy_id" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
 
@@ -169,5 +170,9 @@
             <column name="decision_id"/>
         </createIndex>
     </changeSet>
+
+
+    <!-- Production seed data: 9 policies, 8 fact definitions, decision audit log -->
+    <include file="db/changelog/rules-engine/db.changelog-rules-engine-seed-data.xml"/>
 
 </databaseChangeLog>

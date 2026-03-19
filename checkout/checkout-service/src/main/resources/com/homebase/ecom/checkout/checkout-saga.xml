@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  OWIZ orchestration for the checkout saga.
-  Runs 7 steps in sequence via a Chain:
-  lockCart → lockPrice → reserveInventory → validateShipping → createOrder → commitPromo → initiatePayment
+  Checkout Saga Orchestration (OWIZ Chain)
+  ═════════════════════════════════════════
+  Triggered by: checkout STM transition INITIATED → AWAITING_PAYMENT
+  Referenced via: meta-orchestratedCommandsConfiguration on the 'process' event
 
-  Each command is a Spring bean. If any command throws, the STM transition
-  fails and compensation should be triggered via the 'compensate' event.
+  Runs 10 steps in sequence. If any command throws, the STM transition
+  fails and the 'compensate' event should be triggered to roll back.
+
+  Compensation order (reverse): releasePayment → rollbackPromo → cancelOrder
+    → releaseInventory → unlockPrice → unlockCart
 -->
 <flows>
   <flow id='checkout-saga-flow' defaultFlow="true">
@@ -13,32 +17,54 @@
     <chain id='checkoutSagaChain' componentName='org.chenile.owiz.impl.Chain' first='true'>
     </chain>
 
-    <command id='lockCartCommand' componentName='lockCartCommand'>
+    <!-- Step 1: Validate delivery address — pincode serviceability, completeness check -->
+    <command id='validateAddressCommand' componentName='validateAddressCommand'>
       <attach-to index="1" parentId="checkoutSagaChain"/>
     </command>
 
-    <command id='lockPriceCommand' componentName='lockPriceCommand'>
+    <!-- Step 2: Lock cart — prevent item changes during checkout -->
+    <command id='lockCartCommand' componentName='lockCartCommand'>
       <attach-to index="2" parentId="checkoutSagaChain"/>
     </command>
 
-    <command id='reserveInventoryCommand' componentName='reserveInventoryCommand'>
+    <!-- Step 3: Lock prices — snapshot current prices to prevent mid-checkout changes -->
+    <command id='lockPriceCommand' componentName='lockPriceCommand'>
       <attach-to index="3" parentId="checkoutSagaChain"/>
     </command>
 
-    <command id='validateShippingCommand' componentName='validateShippingCommand'>
+    <!-- Step 4: Reserve inventory — deduct available qty, create reservation records -->
+    <command id='reserveInventoryCommand' componentName='reserveInventoryCommand'>
       <attach-to index="4" parentId="checkoutSagaChain"/>
     </command>
 
-    <command id='createOrderCommand' componentName='createOrderCommand'>
+    <!-- Step 5: Validate shipping — check carrier availability, compute delivery estimate -->
+    <command id='validateShippingCommand' componentName='validateShippingCommand'>
       <attach-to index="5" parentId="checkoutSagaChain"/>
     </command>
 
-    <command id='commitPromoCommand' componentName='commitPromoCommand'>
+    <!-- Step 6: Estimate delivery date — carrier SLA + warehouse distance + processing time -->
+    <command id='estimateDeliveryCommand' componentName='estimateDeliveryCommand'>
       <attach-to index="6" parentId="checkoutSagaChain"/>
     </command>
 
-    <command id='initiatePaymentCommand' componentName='initiatePaymentCommand'>
+    <!-- Step 7: Screen for fraud — basic risk score check before order creation -->
+    <command id='screenFraudCommand' componentName='screenFraudCommand'>
       <attach-to index="7" parentId="checkoutSagaChain"/>
+    </command>
+
+    <!-- Step 8: Create order — persist order entity with CREATED state -->
+    <command id='createOrderCommand' componentName='createOrderCommand'>
+      <attach-to index="8" parentId="checkoutSagaChain"/>
+    </command>
+
+    <!-- Step 9: Commit promo — mark coupon as used, increment usage count -->
+    <command id='commitPromoCommand' componentName='commitPromoCommand'>
+      <attach-to index="9" parentId="checkoutSagaChain"/>
+    </command>
+
+    <!-- Step 10: Initiate payment — submit to payment gateway, await callback -->
+    <command id='initiatePaymentCommand' componentName='initiatePaymentCommand'>
+      <attach-to index="10" parentId="checkoutSagaChain"/>
     </command>
 
   </flow>

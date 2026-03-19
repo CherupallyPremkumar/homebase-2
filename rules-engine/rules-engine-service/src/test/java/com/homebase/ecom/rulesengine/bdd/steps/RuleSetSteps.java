@@ -2,84 +2,53 @@ package com.homebase.ecom.rulesengine.bdd.steps;
 
 import com.homebase.ecom.rulesengine.api.dto.DecisionDto;
 import com.homebase.ecom.rulesengine.api.dto.EvaluateRequest;
-import com.homebase.ecom.rulesengine.api.dto.RuleSetDto;
-import com.homebase.ecom.rulesengine.api.dto.RuleDto;
 import com.homebase.ecom.rulesengine.api.enums.Effect;
 import com.homebase.ecom.rulesengine.api.service.DecisionService;
-import com.homebase.ecom.rulesengine.api.service.RuleSetService;
-import io.cucumber.java.Before;
+import com.homebase.ecom.rulesengine.domain.model.Rule;
+import com.homebase.ecom.rulesengine.domain.model.RuleSet;
+import com.homebase.ecom.rulesengine.domain.repository.RuleSetRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.cucumber.spring.CucumberContextConfiguration;
-import org.chenile.security.KeycloakConnectionDetails;
-import org.chenile.security.test.BaseSecurityTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import com.homebase.ecom.rulesengine.SpringTestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = SpringTestConfig.class)
-@AutoConfigureMockMvc
-@CucumberContextConfiguration
-@ActiveProfiles("unittest")
 public class RuleSetSteps {
 
     @Autowired
-    private RuleSetService ruleSetService;
+    private RuleSetRepository ruleSetRepository;
 
     @Autowired
     private DecisionService decisionService;
 
-    @Autowired
-    private KeycloakConnectionDetails connectionDetails;
-
     private DecisionDto lastDecision;
     private List<DecisionDto> lastDecisions;
 
-    @DynamicPropertySource
-    static void keycloakProps(DynamicPropertyRegistry registry) {
-        registry.add("KEYCLOAK_HOST", BaseSecurityTest::getUrl);
-        registry.add("KEYCLOAK_PORT", BaseSecurityTest::getHttpPort);
-        registry.add("KEYCLOAK_REALM", () -> "tenant0");
-        BaseSecurityTest.keycloakProperties(registry);
-    }
-
-    @Before
-    public void beforeScenario() {
-        connectionDetails.host = BaseSecurityTest.getUrl();
-        connectionDetails.httpPort = BaseSecurityTest.getHttpPort();
-    }
-
     // ═══════════════════════════════════════════════════════════════
-    // GIVEN: Create inline policies (for unit-level tests)
+    // GIVEN: Create inline policies (for evaluation tests — bypasses STM)
     // ═══════════════════════════════════════════════════════════════
 
     @Given("a policy {string} exists with default effect {string}")
     public void aPolicyExistsWithDefaultEffect(String id, String effect) {
-        RuleSetDto dto = new RuleSetDto();
-        dto.setId(id);
-        dto.setName(id);
-        dto.setActive(true);
-        dto.setDefaultEffect(Effect.valueOf(effect));
-        dto.setRules(new ArrayList<>());
-        ruleSetService.createRuleSet(dto);
+        RuleSet ruleSet = new RuleSet();
+        ruleSet.setId(id);
+        ruleSet.setName(id);
+        ruleSet.setActive(true);
+        ruleSet.setDefaultEffect(Effect.valueOf(effect));
+        ruleSet.setTargetModule("TEST");
+        ruleSetRepository.save(ruleSet);
     }
 
     @Given("rule {string} with expression {string} and effect {string} is added to {string}")
     public void ruleWithExpressionAndEffectIsAddedTo(String ruleId, String expression, String effect, String ruleSetId) {
-        RuleSetDto ruleSet = ruleSetService.getRuleSet(ruleSetId);
-        RuleDto rule = new RuleDto();
+        RuleSet ruleSet = ruleSetRepository.findById(ruleSetId)
+                .orElseThrow(() -> new RuntimeException("RuleSet not found: " + ruleSetId));
+        Rule rule = new Rule();
         rule.setId(ruleId);
         rule.setName(ruleId);
         rule.setExpression(expression);
@@ -87,11 +56,11 @@ public class RuleSetSteps {
         rule.setPriority(100 - ruleSet.getRules().size());
         rule.setActive(true);
         ruleSet.getRules().add(rule);
-        ruleSetService.updateRuleSet(ruleSetId, ruleSet);
+        ruleSetRepository.save(ruleSet);
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // WHEN: Evaluate by ruleSetId (old style)
+    // WHEN: Evaluate by ruleSetId
     // ═══════════════════════════════════════════════════════════════
 
     @When("I evaluate policy {string} with context:")
@@ -105,7 +74,7 @@ public class RuleSetSteps {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // WHEN: Evaluate by targetModule (real rules from policy-rules.json)
+    // WHEN: Evaluate by targetModule
     // ═══════════════════════════════════════════════════════════════
 
     @When("I evaluate rules for module {string} with facts:")
@@ -167,7 +136,6 @@ public class RuleSetSteps {
         assertTrue("No decision with metadata " + key + "=" + expectedValue, found);
     }
 
-    // Old-style assertions
     @Then("the decision should be {string}")
     public void theDecisionShouldBe(String expected) {
         assertNotNull("Decision was null", lastDecision);
@@ -181,7 +149,7 @@ public class RuleSetSteps {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // HELPER: Parse fact values to proper types
+    // HELPER
     // ═══════════════════════════════════════════════════════════════
 
     private Map<String, Object> parseTypedFacts(Map<String, String> rawFacts) {

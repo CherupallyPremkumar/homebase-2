@@ -11,7 +11,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>user-query-api</artifactId>
-	<name>User Query API — Shared DTOs for user query responses</name>
+	<name>user-query-api</name>
 	<description>
 		Contains only DTOs (Data Transfer Objects) for user query responses.
 		Both user-query-service (as resultType in MyBatis XML) and

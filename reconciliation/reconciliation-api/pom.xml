@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>reconciliation-api</artifactId>
-    <name>Reconciliation API</name>
+    <name>reconciliation-api</name>
 
     <dependencies>
         <dependency>

@@ -12,7 +12,7 @@
 	
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>user-query-service</artifactId>
-	<name>Query Service Metadata for user </name>
+	<name>user-query-service</name>
 	<description>Query Service Metadata for user </description>
 
 	<properties>

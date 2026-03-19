@@ -11,7 +11,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>returnrequest-query-api</artifactId>
-	<name>ReturnRequest Query API — Shared DTOs for returnrequest query responses</name>
+	<name>returnrequest-query-api</name>
 
 	<dependencies>
 	</dependencies>

@@ -13,7 +13,7 @@
 	<artifactId>storage-local</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Storage Local — Local Filesystem ObjectStorage for Dev/Testing</name>
+	<name>storage-local</name>
 
 	<dependencies>
 		<dependency>

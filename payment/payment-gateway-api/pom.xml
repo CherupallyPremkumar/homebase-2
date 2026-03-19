@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>payment-gateway-api</artifactId>
-    <name>Payment Gateway API</name>
+    <name>payment-gateway-api</name>
     <description>Gateway abstraction layer</description>
 
     <dependencies>

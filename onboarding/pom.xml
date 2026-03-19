@@ -23,7 +23,7 @@
 
 	<groupId>com.homebase.ecom.onboarding</groupId>
 	<artifactId>onboarding-parent</artifactId>
-	<name>Onboarding Parent</name>
+	<name>onboarding-parent</name>
 	<description>Parent POM for Supplier Onboarding</description>
 
 	<dependencyManagement>

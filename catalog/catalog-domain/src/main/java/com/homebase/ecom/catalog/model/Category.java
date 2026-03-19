@@ -26,8 +26,15 @@ public class Category  extends BaseEntity {
     private LocalDateTime updatedAt;
     private CategoryMetadata metadata;
     private List<Category> children = new ArrayList<>();
+    private String tenant;
 
+    public String getTenant() {
+        return tenant;
+    }
 
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
+    }
 
     public String getName() {
         return name;

@@ -13,7 +13,7 @@
     <groupId>com.homebase.ecom.cms</groupId>
     <artifactId>cms-parent</artifactId>
     <packaging>pom</packaging>
-    <name>CMS Parent</name>
+    <name>cms-parent</name>
 
     <modules>
         <module>cms-api</module>

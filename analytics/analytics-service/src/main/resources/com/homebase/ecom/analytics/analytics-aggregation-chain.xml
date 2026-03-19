@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Analytics Aggregation Pipeline (Stateless OWIZ Chain)
+  ═════════════════════════════════════════════════════
+  Input:  AggregationRequest (date range, granularity: DAILY/WEEKLY/MONTHLY)
+  Output: AnalyticsSummary (daily_sales_summary + product_performance records)
+
+  Called by: analytics scheduler (daily batch job at 02:00 AM IST)
+  Writes to: daily_sales_summary, product_performance tables
+-->
+<flows>
+  <flow id="analytics-aggregation-flow" defaultFlow="true">
+    <chain id="analyticsChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Fetch completed orders and revenue data for the aggregation period -->
+    <command id="fetchDailySales" componentName="fetchDailySalesCommand">
+      <attach-to index="1" parentId="analyticsChain"/>
+    </command>
+
+    <!-- Step 2: Aggregate revenue, units sold, average order value by product -->
+    <command id="aggregateByProduct" componentName="aggregateByProductCommand">
+      <attach-to index="2" parentId="analyticsChain"/>
+    </command>
+
+    <!-- Step 3: Aggregate by category (top categories, category revenue share) -->
+    <command id="aggregateByCategory" componentName="aggregateByCategoryCommand">
+      <attach-to index="3" parentId="analyticsChain"/>
+    </command>
+
+    <!-- Step 4: Aggregate by seller (seller GMV, order count, return rate) -->
+    <command id="aggregateBySeller" componentName="aggregateBySellerCommand">
+      <attach-to index="4" parentId="analyticsChain"/>
+    </command>
+
+    <!-- Step 5: Compute conversion metrics (view→cart rate, cart→order rate, return rate) -->
+    <command id="computeConversionRates" componentName="computeConversionRatesCommand">
+      <attach-to index="5" parentId="analyticsChain"/>
+    </command>
+
+    <!-- Step 6: Compute customer metrics (new vs returning, AOV by segment, cohort retention) -->
+    <command id="computeCustomerMetrics" componentName="computeCustomerMetricsCommand">
+      <attach-to index="6" parentId="analyticsChain"/>
+    </command>
+
+    <!-- Step 7: Build and persist daily summary records -->
+    <command id="buildDailySummary" componentName="buildDailySummaryCommand">
+      <attach-to index="7" parentId="analyticsChain"/>
+    </command>
+  </flow>
+</flows>

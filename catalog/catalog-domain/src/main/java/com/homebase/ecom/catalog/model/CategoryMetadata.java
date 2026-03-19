@@ -1,8 +1,5 @@
 package com.homebase.ecom.catalog.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * CategoryMetadata - Value Object in Domain
  */

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+    <event-information eventId="publish" meta-acls="POLICY_ADMIN,test.premium" meta-bodyType="com.homebase.ecom.compliance.dto.PlatformPolicyPayload"/>
+    <event-information eventId="amend"   meta-acls="POLICY_ADMIN,test.premium" meta-bodyType="com.homebase.ecom.compliance.dto.PlatformPolicyPayload"/>
+    <event-information eventId="suspend" meta-acls="POLICY_ADMIN,COMPLIANCE_OFFICER,test.premium"/>
+    <event-information eventId="retire"  meta-acls="POLICY_ADMIN,test.premium"/>
+
+    <flow id="platformPolicy" initial-state="DRAFT" default="true">
+        <security-strategy componentName="stmSecurityStrategy"/>
+
+        <manual-state id="DRAFT" initialState="true" meta-mainPath="true">
+            <on eventId="publish" newStateId="PUBLISHED"/>
+        </manual-state>
+
+        <manual-state id="PUBLISHED" meta-mainPath="true">
+            <on eventId="amend"   newStateId="AMENDED"/>
+            <on eventId="suspend" newStateId="SUSPENDED"/>
+            <on eventId="retire"  newStateId="RETIRED"/>
+        </manual-state>
+
+        <manual-state id="AMENDED">
+            <on eventId="publish" newStateId="PUBLISHED"/>
+            <on eventId="suspend" newStateId="SUSPENDED"/>
+        </manual-state>
+
+        <manual-state id="SUSPENDED">
+            <on eventId="publish" newStateId="PUBLISHED"/>
+            <on eventId="retire"  newStateId="RETIRED"/>
+        </manual-state>
+
+        <manual-state id="RETIRED" meta-isFinal="true"/>
+    </flow>
+</states>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Inventory Inbound Processing Pipeline (OWIZ Chain)
+  ═══════════════════════════════════════════════════
+  Input:  InboundShipment (supplier ID, items with SKU/qty, purchase order reference)
+  Output: InboundResult (accepted qty, rejected qty, damage report, warehouse locations)
+
+  Called by: inventory STM STOCK_PENDING → STOCK_INSPECTION transition
+  Handles:  Supplier shipment receiving, quality check, warehouse putaway
+-->
+<flows>
+  <flow id="inventory-inbound-flow" defaultFlow="true">
+    <chain id="inboundChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Validate inbound shipment against purchase order (SKUs, quantities match) -->
+    <command id="validateAgainstPO" componentName="validateAgainstPOCommand">
+      <attach-to index="1" parentId="inboundChain"/>
+    </command>
+
+    <!-- Step 2: Perform quality check — visual inspection, packaging integrity, MFG date -->
+    <command id="performQualityCheck" componentName="performQualityCheckCommand">
+      <attach-to index="2" parentId="inboundChain"/>
+    </command>
+
+    <!-- Step 3: Categorize items — accepted, damaged, short-shipped, excess -->
+    <command id="categorizeItems" componentName="categorizeItemsCommand">
+      <attach-to index="3" parentId="inboundChain"/>
+    </command>
+
+    <!-- Step 4: Allocate warehouse location (zone, aisle, shelf, bin) for accepted items -->
+    <command id="allocateWarehouseLocation" componentName="allocateWarehouseLocationCommand">
+      <attach-to index="4" parentId="inboundChain"/>
+    </command>
+
+    <!-- Step 5: Update stock levels — increment available quantity for accepted items -->
+    <command id="updateStockLevels" componentName="updateStockLevelsCommand">
+      <attach-to index="5" parentId="inboundChain"/>
+    </command>
+
+    <!-- Step 6: Generate GRN (Goods Received Note) with acceptance/rejection breakdown -->
+    <command id="generateGRN" componentName="generateGRNCommand">
+      <attach-to index="6" parentId="inboundChain"/>
+    </command>
+  </flow>
+</flows>

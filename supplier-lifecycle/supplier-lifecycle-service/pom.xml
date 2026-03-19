@@ -11,7 +11,7 @@
 
     <artifactId>supplier-lifecycle-service</artifactId>
     <packaging>jar</packaging>
-    <name>Supplier Lifecycle Service</name>
+    <name>supplier-lifecycle-service</name>
 
     <dependencies>
         <dependency>

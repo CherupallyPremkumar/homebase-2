@@ -47,7 +47,7 @@
         <!-- ============================================================ -->
         <insert tableName="inventory_reservations">
             <column name="inventory_item_id" value="inv-1"/>
-            <column name="order_id" value="ord-101"/>
+            <column name="order_id" value="ord-1"/>
             <column name="session_id" value="sess-1"/>
             <column name="quantity" valueNumeric="5"/>
             <column name="reserved_at" valueDate="2026-03-15T10:00:00"/>
@@ -56,7 +56,7 @@
         </insert>
         <insert tableName="inventory_reservations">
             <column name="inventory_item_id" value="inv-1"/>
-            <column name="order_id" value="ord-102"/>
+            <column name="order_id" value="ord-2"/>
             <column name="session_id" value="sess-2"/>
             <column name="quantity" valueNumeric="10"/>
             <column name="reserved_at" valueDate="2026-03-15T10:05:00"/>
@@ -65,7 +65,7 @@
         </insert>
         <insert tableName="inventory_reservations">
             <column name="inventory_item_id" value="inv-6"/>
-            <column name="order_id" value="ord-103"/>
+            <column name="order_id" value="ord-3"/>
             <column name="session_id" value="sess-3"/>
             <column name="quantity" valueNumeric="50"/>
             <column name="reserved_at" valueDate="2026-03-15T11:00:00"/>
@@ -89,7 +89,7 @@
             <column name="inventory_item_id" value="inv-1"/>
             <column name="type" value="PICK"/>
             <column name="quantity" valueNumeric="20"/>
-            <column name="reference_id" value="ord-100"/>
+            <column name="reference_id" value="ord-1"/>
             <column name="fulfillment_center_id" value="FC-CHENNAI"/>
             <column name="movement_time" valueDate="2026-03-14T14:00:00"/>
             <column name="reason" value="Order fulfilled"/>

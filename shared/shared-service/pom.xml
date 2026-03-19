@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>shared-service</artifactId>
-	<name>Shared Service Implementation</name>
+	<name>shared-service</name>
 
 	<dependencies>
 		<dependency>

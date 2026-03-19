@@ -26,7 +26,7 @@
 	
 	<groupId>com.homebase.ecom.inventory</groupId>
 	<artifactId>inventory-parent</artifactId>
-	<name>All Modules that belong to the Inventory </name>
+	<name>inventory-parent</name>
 	<description>Modules execution project and Parent Pom</description>
 
 	<dependencyManagement>

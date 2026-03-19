@@ -17,7 +17,10 @@ public class ChenileRuleSetEntityStore implements EntityStore<RuleSet> {
 
     @Override
     public void store(RuleSet entity) {
-        ruleSetRepository.save(entity);
+        RuleSet saved = ruleSetRepository.save(entity);
+        // Copy back generated fields onto the original domain object
+        entity.setId(saved.getId());
+        entity.setVersion(saved.getVersion());
     }
 
     @Override

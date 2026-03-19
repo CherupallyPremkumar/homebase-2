@@ -1,31 +1,56 @@
 <flows>
+  <!--
+    GST Tax Computation Pipeline (Stateless OWIZ Chain)
+    ════════════════════════════════════════════════════
+    Input:  TaxRequest (line items with HSN, seller GSTIN, buyer state, amounts)
+    Output: TaxBreakdown (per-item CGST/SGST/IGST/cess/TCS amounts)
+
+    Called by: pricing-flow (calculateTax step), order (invoice generation)
+    References: GST Act 2017, HSN code master, state-wise rate tables
+  -->
   <flow id="tax-flow" defaultFlow="true">
     <chain id="taxChain" componentName="org.chenile.owiz.impl.Chain" first="true">
     </chain>
 
-    <!-- Step 1: Resolve HSN codes from product category -->
+    <!-- Step 1: Resolve HSN/SAC codes from product category and type -->
     <command id="resolveHsnCodes" componentName="resolveHsnCodesCommand">
       <attach-to index="1" parentId="taxChain"/>
     </command>
 
-    <!-- Step 2: Determine INTRA_STATE vs INTER_STATE -->
-    <command id="determineTaxType" componentName="determineTaxTypeCommand">
+    <!-- Step 2: Check GST exemptions (essential goods, export, SEZ supply) -->
+    <command id="checkExemptions" componentName="checkExemptionsCommand">
       <attach-to index="2" parentId="taxChain"/>
     </command>
 
-    <!-- Step 3: Look up tax rates for each HSN code -->
-    <command id="lookupTaxRates" componentName="lookupTaxRatesCommand">
+    <!-- Step 3: Determine INTRA_STATE (CGST+SGST) vs INTER_STATE (IGST) -->
+    <command id="determineTaxType" componentName="determineTaxTypeCommand">
       <attach-to index="3" parentId="taxChain"/>
     </command>
 
-    <!-- Step 4: Calculate CGST/SGST or IGST + cess amounts -->
-    <command id="calculateTaxAmounts" componentName="calculateTaxAmountsCommand">
+    <!-- Step 4: Look up applicable tax rates for each HSN code + tax type -->
+    <command id="lookupTaxRates" componentName="lookupTaxRatesCommand">
       <attach-to index="4" parentId="taxChain"/>
     </command>
 
-    <!-- Step 5: Build final tax response -->
-    <command id="buildTaxResponse" componentName="buildTaxResponseCommand">
+    <!-- Step 5: Apply reverse charge mechanism (unregistered seller, specified services) -->
+    <command id="applyReverseCharge" componentName="applyReverseChargeCommand">
       <attach-to index="5" parentId="taxChain"/>
+    </command>
+
+    <!-- Step 6: Calculate CGST/SGST or IGST + cess amounts per line item -->
+    <command id="calculateTaxAmounts" componentName="calculateTaxAmountsCommand">
+      <attach-to index="6" parentId="taxChain"/>
+    </command>
+
+    <!-- Step 7: Calculate TCS (Tax Collected at Source — Section 52, CGST Act) -->
+    <!-- Applicable for marketplace operators on net taxable supplies above threshold -->
+    <command id="calculateTCS" componentName="calculateTCSCommand">
+      <attach-to index="7" parentId="taxChain"/>
+    </command>
+
+    <!-- Step 8: Build final tax response with per-item and summary breakdown -->
+    <command id="buildTaxResponse" componentName="buildTaxResponseCommand">
+      <attach-to index="8" parentId="taxChain"/>
     </command>
   </flow>
 </flows>

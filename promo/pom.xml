@@ -14,7 +14,7 @@
     <groupId>com.homebase.ecom.promo</groupId>
     <artifactId>promo</artifactId>
     <packaging>pom</packaging>
-    <name>Promo Parent</name>
+    <name>promo-parent</name>
 
     <modules>
         <module>promo-api</module>

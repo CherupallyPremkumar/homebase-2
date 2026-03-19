@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Compliance">
+
+    <resultMap id="platformPolicyResult" type="com.homebase.ecom.compliance.query.dto.PlatformPolicyQueryDto">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="policyCategory" column="policy_category"/>
+        <result property="versionLabel" column="version_label"/>
+        <result property="stateId" column="state_id"/>
+        <result property="flowId" column="flow_id"/>
+        <result property="effectiveDate" column="effective_date"/>
+        <result property="summaryText" column="summary_text"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="lastModifiedTime" column="last_modified_time"/>
+        <result property="tenant" column="tenant"/>
+    </resultMap>
+
+    <resultMap id="agreementResult" type="com.homebase.ecom.compliance.query.dto.AgreementQueryDto">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="agreementType" column="agreement_type"/>
+        <result property="versionLabel" column="version_label"/>
+        <result property="stateId" column="state_id"/>
+        <result property="flowId" column="flow_id"/>
+        <result property="effectiveDate" column="effective_date"/>
+        <result property="expiryDate" column="expiry_date"/>
+        <result property="mandatoryAcceptance" column="mandatory_acceptance"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="lastModifiedTime" column="last_modified_time"/>
+        <result property="tenant" column="tenant"/>
+    </resultMap>
+
+    <resultMap id="acceptanceResult" type="com.homebase.ecom.compliance.query.dto.AcceptanceQueryDto">
+        <result property="id" column="id"/>
+        <result property="agreementTitle" column="agreement_title"/>
+        <result property="userId" column="user_id"/>
+        <result property="userType" column="user_type"/>
+        <result property="acceptedAt" column="accepted_at"/>
+        <result property="acceptanceMethod" column="acceptance_method"/>
+        <result property="current" column="is_current"/>
+        <result property="agreementId" column="agreement_id"/>
+    </resultMap>
+
+    <resultMap id="regulationResult" type="com.homebase.ecom.compliance.query.dto.RegulationQueryDto">
+        <result property="id" column="id"/>
+        <result property="actName" column="act_name"/>
+        <result property="section" column="section"/>
+        <result property="requirementSummary" column="requirement_summary"/>
+        <result property="jurisdiction" column="jurisdiction"/>
+        <result property="applicableTo" column="applicable_to"/>
+        <result property="enforcementDate" column="enforcement_date"/>
+        <result property="category" column="category"/>
+        <result property="active" column="is_active"/>
+    </resultMap>
+
+    <!-- PLATFORM POLICIES -->
+
+    <select id="getPlatformPolicies-count" resultType="int">
+        SELECT count(*) FROM platform_policies
+        <where>
+            <if test="title != null">AND COALESCE(title, name) LIKE #{title}</if>
+            <if test="policyCategory != null">AND COALESCE(policy_category, category) = #{policyCategory}</if>
+            <if test="stateId != null">AND state_id IN <foreach item="item" collection="stateId" open="(" separator="," close=")">#{item}</foreach></if>
+        </where>
+    </select>
+
+    <select id="getPlatformPolicies" resultMap="platformPolicyResult">
+        SELECT id, COALESCE(title, name) AS title,
+               COALESCE(policy_category, category) AS policy_category,
+               COALESCE(version_label, version_number) AS version_label,
+               state_id, flow_id,
+               COALESCE(effective_date, effective_from) AS effective_date,
+               summary_text, created_time, last_modified_time, tenant
+        FROM platform_policies
+        <where>
+            <if test="title != null">AND COALESCE(title, name) LIKE #{title}</if>
+            <if test="policyCategory != null">AND COALESCE(policy_category, category) = #{policyCategory}</if>
+            <if test="stateId != null">AND state_id IN <foreach item="item" collection="stateId" open="(" separator="," close=")">#{item}</foreach></if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- AGREEMENTS -->
+
+    <select id="getAgreements-count" resultType="int">
+        SELECT count(*) FROM agreements
+        <where>
+            <if test="title != null">AND COALESCE(title, name) LIKE #{title}</if>
+            <if test="agreementType != null">AND agreement_type = #{agreementType}</if>
+            <if test="stateId != null">AND state_id IN <foreach item="item" collection="stateId" open="(" separator="," close=")">#{item}</foreach></if>
+            <if test="mandatoryAcceptance != null">AND COALESCE(mandatory_acceptance, requires_acceptance) = #{mandatoryAcceptance}</if>
+        </where>
+    </select>
+
+    <select id="getAgreements" resultMap="agreementResult">
+        SELECT id, COALESCE(title, name) AS title,
+               agreement_type, COALESCE(version_label, version_number) AS version_label,
+               state_id, flow_id,
+               COALESCE(effective_date, effective_from) AS effective_date,
+               COALESCE(expiry_date, effective_until) AS expiry_date,
+               COALESCE(mandatory_acceptance, requires_acceptance) AS mandatory_acceptance,
+               created_time, last_modified_time, tenant
+        FROM agreements
+        <where>
+            <if test="title != null">AND COALESCE(title, name) LIKE #{title}</if>
+            <if test="agreementType != null">AND agreement_type = #{agreementType}</if>
+            <if test="stateId != null">AND state_id IN <foreach item="item" collection="stateId" open="(" separator="," close=")">#{item}</foreach></if>
+            <if test="mandatoryAcceptance != null">AND COALESCE(mandatory_acceptance, requires_acceptance) = #{mandatoryAcceptance}</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- AGREEMENT ACCEPTANCES -->
+
+    <select id="getAcceptances-count" resultType="int">
+        SELECT count(*) FROM agreement_acceptances aa JOIN agreements a ON aa.agreement_id = a.id
+        <where>
+            <if test="agreementId != null">AND aa.agreement_id = #{agreementId}</if>
+            <if test="userId != null">AND aa.user_id = #{userId}</if>
+            <if test="userType != null">AND aa.user_type = #{userType}</if>
+            <if test="isCurrent != null">AND aa.is_current = #{isCurrent}</if>
+        </where>
+    </select>
+
+    <select id="getAcceptances" resultMap="acceptanceResult">
+        SELECT aa.id, COALESCE(a.title, a.name) AS agreement_title,
+               aa.user_id, aa.user_type, aa.accepted_at,
+               aa.acceptance_method, aa.is_current, aa.agreement_id
+        FROM agreement_acceptances aa JOIN agreements a ON aa.agreement_id = a.id
+        <where>
+            <if test="agreementId != null">AND aa.agreement_id = #{agreementId}</if>
+            <if test="userId != null">AND aa.user_id = #{userId}</if>
+            <if test="userType != null">AND aa.user_type = #{userType}</if>
+            <if test="isCurrent != null">AND aa.is_current = #{isCurrent}</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- REGULATIONS -->
+
+    <select id="getRegulations-count" resultType="int">
+        SELECT count(*) FROM regulations
+        <where>
+            <if test="actName != null">AND act_name LIKE #{actName}</if>
+            <if test="jurisdiction != null">AND jurisdiction = #{jurisdiction}</if>
+            <if test="category != null">AND category = #{category}</if>
+            <if test="applicableTo != null">AND applicable_to = #{applicableTo}</if>
+            <if test="isActive != null">AND is_active = #{isActive}</if>
+        </where>
+    </select>
+
+    <select id="getRegulations" resultMap="regulationResult">
+        SELECT id, act_name, section, requirement_summary,
+               jurisdiction, applicable_to, enforcement_date,
+               category, is_active
+        FROM regulations
+        <where>
+            <if test="actName != null">AND act_name LIKE #{actName}</if>
+            <if test="jurisdiction != null">AND jurisdiction = #{jurisdiction}</if>
+            <if test="category != null">AND category = #{category}</if>
+            <if test="applicableTo != null">AND applicable_to = #{applicableTo}</if>
+            <if test="isActive != null">AND is_active = #{isActive}</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+</mapper>

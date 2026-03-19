@@ -1,8 +1,10 @@
 package com.homebase.ecom.rulesengine.configuration;
 
 import com.homebase.ecom.rulesengine.domain.model.RuleSet;
+import com.homebase.ecom.rulesengine.domain.service.RulesEngineValidator;
 import com.homebase.ecom.rulesengine.service.cmds.*;
 import com.homebase.ecom.rulesengine.service.impl.DecisionServiceImpl;
+import com.homebase.ecom.rulesengine.service.impl.RuleSetStateEntityService;
 import org.chenile.core.context.ContextContainer;
 import com.homebase.ecom.rulesengine.service.impl.RuleSetServiceImpl;
 import com.homebase.ecom.rulesengine.service.loader.RuleSetDataLoader;
@@ -23,6 +25,7 @@ import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
 import org.chenile.workflow.service.stmcmds.DefaultPostSaveHook;
 import org.chenile.workflow.service.stmcmds.DefaultAutomaticStateComputation;
+import org.chenile.workflow.service.stmcmds.StmAuthoritiesBuilder;
 import org.chenile.workflow.param.MinimalPayload;
 import com.homebase.ecom.rulesengine.domain.service.*;
 import com.homebase.ecom.rulesengine.domain.repository.RuleSetRepository;
@@ -89,11 +92,12 @@ public class RulesEngineConfiguration {
     }
 
     @Bean
-    HmStateEntityServiceImpl<RuleSet> ruleSetStateEntityService(
+    RuleSetStateEntityService ruleSetStateEntityService(
             @Qualifier("ruleSetEntityStm") STM<RuleSet> stm,
             @Qualifier("ruleSetActionsInfoProvider") STMActionsInfoProvider infoProvider,
-            EntityStore<RuleSet> entityStore) {
-        return new HmStateEntityServiceImpl<>(stm, infoProvider, entityStore);
+            EntityStore<RuleSet> entityStore,
+            RulesEngineValidator validator) {
+        return new RuleSetStateEntityService(stm, infoProvider, entityStore, validator);
     }
 
     @Bean
@@ -176,24 +180,37 @@ public class RulesEngineConfiguration {
         return new AreActivitiesComplete(activityChecker);
     }
 
+    // Validator — error codes 11001-11099
+    @Bean
+    public RulesEngineValidator rulesEngineValidator() {
+        return new RulesEngineValidator(200); // name max length
+    }
+
     // Individual Actions
     @Bean
-    SubmitRuleSetAction ruleSetSubmitAction() { return new SubmitRuleSetAction(); }
+    SubmitRuleSetAction ruleSetSubmitAction(RulesEngineValidator validator) { return new SubmitRuleSetAction(validator); }
 
     @Bean
-    ActivateRuleSetAction ruleSetActivateAction() { return new ActivateRuleSetAction(); }
+    ActivateRuleSetAction ruleSetActivateAction(RulesEngineValidator validator) { return new ActivateRuleSetAction(validator); }
 
     @Bean
-    ApproveRuleSetAction ruleSetApproveAction() { return new ApproveRuleSetAction(); }
+    ApproveRuleSetAction ruleSetApproveAction(RulesEngineValidator validator) { return new ApproveRuleSetAction(validator); }
 
     @Bean
-    RevertRuleSetAction ruleSetRevertAction() { return new RevertRuleSetAction(); }
+    RevertRuleSetAction ruleSetRevertAction(RulesEngineValidator validator) { return new RevertRuleSetAction(validator); }
 
     @Bean
-    DeprecateRuleSetAction ruleSetDeprecateAction() { return new DeprecateRuleSetAction(); }
+    DeprecateRuleSetAction ruleSetDeprecateAction(RulesEngineValidator validator) { return new DeprecateRuleSetAction(validator); }
 
     @Bean
-    DeactivateRuleSetAction ruleSetDeactivateAction() { return new DeactivateRuleSetAction(); }
+    DeactivateRuleSetAction ruleSetDeactivateAction(RulesEngineValidator validator) { return new DeactivateRuleSetAction(validator); }
+
+    // Security: authorities supplier for ACL on RuleSet controller
+    @Bean
+    StmAuthoritiesBuilder ruleSetEventAuthoritiesSupplier(
+            @Qualifier("ruleSetActionsInfoProvider") STMActionsInfoProvider infoProvider) {
+        return new StmAuthoritiesBuilder(infoProvider, true);
+    }
 
     // Config & Enablement
     @Bean
@@ -300,8 +317,8 @@ public class RulesEngineConfiguration {
     }
 
     @Bean
-    public RuleSetService ruleSetService(RuleSetRepository repository, HmStateEntityServiceImpl<RuleSet> stateService, FactMetadataService factMetadataService) {
-        return new RuleSetServiceImpl(repository, stateService, factMetadataService);
+    public RuleSetService ruleSetService(RuleSetRepository repository) {
+        return new RuleSetServiceImpl(repository);
     }
 
     @Bean

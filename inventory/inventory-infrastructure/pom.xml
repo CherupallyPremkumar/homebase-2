@@ -10,7 +10,7 @@
     </parent>
     <artifactId>inventory-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>Inventory Infrastructure — JPA Adapters, Flyway Migrations</name>
+    <name>inventory-infrastructure</name>
 
     <dependencies>
         <dependency>

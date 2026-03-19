@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Shipping Rate Calculation Pipeline (Stateless OWIZ Chain)
+  ═════════════════════════════════════════════════════════
+  Input:  ShippingRateRequest (items with weight/dimensions, origin warehouse,
+          destination pincode, delivery speed preference)
+  Output: ShippingOptions (ranked list of carrier + rate + ETA combinations)
+
+  Called by: checkout-saga (validateShipping step), cart (show estimated shipping)
+  Calls:    carrier APIs (Delhivery, BlueDart, DTDC, India Post, etc.)
+-->
+<flows>
+  <flow id="shipping-rate-flow" defaultFlow="true">
+    <chain id="shippingRateChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Fetch available carriers for origin→destination route -->
+    <command id="fetchAvailableCarriers" componentName="fetchAvailableCarriersCommand">
+      <attach-to index="1" parentId="shippingRateChain"/>
+    </command>
+
+    <!-- Step 2: Calculate zone-based rates per carrier (intra-city, intra-state, inter-state, remote) -->
+    <command id="calculateZoneRates" componentName="calculateZoneRatesCommand">
+      <attach-to index="2" parentId="shippingRateChain"/>
+    </command>
+
+    <!-- Step 3: Apply volumetric/dimensional weight pricing (whichever is higher) -->
+    <command id="applyWeightDimensional" componentName="applyWeightDimensionalCommand">
+      <attach-to index="3" parentId="shippingRateChain"/>
+    </command>
+
+    <!-- Step 4: Apply free shipping rules (order above threshold, Prime equivalent, promo) -->
+    <command id="applyFreeShippingRules" componentName="applyFreeShippingRulesCommand">
+      <attach-to index="4" parentId="shippingRateChain"/>
+    </command>
+
+    <!-- Step 5: Apply peak/festival surcharges (Diwali, sale events, remote area surcharge) -->
+    <command id="applyPeakSurcharge" componentName="applyPeakSurchargeCommand">
+      <attach-to index="5" parentId="shippingRateChain"/>
+    </command>
+
+    <!-- Step 6: Calculate estimated delivery dates per carrier based on SLA -->
+    <command id="calculateDeliveryEstimates" componentName="calculateDeliveryEstimatesCommand">
+      <attach-to index="6" parentId="shippingRateChain"/>
+    </command>
+
+    <!-- Step 7: Rank options by delivery speed, then by cost — build response -->
+    <command id="rankAndBuildOptions" componentName="rankAndBuildOptionsCommand">
+      <attach-to index="7" parentId="shippingRateChain"/>
+    </command>
+  </flow>
+</flows>

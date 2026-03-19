@@ -13,7 +13,7 @@
 	<artifactId>cconfig-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Cconfig API Model and Interfaces</name>
+	<name>cconfig-api</name>
     <dependencies>
       <dependency>
         <groupId>org.chenile</groupId>

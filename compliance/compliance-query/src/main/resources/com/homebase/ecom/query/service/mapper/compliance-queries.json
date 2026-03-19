@@ -1,0 +1,241 @@
+[
+  {
+    "id": "Compliance.getPlatformPolicies",
+    "name": "platformPolicies",
+    "workflowName": "platformPolicy",
+    "stateColumn": "stateId",
+    "flowColumn": "flowId",
+    "acls": ["POLICY_ADMIN", "COMPLIANCE_OFFICER", "test.premium"],
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "columnType": "Text"
+      },
+      "title": {
+        "name": "title",
+        "columnType": "Text",
+        "filterable": true,
+        "likeQuery": true,
+        "sortable": true
+      },
+      "policyCategory": {
+        "name": "policyCategory",
+        "columnType": "Text",
+        "filterable": true
+      },
+      "versionLabel": {
+        "name": "versionLabel",
+        "columnType": "Text"
+      },
+      "stateId": {
+        "name": "stateId",
+        "columnType": "Text",
+        "filterable": true,
+        "containsQuery": true
+      },
+      "flowId": {
+        "name": "flowId",
+        "columnType": "Text"
+      },
+      "effectiveDate": {
+        "name": "effectiveDate",
+        "columnType": "Date",
+        "sortable": true
+      },
+      "summaryText": {
+        "name": "summaryText",
+        "columnType": "Text"
+      },
+      "createdTime": {
+        "name": "createdTime",
+        "columnType": "DateTime",
+        "sortable": true
+      },
+      "lastModifiedTime": {
+        "name": "lastModifiedTime",
+        "columnType": "DateTime",
+        "sortable": true
+      },
+      "tenant": {
+        "name": "tenant",
+        "columnType": "Text"
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "Compliance.getAgreements",
+    "name": "agreements",
+    "workflowName": "agreement",
+    "stateColumn": "stateId",
+    "flowColumn": "flowId",
+    "acls": ["LEGAL_ADMIN", "POLICY_ADMIN", "test.premium"],
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "columnType": "Text"
+      },
+      "title": {
+        "name": "title",
+        "columnType": "Text",
+        "filterable": true,
+        "likeQuery": true,
+        "sortable": true
+      },
+      "agreementType": {
+        "name": "agreementType",
+        "columnType": "Text",
+        "filterable": true
+      },
+      "versionLabel": {
+        "name": "versionLabel",
+        "columnType": "Text"
+      },
+      "stateId": {
+        "name": "stateId",
+        "columnType": "Text",
+        "filterable": true,
+        "containsQuery": true
+      },
+      "flowId": {
+        "name": "flowId",
+        "columnType": "Text"
+      },
+      "effectiveDate": {
+        "name": "effectiveDate",
+        "columnType": "Date",
+        "sortable": true
+      },
+      "expiryDate": {
+        "name": "expiryDate",
+        "columnType": "Date"
+      },
+      "mandatoryAcceptance": {
+        "name": "mandatoryAcceptance",
+        "columnType": "CheckBox",
+        "filterable": true
+      },
+      "createdTime": {
+        "name": "createdTime",
+        "columnType": "DateTime",
+        "sortable": true
+      },
+      "lastModifiedTime": {
+        "name": "lastModifiedTime",
+        "columnType": "DateTime",
+        "sortable": true
+      },
+      "tenant": {
+        "name": "tenant",
+        "columnType": "Text"
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "Compliance.getAcceptances",
+    "name": "agreementAcceptances",
+    "acls": ["LEGAL_ADMIN", "POLICY_ADMIN", "test.premium"],
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "columnType": "Text"
+      },
+      "agreementTitle": {
+        "name": "agreementTitle",
+        "columnType": "Text"
+      },
+      "userId": {
+        "name": "userId",
+        "columnType": "Text",
+        "filterable": true
+      },
+      "userType": {
+        "name": "userType",
+        "columnType": "Text",
+        "filterable": true
+      },
+      "acceptedAt": {
+        "name": "acceptedAt",
+        "columnType": "DateTime",
+        "sortable": true
+      },
+      "acceptanceMethod": {
+        "name": "acceptanceMethod",
+        "columnType": "Text"
+      },
+      "isCurrent": {
+        "name": "isCurrent",
+        "columnType": "CheckBox",
+        "filterable": true
+      },
+      "agreementId": {
+        "name": "agreementId",
+        "columnType": "Text",
+        "filterable": true,
+        "display": false
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "Compliance.getRegulations",
+    "name": "regulations",
+    "acls": ["POLICY_ADMIN", "COMPLIANCE_OFFICER", "test.premium"],
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "columnType": "Text"
+      },
+      "actName": {
+        "name": "actName",
+        "columnType": "Text",
+        "filterable": true,
+        "likeQuery": true,
+        "sortable": true
+      },
+      "section": {
+        "name": "section",
+        "columnType": "Text"
+      },
+      "requirementSummary": {
+        "name": "requirementSummary",
+        "columnType": "Text"
+      },
+      "jurisdiction": {
+        "name": "jurisdiction",
+        "columnType": "Text",
+        "filterable": true
+      },
+      "applicableTo": {
+        "name": "applicableTo",
+        "columnType": "Text",
+        "filterable": true
+      },
+      "enforcementDate": {
+        "name": "enforcementDate",
+        "columnType": "Date",
+        "sortable": true
+      },
+      "category": {
+        "name": "category",
+        "columnType": "Text",
+        "filterable": true
+      },
+      "isActive": {
+        "name": "isActive",
+        "columnType": "CheckBox",
+        "filterable": true
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  }
+]

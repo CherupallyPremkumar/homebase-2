@@ -12,7 +12,7 @@
 
 	<artifactId>settlement-infrastructure</artifactId>
 	<packaging>jar</packaging>
-	<name>Settlement Infrastructure Persistence and Adapters</name>
+	<name>settlement-infrastructure</name>
 
 	<dependencies>
 		<dependency>

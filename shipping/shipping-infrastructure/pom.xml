@@ -11,7 +11,7 @@
 
 	<artifactId>shipping-infrastructure</artifactId>
 	<packaging>jar</packaging>
-	<name>Shipping Infrastructure Persistence and Adapters</name>
+	<name>shipping-infrastructure</name>
 
 	<dependencies>
 		<dependency>

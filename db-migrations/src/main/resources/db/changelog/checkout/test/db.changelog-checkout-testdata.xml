@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Checkout test data — STM states from checkout-states.xml:
+        INITIATED, PROCESSING, COMPLETED, PAYMENT_FAILED, EXPIRED,
+        COMPENSATING, COMPENSATED, CHECK_RETRY_ALLOWED
+    -->
+    <changeSet id="checkout-test-data" author="homebase-test">
+
+        <!-- chk-1: COMPLETED — Priya's successful checkout → ord-1 -->
+        <insert tableName="checkout">
+            <column name="id" value="chk-1"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="cart_id" value="cart-4"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="payment_id" value="pay-1"/>
+            <column name="subtotal" valueNumeric="1499.00"/>
+            <column name="discount_amount" valueNumeric="200.00"/>
+            <column name="shipping_cost" valueNumeric="0.00"/>
+            <column name="tax_amount" valueNumeric="269.82"/>
+            <column name="total" valueNumeric="1568.82"/>
+            <column name="currency" value="INR"/>
+            <column name="coupon_codes" value="FLAT200"/>
+            <column name="shipping_address_id" value="addr-1"/>
+            <column name="shipping_method" value="STANDARD"/>
+            <column name="last_completed_step" value="confirmCheckout"/>
+            <column name="idempotency_key" value="idem-chk-1"/>
+            <column name="completed_at" valueDate="2026-03-10T14:33:00"/>
+            <column name="state_id" value="COMPLETED"/>
+            <column name="flow_id" value="checkout-flow"/>
+            <column name="created_time" valueDate="2026-03-10T14:28:00"/>
+            <column name="last_modified_time" valueDate="2026-03-10T14:33:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="5"/>
+        </insert>
+
+        <!-- chk-2: PROCESSING — Currently in saga pipeline -->
+        <insert tableName="checkout">
+            <column name="id" value="chk-2"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="cart_id" value="cart-3"/>
+            <column name="subtotal" valueNumeric="4200.00"/>
+            <column name="tax_amount" valueNumeric="756.00"/>
+            <column name="total" valueNumeric="4956.00"/>
+            <column name="currency" value="INR"/>
+            <column name="shipping_address_id" value="addr-4"/>
+            <column name="shipping_method" value="EXPRESS"/>
+            <column name="last_completed_step" value="calculateTax"/>
+            <column name="idempotency_key" value="idem-chk-2"/>
+            <column name="expires_at" valueDate="2026-03-15T20:00:00"/>
+            <column name="state_id" value="PROCESSING"/>
+            <column name="flow_id" value="checkout-flow"/>
+            <column name="created_time" valueDate="2026-03-15T19:30:00"/>
+            <column name="last_modified_time" valueDate="2026-03-15T19:32:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- chk-3: PAYMENT_FAILED — Payment declined by gateway -->
+        <insert tableName="checkout">
+            <column name="id" value="chk-3"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="cart_id" value="cart-2"/>
+            <column name="subtotal" valueNumeric="2397.00"/>
+            <column name="tax_amount" valueNumeric="431.46"/>
+            <column name="total" valueNumeric="2828.46"/>
+            <column name="currency" value="INR"/>
+            <column name="shipping_address_id" value="addr-3"/>
+            <column name="last_completed_step" value="processPayment"/>
+            <column name="failure_reason" value="Card declined: insufficient funds"/>
+            <column name="idempotency_key" value="idem-chk-3"/>
+            <column name="state_id" value="PAYMENT_FAILED"/>
+            <column name="flow_id" value="checkout-flow"/>
+            <column name="created_time" valueDate="2026-03-14T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-14T10:03:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <!-- chk-4: EXPIRED — Session timed out -->
+        <insert tableName="checkout">
+            <column name="id" value="chk-4"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="cart_id" value="cart-5"/>
+            <column name="subtotal" valueNumeric="800.00"/>
+            <column name="total" valueNumeric="944.00"/>
+            <column name="currency" value="INR"/>
+            <column name="expires_at" valueDate="2025-12-25T11:00:00"/>
+            <column name="abandoned_at" valueDate="2025-12-25T11:00:00"/>
+            <column name="abandoned_reason" value="SESSION_TIMEOUT"/>
+            <column name="idempotency_key" value="idem-chk-4"/>
+            <column name="state_id" value="EXPIRED"/>
+            <column name="flow_id" value="checkout-flow"/>
+            <column name="created_time" valueDate="2025-12-25T10:30:00"/>
+            <column name="last_modified_time" valueDate="2025-12-25T11:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- Checkout Items for chk-1 -->
+        <insert tableName="checkout_item">
+            <column name="id" value="ci-1a"/>
+            <column name="checkout_id" value="chk-1"/>
+            <column name="product_id" value="prod-1"/>
+            <column name="variant_id" value="var-1a"/>
+            <column name="sku" value="SKU-001"/>
+            <column name="product_name" value="Widget A"/>
+            <column name="supplier_id" value="supplier-1"/>
+            <column name="quantity" valueNumeric="2"/>
+            <column name="unit_price" valueNumeric="500.00"/>
+            <column name="line_total" valueNumeric="1000.00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="checkout_item">
+            <column name="id" value="ci-1b"/>
+            <column name="checkout_id" value="chk-1"/>
+            <column name="product_id" value="prod-2"/>
+            <column name="variant_id" value="var-2a"/>
+            <column name="sku" value="SKU-002"/>
+            <column name="product_name" value="Gadget B"/>
+            <column name="supplier_id" value="supplier-2"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="499.00"/>
+            <column name="line_total" valueNumeric="499.00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Checkout Saga Log for chk-1 (all steps completed) -->
+        <insert tableName="checkout_saga_log">
+            <column name="id" value="csl-1a"/>
+            <column name="checkout_id" value="chk-1"/>
+            <column name="step_name" value="validateAddress"/>
+            <column name="step_status" value="COMPLETED"/>
+            <column name="started_at" valueDate="2026-03-10T14:28:01"/>
+            <column name="completed_at" valueDate="2026-03-10T14:28:02"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="checkout_saga_log">
+            <column name="id" value="csl-1b"/>
+            <column name="checkout_id" value="chk-1"/>
+            <column name="step_name" value="reserveInventory"/>
+            <column name="step_status" value="COMPLETED"/>
+            <column name="started_at" valueDate="2026-03-10T14:28:02"/>
+            <column name="completed_at" valueDate="2026-03-10T14:28:05"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="checkout_saga_log">
+            <column name="id" value="csl-1c"/>
+            <column name="checkout_id" value="chk-1"/>
+            <column name="step_name" value="processPayment"/>
+            <column name="step_status" value="COMPLETED"/>
+            <column name="started_at" valueDate="2026-03-10T14:30:00"/>
+            <column name="completed_at" valueDate="2026-03-10T14:32:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Saga Log for chk-3 (payment failed) -->
+        <insert tableName="checkout_saga_log">
+            <column name="id" value="csl-3a"/>
+            <column name="checkout_id" value="chk-3"/>
+            <column name="step_name" value="processPayment"/>
+            <column name="step_status" value="FAILED"/>
+            <column name="started_at" valueDate="2026-03-14T10:02:00"/>
+            <column name="completed_at" valueDate="2026-03-14T10:03:00"/>
+            <column name="error_message" value="Gateway error: Card declined — insufficient funds"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

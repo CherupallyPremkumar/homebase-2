@@ -13,7 +13,7 @@
 
     <artifactId>user-domain</artifactId>
     <packaging>jar</packaging>
-    <name>User Domain — Aggregate Root, Entities, Value Objects, Ports, Events</name>
+    <name>user-domain</name>
 
     <dependencies>
         <!-- user-api: DTOs, service interfaces, exceptions -->

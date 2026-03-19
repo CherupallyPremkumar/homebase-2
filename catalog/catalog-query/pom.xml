@@ -14,7 +14,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>catalog-query-service</artifactId>
 	<version>${revision}</version>
-	<name>Query Service Test Cases for catalog </name>
+	<name>catalog-query-service</name>
 	<description>Query Service Test Cases for catalog </description>
 
 	<properties>
@@ -44,21 +44,7 @@
 			<artifactId>spring-boot-starter-jdbc</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
+
 		<dependency>
     		<groupId>org.chenile</groupId>
     		<artifactId>chenile-query-controller</artifactId>
@@ -71,6 +57,11 @@
 		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>cucumber-utils</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -88,6 +79,10 @@
 			<artifactId>db-migrations</artifactId>
 			<version>${revision}</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-liquibase</artifactId>
 		</dependency>
 	</dependencies>
 </project>

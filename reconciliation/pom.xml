@@ -13,7 +13,7 @@
     <groupId>com.homebase.ecom.reconciliation</groupId>
     <artifactId>reconciliation-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Reconciliation Parent</name>
+    <name>reconciliation-parent</name>
 
     <modules>
         <module>reconciliation-api</module>

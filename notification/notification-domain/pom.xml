@@ -10,7 +10,7 @@
     </parent>
     <artifactId>notification-domain</artifactId>
     <packaging>jar</packaging>
-    <name>Notification Domain — Aggregate Root, Entities, Value Objects, Ports</name>
+    <name>notification-domain</name>
 
     <dependencies>
         <dependency>

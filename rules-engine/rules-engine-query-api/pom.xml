@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>rules-engine-query-api</artifactId>
-    <name>Rules Engine Query API</name>
+    <name>rules-engine-query-api</name>
 
     <dependencies>
         <dependency>

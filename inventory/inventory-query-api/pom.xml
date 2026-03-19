@@ -11,7 +11,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>inventory-query-api</artifactId>
-	<name>Inventory Query API — Shared DTOs for inventory query responses</name>
+	<name>inventory-query-api</name>
 	<description>
 		Pure DTO jar. Contains only InventoryDto used as MyBatis resultType in inventory.xml
 		and as the return type in ChenileRepository consumer interfaces.

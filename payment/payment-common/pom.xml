@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>payment-common</artifactId>
-    <name>Payment Common</name>
+    <name>payment-common</name>
     <description>Core domain and shared types</description>
 
     <dependencies>

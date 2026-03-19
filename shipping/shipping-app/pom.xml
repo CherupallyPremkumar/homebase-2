@@ -9,7 +9,7 @@
 	</parent>
 	<artifactId>shipping-app</artifactId>
 	<packaging>jar</packaging>
-	<name>Shipping App — Spring Boot Launcher</name>
+	<name>shipping-app</name>
 
 	<dependencies>
 		<dependency>

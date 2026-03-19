@@ -7,6 +7,7 @@ import com.homebase.ecom.catalog.infrastructure.persistence.mapper.CatalogMapper
 import com.homebase.ecom.catalog.infrastructure.persistence.repository.CatalogItemJpaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -26,6 +27,11 @@ public class CatalogItemRepositoryImpl implements CatalogItemRepository {
     @Override
     public Optional<CatalogItem> findByProductId(String productId) {
         return jpaRepository.findByProductId(productId).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<CatalogItem> findAll() {
+        return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
     }
 
     @Override

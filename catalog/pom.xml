@@ -11,7 +11,7 @@
     <artifactId>catalog</artifactId>
     <packaging>pom</packaging>
 
-    <name>catalog</name>
+    <name>catalog-parent</name>
 
     <modules>
         <module>catalog-api</module>

@@ -13,7 +13,7 @@
 
     <artifactId>supplier-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>Supplier Infrastructure — JPA Adapters, Entity Store</name>
+    <name>supplier-infrastructure</name>
 
     <dependencies>
         <dependency>

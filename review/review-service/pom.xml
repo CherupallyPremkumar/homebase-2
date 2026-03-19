@@ -12,7 +12,7 @@
 	<artifactId>review-service</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Review Service Implementations</name>
+	<name>review-service</name>
 
 	<dependencies>
 		<dependency>

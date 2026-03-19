@@ -13,7 +13,7 @@
 	<artifactId>cart-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Cart API Model and Interfaces</name>
+	<name>cart-api</name>
 
 	<dependencies>
 		<dependency>

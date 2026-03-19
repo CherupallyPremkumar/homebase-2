@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Return Processing Saga Sub-Chains (OWIZ)
+  ═════════════════════════════════════════
+  Each chain is invoked by a saga STM transition action.
+  Breaks complex return steps into configurable pipeline operations.
+-->
+<flows>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- Chain 1: Inspect Item (ITEM_RECEIVED → CHECK_ITEM_CONDITION)       -->
+  <!-- Warehouse inspects returned item and determines condition           -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <flow id="inspect-item-chain">
+    <chain id="inspectItemChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Verify returned item matches original order (SKU, quantity, serial number) -->
+    <command id="verifyItemIdentity" componentName="verifyItemIdentityCommand">
+      <attach-to index="1" parentId="inspectItemChain"/>
+    </command>
+
+    <!-- Step 2: Assess physical condition (NEW, LIKE_NEW, GOOD, DAMAGED, TAMPERED) -->
+    <command id="assessItemCondition" componentName="assessItemConditionCommand">
+      <attach-to index="2" parentId="inspectItemChain"/>
+    </command>
+
+    <!-- Step 3: Determine refund amount based on condition and return policy -->
+    <command id="determineRefundAmount" componentName="determineRefundAmountCommand">
+      <attach-to index="3" parentId="inspectItemChain"/>
+    </command>
+
+    <!-- Step 4: Record inspection result with photographic evidence reference -->
+    <command id="recordInspectionResult" componentName="recordInspectionResultCommand">
+      <attach-to index="4" parentId="inspectItemChain"/>
+    </command>
+  </flow>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- Chain 2: Restock Inventory (CHECK_ITEM_CONDITION → INVENTORY_RESTOCKED) -->
+  <!-- Returns good items to sellable inventory                             -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <flow id="restock-chain">
+    <chain id="restockChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Select target warehouse for restocking (same or nearest) -->
+    <command id="selectRestockWarehouse" componentName="selectRestockWarehouseCommand">
+      <attach-to index="1" parentId="restockChain"/>
+    </command>
+
+    <!-- Step 2: Update inventory quantities — increment available stock -->
+    <command id="updateInventoryQuantity" componentName="updateInventoryQuantityCommand">
+      <attach-to index="2" parentId="restockChain"/>
+    </command>
+
+    <!-- Step 3: Confirm restock and publish inventory update event -->
+    <command id="confirmRestock" componentName="confirmRestockCommand">
+      <attach-to index="3" parentId="restockChain"/>
+    </command>
+  </flow>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- Chain 3: Process Refund (SETTLEMENT_ADJUSTED → REFUNDED)            -->
+  <!-- Initiates refund via payment BC and tracks completion                -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <flow id="refund-chain">
+    <chain id="refundChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Calculate final refund amount (full or partial based on inspection) -->
+    <command id="calculateRefundAmount" componentName="calculateRefundAmountCommand">
+      <attach-to index="1" parentId="refundChain"/>
+    </command>
+
+    <!-- Step 2: Initiate refund via payment BC (calls payment.initiateRefund event) -->
+    <command id="initiatePaymentRefund" componentName="initiatePaymentRefundCommand">
+      <attach-to index="2" parentId="refundChain"/>
+    </command>
+
+    <!-- Step 3: Confirm refund initiated and update return processing record -->
+    <command id="confirmRefundInitiated" componentName="confirmRefundInitiatedCommand">
+      <attach-to index="3" parentId="refundChain"/>
+    </command>
+  </flow>
+
+</flows>

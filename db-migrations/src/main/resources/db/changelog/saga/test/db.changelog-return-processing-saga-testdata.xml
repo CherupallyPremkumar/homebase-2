@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Return Processing Saga + inspections, dispositions, labels test data
+        STM states: INITIATED, PICKUP_SCHEDULED, ITEM_RECEIVED, CHECK_ITEM_CONDITION,
+        INVENTORY_RESTOCKED, SETTLEMENT_ADJUSTED, REFUNDED, COMPLETED,
+        ITEM_REJECTED, CANCELLING, COMPENSATION_DONE
+    -->
+    <changeSet id="return-processing-saga-test-data" author="homebase-test">
+
+        <!-- rpsaga-1: COMPLETED — Full return processing lifecycle -->
+        <insert tableName="return_processing_saga">
+            <column name="id" value="rpsaga-1"/>
+            <column name="return_request_id" value="rr-4"/>
+            <column name="order_id" value="ord-5"/>
+            <column name="order_item_id" value="oi-5a"/>
+            <column name="refund_amount" valueNumeric="3499.00"/>
+            <column name="shipment_id" value="ret-ship-1"/>
+            <column name="refund_id" value="refund-rp-1"/>
+            <column name="state_id" value="COMPLETED"/>
+            <column name="flow_id" value="return-processing-flow"/>
+            <column name="created_time" valueDate="2026-02-21T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="8"/>
+        </insert>
+
+        <!-- rpsaga-2: PICKUP_SCHEDULED — Awaiting pickup -->
+        <insert tableName="return_processing_saga">
+            <column name="id" value="rpsaga-2"/>
+            <column name="return_request_id" value="rr-1"/>
+            <column name="order_id" value="ord-5"/>
+            <column name="order_item_id" value="oi-5a"/>
+            <column name="refund_amount" valueNumeric="4128.82"/>
+            <column name="state_id" value="PICKUP_SCHEDULED"/>
+            <column name="flow_id" value="return-processing-flow"/>
+            <column name="created_time" valueDate="2026-03-08T10:10:00"/>
+            <column name="last_modified_time" valueDate="2026-03-08T12:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- Return Inspections -->
+        <insert tableName="return_inspections">
+            <column name="id" value="rinsp-1"/>
+            <column name="return_request_id" value="rr-4"/>
+            <column name="saga_id" value="rpsaga-1"/>
+            <column name="order_item_id" value="oi-5a"/>
+            <column name="product_id" value="prod-5"/>
+            <column name="sku" value="SKU-005"/>
+            <column name="warehouse_id" value="WH-MUMBAI"/>
+            <column name="inspector_id" value="staff-1"/>
+            <column name="inspection_date" valueDate="2026-02-26T14:00:00"/>
+            <column name="condition_code" value="GOOD"/>
+            <column name="is_resellable" valueBoolean="true"/>
+            <column name="damage_description" value="Minor cosmetic scratch on back panel, functionally perfect"/>
+            <column name="notes" value="Audio IC confirmed working after firmware update"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Return Dispositions -->
+        <insert tableName="return_dispositions">
+            <column name="id" value="rdisp-1"/>
+            <column name="return_request_id" value="rr-4"/>
+            <column name="inspection_id" value="rinsp-1"/>
+            <column name="order_item_id" value="oi-5a"/>
+            <column name="product_id" value="prod-5"/>
+            <column name="sku" value="SKU-005"/>
+            <column name="disposition_type" value="RESTOCK"/>
+            <column name="original_price" valueNumeric="3499.00"/>
+            <column name="recovered_value" valueNumeric="3499.00"/>
+            <column name="loss_amount" valueNumeric="0.00"/>
+            <column name="restocked_warehouse_id" value="WH-MUMBAI"/>
+            <column name="restocked_at" valueDate="2026-02-27T10:00:00"/>
+            <column name="decided_by" value="user-8"/>
+            <column name="notes" value="Restocked as refurbished — resellable"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Return Labels -->
+        <insert tableName="return_labels">
+            <column name="id" value="rlabel-1"/>
+            <column name="return_request_id" value="rr-1"/>
+            <column name="carrier" value="Delhivery"/>
+            <column name="tracking_number" value="DEL-RET-TRK-001"/>
+            <column name="label_url" value="https://labels.homebase.in/return-rr-1.pdf"/>
+            <column name="label_format" value="PDF"/>
+            <column name="expiry_date" valueDate="2026-03-18"/>
+            <column name="is_used" valueBoolean="false"/>
+            <column name="pickup_scheduled_date" valueDate="2026-03-10"/>
+            <column name="pickup_address_json" value='{"name":"Rahul Verma","city":"New Delhi","pincode":"110070"}'/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

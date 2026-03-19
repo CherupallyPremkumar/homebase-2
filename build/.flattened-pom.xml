@@ -11,7 +11,7 @@
   <artifactId>build-parent</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>All Modules that belong to the Build deployment</name>
+  <name>build-parent</name>
   <description>Modules execution and deployment project</description>
   <licenses>
     <license>

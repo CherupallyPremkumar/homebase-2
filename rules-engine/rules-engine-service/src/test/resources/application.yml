@@ -36,9 +36,13 @@ spring:
     hikari:
       poolName: Hikari
       auto-commit: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    contexts: dev, faker
+
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
 
 server:
   port: 8085

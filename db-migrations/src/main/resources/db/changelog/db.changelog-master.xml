@@ -41,6 +41,7 @@
     <include file="db/changelog/warehouse/db.changelog-warehouse.xml"/>
     <include file="db/changelog/fulfillment/db.changelog-fulfillment.xml"/>
     <include file="db/changelog/reconciliation/db.changelog-reconciliation.xml"/>
+    <include file="db/changelog/compliance/db.changelog-compliance.xml"/>
 
     <!-- ================================================================== -->
     <!-- Domain — saga orchestrators                                        -->

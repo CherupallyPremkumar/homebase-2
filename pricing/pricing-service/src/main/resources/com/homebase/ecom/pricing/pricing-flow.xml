@@ -1,41 +1,66 @@
 <flows>
+  <!--
+    Pricing Calculation Pipeline (Stateless OWIZ Chain)
+    ═══════════════════════════════════════════════════
+    Input:  PricingRequest (cart items, customer segment, seller info, shipping address)
+    Output: PriceBreakdown (per-item + totals with integrity hash)
+
+    Called by: cart.refreshPricing, checkout.lockPrice
+    Calls:    rules-engine (discount rules), promo (coupon validation),
+              tax (GST calculation), offer (sale prices)
+  -->
   <flow id="pricing-flow" defaultFlow="true">
     <chain id="pricingChain" componentName="org.chenile.owiz.impl.Chain" first="true">
     </chain>
 
-    <!-- Step 1: Set base prices from cart snapshot -->
+    <!-- Step 1: Resolve base MRP and seller listing price from product catalog -->
     <command id="resolveBasePrices" componentName="resolveBasePricesCommand">
       <attach-to index="1" parentId="pricingChain"/>
     </command>
 
-    <!-- Step 2: ALL rule-based discounts via centralized rules engine (volume, tier, dynamic, flash sale) -->
-    <command id="rulesEngineDiscount" componentName="rulesEngineDiscountCommand">
+    <!-- Step 2: Validate seller price against MRP rules (marketplace min/max discount) -->
+    <command id="validateSellerMinPrice" componentName="validateSellerMinPriceCommand">
       <attach-to index="2" parentId="pricingChain"/>
     </command>
 
-    <!-- Step 3: Apply offer/sale prices from Offer service -->
-    <command id="applyPromoPrice" componentName="applyPromoPriceCommand">
+    <!-- Step 3: Apply customer segment pricing (wholesale, B2B, loyalty tier) -->
+    <command id="applySegmentPricing" componentName="applySegmentPricingCommand">
       <attach-to index="3" parentId="pricingChain"/>
     </command>
 
-    <!-- Step 4: Validate and apply coupon codes -->
-    <command id="applyCoupon" componentName="applyCouponCommand">
+    <!-- Step 4: ALL rule-based discounts via centralized rules engine (volume, tier, dynamic, flash sale) -->
+    <command id="rulesEngineDiscount" componentName="rulesEngineDiscountCommand">
       <attach-to index="4" parentId="pricingChain"/>
     </command>
 
-    <!-- Step 5: Cap total discount at max percentage -->
-    <command id="enforceDiscountCap" componentName="enforceDiscountCapCommand">
+    <!-- Step 5: Apply offer/sale prices from Offer service -->
+    <command id="applyPromoPrice" componentName="applyPromoPriceCommand">
       <attach-to index="5" parentId="pricingChain"/>
     </command>
 
-    <!-- Step 6: Calculate GST via TaxCalculationPort -->
-    <command id="calculateTax" componentName="calculateTaxCommand">
+    <!-- Step 6: Validate and apply coupon codes -->
+    <command id="applyCoupon" componentName="applyCouponCommand">
       <attach-to index="6" parentId="pricingChain"/>
     </command>
 
-    <!-- Step 7: Assemble immutable PriceBreakdown with integrity hash -->
-    <command id="buildResponse" componentName="buildPricingResponseCommand">
+    <!-- Step 7: Stack and cap total discount at max percentage per category -->
+    <command id="enforceDiscountCap" componentName="enforceDiscountCapCommand">
       <attach-to index="7" parentId="pricingChain"/>
+    </command>
+
+    <!-- Step 8: Calculate GST (CGST/SGST/IGST + cess) via TaxCalculationPort -->
+    <command id="calculateTax" componentName="calculateTaxCommand">
+      <attach-to index="8" parentId="pricingChain"/>
+    </command>
+
+    <!-- Step 9: Calculate TCS (Tax Collected at Source) for marketplace sellers above threshold -->
+    <command id="calculateTCS" componentName="calculateTCSCommand">
+      <attach-to index="9" parentId="pricingChain"/>
+    </command>
+
+    <!-- Step 10: Snapshot prices and build immutable PriceBreakdown with integrity hash -->
+    <command id="buildResponse" componentName="buildPricingResponseCommand">
+      <attach-to index="10" parentId="pricingChain"/>
     </command>
   </flow>
 </flows>

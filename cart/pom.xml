@@ -27,7 +27,7 @@
 	
 	<groupId>com.homebase.ecom.cart</groupId>
 	<artifactId>cart-parent</artifactId>
-	<name>All Modules that belong to the Cart </name>
+	<name>cart-parent</name>
 	<description>Modules execution project and Parent Pom</description>
 
 	<dependencyManagement>

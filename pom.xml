@@ -16,7 +16,7 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
 
-    <name>HomeBase Parent</name>
+    <name>homebase-parent</name>
     <description>Parent POM for HomeBase microservices</description>
 
     <properties>
@@ -64,6 +64,7 @@
         <module>cms</module>
         <module>analytics</module>
         <module>reconciliation</module>
+        <module>compliance</module>
         <module>supplier-lifecycle</module>
         <module>ui-query</module>
     </modules>
@@ -594,6 +595,33 @@
             <dependency>
                 <groupId>com.homebase.ecom.reconciliation</groupId>
                 <artifactId>reconciliation-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Compliance Modules -->
+            <dependency>
+                <groupId>com.homebase.ecom.compliance</groupId>
+                <artifactId>compliance-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.compliance</groupId>
+                <artifactId>compliance-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.compliance</groupId>
+                <artifactId>compliance-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.compliance</groupId>
+                <artifactId>compliance-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.compliance</groupId>
+                <artifactId>compliance-client</artifactId>
                 <version>${revision}</version>
             </dependency>
 

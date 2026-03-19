@@ -13,7 +13,7 @@
 
     <artifactId>user-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>User Infrastructure — JPA Adapters, Flyway Migrations</name>
+    <name>user-infrastructure</name>
 
     <dependencies>
         <dependency>

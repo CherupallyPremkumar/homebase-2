@@ -10,7 +10,7 @@
     </parent>
     <artifactId>analytics-api</artifactId>
     <packaging>jar</packaging>
-    <name>Analytics API — DTOs, Service Interfaces</name>
+    <name>analytics-api</name>
 
     <dependencies>
         <dependency>

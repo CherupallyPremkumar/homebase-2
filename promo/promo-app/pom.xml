@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>promo-app</artifactId>
-    <name>Promo App</name>
+    <name>promo-app</name>
 
     <dependencies>
         <dependency>

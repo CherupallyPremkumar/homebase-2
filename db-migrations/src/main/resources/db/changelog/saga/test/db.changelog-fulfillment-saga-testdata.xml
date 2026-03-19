@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Fulfillment saga + fulfillment_orders test data — STM states:
+        INITIATED, INVENTORY_RESERVED, SHIPMENT_CREATED, SHIPPED,
+        CUSTOMER_NOTIFIED, COMPLETED, CANCELLING, COMPENSATION_DONE
+    -->
+    <changeSet id="fulfillment-saga-test-data" author="homebase-test">
+
+        <!-- Fulfillment Saga for ord-1: COMPLETED -->
+        <insert tableName="fulfillment_saga">
+            <column name="id" value="fsaga-1"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="user_id" value="user-1"/>
+            <column name="shipment_id" value="ship-1"/>
+            <column name="tracking_number" value="DELHIVERY-TRK-001"/>
+            <column name="state_id" value="COMPLETED"/>
+            <column name="flow_id" value="fulfillment-flow"/>
+            <column name="created_time" valueDate="2026-03-10T14:35:00"/>
+            <column name="last_modified_time" valueDate="2026-03-13T14:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="6"/>
+        </insert>
+
+        <!-- Fulfillment Saga for ord-3: INITIATED (just started) -->
+        <insert tableName="fulfillment_saga">
+            <column name="id" value="fsaga-2"/>
+            <column name="order_id" value="ord-3"/>
+            <column name="user_id" value="user-3"/>
+            <column name="state_id" value="INITIATED"/>
+            <column name="flow_id" value="fulfillment-flow"/>
+            <column name="created_time" valueDate="2026-03-12T09:25:00"/>
+            <column name="last_modified_time" valueDate="2026-03-12T09:25:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+        <!-- Fulfillment Saga for ord-4: COMPENSATION_DONE (cancelled) -->
+        <insert tableName="fulfillment_saga">
+            <column name="id" value="fsaga-3"/>
+            <column name="order_id" value="ord-4"/>
+            <column name="user_id" value="user-1"/>
+            <column name="error_message" value="Order cancelled by customer — compensation completed"/>
+            <column name="state_id" value="COMPENSATION_DONE"/>
+            <column name="flow_id" value="fulfillment-flow"/>
+            <column name="created_time" valueDate="2026-03-08T14:05:00"/>
+            <column name="last_modified_time" valueDate="2026-03-08T16:10:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <!-- Fulfillment Orders -->
+        <insert tableName="fulfillment_orders">
+            <column name="id" value="fo-1"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="warehouse_id" value="WH-CHENNAI"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="item_count" valueNumeric="2"/>
+            <column name="shipped_at" valueDate="2026-03-11T08:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="fulfillment_orders">
+            <column name="id" value="fo-2"/>
+            <column name="order_id" value="ord-3"/>
+            <column name="warehouse_id" value="WH-BANGALORE"/>
+            <column name="status" value="PICKING"/>
+            <column name="item_count" valueNumeric="3"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Pick Lists -->
+        <insert tableName="pick_lists">
+            <column name="id" value="pick-1"/>
+            <column name="fulfillment_order_id" value="fo-1"/>
+            <column name="warehouse_id" value="WH-CHENNAI"/>
+            <column name="picker_id" value="staff-1"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="item_count" valueNumeric="2"/>
+            <column name="picked_count" valueNumeric="2"/>
+            <column name="started_at" valueDate="2026-03-11T06:30:00"/>
+            <column name="completed_at" valueDate="2026-03-11T07:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Pack Slips -->
+        <insert tableName="pack_slips">
+            <column name="id" value="pack-1"/>
+            <column name="fulfillment_order_id" value="fo-1"/>
+            <column name="pick_list_id" value="pick-1"/>
+            <column name="packer_id" value="staff-1"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="package_weight_grams" valueNumeric="450"/>
+            <column name="package_dimensions" value="25x15x10cm"/>
+            <column name="packed_at" valueDate="2026-03-11T07:30:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Fulfillment Saga Activity -->
+        <insert tableName="fulfillment_saga_activity">
+            <column name="id" value="fsa-1"/>
+            <column name="activity_name" value="initiate"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Fulfillment initiated for ord-1"/>
+            <column name="created_time" valueDate="2026-03-10T14:35:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

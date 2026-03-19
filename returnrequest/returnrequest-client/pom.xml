@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>returnrequest-client</artifactId>
-    <name>ReturnRequest Client — ProxyBuilder-based service client</name>
+    <name>returnrequest-client</name>
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom.returnrequest</groupId>

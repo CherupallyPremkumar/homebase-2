@@ -13,7 +13,7 @@
 	<artifactId>settlement-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Settlement API Model and Interfaces</name>
+	<name>settlement-api</name>
 
 	<dependencies>
 		<dependency>

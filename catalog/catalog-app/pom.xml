@@ -9,7 +9,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>catalog-app</artifactId>
-	<name>Catalog App — Spring Boot Launcher</name>
+	<name>catalog-app</name>
 
 	<dependencies>
 		<dependency>

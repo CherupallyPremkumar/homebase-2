@@ -10,7 +10,7 @@
   <groupId>com.homebase.ecom.build</groupId>
   <artifactId>core</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Build Core Test Module</name>
+  <name>core</name>
   <description>Core test module containing database setup, Liquibase config, and base setups for queries</description>
   <licenses>
     <license>

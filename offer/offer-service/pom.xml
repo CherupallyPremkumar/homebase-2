@@ -10,7 +10,7 @@
     </parent>
     <artifactId>offer-service</artifactId>
     <packaging>jar</packaging>
-    <name>Offer Service Implementations</name>
+    <name>offer-service</name>
 
     <dependencies>
         <dependency>

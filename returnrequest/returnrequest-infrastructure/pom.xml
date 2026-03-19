@@ -10,7 +10,7 @@
     </parent>
     <artifactId>returnrequest-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>Returnrequest Infrastructure — JPA Adapters, Flyway Migrations</name>
+    <name>returnrequest-infrastructure</name>
 
     <dependencies>
         <dependency>

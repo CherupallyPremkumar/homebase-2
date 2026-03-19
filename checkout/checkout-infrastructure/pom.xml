@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>checkout-infrastructure</artifactId>
-    <name>Checkout Infrastructure</name>
+    <name>checkout-infrastructure</name>
 
     <dependencies>
         <dependency>

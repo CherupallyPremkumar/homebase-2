@@ -13,7 +13,7 @@
 
     <artifactId>return-processing-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>Return Processing Infrastructure Persistence and Adapters</name>
+    <name>return-processing-infrastructure</name>
 
     <dependencies>
         <dependency>

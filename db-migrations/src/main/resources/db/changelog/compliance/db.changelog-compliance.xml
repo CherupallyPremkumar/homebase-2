@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- COMPLIANCE MODULE — Legal agreements, regulations, platform policies -->
+    <!-- 7 tables, 2 STM entities (agreements, platform_policies)            -->
+    <!-- ================================================================== -->
+
+    <!-- ================================================================== -->
+    <!-- 1. regulations — Government laws (read-only reference, no STM)      -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-001-regulations" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="regulations"/></not>
+        </preConditions>
+
+        <createTable tableName="regulations">
+            <!-- BaseJpaEntity fields -->
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+
+            <!-- Regulation-specific fields -->
+            <column name="act_name" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="section" type="VARCHAR(255)"/>
+            <column name="requirement_summary" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="full_text_url" type="VARCHAR(1000)"/>
+            <column name="jurisdiction" type="VARCHAR(100)" defaultValue="INDIA">
+                <constraints nullable="false"/>
+            </column>
+            <column name="applicable_to" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="enforcement_date" type="DATE"/>
+            <column name="category" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+
+        <createIndex tableName="regulations" indexName="idx_regulations_category">
+            <column name="category"/>
+        </createIndex>
+        <createIndex tableName="regulations" indexName="idx_regulations_jurisdiction">
+            <column name="jurisdiction"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 2. agreements — Versioned legal contracts (STM: agreement-flow)     -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-002-agreements" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="agreements"/></not>
+        </preConditions>
+
+        <createTable tableName="agreements">
+            <!-- BaseJpaEntity fields -->
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+
+            <!-- AbstractJpaStateEntity fields -->
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+
+            <!-- Agreement-specific fields -->
+            <column name="name" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="agreement_type" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version_number" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_html" type="TEXT"/>
+            <column name="content_plain" type="TEXT"/>
+            <column name="effective_from" type="DATE"/>
+            <column name="effective_until" type="DATE"/>
+            <column name="supersedes_id" type="VARCHAR(255)"/>
+            <column name="requires_acceptance" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="acceptance_type" type="VARCHAR(50)" defaultValue="CLICK_THROUGH"/>
+            <column name="applicable_to" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="legal_reviewer" type="VARCHAR(255)"/>
+            <column name="legal_review_date" type="DATE"/>
+            <column name="legal_review_notes" type="TEXT"/>
+        </createTable>
+
+        <createIndex tableName="agreements" indexName="idx_agreements_type">
+            <column name="agreement_type"/>
+        </createIndex>
+        <createIndex tableName="agreements" indexName="idx_agreements_state">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex tableName="agreements" indexName="idx_agreements_applicable">
+            <column name="applicable_to"/>
+        </createIndex>
+        <createIndex tableName="agreements" indexName="idx_agreements_type_state" unique="false">
+            <column name="agreement_type"/>
+            <column name="state_id"/>
+            <column name="tenant"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 3. agreement_activity — STM activity log                           -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-003-agreement-activity" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="agreement_activity"/></not>
+        </preConditions>
+
+        <createTable tableName="agreement_activity">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="activity_comment" type="VARCHAR(2000)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 4. agreement_acceptances — Legal proof of who signed what           -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-004-agreement-acceptances" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="agreement_acceptances"/></not>
+        </preConditions>
+
+        <createTable tableName="agreement_acceptances">
+            <!-- BaseJpaEntity fields -->
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+
+            <!-- Acceptance-specific fields -->
+            <column name="agreement_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="accepted_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ip_address" type="VARCHAR(50)"/>
+            <column name="user_agent" type="VARCHAR(1000)"/>
+            <column name="acceptance_method" type="VARCHAR(50)" defaultValue="CLICK_THROUGH"/>
+            <column name="is_current" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+
+        <createIndex tableName="agreement_acceptances" indexName="idx_acceptance_user">
+            <column name="user_id"/>
+            <column name="user_type"/>
+        </createIndex>
+        <createIndex tableName="agreement_acceptances" indexName="idx_acceptance_agreement">
+            <column name="agreement_id"/>
+        </createIndex>
+        <createIndex tableName="agreement_acceptances" indexName="idx_acceptance_current"
+                     unique="false">
+            <column name="user_id"/>
+            <column name="agreement_id"/>
+            <column name="is_current"/>
+        </createIndex>
+        <addForeignKeyConstraint constraintName="fk_acceptance_agreement"
+                                 baseTableName="agreement_acceptances" baseColumnNames="agreement_id"
+                                 referencedTableName="agreements" referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 5. platform_policies — Customer-facing policy pages (STM)          -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-005-platform-policies" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="platform_policies"/></not>
+        </preConditions>
+
+        <createTable tableName="platform_policies">
+            <!-- BaseJpaEntity fields -->
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+
+            <!-- AbstractJpaStateEntity fields -->
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+
+            <!-- Platform policy fields -->
+            <column name="name" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="policy_type" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="slug" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="content_html" type="TEXT"/>
+            <column name="content_plain" type="TEXT"/>
+            <column name="version_number" type="VARCHAR(50)"/>
+            <column name="effective_from" type="DATE"/>
+            <column name="effective_until" type="DATE"/>
+            <column name="supersedes_id" type="VARCHAR(255)"/>
+            <column name="category" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_order" type="INT" defaultValueNumeric="0"/>
+            <column name="is_footer_link" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+
+        <createIndex tableName="platform_policies" indexName="idx_pp_type">
+            <column name="policy_type"/>
+        </createIndex>
+        <createIndex tableName="platform_policies" indexName="idx_pp_state">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex tableName="platform_policies" indexName="idx_pp_category">
+            <column name="category"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 6. platform_policy_activity — STM activity log                     -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-006-platform-policy-activity" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="platform_policy_activity"/></not>
+        </preConditions>
+
+        <createTable tableName="platform_policy_activity">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="activity_comment" type="VARCHAR(2000)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 7. compliance_mappings — Regulation → Rule traceability             -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-007-compliance-mappings" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="compliance_mappings"/></not>
+        </preConditions>
+
+        <createTable tableName="compliance_mappings">
+            <!-- BaseJpaEntity fields -->
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+
+            <!-- Mapping fields -->
+            <column name="regulation_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="policy_rule_id" type="VARCHAR(255)"/>
+            <column name="platform_policy_id" type="VARCHAR(255)"/>
+            <column name="cconfig_key" type="VARCHAR(500)"/>
+            <column name="compliance_notes" type="TEXT"/>
+            <column name="verified_by" type="VARCHAR(255)"/>
+            <column name="verified_at" type="DATE"/>
+        </createTable>
+
+        <createIndex tableName="compliance_mappings" indexName="idx_cmap_regulation">
+            <column name="regulation_id"/>
+        </createIndex>
+        <addForeignKeyConstraint constraintName="fk_cmap_regulation"
+                                 baseTableName="compliance_mappings" baseColumnNames="regulation_id"
+                                 referencedTableName="regulations" referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 8. compliance_audits — Periodic compliance checks                  -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-008-compliance-audits" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="compliance_audits"/></not>
+        </preConditions>
+
+        <createTable tableName="compliance_audits">
+            <!-- BaseJpaEntity fields -->
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+
+            <!-- Audit fields -->
+            <column name="regulation_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="audit_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="audit_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="result" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="findings" type="TEXT"/>
+            <column name="evidence_url" type="VARCHAR(1000)"/>
+            <column name="auditor_id" type="VARCHAR(255)"/>
+            <column name="next_audit_date" type="DATE"/>
+        </createTable>
+
+        <createIndex tableName="compliance_audits" indexName="idx_caudit_regulation">
+            <column name="regulation_id"/>
+        </createIndex>
+        <createIndex tableName="compliance_audits" indexName="idx_caudit_result">
+            <column name="result"/>
+        </createIndex>
+        <addForeignKeyConstraint constraintName="fk_caudit_regulation"
+                                 baseTableName="compliance_audits" baseColumnNames="regulation_id"
+                                 referencedTableName="regulations" referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 9. Align agreements table with JPA entity columns                  -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-009-align-agreements-columns" author="homebase">
+        <addColumn tableName="agreements">
+            <column name="title" type="VARCHAR(500)"/>
+            <column name="version_label" type="VARCHAR(50)"/>
+            <column name="content_url" type="VARCHAR(1024)"/>
+            <column name="content_hash" type="VARCHAR(255)"/>
+            <column name="superseded_by_id" type="VARCHAR(255)"/>
+            <column name="effective_date" type="DATE"/>
+            <column name="expiry_date" type="DATE"/>
+            <column name="mandatory_acceptance" type="BOOLEAN" defaultValueBoolean="true"/>
+        </addColumn>
+        <!-- Drop NOT NULL on old columns no longer mapped by JPA entity -->
+        <dropNotNullConstraint tableName="agreements" columnName="name" columnDataType="VARCHAR(500)"/>
+        <dropNotNullConstraint tableName="agreements" columnName="version_number" columnDataType="VARCHAR(50)"/>
+        <dropNotNullConstraint tableName="agreements" columnName="agreement_type" columnDataType="VARCHAR(100)"/>
+        <dropNotNullConstraint tableName="agreements" columnName="applicable_to" columnDataType="VARCHAR(100)"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 10. Align platform_policies table with JPA entity columns          -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-010-align-platform-policies-columns" author="homebase">
+        <addColumn tableName="platform_policies">
+            <column name="title" type="VARCHAR(500)"/>
+            <column name="policy_category" type="VARCHAR(100)"/>
+            <column name="version_label" type="VARCHAR(50)"/>
+            <column name="content_url" type="VARCHAR(1024)"/>
+            <column name="content_hash" type="VARCHAR(255)"/>
+            <column name="summary_text" type="VARCHAR(2000)"/>
+            <column name="effective_date" type="DATE"/>
+        </addColumn>
+        <!-- Drop NOT NULL on slug since entity doesn't set it -->
+        <dropNotNullConstraint tableName="platform_policies" columnName="slug" columnDataType="VARCHAR(255)"/>
+        <dropNotNullConstraint tableName="platform_policies" columnName="name" columnDataType="VARCHAR(500)"/>
+        <dropNotNullConstraint tableName="platform_policies" columnName="policy_type" columnDataType="VARCHAR(100)"/>
+        <dropNotNullConstraint tableName="platform_policies" columnName="category" columnDataType="VARCHAR(100)"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 11. Add missing BaseJpaEntity + FK columns to activity tables      -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-011-align-activity-tables" author="homebase">
+        <!-- agreement_activity: add BaseJpaEntity columns + FK -->
+        <addColumn tableName="agreement_activity">
+            <column name="agreement_id" type="VARCHAR(255)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+        </addColumn>
+        <!-- platform_policy_activity: add BaseJpaEntity columns + FK -->
+        <addColumn tableName="platform_policy_activity">
+            <column name="policy_id" type="VARCHAR(255)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 12. CConfig keys for compliance module (frontend + backend)       -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-012-cconfig-keys" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="cconfig"/>
+        </preConditions>
+
+        <insert tableName="cconfig">
+            <column name="id" value="cc-compliance-001"/>
+            <column name="module_name" value="compliance"/>
+            <column name="key_name" value="agreement.effective.date.min.lead.days"/>
+            <column name="avalue" value="7"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cc-compliance-002"/>
+            <column name="module_name" value="compliance"/>
+            <column name="key_name" value="policy.effective.date.min.lead.days"/>
+            <column name="avalue" value="3"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cc-compliance-003"/>
+            <column name="module_name" value="compliance"/>
+            <column name="key_name" value="agreement.acceptance.grace.days"/>
+            <column name="avalue" value="30"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cc-compliance-004"/>
+            <column name="module_name" value="compliance"/>
+            <column name="key_name" value="agreement.title.max.length"/>
+            <column name="avalue" value="500"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cc-compliance-005"/>
+            <column name="module_name" value="compliance"/>
+            <column name="key_name" value="policy.title.max.length"/>
+            <column name="avalue" value="300"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cc-compliance-006"/>
+            <column name="module_name" value="compliance"/>
+            <column name="key_name" value="policy.summary.max.length"/>
+            <column name="avalue" value="2000"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+    </changeSet>
+
+
+    <!-- Production seed data: 6 regulations, 5 agreements, 6 platform policies, 5 mappings, 2 audits -->
+    <include file="db/changelog/compliance/db.changelog-compliance-seed-data.xml"/>
+
+</databaseChangeLog>

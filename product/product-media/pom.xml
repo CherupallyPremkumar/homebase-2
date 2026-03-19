@@ -13,7 +13,7 @@
 	<artifactId>product-media</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Product Media — Image Upload, Processing, Gallery Management</name>
+	<name>product-media</name>
 
 	<dependencies>
 		<dependency>

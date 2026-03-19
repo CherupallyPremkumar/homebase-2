@@ -27,7 +27,7 @@
 	<groupId>com.homebase.ecom.returnrequest</groupId>
 	<version>${revision}</version>
 	<artifactId>returnrequest-parent</artifactId>
-	<name>All Modules that belong to the Returnrequest </name>
+	<name>returnrequest-parent</name>
 	<description>Modules execution project and Parent Pom</description>
 
 	<dependencyManagement>

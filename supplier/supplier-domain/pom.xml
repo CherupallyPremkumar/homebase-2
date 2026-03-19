@@ -13,7 +13,7 @@
 
     <artifactId>supplier-domain</artifactId>
     <packaging>jar</packaging>
-    <name>Supplier Domain — Aggregate Root, Entities, Value Objects, Ports</name>
+    <name>supplier-domain</name>
 
     <dependencies>
         <dependency>

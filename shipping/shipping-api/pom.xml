@@ -13,7 +13,7 @@
 	<artifactId>shipping-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Shipping API Model and Interfaces</name>
+	<name>shipping-api</name>
 
 	<dependencies>
 		<dependency>

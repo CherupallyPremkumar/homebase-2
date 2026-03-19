@@ -12,7 +12,7 @@
 	<artifactId>returnrequest-service</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Returnrequest Service Implementations</name>
+	<name>returnrequest-service</name>
 
 	<dependencies>
 		<dependency>

@@ -11,7 +11,7 @@
 
 	<artifactId>pricing-service</artifactId>
 	<packaging>jar</packaging>
-	<name>Pricing Service Implementations</name>
+	<name>pricing-service</name>
 
 	<dependencies>
 		<dependency>

@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>payment-batch</artifactId>
-    <name>Payment Batch</name>
+    <name>payment-batch</name>
     <description>Payment batch processing and reconciliation jobs</description>
 
     <dependencies>

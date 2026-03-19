@@ -10,7 +10,7 @@
     </parent>
     <artifactId>onboarding-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>Onboarding Infrastructure — JPA Adapters</name>
+    <name>onboarding-infrastructure</name>
 
     <dependencies>
         <dependency>

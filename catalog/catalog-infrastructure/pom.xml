@@ -31,5 +31,15 @@
             <artifactId>product-api</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.product</groupId>
+            <artifactId>product-client</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.offer</groupId>
+            <artifactId>offer-client</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
 </project>

@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
 
 @Configuration
-@SpringBootApplication(scanBasePackages = { "org.chenile.configuration", "com.homebase.ecom.query.service.configuration"})
+@SpringBootApplication(scanBasePackages = { "org.chenile.configuration", "com.homebase.ecom.query.service"})
 @ActiveProfiles("unittest")
 public class SpringTestConfig{
 }

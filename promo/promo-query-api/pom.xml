@@ -11,7 +11,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>promo-query-api</artifactId>
-	<name>Promo Query API — Shared DTOs for promo query responses</name>
+	<name>promo-query-api</name>
 
 	<dependencies>
 	</dependencies>

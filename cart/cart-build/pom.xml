@@ -13,7 +13,7 @@
     <artifactId>cart-build</artifactId>
     <packaging>jar</packaging>
 
-    <name>Cart Build - Standalone Cart Service</name>
+    <name>cart-build</name>
     <description>Aggregates all cart service modules into a single executable executable</description>
 
     <dependencies>

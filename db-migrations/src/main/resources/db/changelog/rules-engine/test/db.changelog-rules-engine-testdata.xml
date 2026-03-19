@@ -1,0 +1,658 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Rules Engine test data — production-grade business rules
+        STM states: DRAFT, PUBLISHED, DEPRECATED, ARCHIVED
+
+        3-layer model:
+          cconfig  = simple defaults (cart.max.items = 10)
+          rules    = conditional logic (IF price > 10000 THEN max_qty = 2)
+          policy   = legal text backing (Consumer Protection Act 2019)
+
+        Policies cover:
+          1. Cart quantity limits (price-based)
+          2. Return eligibility (category + time + condition)
+          3. Fraud detection (order value + velocity + new customer)
+          4. Seller commission (performance-based dynamic rates)
+          5. Shipping eligibility (pincode + weight + hazmat)
+          6. Promo validation (stacking, min order, category exclusion)
+          7. Supplier performance (auto-probation triggers)
+          8. Product listing (quality gates for publishing)
+    -->
+    <changeSet id="rules-engine-production-data" author="homebase-test">
+
+        <!-- ============================================================ -->
+        <!-- POLICY 1: Cart Quantity Limits — PUBLISHED                    -->
+        <!-- Backs cconfig defaults with price-based overrides             -->
+        <!-- ============================================================ -->
+        <insert tableName="policy">
+            <column name="id" value="policy-cart-limits"/>
+            <column name="name" value="Cart Quantity Limit Policy"/>
+            <column name="description" value="Dynamic cart quantity limits based on product price tiers. Overrides cconfig defaults when conditions match."/>
+            <column name="default_effect" value="ALLOW"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="target_module" value="cart"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="ruleSet-flow"/>
+            <column name="created_time" valueDate="2025-06-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <!-- High-value items (>10000): max 2 per cart -->
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-cart-high-value-limit"/>
+            <column name="name" value="High-Value Item Quantity Limit"/>
+            <column name="expression" value="product.price > 10000 and requestedQuantity > 2"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="100"/>
+            <column name="policy_id" value="policy-cart-limits"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule_metadata">
+            <column name="rule_id" value="rule-cart-high-value-limit"/>
+            <column name="meta_key" value="userMessage"/>
+            <column name="meta_value" value="Items above Rs.10,000 are limited to 2 per order"/>
+        </insert>
+
+        <!-- Mid-range items (1000-10000): max 5 per cart -->
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-cart-mid-value-limit"/>
+            <column name="name" value="Mid-Range Item Quantity Limit"/>
+            <column name="expression" value="product.price >= 1000 and product.price &lt;= 10000 and requestedQuantity > 5"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="200"/>
+            <column name="policy_id" value="policy-cart-limits"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule_metadata">
+            <column name="rule_id" value="rule-cart-mid-value-limit"/>
+            <column name="meta_key" value="userMessage"/>
+            <column name="meta_value" value="Items between Rs.1,000-10,000 are limited to 5 per order"/>
+        </insert>
+
+        <!-- Budget items (<1000): max 10 per cart (default) -->
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-cart-budget-limit"/>
+            <column name="name" value="Budget Item Quantity Limit"/>
+            <column name="expression" value="product.price &lt; 1000 and requestedQuantity > 10"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="300"/>
+            <column name="policy_id" value="policy-cart-limits"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Max cart value overall -->
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-cart-max-value"/>
+            <column name="name" value="Maximum Cart Value"/>
+            <column name="expression" value="cartTotal > 500000"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="50"/>
+            <column name="policy_id" value="policy-cart-limits"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule_metadata">
+            <column name="rule_id" value="rule-cart-max-value"/>
+            <column name="meta_key" value="userMessage"/>
+            <column name="meta_value" value="Cart total cannot exceed Rs.5,00,000. Please remove some items."/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- POLICY 2: Return Eligibility — PUBLISHED                      -->
+        <!-- Consumer Protection Act 2019 compliance                       -->
+        <!-- ============================================================ -->
+        <insert tableName="policy">
+            <column name="id" value="policy-return"/>
+            <column name="name" value="Return Eligibility Policy"/>
+            <column name="description" value="Determines return eligibility by category, time window, and product condition. Compliant with Consumer Protection Act 2019."/>
+            <column name="default_effect" value="DENY"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="target_module" value="returnrequest"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="ruleSet-flow"/>
+            <column name="created_time" valueDate="2025-06-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-12-01T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-return-7day"/>
+            <column name="name" value="7 Day Return Window"/>
+            <column name="expression" value="daysSinceDelivery &lt;= 7"/>
+            <column name="effect" value="ALLOW"/>
+            <column name="priority" valueNumeric="100"/>
+            <column name="policy_id" value="policy-return"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-return-electronics-10day"/>
+            <column name="name" value="Electronics Extended Return Window"/>
+            <column name="expression" value="category == 'ELECTRONICS' and daysSinceDelivery &lt;= 10"/>
+            <column name="effect" value="ALLOW"/>
+            <column name="priority" valueNumeric="90"/>
+            <column name="policy_id" value="policy-return"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-return-no-opened-electronics"/>
+            <column name="name" value="No Return on Opened Electronics"/>
+            <column name="expression" value="category == 'ELECTRONICS' and sealBroken == true"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="50"/>
+            <column name="policy_id" value="policy-return"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-return-non-returnable"/>
+            <column name="name" value="Non-Returnable Categories"/>
+            <column name="expression" value="category in {'INNERWEAR','PERISHABLE','PERSONALCARE','GIFT_CARDS'}"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="10"/>
+            <column name="policy_id" value="policy-return"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-return-auto-approve"/>
+            <column name="name" value="Auto-Approve Low Value Returns"/>
+            <column name="expression" value="refundAmount &lt;= 2000 and customerReturnRate &lt; 10"/>
+            <column name="effect" value="ALLOW"/>
+            <column name="priority" valueNumeric="80"/>
+            <column name="policy_id" value="policy-return"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule_metadata">
+            <column name="rule_id" value="rule-return-auto-approve"/>
+            <column name="meta_key" value="autoApprove"/>
+            <column name="meta_value" value="true"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- POLICY 3: Fraud Detection — PUBLISHED                         -->
+        <!-- ============================================================ -->
+        <insert tableName="policy">
+            <column name="id" value="policy-fraud"/>
+            <column name="name" value="Order Fraud Detection Policy"/>
+            <column name="description" value="Flags orders for manual review based on risk signals: value, velocity, customer history, address mismatch"/>
+            <column name="default_effect" value="ALLOW"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="target_module" value="order"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="ruleSet-flow"/>
+            <column name="created_time" valueDate="2025-08-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="5"/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-fraud-high-value-new"/>
+            <column name="name" value="High Value + New Customer"/>
+            <column name="expression" value="orderTotal > 50000 and isNewCustomer == true"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="100"/>
+            <column name="policy_id" value="policy-fraud"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule_metadata">
+            <column name="rule_id" value="rule-fraud-high-value-new"/>
+            <column name="meta_key" value="action"/>
+            <column name="meta_value" value="HOLD_FOR_REVIEW"/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-fraud-velocity"/>
+            <column name="name" value="Order Velocity Check"/>
+            <column name="expression" value="ordersInLast24Hours > 5"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="150"/>
+            <column name="policy_id" value="policy-fraud"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-fraud-address-mismatch"/>
+            <column name="name" value="Billing/Shipping Address Mismatch"/>
+            <column name="expression" value="billingState != shippingState and orderTotal > 20000"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="120"/>
+            <column name="policy_id" value="policy-fraud"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-fraud-multiple-payment-failures"/>
+            <column name="name" value="Multiple Payment Failures"/>
+            <column name="expression" value="paymentFailuresInLast1Hour > 3"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="80"/>
+            <column name="policy_id" value="policy-fraud"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- POLICY 4: Seller Commission — PUBLISHED                       -->
+        <!-- Performance-based commission rates                            -->
+        <!-- ============================================================ -->
+        <insert tableName="policy">
+            <column name="id" value="policy-commission"/>
+            <column name="name" value="Dynamic Seller Commission Policy"/>
+            <column name="description" value="Adjusts commission rates based on seller performance tier, category, and volume"/>
+            <column name="default_effect" value="ALLOW"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="target_module" value="settlement"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="ruleSet-flow"/>
+            <column name="created_time" valueDate="2025-09-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-02-01T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-comm-electronics"/>
+            <column name="name" value="Electronics Category Commission"/>
+            <column name="expression" value="category == 'ELECTRONICS'"/>
+            <column name="effect" value="ALLOW"/>
+            <column name="priority" valueNumeric="100"/>
+            <column name="policy_id" value="policy-commission"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule_metadata">
+            <column name="rule_id" value="rule-comm-electronics"/>
+            <column name="meta_key" value="commissionPercent"/>
+            <column name="meta_value" value="8"/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-comm-fashion"/>
+            <column name="name" value="Fashion Category Commission"/>
+            <column name="expression" value="category == 'FASHION'"/>
+            <column name="effect" value="ALLOW"/>
+            <column name="priority" valueNumeric="100"/>
+            <column name="policy_id" value="policy-commission"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule_metadata">
+            <column name="rule_id" value="rule-comm-fashion"/>
+            <column name="meta_key" value="commissionPercent"/>
+            <column name="meta_value" value="20"/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-comm-top-seller-discount"/>
+            <column name="name" value="Top Seller Commission Discount"/>
+            <column name="expression" value="sellerRating >= 4.5 and monthlyOrders > 500"/>
+            <column name="effect" value="ALLOW"/>
+            <column name="priority" valueNumeric="50"/>
+            <column name="policy_id" value="policy-commission"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule_metadata">
+            <column name="rule_id" value="rule-comm-top-seller-discount"/>
+            <column name="meta_key" value="commissionDiscount"/>
+            <column name="meta_value" value="3"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- POLICY 5: Shipping Eligibility — PUBLISHED                    -->
+        <!-- ============================================================ -->
+        <insert tableName="policy">
+            <column name="id" value="policy-shipping"/>
+            <column name="name" value="Shipping Eligibility Policy"/>
+            <column name="description" value="Controls shipping options based on pincode serviceability, weight limits, and hazmat classification"/>
+            <column name="default_effect" value="ALLOW"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="target_module" value="shipping"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="ruleSet-flow"/>
+            <column name="created_time" valueDate="2025-10-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-01T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-ship-weight-limit"/>
+            <column name="name" value="Maximum Parcel Weight"/>
+            <column name="expression" value="totalWeight > 30"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="100"/>
+            <column name="policy_id" value="policy-shipping"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule_metadata">
+            <column name="rule_id" value="rule-ship-weight-limit"/>
+            <column name="meta_key" value="userMessage"/>
+            <column name="meta_value" value="Order exceeds 30kg shipping limit. Please split into multiple orders."/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-ship-cod-limit"/>
+            <column name="name" value="COD Maximum Amount"/>
+            <column name="expression" value="paymentMethod == 'COD' and orderTotal > 25000"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="90"/>
+            <column name="policy_id" value="policy-shipping"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule_metadata">
+            <column name="rule_id" value="rule-ship-cod-limit"/>
+            <column name="meta_key" value="userMessage"/>
+            <column name="meta_value" value="Cash on Delivery is not available for orders above Rs.25,000"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- POLICY 6: Promo Validation — PUBLISHED                        -->
+        <!-- ============================================================ -->
+        <insert tableName="policy">
+            <column name="id" value="policy-promo"/>
+            <column name="name" value="Coupon Validation Policy"/>
+            <column name="description" value="Validates coupon usage: stacking rules, min order, category exclusions, user eligibility"/>
+            <column name="default_effect" value="ALLOW"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="target_module" value="promo"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="ruleSet-flow"/>
+            <column name="created_time" valueDate="2025-11-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-02-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-promo-no-stacking"/>
+            <column name="name" value="No Coupon Stacking"/>
+            <column name="expression" value="appliedCoupons > 1"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="100"/>
+            <column name="policy_id" value="policy-promo"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-promo-max-discount"/>
+            <column name="name" value="Maximum Discount Cap"/>
+            <column name="expression" value="discountPercent > 50"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="80"/>
+            <column name="policy_id" value="policy-promo"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-promo-abuse-detection"/>
+            <column name="name" value="Promo Abuse Detection"/>
+            <column name="expression" value="userCouponUsageThisMonth > 5"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="60"/>
+            <column name="policy_id" value="policy-promo"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- POLICY 7: Supplier Performance — PUBLISHED                    -->
+        <!-- Auto-probation and suspension triggers                        -->
+        <!-- ============================================================ -->
+        <insert tableName="policy">
+            <column name="id" value="policy-supplier-perf"/>
+            <column name="name" value="Supplier Performance Policy"/>
+            <column name="description" value="Auto-triggers probation and suspension based on seller metrics"/>
+            <column name="default_effect" value="ALLOW"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="target_module" value="supplier"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="ruleSet-flow"/>
+            <column name="created_time" valueDate="2025-07-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-01T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-supplier-high-return-rate"/>
+            <column name="name" value="High Return Rate Probation"/>
+            <column name="expression" value="returnRatePercent > 15"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="100"/>
+            <column name="policy_id" value="policy-supplier-perf"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule_metadata">
+            <column name="rule_id" value="rule-supplier-high-return-rate"/>
+            <column name="meta_key" value="action"/>
+            <column name="meta_value" value="PROBATION"/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-supplier-high-cancel-rate"/>
+            <column name="name" value="High Cancellation Rate Probation"/>
+            <column name="expression" value="cancellationRatePercent > 5"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="100"/>
+            <column name="policy_id" value="policy-supplier-perf"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule_metadata">
+            <column name="rule_id" value="rule-supplier-high-cancel-rate"/>
+            <column name="meta_key" value="action"/>
+            <column name="meta_value" value="PROBATION"/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-supplier-low-rating"/>
+            <column name="name" value="Low Rating Suspension"/>
+            <column name="expression" value="avgRating &lt; 3.0 and totalOrders > 50"/>
+            <column name="effect" value="DENY"/>
+            <column name="priority" valueNumeric="50"/>
+            <column name="policy_id" value="policy-supplier-perf"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule_metadata">
+            <column name="rule_id" value="rule-supplier-low-rating"/>
+            <column name="meta_key" value="action"/>
+            <column name="meta_value" value="SUSPEND"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- POLICY 8: Product Listing Quality — PUBLISHED                 -->
+        <!-- Gates for publishing a product                                -->
+        <!-- ============================================================ -->
+        <insert tableName="policy">
+            <column name="id" value="policy-product-listing"/>
+            <column name="name" value="Product Listing Quality Policy"/>
+            <column name="description" value="Quality gates a product must pass before being published to the catalog"/>
+            <column name="default_effect" value="DENY"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="target_module" value="product"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="ruleSet-flow"/>
+            <column name="created_time" valueDate="2025-08-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-product-min-images"/>
+            <column name="name" value="Minimum Product Images"/>
+            <column name="expression" value="imageCount >= 3"/>
+            <column name="effect" value="ALLOW"/>
+            <column name="priority" valueNumeric="100"/>
+            <column name="policy_id" value="policy-product-listing"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-product-min-description"/>
+            <column name="name" value="Minimum Description Length"/>
+            <column name="expression" value="descriptionLength >= 100"/>
+            <column name="effect" value="ALLOW"/>
+            <column name="priority" valueNumeric="200"/>
+            <column name="policy_id" value="policy-product-listing"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_rule">
+            <column name="id" value="rule-product-valid-hsn"/>
+            <column name="name" value="Valid HSN Code Required"/>
+            <column name="expression" value="hsnCode != null and hsnCode.length() >= 4"/>
+            <column name="effect" value="ALLOW"/>
+            <column name="priority" valueNumeric="50"/>
+            <column name="policy_id" value="policy-product-listing"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- POLICY 9: Legacy Pricing — DEPRECATED                         -->
+        <!-- Kept for audit, replaced by v2                                -->
+        <!-- ============================================================ -->
+        <insert tableName="policy">
+            <column name="id" value="policy-old-pricing"/>
+            <column name="name" value="Legacy Pricing Rules v1"/>
+            <column name="description" value="Old pricing rules replaced by dynamic pricing v2"/>
+            <column name="default_effect" value="ALLOW"/>
+            <column name="active" valueBoolean="false"/>
+            <column name="target_module" value="pricing"/>
+            <column name="state_id" value="DEPRECATED"/>
+            <column name="flow_id" value="ruleSet-flow"/>
+            <column name="created_time" valueDate="2025-01-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-12-31T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="8"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- FACT DEFINITIONS — What data rules can reference               -->
+        <!-- ============================================================ -->
+        <insert tableName="fact_definition">
+            <column name="id" value="fact-product-price"/>
+            <column name="module_name" value="cart"/>
+            <column name="entity_name" value="CartItem"/>
+            <column name="display_name" value="Product Price"/>
+            <column name="attribute" value="product.price"/>
+            <column name="data_type" value="DECIMAL"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="fact_definition">
+            <column name="id" value="fact-requested-qty"/>
+            <column name="module_name" value="cart"/>
+            <column name="entity_name" value="CartItem"/>
+            <column name="display_name" value="Requested Quantity"/>
+            <column name="attribute" value="requestedQuantity"/>
+            <column name="data_type" value="INTEGER"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="fact_definition">
+            <column name="id" value="fact-cart-total"/>
+            <column name="module_name" value="cart"/>
+            <column name="entity_name" value="Cart"/>
+            <column name="display_name" value="Cart Total"/>
+            <column name="attribute" value="cartTotal"/>
+            <column name="data_type" value="DECIMAL"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="fact_definition">
+            <column name="id" value="fact-order-total"/>
+            <column name="module_name" value="order"/>
+            <column name="entity_name" value="Order"/>
+            <column name="display_name" value="Order Total"/>
+            <column name="attribute" value="totalAmount"/>
+            <column name="data_type" value="DECIMAL"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="fact_definition">
+            <column name="id" value="fact-days-since-delivery"/>
+            <column name="module_name" value="returnrequest"/>
+            <column name="entity_name" value="ReturnRequest"/>
+            <column name="display_name" value="Days Since Delivery"/>
+            <column name="attribute" value="daysSinceDelivery"/>
+            <column name="data_type" value="INTEGER"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="fact_definition">
+            <column name="id" value="fact-seller-rating"/>
+            <column name="module_name" value="supplier"/>
+            <column name="entity_name" value="Supplier"/>
+            <column name="display_name" value="Seller Average Rating"/>
+            <column name="attribute" value="avgRating"/>
+            <column name="data_type" value="DECIMAL"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="fact_definition">
+            <column name="id" value="fact-return-rate"/>
+            <column name="module_name" value="supplier"/>
+            <column name="entity_name" value="SupplierMetrics"/>
+            <column name="display_name" value="Return Rate Percentage"/>
+            <column name="attribute" value="returnRatePercent"/>
+            <column name="data_type" value="DECIMAL"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="fact_definition">
+            <column name="id" value="fact-image-count"/>
+            <column name="module_name" value="product"/>
+            <column name="entity_name" value="Product"/>
+            <column name="display_name" value="Product Image Count"/>
+            <column name="attribute" value="imageCount"/>
+            <column name="data_type" value="INTEGER"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- ACTIVITY LOG                                                  -->
+        <!-- ============================================================ -->
+        <insert tableName="policy_activity_log">
+            <column name="id" value="pact-1"/>
+            <column name="activity_name" value="publish"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Return policy published after legal review"/>
+            <column name="created_time" valueDate="2025-12-01T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_activity_log">
+            <column name="id" value="pact-2"/>
+            <column name="activity_name" value="publish"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Cart limits policy published — covers 3 price tiers"/>
+            <column name="created_time" valueDate="2026-01-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="policy_activity_log">
+            <column name="id" value="pact-3"/>
+            <column name="activity_name" value="deprecate"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Legacy pricing v1 deprecated — replaced by dynamic pricing v2"/>
+            <column name="created_time" valueDate="2025-12-31T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- DECISION LOG — Audit trail of rule evaluations                -->
+        <!-- ============================================================ -->
+        <insert tableName="decisions">
+            <column name="id" value="dec-1"/>
+            <column name="policy_id" value="policy-cart-limits"/>
+            <column name="subject_id" value="cart-1"/>
+            <column name="resource" value="CartItem"/>
+            <column name="action" value="addItem"/>
+            <column name="effect" value="DENY"/>
+            <column name="reasons" value="High-value item quantity limit exceeded"/>
+            <column name="target_module" value="cart"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_time" valueDate="2026-03-15T14:30:00"/>
+        </insert>
+        <insert tableName="decision_metadata">
+            <column name="decision_id" value="dec-1"/>
+            <column name="meta_key" value="productPrice"/>
+            <column name="meta_value" value="49990"/>
+        </insert>
+        <insert tableName="decision_metadata">
+            <column name="decision_id" value="dec-1"/>
+            <column name="meta_key" value="requestedQuantity"/>
+            <column name="meta_value" value="3"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

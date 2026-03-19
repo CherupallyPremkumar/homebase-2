@@ -11,7 +11,7 @@
 
     <artifactId>order-query-api</artifactId>
     <packaging>jar</packaging>
-    <name>Order Query API Model and DTOs</name>
+    <name>order-query-api</name>
     <dependencies>
     </dependencies>
 

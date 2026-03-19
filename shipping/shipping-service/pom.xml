@@ -12,7 +12,7 @@
 	<artifactId>shipping-service</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Shipping Service Implementations</name>
+	<name>shipping-service</name>
 
 	<dependencies>
 		<dependency>

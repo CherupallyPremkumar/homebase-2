@@ -10,7 +10,7 @@
     </parent>
     <artifactId>analytics-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>Analytics Infrastructure — JPA Adapters</name>
+    <name>analytics-infrastructure</name>
 
     <dependencies>
         <dependency>

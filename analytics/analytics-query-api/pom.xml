@@ -11,7 +11,7 @@
 
     <artifactId>analytics-query-api</artifactId>
     <packaging>jar</packaging>
-    <name>Analytics Query API Model and DTOs</name>
+    <name>analytics-query-api</name>
     <dependencies>
     </dependencies>
 

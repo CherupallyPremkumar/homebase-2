@@ -10,7 +10,7 @@
     </parent>
     <artifactId>onboarding-domain</artifactId>
     <packaging>jar</packaging>
-    <name>Onboarding Domain — Aggregate Root, Entities, Value Objects, Ports</name>
+    <name>onboarding-domain</name>
 
     <dependencies>
         <dependency>

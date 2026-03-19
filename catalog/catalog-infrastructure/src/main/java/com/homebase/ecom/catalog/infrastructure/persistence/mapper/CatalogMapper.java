@@ -22,6 +22,13 @@ public class CatalogMapper {
         entity.setVisibilityEndDate(domain.getVisibilityEndDate());
         entity.setName(domain.getName());
         entity.setPrice(domain.getPrice());
+        entity.setDescription(domain.getDescription());
+        entity.setBrand(domain.getBrand());
+        entity.setImageUrl(domain.getImageUrl());
+        entity.setInStock(domain.getInStock());
+        entity.setAvailableQty(domain.getAvailableQty());
+        entity.setAverageRating(domain.getAverageRating());
+        entity.setReviewCount(domain.getReviewCount());
         entity.setTags(domain.getTags());
         entity.tenant = domain.getTenant();
         return entity;
@@ -39,6 +46,13 @@ public class CatalogMapper {
         domain.setVisibilityEndDate(entity.getVisibilityEndDate());
         domain.setName(entity.getName());
         domain.setPrice(entity.getPrice());
+        domain.setDescription(entity.getDescription());
+        domain.setBrand(entity.getBrand());
+        domain.setImageUrl(entity.getImageUrl());
+        domain.setInStock(entity.getInStock());
+        domain.setAvailableQty(entity.getAvailableQty());
+        domain.setAverageRating(entity.getAverageRating());
+        domain.setReviewCount(entity.getReviewCount());
         domain.setTags(entity.getTags());
         domain.setTenant(entity.tenant);
         return domain;

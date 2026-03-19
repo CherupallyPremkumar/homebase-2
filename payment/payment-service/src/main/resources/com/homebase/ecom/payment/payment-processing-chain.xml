@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Payment Processing Pipeline (OWIZ Chain)
+  ═════════════════════════════════════════
+  Input:  PaymentProcessRequest (order ID, amount, payment method, customer info)
+  Output: PaymentProcessResult (gateway response, transaction ID, status, 3DS URL if needed)
+
+  Called by: payment STM INITIATED → PROCESSING transition
+  Gateways: Razorpay, PayU, Cashfree, Paytm PG (multi-gateway failover)
+-->
+<flows>
+  <flow id="payment-processing-flow" defaultFlow="true">
+    <chain id="paymentProcessingChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Validate payment method (card BIN check, UPI VPA format, wallet balance) -->
+    <command id="validatePaymentMethod" componentName="validatePaymentMethodCommand">
+      <attach-to index="1" parentId="paymentProcessingChain"/>
+    </command>
+
+    <!-- Step 2: Select payment gateway (primary gateway, failover if primary is down) -->
+    <command id="selectGateway" componentName="selectGatewayCommand">
+      <attach-to index="2" parentId="paymentProcessingChain"/>
+    </command>
+
+    <!-- Step 3: Tokenize payment instrument (PCI-DSS compliant, never store raw card data) -->
+    <command id="tokenizeInstrument" componentName="tokenizeInstrumentCommand">
+      <attach-to index="3" parentId="paymentProcessingChain"/>
+    </command>
+
+    <!-- Step 4: Submit payment to selected gateway API -->
+    <command id="submitToGateway" componentName="submitToGatewayCommand">
+      <attach-to index="4" parentId="paymentProcessingChain"/>
+    </command>
+
+    <!-- Step 5: Handle 3DS/OTP challenge if required by gateway (redirect URL or in-app SDK) -->
+    <command id="handle3DSChallenge" componentName="handle3DSChallengeCommand">
+      <attach-to index="5" parentId="paymentProcessingChain"/>
+    </command>
+
+    <!-- Step 6: Verify gateway response — signature verification, amount match, status check -->
+    <command id="verifyGatewayResponse" componentName="verifyGatewayResponseCommand">
+      <attach-to index="6" parentId="paymentProcessingChain"/>
+    </command>
+
+    <!-- Step 7: Confirm payment and persist transaction record with gateway reference -->
+    <command id="confirmPayment" componentName="confirmPaymentCommand">
+      <attach-to index="7" parentId="paymentProcessingChain"/>
+    </command>
+  </flow>
+</flows>

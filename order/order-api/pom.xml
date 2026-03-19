@@ -13,7 +13,7 @@
 	<artifactId>order-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Order API Model and Interfaces</name>
+	<name>order-api</name>
 
 	<dependencies>
 		<dependency>

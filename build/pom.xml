@@ -24,7 +24,7 @@
 	
 	<groupId>com.homebase.ecom.build</groupId>
 	<artifactId>build-parent</artifactId>
-	<name>All Modules that belong to the Build deployment</name>
+	<name>build-parent</name>
 	<description>Modules execution and deployment project</description>
 
 	<dependencyManagement>

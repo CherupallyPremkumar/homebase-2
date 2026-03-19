@@ -10,7 +10,7 @@
     </parent>
     <artifactId>review-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>Review Infrastructure -- JPA Adapters</name>
+    <name>review-infrastructure</name>
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom.review</groupId>

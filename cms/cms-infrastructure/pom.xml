@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>cms-infrastructure</artifactId>
-    <name>CMS Infrastructure</name>
+    <name>cms-infrastructure</name>
 
     <dependencies>
         <dependency>

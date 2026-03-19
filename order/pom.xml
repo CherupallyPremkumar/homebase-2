@@ -27,7 +27,7 @@
 	<groupId>com.homebase.ecom.order</groupId>
 	<version>${revision}</version>
 	<artifactId>order-parent</artifactId>
-	<name>All Modules that belong to the Order </name>
+	<name>order-parent</name>
 	<description>Modules execution project and Parent Pom</description>
 
 	<dependencyManagement>

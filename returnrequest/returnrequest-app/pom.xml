@@ -9,7 +9,7 @@
 	</parent>
 	<artifactId>returnrequest-app</artifactId>
 	<packaging>jar</packaging>
-	<name>Returnrequest App — Spring Boot Launcher</name>
+	<name>returnrequest-app</name>
 
 	<dependencies>
 		<dependency>

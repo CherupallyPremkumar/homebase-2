@@ -9,7 +9,7 @@
 	</parent>
 	<artifactId>review-app</artifactId>
 	<packaging>jar</packaging>
-	<name>Review App — Spring Boot Launcher</name>
+	<name>review-app</name>
 
 	<dependencies>
 		<dependency>

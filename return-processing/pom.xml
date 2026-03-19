@@ -13,7 +13,7 @@
     <groupId>com.homebase.ecom.returnprocessing</groupId>
     <artifactId>return-processing-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Return Processing Parent</name>
+    <name>return-processing-parent</name>
 
     <modules>
         <module>return-processing-domain</module>

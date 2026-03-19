@@ -46,7 +46,7 @@ public class RuleSetRepositoryImpl implements RuleSetRepository {
         if (ruleSet.getId() != null) {
             Optional<RuleSetEntity> existing = ruleSetJpaRepository.findByIdWithRules(ruleSet.getId());
             if (existing.isPresent()) {
-                // Update existing entity in-place to preserve JPA version
+                // Update existing entity in-place to preserve JPA @Version
                 entity = existing.get();
                 entity.setName(ruleSet.getName());
                 entity.setDescription(ruleSet.getDescription());
@@ -54,6 +54,10 @@ public class RuleSetRepositoryImpl implements RuleSetRepository {
                 entity.setActive(ruleSet.isActive());
                 entity.setTargetModule(ruleSet.getTargetModule());
                 entity.tenant = ruleSet.getTenant();
+                // STM state fields — set by GenericEntryAction before store()
+                entity.setCurrentState(ruleSet.getCurrentState());
+                if (ruleSet.getStateEntryTime() != null) entity.setStateEntryTime(ruleSet.getStateEntryTime());
+                if (ruleSet.getLastModifiedTime() != null) entity.setLastModifiedTime(ruleSet.getLastModifiedTime());
 
                 // Sync rules: clear existing and re-add
                 entity.getRules().clear();

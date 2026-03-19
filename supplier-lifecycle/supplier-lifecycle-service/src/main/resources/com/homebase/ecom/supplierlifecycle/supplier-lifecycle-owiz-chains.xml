@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Supplier Lifecycle Saga Sub-Chains (OWIZ)
+  ══════════════════════════════════════════
+  Each chain handles batch operations across a supplier's products/orders.
+  Called by saga STM transition actions in suspend-flow and reactivate-flow.
+-->
+<flows>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- Chain 1: Disable Products (INITIATED → PRODUCTS_DISABLED)           -->
+  <!-- Batch-disables all supplier products from storefront                -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <flow id="disable-products-chain">
+    <chain id="disableProductsChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Fetch all active products for the suspended supplier -->
+    <command id="fetchSupplierProducts" componentName="fetchSupplierProductsCommand">
+      <attach-to index="1" parentId="disableProductsChain"/>
+    </command>
+
+    <!-- Step 2: Disable each product (set state to DISABLED, remove from search index) -->
+    <command id="disableEachProduct" componentName="disableEachProductCommand">
+      <attach-to index="2" parentId="disableProductsChain"/>
+    </command>
+
+    <!-- Step 3: Confirm all products disabled and record count -->
+    <command id="confirmProductsDisabled" componentName="confirmProductsDisabledCommand">
+      <attach-to index="3" parentId="disableProductsChain"/>
+    </command>
+  </flow>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- Chain 2: Cancel Orders (INVENTORY_FROZEN → ORDERS_CANCELLED)        -->
+  <!-- Batch-cancels open orders from the suspended supplier               -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <flow id="cancel-orders-chain">
+    <chain id="cancelOrdersChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Fetch all open/processing orders for the supplier -->
+    <command id="fetchOpenOrders" componentName="fetchOpenOrdersCommand">
+      <attach-to index="1" parentId="cancelOrdersChain"/>
+    </command>
+
+    <!-- Step 2: Cancel each order (trigger order.requestCancellation per order) -->
+    <command id="cancelEachOrder" componentName="cancelEachOrderCommand">
+      <attach-to index="2" parentId="cancelOrdersChain"/>
+    </command>
+
+    <!-- Step 3: Confirm all orders cancelled and record count -->
+    <command id="confirmOrdersCancelled" componentName="confirmOrdersCancelledCommand">
+      <attach-to index="3" parentId="cancelOrdersChain"/>
+    </command>
+  </flow>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- Chain 3: Enable Products (INITIATED → PRODUCTS_ENABLED)             -->
+  <!-- Used by reactivate-flow — re-enables supplier products              -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <flow id="enable-products-chain">
+    <chain id="enableProductsChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Fetch all disabled products for the reactivated supplier -->
+    <command id="fetchDisabledProducts" componentName="fetchDisabledProductsCommand">
+      <attach-to index="1" parentId="enableProductsChain"/>
+    </command>
+
+    <!-- Step 2: Re-enable each product (set state to PUBLISHED, re-add to search index) -->
+    <command id="enableEachProduct" componentName="enableEachProductCommand">
+      <attach-to index="2" parentId="enableProductsChain"/>
+    </command>
+
+    <!-- Step 3: Confirm all products re-enabled and record count -->
+    <command id="confirmProductsEnabled" componentName="confirmProductsEnabledCommand">
+      <attach-to index="3" parentId="enableProductsChain"/>
+    </command>
+  </flow>
+
+</flows>

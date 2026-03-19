@@ -10,7 +10,7 @@
     </parent>
     <artifactId>offer-domain</artifactId>
     <packaging>jar</packaging>
-    <name>Offer Domain — Aggregate Root, Entities, Value Objects, Ports</name>
+    <name>offer-domain</name>
 
     <dependencies>
         <dependency>

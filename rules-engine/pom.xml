@@ -13,7 +13,7 @@
     <groupId>com.homebase.ecom.rulesengine</groupId>
     <artifactId>rules-engine</artifactId>
     <packaging>pom</packaging>
-    <name>Rules Engine Parent</name>
+    <name>rules-engine-parent</name>
 
 
     <modules>

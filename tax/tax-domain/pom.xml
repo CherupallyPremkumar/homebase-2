@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>tax-domain</artifactId>
-    <name>Tax Domain</name>
+    <name>tax-domain</name>
 
     <dependencies>
         <dependency>

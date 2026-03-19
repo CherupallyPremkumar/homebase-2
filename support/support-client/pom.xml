@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>support-client</artifactId>
-    <name>Support Client — ProxyBuilder-based service client</name>
+    <name>support-client</name>
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom.support</groupId>

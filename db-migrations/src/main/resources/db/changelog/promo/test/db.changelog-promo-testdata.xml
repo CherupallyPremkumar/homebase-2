@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Promo/Coupon test data — STM states from promo-states.xml:
+        DRAFT, ACTIVE, SUSPENDED, EXPIRED, DEPLETED, SCHEDULED,
+        CHECK_USAGE, CHECK_EXPIRATION
+    -->
+    <changeSet id="promo-test-data" author="homebase-test">
+
+        <!-- coupon-1: ACTIVE flat discount — Rs.200 off on Rs.999+ -->
+        <insert tableName="coupon">
+            <column name="id" value="coupon-1"/>
+            <column name="code" value="FLAT200"/>
+            <column name="name" value="Flat Rs.200 Off"/>
+            <column name="description" value="Flat Rs.200 off on orders above Rs.999"/>
+            <column name="discount_type" value="FLAT"/>
+            <column name="discount_value" valueNumeric="200"/>
+            <column name="min_order_value" valueNumeric="999"/>
+            <column name="max_discount_amount" valueNumeric="200"/>
+            <column name="start_date" valueDate="2026-03-01T00:00:00"/>
+            <column name="end_date" valueDate="2026-06-30T23:59:59"/>
+            <column name="usage_limit" valueNumeric="10000"/>
+            <column name="usage_count" valueNumeric="2345"/>
+            <column name="usage_per_customer" valueNumeric="2"/>
+            <column name="stacking_allowed" valueBoolean="false"/>
+            <column name="auto_apply" valueBoolean="false"/>
+            <column name="target_audience" value="ALL"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="promo-flow"/>
+            <column name="created_time" valueDate="2026-02-25T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- coupon-2: ACTIVE percentage discount — 15% off electronics -->
+        <insert tableName="coupon">
+            <column name="id" value="coupon-2"/>
+            <column name="code" value="ELEC15"/>
+            <column name="name" value="15% Off Electronics"/>
+            <column name="description" value="15% off on all electronics, max Rs.500 discount"/>
+            <column name="discount_type" value="PERCENTAGE"/>
+            <column name="discount_value" valueNumeric="15"/>
+            <column name="min_order_value" valueNumeric="1499"/>
+            <column name="max_discount_amount" valueNumeric="500"/>
+            <column name="start_date" valueDate="2026-03-01T00:00:00"/>
+            <column name="end_date" valueDate="2026-04-30T23:59:59"/>
+            <column name="usage_limit" valueNumeric="5000"/>
+            <column name="usage_count" valueNumeric="890"/>
+            <column name="usage_per_customer" valueNumeric="1"/>
+            <column name="applicable_categories" value="cat-electronics,cat-gadgets"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="promo-flow"/>
+            <column name="created_time" valueDate="2026-02-28T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="1"/>
+        </insert>
+
+        <!-- coupon-3: EXPIRED Diwali coupon -->
+        <insert tableName="coupon">
+            <column name="id" value="coupon-3"/>
+            <column name="code" value="DIWALI500"/>
+            <column name="name" value="Diwali Special Rs.500 Off"/>
+            <column name="description" value="Diwali festival special discount"/>
+            <column name="discount_type" value="FLAT"/>
+            <column name="discount_value" valueNumeric="500"/>
+            <column name="min_order_value" valueNumeric="2999"/>
+            <column name="max_discount_amount" valueNumeric="500"/>
+            <column name="start_date" valueDate="2025-10-15T00:00:00"/>
+            <column name="end_date" valueDate="2025-11-15T23:59:59"/>
+            <column name="usage_limit" valueNumeric="20000"/>
+            <column name="usage_count" valueNumeric="18456"/>
+            <column name="state_id" value="EXPIRED"/>
+            <column name="flow_id" value="promo-flow"/>
+            <column name="created_time" valueDate="2025-10-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-11-16T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <!-- coupon-4: DEPLETED (usage limit reached) -->
+        <insert tableName="coupon">
+            <column name="id" value="coupon-4"/>
+            <column name="code" value="FIRST100"/>
+            <column name="name" value="First 100 Customers"/>
+            <column name="description" value="Rs.300 off for first 100 customers"/>
+            <column name="discount_type" value="FLAT"/>
+            <column name="discount_value" valueNumeric="300"/>
+            <column name="min_order_value" valueNumeric="0"/>
+            <column name="usage_limit" valueNumeric="100"/>
+            <column name="usage_count" valueNumeric="100"/>
+            <column name="usage_per_customer" valueNumeric="1"/>
+            <column name="start_date" valueDate="2026-03-10T00:00:00"/>
+            <column name="end_date" valueDate="2026-03-31T23:59:59"/>
+            <column name="state_id" value="DEPLETED"/>
+            <column name="flow_id" value="promo-flow"/>
+            <column name="created_time" valueDate="2026-03-08T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-12T15:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- coupon-5: DRAFT (not yet activated) -->
+        <insert tableName="coupon">
+            <column name="id" value="coupon-5"/>
+            <column name="code" value="SUMMER30"/>
+            <column name="name" value="Summer Sale 30% Off"/>
+            <column name="discount_type" value="PERCENTAGE"/>
+            <column name="discount_value" valueNumeric="30"/>
+            <column name="min_order_value" valueNumeric="1999"/>
+            <column name="max_discount_amount" valueNumeric="1000"/>
+            <column name="start_date" valueDate="2026-04-01T00:00:00"/>
+            <column name="end_date" valueDate="2026-05-31T23:59:59"/>
+            <column name="usage_limit" valueNumeric="50000"/>
+            <column name="usage_count" valueNumeric="0"/>
+            <column name="state_id" value="DRAFT"/>
+            <column name="flow_id" value="promo-flow"/>
+            <column name="created_time" valueDate="2026-03-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+        <!-- coupon-6: SUSPENDED (abuse detected) -->
+        <insert tableName="coupon">
+            <column name="id" value="coupon-6"/>
+            <column name="code" value="REFER50"/>
+            <column name="name" value="Referral Rs.50 Off"/>
+            <column name="discount_type" value="FLAT"/>
+            <column name="discount_value" valueNumeric="50"/>
+            <column name="usage_limit" valueNumeric="0"/>
+            <column name="usage_count" valueNumeric="4567"/>
+            <column name="state_id" value="SUSPENDED"/>
+            <column name="flow_id" value="promo-flow"/>
+            <column name="created_time" valueDate="2025-12-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-02-20T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="5"/>
+        </insert>
+
+        <!-- Coupon Usage Log -->
+        <insert tableName="coupon_usage_log">
+            <column name="usage_id" value="usage-1"/>
+            <column name="coupon_code" value="FLAT200"/>
+            <column name="user_id" value="user-1"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="used_at" valueDate="2026-03-10T14:30:00"/>
+            <column name="ip_address" value="103.21.58.190"/>
+        </insert>
+        <insert tableName="coupon_usage_log">
+            <column name="usage_id" value="usage-2"/>
+            <column name="coupon_code" value="ELEC15"/>
+            <column name="user_id" value="user-2"/>
+            <column name="order_id" value="ord-2"/>
+            <column name="used_at" valueDate="2026-03-11T10:00:00"/>
+            <column name="ip_address" value="49.36.12.78"/>
+        </insert>
+        <insert tableName="coupon_usage_log">
+            <column name="usage_id" value="usage-3"/>
+            <column name="coupon_code" value="FLAT200"/>
+            <column name="user_id" value="user-3"/>
+            <column name="order_id" value="ord-3"/>
+            <column name="used_at" valueDate="2026-03-12T09:15:00"/>
+            <column name="ip_address" value="122.176.45.201"/>
+        </insert>
+
+        <!-- Promo Activity -->
+        <insert tableName="promo_code_activity_log">
+            <column name="id" value="pract-1"/>
+            <column name="promo_code" value="FLAT200"/>
+            <column name="activity_name" value="activate"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Coupon activated for March campaign"/>
+            <column name="created_time" valueDate="2026-03-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="promo_code_activity_log">
+            <column name="id" value="pract-2"/>
+            <column name="promo_code" value="REFER50"/>
+            <column name="activity_name" value="suspend"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Suspended: fraud ring using fake referrals"/>
+            <column name="created_time" valueDate="2026-02-20T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

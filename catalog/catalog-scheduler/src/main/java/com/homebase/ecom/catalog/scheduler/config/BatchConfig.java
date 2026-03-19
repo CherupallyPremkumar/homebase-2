@@ -1,7 +1,8 @@
 package com.homebase.ecom.catalog.scheduler.config;
 
+import com.homebase.ecom.catalog.model.CatalogItem;
 import com.homebase.ecom.catalog.model.CollectionProductMapping;
-import com.homebase.ecom.product.dto.ProductCatalogDetails;
+import com.homebase.ecom.catalog.repository.CatalogItemRepository;
 
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -21,10 +22,9 @@ import java.util.List;
 @Configuration
 public class BatchConfig {
 
-    // Simple in-memory reader for demo. Real world: Use ItemReader<ProductCatalogDetails> with pagination
     @Bean
-    public ItemReader<ProductCatalogDetails> productItemReader(com.homebase.ecom.catalog.repository.ProductServiceClient client) {
-        return new ListItemReader<>(client.getAllProducts());
+    public ItemReader<CatalogItem> catalogItemReader(CatalogItemRepository catalogItemRepository) {
+        return new ListItemReader<>(catalogItemRepository.findAll());
     }
 
     @Bean
@@ -37,11 +37,11 @@ public class BatchConfig {
     @Bean
     public Step evaluationStep(JobRepository jobRepository,
                                PlatformTransactionManager transactionManager,
-                               ItemReader<ProductCatalogDetails> reader,
-                               ItemProcessor<ProductCatalogDetails, List<CollectionProductMapping>> processor,
+                               ItemReader<CatalogItem> reader,
+                               ItemProcessor<CatalogItem, List<CollectionProductMapping>> processor,
                                ItemWriter<List<CollectionProductMapping>> writer) {
         return new StepBuilder("evaluateRulesStep", jobRepository)
-                .<ProductCatalogDetails, List<CollectionProductMapping>>chunk(10, transactionManager)
+                .<CatalogItem, List<CollectionProductMapping>>chunk(10, transactionManager)
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)

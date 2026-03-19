@@ -55,4 +55,15 @@
         </createIndex>
     </changeSet>
 
+    <!-- Widen avalue to TEXT for form validation schemas (JSON payloads > 2000 chars) -->
+    <changeSet id="config-003-widen-avalue" author="homebase">
+        <modifyDataType tableName="cconfig" columnName="avalue" newDataType="TEXT"/>
+    </changeSet>
+
+    <!-- Production seed data: 60 config keys across 14 modules -->
+    <include file="db/changelog/config/db.changelog-cconfig-seed-data.xml"/>
+
+    <!-- Production form validation schemas: 12 forms for frontend-driven validation -->
+    <include file="db/changelog/config/db.changelog-cconfig-form-schemas.xml"/>
+
 </databaseChangeLog>

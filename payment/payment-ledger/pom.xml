@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>payment-ledger</artifactId>
-    <name>Payment Ledger</name>
+    <name>payment-ledger</name>
 
     <dependencies>
         <dependency>

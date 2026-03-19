@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>pricing-domain</artifactId>
-    <name>Pricing Service - Domain</name>
+    <name>pricing-domain</name>
 
     <dependencies>
         <dependency>

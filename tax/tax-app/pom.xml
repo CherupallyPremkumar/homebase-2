@@ -9,7 +9,7 @@
 	</parent>
 	<artifactId>tax-app</artifactId>
 	<packaging>jar</packaging>
-	<name>Tax App — Spring Boot Launcher</name>
+	<name>tax-app</name>
 
 	<dependencies>
 		<dependency>

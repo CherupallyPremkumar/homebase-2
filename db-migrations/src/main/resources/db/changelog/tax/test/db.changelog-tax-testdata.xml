@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Tax test data: Indian GST rates, HSN category mappings
+        Standard rates: 0%, 5%, 12%, 18%, 28%
+    -->
+    <changeSet id="tax-test-data" author="homebase-test">
+
+        <!-- GST Rates — Intra-state (CGST + SGST) -->
+        <insert tableName="tax_rates">
+            <column name="id" value="tax-gst-0"/>
+            <column name="name" value="GST Exempt"/>
+            <column name="region_code" value="IN"/>
+            <column name="tax_type" value="GST_EXEMPT"/>
+            <column name="rate" valueNumeric="0.0000"/>
+            <column name="effective_from" valueDate="2025-01-01"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="tax_rates">
+            <column name="id" value="tax-cgst-5"/>
+            <column name="name" value="CGST 2.5%"/>
+            <column name="region_code" value="IN"/>
+            <column name="tax_type" value="CGST"/>
+            <column name="rate" valueNumeric="2.5000"/>
+            <column name="effective_from" valueDate="2025-01-01"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="tax_rates">
+            <column name="id" value="tax-sgst-5"/>
+            <column name="name" value="SGST 2.5%"/>
+            <column name="region_code" value="IN"/>
+            <column name="tax_type" value="SGST"/>
+            <column name="rate" valueNumeric="2.5000"/>
+            <column name="effective_from" valueDate="2025-01-01"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="tax_rates">
+            <column name="id" value="tax-cgst-9"/>
+            <column name="name" value="CGST 9%"/>
+            <column name="region_code" value="IN"/>
+            <column name="tax_type" value="CGST"/>
+            <column name="rate" valueNumeric="9.0000"/>
+            <column name="effective_from" valueDate="2025-01-01"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="tax_rates">
+            <column name="id" value="tax-sgst-9"/>
+            <column name="name" value="SGST 9%"/>
+            <column name="region_code" value="IN"/>
+            <column name="tax_type" value="SGST"/>
+            <column name="rate" valueNumeric="9.0000"/>
+            <column name="effective_from" valueDate="2025-01-01"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="tax_rates">
+            <column name="id" value="tax-igst-18"/>
+            <column name="name" value="IGST 18%"/>
+            <column name="region_code" value="IN"/>
+            <column name="tax_type" value="IGST"/>
+            <column name="rate" valueNumeric="18.0000"/>
+            <column name="effective_from" valueDate="2025-01-01"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="tax_rates">
+            <column name="id" value="tax-cgst-14"/>
+            <column name="name" value="CGST 14%"/>
+            <column name="region_code" value="IN"/>
+            <column name="tax_type" value="CGST"/>
+            <column name="rate" valueNumeric="14.0000"/>
+            <column name="effective_from" valueDate="2025-01-01"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="tax_rates">
+            <column name="id" value="tax-sgst-14"/>
+            <column name="name" value="SGST 14%"/>
+            <column name="region_code" value="IN"/>
+            <column name="tax_type" value="SGST"/>
+            <column name="rate" valueNumeric="14.0000"/>
+            <column name="effective_from" valueDate="2025-01-01"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- HSN → Category Mapping -->
+        <insert tableName="tax_category_mapping">
+            <column name="id" value="tcm-electronics"/>
+            <column name="category_id" value="cat-electronics"/>
+            <column name="hsn_code" value="8471"/>
+            <column name="tax_rate_id" value="tax-cgst-9"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="tax_category_mapping">
+            <column name="id" value="tcm-gadgets"/>
+            <column name="category_id" value="cat-gadgets"/>
+            <column name="hsn_code" value="8517"/>
+            <column name="tax_rate_id" value="tax-cgst-9"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="tax_category_mapping">
+            <column name="id" value="tcm-textiles"/>
+            <column name="category_id" value="cat-textiles"/>
+            <column name="hsn_code" value="5208"/>
+            <column name="tax_rate_id" value="tax-cgst-5"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

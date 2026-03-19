@@ -13,7 +13,7 @@
 	<artifactId>build-package</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Build Package - Deploys the Build related set of service</name>
+	<name>build-package</name>
 
 	<dependencies>
 
@@ -50,6 +50,10 @@
         <dependency>
             <groupId>com.homebase.ecom.user</groupId>
             <artifactId>user-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.compliance</groupId>
+            <artifactId>compliance-service</artifactId>
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom.cconfig</groupId>

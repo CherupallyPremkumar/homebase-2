@@ -10,7 +10,7 @@
     </parent>
     <artifactId>supplier-lifecycle-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>Supplier Lifecycle Infrastructure -- JPA Adapters</name>
+    <name>supplier-lifecycle-infrastructure</name>
 
     <dependencies>
         <dependency>

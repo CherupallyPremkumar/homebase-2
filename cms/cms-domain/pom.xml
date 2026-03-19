@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>cms-domain</artifactId>
-    <name>CMS Domain</name>
+    <name>cms-domain</name>
 
     <dependencies>
         <dependency>
