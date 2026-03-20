@@ -713,7 +713,7 @@ Scenario: Recent movements filtered by type PICK
   And the REST response key "list[0].row.type" is "PICK"
   And the REST response key "list[0].row.inventoryItemId" is "inv-1"
   And the REST response key "list[0].row.quantity" is "20"
-  And the REST response key "list[0].row.referenceId" is "ord-100"
+  And the REST response key "list[0].row.referenceId" is "ord-1"
 
 Scenario: Recent movements filtered by type DAMAGED
   When I POST a REST request to URL "/q/recent-movements" with payload

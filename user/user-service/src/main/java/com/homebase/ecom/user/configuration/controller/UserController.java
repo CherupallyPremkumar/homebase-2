@@ -28,7 +28,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class UserController extends ControllerSupport {
 
 	@GetMapping("/user/{id}")
-	@SecurityConfig(authorities = { "ROLE_USER", "ROLE_ADMIN" })
+	@SecurityConfig(authorities = { "CUSTOMER", "ADMIN" })
 	public ResponseEntity<GenericResponse<StateEntityServiceResponse<User>>> retrieve(
 			HttpServletRequest httpServletRequest,
 			@PathVariable String id) {
@@ -36,7 +36,7 @@ public class UserController extends ControllerSupport {
 	}
 
 	@PostMapping("/user")
-	@SecurityConfig(authorities = { "ROLE_USER", "ROLE_ADMIN" })
+	@SecurityConfig(authorities = { "CUSTOMER", "ADMIN" })
 	public ResponseEntity<GenericResponse<StateEntityServiceResponse<User>>> create(
 			HttpServletRequest httpServletRequest,
 			@ChenileParamType(StateEntity.class) @RequestBody User entity) {

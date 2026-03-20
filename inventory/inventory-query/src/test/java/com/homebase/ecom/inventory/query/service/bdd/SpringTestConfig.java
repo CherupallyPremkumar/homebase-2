@@ -12,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import liquibase.integration.spring.SpringLiquibase;
 
 @Configuration
-@SpringBootApplication(scanBasePackages = { "org.chenile.configuration"})
+@SpringBootApplication(scanBasePackages = { "org.chenile.configuration", "org.chenile.security"})
 @ActiveProfiles("unittest")
 public class SpringTestConfig {
 
