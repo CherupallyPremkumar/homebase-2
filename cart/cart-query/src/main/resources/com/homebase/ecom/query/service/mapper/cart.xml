@@ -13,7 +13,7 @@
             customer_id = #{userId}
         </if>
         <if test="stateId != null">
-            AND stateid = #{stateId}
+            AND state_id = #{stateId}
         </if>
     </where>
 </select>
@@ -31,8 +31,8 @@
         expires_at as "expiresAt",
         notes,
         description,
-        stateid as "stateId",
-        flowid as "flowId",
+        state_id as "stateId",
+        flow_id as "flowId",
         created_time as "createdTime",
         last_modified_time as "lastModifiedTime",
         last_modified_by as "lastModifiedBy",
@@ -45,7 +45,7 @@
             customer_id = #{userId}
         </if>
         <if test="stateId != null">
-            AND stateid = #{stateId}
+            AND state_id = #{stateId}
         </if>
     </where>
     ${orderby} ${pagination}
@@ -53,14 +53,14 @@
 
 <!-- Dashboard: getStateCounts -->
 <select id="getStateCounts" resultType="java.util.HashMap">
-    SELECT stateid as "stateId", COUNT(*) as "count"
+    SELECT state_id as "stateId", COUNT(*) as "count"
     FROM cart
-    GROUP BY stateid
+    GROUP BY state_id
 </select>
 
 <!-- Dashboard: getAbandonedCarts -->
 <select id='getAbandonedCarts-count' resultType="int">
-	select count(*) from cart WHERE stateid = 'ABANDONED'
+	select count(*) from cart WHERE state_id = 'ABANDONED'
     <if test="userId != null">
         AND customer_id = #{userId}
     </if>
@@ -74,12 +74,12 @@
         currency,
         discount_amount as "discountAmount",
         total,
-        stateid as "stateId",
-        flowid as "flowId",
+        state_id as "stateId",
+        flow_id as "flowId",
         created_time as "createdTime",
         last_modified_time as "lastModifiedTime"
     FROM cart
-    WHERE stateid = 'ABANDONED'
+    WHERE state_id = 'ABANDONED'
     <if test="userId != null">
         AND customer_id = #{userId}
     </if>
@@ -88,7 +88,7 @@
 
 <!-- Dashboard: getExpiredCarts -->
 <select id='getExpiredCarts-count' resultType="int">
-	select count(*) from cart WHERE stateid = 'EXPIRED'
+	select count(*) from cart WHERE state_id = 'EXPIRED'
     <if test="userId != null">
         AND customer_id = #{userId}
     </if>
@@ -103,12 +103,12 @@
         discount_amount as "discountAmount",
         total,
         expires_at as "expiresAt",
-        stateid as "stateId",
-        flowid as "flowId",
+        state_id as "stateId",
+        flow_id as "flowId",
         created_time as "createdTime",
         last_modified_time as "lastModifiedTime"
     FROM cart
-    WHERE stateid = 'EXPIRED'
+    WHERE state_id = 'EXPIRED'
     <if test="userId != null">
         AND customer_id = #{userId}
     </if>
@@ -119,7 +119,7 @@
 <select id='getByCustomerId-count' resultType="int">
 	select count(*) from cart WHERE customer_id = #{userId}
     <if test="stateId != null">
-        AND stateid = #{stateId}
+        AND state_id = #{stateId}
     </if>
 </select>
 
@@ -135,14 +135,14 @@
         total,
         expires_at as "expiresAt",
         notes,
-        stateid as "stateId",
-        flowid as "flowId",
+        state_id as "stateId",
+        flow_id as "flowId",
         created_time as "createdTime",
         last_modified_time as "lastModifiedTime"
     FROM cart
     WHERE customer_id = #{userId}
     <if test="stateId != null">
-        AND stateid = #{stateId}
+        AND state_id = #{stateId}
     </if>
     ${orderby} ${pagination}
 </select>
@@ -158,13 +158,13 @@
         coupon_codes as "couponCodes",
         discount_amount as "discountAmount",
         total,
-        stateid as "stateId",
-        flowid as "flowId",
+        state_id as "stateId",
+        flow_id as "flowId",
         created_time as "createdTime",
         last_modified_time as "lastModifiedTime"
     FROM cart
     WHERE customer_id = #{userId}
-    AND stateid = 'ACTIVE'
+    AND state_id = 'ACTIVE'
     ORDER BY last_modified_time DESC
     LIMIT 1
 </select>
@@ -180,7 +180,7 @@
     FROM cart c
     INNER JOIN cart_item ci ON ci.cart_id = c.id
     WHERE ci.variant_id = #{variantId}
-    AND c.stateid IN ('ACTIVE', 'CHECKOUT_INITIATED')
+    AND c.state_id IN ('ACTIVE', 'CHECKOUT_INITIATED')
 </select>
 
 <!-- Find ACTIVE carts that have a specific coupon applied -->
@@ -188,7 +188,7 @@
     SELECT id
     FROM cart
     WHERE coupon_codes LIKE CONCAT('%', #{couponCode}, '%')
-    AND stateid IN ('ACTIVE', 'CHECKOUT_INITIATED')
+    AND state_id IN ('ACTIVE', 'CHECKOUT_INITIATED')
 </select>
 
 <!-- Find carts past their expiresAt (eligible for expiration) -->
@@ -196,14 +196,14 @@
     SELECT id
     FROM cart
     WHERE expires_at &lt; NOW()
-    AND stateid IN ('ACTIVE', 'ABANDONED', 'CHECKOUT_INITIATED')
+    AND state_id IN ('ACTIVE', 'ABANDONED', 'CHECKOUT_INITIATED')
 </select>
 
 <!-- Find ACTIVE carts idle longer than threshold hours -->
 <select id="getIdleCartIds" resultType="string">
     SELECT id
     FROM cart
-    WHERE stateid = 'ACTIVE'
+    WHERE state_id = 'ACTIVE'
     AND last_modified_time &lt; (NOW() - INTERVAL #{thresholdHours} HOUR)
 </select>
 
@@ -305,8 +305,8 @@
         c.expires_at as "expiresAt",
         c.notes as "notes",
         c.description as "description",
-        c.stateid as "stateId",
-        c.flowid as "flowId",
+        c.state_id as "stateId",
+        c.flow_id as "flowId",
         c.created_time as "cartCreatedTime",
         c.last_modified_time as "cartLastModifiedTime",
         c.last_modified_by as "lastModifiedBy",
@@ -377,8 +377,8 @@
         c.expires_at as "expiresAt",
         c.notes as "notes",
         c.description as "description",
-        c.stateid as "stateId",
-        c.flowid as "flowId",
+        c.state_id as "stateId",
+        c.flow_id as "flowId",
         c.created_time as "cartCreatedTime",
         c.last_modified_time as "cartLastModifiedTime",
         c.last_modified_by as "lastModifiedBy",
@@ -424,7 +424,7 @@
     SELECT count(*) FROM cart c
     INNER JOIN cart_item ci ON ci.cart_id = c.id
     WHERE c.customer_id = #{userId}
-    AND c.stateid IN ('ACTIVE', 'CHECKOUT_INITIATED')
+    AND c.state_id IN ('ACTIVE', 'CHECKOUT_INITIATED')
 </select>
 
 <select id="getStorefrontCart" resultType="com.homebase.ecom.dto.StorefrontCartDto">
@@ -437,7 +437,7 @@
         c.coupon_codes    as "couponCodes",
         c.discount_amount as "discountAmount",
         c.total           as "total",
-        c.stateid         as "stateId",
+        c.state_id         as "stateId",
 
         /* line item */
         ci.id             as "itemId",
@@ -492,7 +492,7 @@
     LEFT JOIN inventory_item inv ON inv.variant_id = ci.variant_id
 
     WHERE c.customer_id = #{userId}
-    AND c.stateid IN ('ACTIVE', 'CHECKOUT_INITIATED')
+    AND c.state_id IN ('ACTIVE', 'CHECKOUT_INITIATED')
 
     ORDER BY ci.created_time ASC
     ${pagination}
@@ -517,7 +517,7 @@
         c.coupon_codes    as "couponCodes",
         c.discount_amount as "discountAmount",
         c.total           as "total",
-        c.stateid         as "stateId",
+        c.state_id         as "stateId",
 
         ci.id             as "itemId",
         ci.variant_id     as "variantId",
