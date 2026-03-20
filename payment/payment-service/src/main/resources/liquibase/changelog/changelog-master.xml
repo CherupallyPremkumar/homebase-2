@@ -4,15 +4,31 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
+    <!-- Payment table — matches db-migrations payment changesets 001 + 003 -->
     <changeSet id="payment-001-create-payment-table" author="homebase">
         <createTable tableName="payment">
-            <column name="id" type="VARCHAR(36)">
+            <column name="id" type="VARCHAR(255)">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="order_id" type="VARCHAR(36)">
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- STM fields from AbstractJpaStateEntity -->
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <!-- Business fields -->
+            <column name="order_id" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="customer_id" type="VARCHAR(36)"/>
+            <column name="customer_id" type="VARCHAR(255)"/>
             <column name="amount" type="DECIMAL(12,2)">
                 <constraints nullable="false"/>
             </column>
@@ -22,48 +38,41 @@
             <column name="gateway_response" type="TEXT"/>
             <column name="retry_count" type="INT" defaultValueNumeric="0"/>
             <column name="failure_reason" type="TEXT"/>
-            <!-- Chenile STM fields -->
-            <column name="stateId" type="VARCHAR(50)"/>
-            <column name="flowId" type="VARCHAR(50)"/>
-            <!-- Audit fields from BaseJpaEntity -->
-            <column name="created_time" type="TIMESTAMP"/>
-            <column name="last_modified_time" type="TIMESTAMP"/>
-            <column name="tenant" type="VARCHAR(50)"/>
+            <!-- Changeset 003 fields -->
+            <column name="checkout_id" type="VARCHAR(255)"/>
+            <column name="payment_method_type" type="VARCHAR(50)"/>
+            <column name="card_last_four" type="VARCHAR(4)"/>
+            <column name="card_brand" type="VARCHAR(50)"/>
+            <column name="upi_id" type="VARCHAR(255)"/>
+            <column name="gateway_name" type="VARCHAR(50)"/>
+            <column name="gateway_order_id" type="VARCHAR(255)"/>
+            <column name="gateway_payment_id" type="VARCHAR(255)"/>
+            <column name="idempotency_key" type="VARCHAR(255)"/>
+            <column name="refund_amount" type="DECIMAL(12,2)" defaultValueNumeric="0"/>
+            <column name="refund_reason" type="VARCHAR(500)"/>
         </createTable>
 
         <createIndex tableName="payment" indexName="idx_payment_order_id">
             <column name="order_id"/>
         </createIndex>
-        <createIndex tableName="payment" indexName="idx_payment_customer_id">
-            <column name="customer_id"/>
-        </createIndex>
         <createIndex tableName="payment" indexName="idx_payment_state">
-            <column name="stateId"/>
-        </createIndex>
-        <createIndex tableName="payment" indexName="idx_payment_method">
-            <column name="payment_method"/>
-        </createIndex>
-        <createIndex tableName="payment" indexName="idx_payment_gateway_txn">
-            <column name="gateway_transaction_id"/>
+            <column name="state_id"/>
         </createIndex>
     </changeSet>
 
+    <!-- Activity log table -->
     <changeSet id="payment-002-create-activity-log-table" author="homebase">
         <createTable tableName="payment_activity_log">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="payment_id" type="VARCHAR(36)">
+            <column name="payment_id" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
             <column name="event_id" type="VARCHAR(100)"/>
             <column name="comment" type="TEXT"/>
             <column name="success" type="BOOLEAN"/>
         </createTable>
-
-        <addForeignKeyConstraint constraintName="fk_payment_activity_payment"
-                                 baseTableName="payment_activity_log" baseColumnNames="payment_id"
-                                 referencedTableName="payment" referencedColumnNames="id"/>
     </changeSet>
 
 </databaseChangeLog>

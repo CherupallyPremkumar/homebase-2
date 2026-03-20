@@ -13,7 +13,7 @@
 
     <artifactId>return-processing-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>Return Processing Infrastructure Persistence and Adapters</name>
+    <name>return-processing-infrastructure</name>
 
     <dependencies>
         <dependency>
@@ -37,6 +37,10 @@
         <dependency>
             <groupId>com.homebase.ecom.shared</groupId>
             <artifactId>shared-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.build</groupId>
+            <artifactId>core</artifactId>
         </dependency>
     </dependencies>
 </project>

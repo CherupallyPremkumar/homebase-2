@@ -54,6 +54,9 @@ public class CartDtoMapper {
         dto.setUnitPrice(item.getUnitPrice().getAmount());
         dto.setLineTotal(item.getLineTotal().getAmount());
         dto.setAvailable(item.isAvailable());
+        dto.setSavedForLater(item.isSavedForLater());
+        dto.setImageUrl(item.getImageUrl());
+        dto.setOriginalPrice(item.getOriginalPrice() != null ? item.getOriginalPrice().getAmount() : null);
 
         return dto;
     }

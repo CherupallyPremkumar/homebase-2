@@ -5,104 +5,89 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
-    <!-- ================================================================== -->
-    <!-- V45: Analytics aggregation tables                                  -->
-    <!-- ================================================================== -->
-    <changeSet id="V45__create_analytics_tables" author="homebase" runOnChange="false">
+    <!-- daily_sales_summary (DailySalesSummaryEntity extends BaseJpaEntity) -->
+    <changeSet id="analytics-001-create-daily-sales-summary" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="daily_sales_summary"/></not>
+        </preConditions>
         <createTable tableName="daily_sales_summary">
-            <column name="id" type="VARCHAR(36)">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="summary_date" type="DATE">
-                <constraints nullable="false" unique="true" uniqueConstraintName="uk_daily_sales_date"/>
-            </column>
-            <column name="total_orders" type="INT" defaultValueNumeric="0"/>
-            <column name="total_revenue" type="NUMERIC(15,2)" defaultValueNumeric="0.00"/>
-            <column name="total_units_sold" type="INT" defaultValueNumeric="0"/>
-            <column name="total_discount" type="NUMERIC(15,2)" defaultValueNumeric="0.00"/>
-            <column name="total_tax" type="NUMERIC(15,2)" defaultValueNumeric="0.00"/>
-            <column name="total_shipping" type="NUMERIC(15,2)" defaultValueNumeric="0.00"/>
-            <column name="avg_order_value" type="NUMERIC(15,2)" defaultValueNumeric="0.00"/>
-            <column name="new_customers" type="INT" defaultValueNumeric="0"/>
-            <column name="returning_customers" type="INT" defaultValueNumeric="0"/>
-            <column name="currency" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
             <column name="last_modified_by" type="VARCHAR(100)"/>
             <column name="tenant" type="VARCHAR(50)"/>
             <column name="created_by" type="VARCHAR(100)"/>
             <column name="version" type="BIGINT" defaultValueNumeric="0"/>
-            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="summary_date" type="DATE"/>
+            <column name="total_orders" type="INT" defaultValueNumeric="0"/>
+            <column name="total_revenue" type="DECIMAL(19,2)"/>
+            <column name="total_units_sold" type="INT" defaultValueNumeric="0"/>
+            <column name="total_discount" type="DECIMAL(19,2)"/>
+            <column name="total_tax" type="DECIMAL(19,2)"/>
+            <column name="total_shipping" type="DECIMAL(19,2)"/>
+            <column name="avg_order_value" type="DECIMAL(19,2)"/>
+            <column name="new_customers" type="INT" defaultValueNumeric="0"/>
+            <column name="returning_customers" type="INT" defaultValueNumeric="0"/>
+            <column name="currency" type="VARCHAR(255)"/>
         </createTable>
+        <createIndex indexName="idx_daily_sales_date" tableName="daily_sales_summary">
+            <column name="summary_date"/>
+        </createIndex>
+    </changeSet>
 
+    <!-- product_performance (ProductPerformanceEntity extends BaseJpaEntity) -->
+    <changeSet id="analytics-002-create-product-performance" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_performance"/></not>
+        </preConditions>
         <createTable tableName="product_performance">
-            <column name="id" type="VARCHAR(36)">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="product_id" type="VARCHAR(36)">
-                <constraints nullable="false" foreignKeyName="fk_product_perf_product" referencedTableName="products" referencedColumnNames="id"/>
-            </column>
-            <column name="period_date" type="DATE">
-                <constraints nullable="false"/>
-            </column>
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="period_date" type="DATE"/>
             <column name="views" type="INT" defaultValueNumeric="0"/>
             <column name="add_to_cart_count" type="INT" defaultValueNumeric="0"/>
             <column name="purchases" type="INT" defaultValueNumeric="0"/>
             <column name="units_sold" type="INT" defaultValueNumeric="0"/>
-            <column name="revenue" type="NUMERIC(15,2)" defaultValueNumeric="0.00"/>
+            <column name="revenue" type="DECIMAL(19,2)"/>
             <column name="returns_count" type="INT" defaultValueNumeric="0"/>
-            <column name="avg_rating" type="NUMERIC(3,2)"/>
-            <column name="created_time" type="TIMESTAMP"/>
-            <column name="last_modified_time" type="TIMESTAMP"/>
-            <column name="last_modified_by" type="VARCHAR(100)"/>
-            <column name="tenant" type="VARCHAR(50)"/>
-            <column name="created_by" type="VARCHAR(100)"/>
-            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
-            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="avg_rating" type="DECIMAL(19,2)"/>
         </createTable>
-
-        <addUniqueConstraint tableName="product_performance" columnNames="product_id, period_date"
-                             constraintName="uk_product_perf_product_date"/>
-
-        <createTable tableName="supplier_performance">
-            <column name="id" type="VARCHAR(36)">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="supplier_id" type="VARCHAR(36)">
-                <constraints nullable="false" foreignKeyName="fk_supplier_perf_supplier" referencedTableName="supplier" referencedColumnNames="id"/>
-            </column>
-            <column name="period_month" type="INT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="period_year" type="INT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="total_orders" type="INT" defaultValueNumeric="0"/>
-            <column name="total_revenue" type="NUMERIC(15,2)" defaultValueNumeric="0.00"/>
-            <column name="total_returns" type="INT" defaultValueNumeric="0"/>
-            <column name="avg_fulfillment_days" type="NUMERIC(5,2)"/>
-            <column name="avg_rating" type="NUMERIC(3,2)"/>
-            <column name="cancellation_rate" type="NUMERIC(5,4)"/>
-            <column name="created_time" type="TIMESTAMP"/>
-            <column name="last_modified_time" type="TIMESTAMP"/>
-            <column name="last_modified_by" type="VARCHAR(100)"/>
-            <column name="tenant" type="VARCHAR(50)"/>
-            <column name="created_by" type="VARCHAR(100)"/>
-            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
-            <column name="test_entity" type="BOOLEAN" defaultValueBoolean="false"/>
-        </createTable>
-
-        <addUniqueConstraint tableName="supplier_performance" columnNames="supplier_id, period_month, period_year"
-                             constraintName="uk_supplier_perf_supplier_period"/>
-
-        <createIndex indexName="idx_daily_sales_date" tableName="daily_sales_summary">
-            <column name="summary_date"/>
-        </createIndex>
-        <createIndex indexName="idx_product_perf_product" tableName="product_performance">
+        <createIndex indexName="idx_product_perf_product_date" tableName="product_performance">
             <column name="product_id"/>
             <column name="period_date"/>
         </createIndex>
-        <createIndex indexName="idx_supplier_perf_supplier" tableName="supplier_performance">
+    </changeSet>
+
+    <!-- supplier_performance (SupplierPerformanceEntity extends BaseJpaEntity) -->
+    <changeSet id="analytics-003-create-supplier-performance" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="supplier_performance"/></not>
+        </preConditions>
+        <createTable tableName="supplier_performance">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="supplier_id" type="VARCHAR(255)"/>
+            <column name="period_month" type="INT"/>
+            <column name="period_year" type="INT"/>
+            <column name="total_orders" type="INT" defaultValueNumeric="0"/>
+            <column name="total_revenue" type="DECIMAL(19,2)"/>
+            <column name="total_returns" type="INT" defaultValueNumeric="0"/>
+            <column name="avg_fulfillment_days" type="DECIMAL(19,2)"/>
+            <column name="avg_rating" type="DECIMAL(19,2)"/>
+            <column name="cancellation_rate" type="DECIMAL(19,2)"/>
+        </createTable>
+        <createIndex indexName="idx_supplier_perf_supplier_period" tableName="supplier_performance">
             <column name="supplier_id"/>
             <column name="period_year"/>
             <column name="period_month"/>

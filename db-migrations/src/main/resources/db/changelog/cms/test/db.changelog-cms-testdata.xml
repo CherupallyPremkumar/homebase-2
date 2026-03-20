@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        CMS test data: pages + banners for storefront
+    -->
+    <changeSet id="cms-test-data" author="homebase-test">
+
+        <!-- CMS Pages -->
+        <insert tableName="cms_pages">
+            <column name="id" value="page-about"/>
+            <column name="slug" value="about-us"/>
+            <column name="title" value="About HomeBase"/>
+            <column name="body" value="HomeBase is India's trusted marketplace for quality products."/>
+            <column name="page_type" value="STATIC"/>
+            <column name="meta_title" value="About HomeBase - India's Trusted Marketplace"/>
+            <column name="meta_description" value="Learn about HomeBase, our mission, and how we connect buyers with quality sellers across India."/>
+            <column name="published" valueBoolean="true"/>
+            <column name="published_at" valueDate="2025-06-01T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cms_pages">
+            <column name="id" value="page-returns"/>
+            <column name="slug" value="return-policy"/>
+            <column name="title" value="Return &amp; Refund Policy"/>
+            <column name="body" value="Easy 7-day returns on most items. Full refund for defective products."/>
+            <column name="page_type" value="POLICY"/>
+            <column name="meta_title" value="Return Policy - HomeBase"/>
+            <column name="published" valueBoolean="true"/>
+            <column name="published_at" valueDate="2025-06-01T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cms_pages">
+            <column name="id" value="page-draft"/>
+            <column name="slug" value="summer-sale-2026"/>
+            <column name="title" value="Summer Sale 2026"/>
+            <column name="body" value="Up to 70% off on electronics, fashion, and home decor."/>
+            <column name="page_type" value="PROMOTIONAL"/>
+            <column name="published" valueBoolean="false"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Banners -->
+        <insert tableName="banners">
+            <column name="id" value="banner-hero-1"/>
+            <column name="name" value="Summer Electronics Sale"/>
+            <column name="image_url" value="https://cdn.homebase.in/banners/summer-electronics-2026.jpg"/>
+            <column name="mobile_image_url" value="https://cdn.homebase.in/banners/summer-electronics-2026-m.jpg"/>
+            <column name="link_url" value="/category/electronics?promo=summer2026"/>
+            <column name="position" value="HERO"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="active_from" valueDate="2026-03-01T00:00:00"/>
+            <column name="active_to" valueDate="2026-04-30T23:59:59"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="banners">
+            <column name="id" value="banner-hero-2"/>
+            <column name="name" value="New Arrivals - Fashion"/>
+            <column name="image_url" value="https://cdn.homebase.in/banners/fashion-arrivals.jpg"/>
+            <column name="mobile_image_url" value="https://cdn.homebase.in/banners/fashion-arrivals-m.jpg"/>
+            <column name="link_url" value="/category/fashion?sort=newest"/>
+            <column name="position" value="HERO"/>
+            <column name="display_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="banners">
+            <column name="id" value="banner-sidebar-1"/>
+            <column name="name" value="Download App Banner"/>
+            <column name="image_url" value="https://cdn.homebase.in/banners/app-download.jpg"/>
+            <column name="link_url" value="/download-app"/>
+            <column name="position" value="SIDEBAR"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="banners">
+            <column name="id" value="banner-expired"/>
+            <column name="name" value="Diwali Sale 2025"/>
+            <column name="image_url" value="https://cdn.homebase.in/banners/diwali-2025.jpg"/>
+            <column name="link_url" value="/diwali-sale"/>
+            <column name="position" value="HERO"/>
+            <column name="display_order" valueNumeric="99"/>
+            <column name="active_from" valueDate="2025-10-15T00:00:00"/>
+            <column name="active_to" valueDate="2025-11-15T23:59:59"/>
+            <column name="active" valueBoolean="false"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

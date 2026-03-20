@@ -1,0 +1,709 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        CConfig: Production-grade platform configuration
+        Columns: module_name, key_name, avalue, custom_attribute, path
+        custom_attribute defaults to __GLOBAL__
+
+        Organization:
+        - cart module: limits, TTL, pricing thresholds
+        - checkout module: timeouts, retry, address validation
+        - order module: cancellation, fraud, lifecycle
+        - payment module: gateways, retry, limits
+        - shipping module: carriers, free shipping, delivery SLA
+        - return module: windows, restocking, eligibility
+        - product module: listing limits, media, moderation
+        - inventory module: low-stock, reservation TTL
+        - promo module: stacking, limits, min order
+        - review module: moderation, auto-publish
+        - support module: SLA, auto-close
+        - settlement module: payout schedule, commission
+        - notification module: channels, rate limits, DND
+        - platform module: maintenance, feature flags
+    -->
+    <changeSet id="config-004-seed-data" author="homebase">
+
+        <!-- ============================================================ -->
+        <!-- CART MODULE                                                   -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-cart-max-items"/>
+            <column name="module_name" value="cart"/>
+            <column name="key_name" value="max.items"/>
+            <column name="avalue" value="10"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-cart-max-qty-per-item"/>
+            <column name="module_name" value="cart"/>
+            <column name="key_name" value="max.quantity.per.item"/>
+            <column name="avalue" value="5"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-cart-max-qty-high-value"/>
+            <column name="module_name" value="cart"/>
+            <column name="key_name" value="max.quantity.high.value.item"/>
+            <column name="avalue" value="2"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-cart-high-value-threshold"/>
+            <column name="module_name" value="cart"/>
+            <column name="key_name" value="high.value.threshold"/>
+            <column name="avalue" value="10000"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-cart-expiry-hours"/>
+            <column name="module_name" value="cart"/>
+            <column name="key_name" value="expiry.hours"/>
+            <column name="avalue" value="72"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-cart-merge-on-login"/>
+            <column name="module_name" value="cart"/>
+            <column name="key_name" value="merge.on.login"/>
+            <column name="avalue" value="true"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-cart-max-value"/>
+            <column name="module_name" value="cart"/>
+            <column name="key_name" value="max.cart.value"/>
+            <column name="avalue" value="500000"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-cart-min-order-value"/>
+            <column name="module_name" value="cart"/>
+            <column name="key_name" value="min.order.value"/>
+            <column name="avalue" value="99"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- CHECKOUT MODULE                                               -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-checkout-timeout"/>
+            <column name="module_name" value="checkout"/>
+            <column name="key_name" value="session.timeout.minutes"/>
+            <column name="avalue" value="30"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-checkout-payment-retry"/>
+            <column name="module_name" value="checkout"/>
+            <column name="key_name" value="payment.retry.max"/>
+            <column name="avalue" value="3"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-checkout-address-required"/>
+            <column name="module_name" value="checkout"/>
+            <column name="key_name" value="address.pincode.validation"/>
+            <column name="avalue" value="true"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-checkout-cod-max"/>
+            <column name="module_name" value="checkout"/>
+            <column name="key_name" value="cod.max.amount"/>
+            <column name="avalue" value="25000"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-checkout-cod-enabled"/>
+            <column name="module_name" value="checkout"/>
+            <column name="key_name" value="cod.enabled"/>
+            <column name="avalue" value="true"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- ORDER MODULE                                                  -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-order-cancel-window"/>
+            <column name="module_name" value="order"/>
+            <column name="key_name" value="cancellation.window.hours"/>
+            <column name="avalue" value="24"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-order-fraud-threshold"/>
+            <column name="module_name" value="order"/>
+            <column name="key_name" value="fraud.review.threshold"/>
+            <column name="avalue" value="50000"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-order-max-per-day"/>
+            <column name="module_name" value="order"/>
+            <column name="key_name" value="max.orders.per.day"/>
+            <column name="avalue" value="10"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-order-auto-complete-days"/>
+            <column name="module_name" value="order"/>
+            <column name="key_name" value="auto.complete.after.delivery.days"/>
+            <column name="avalue" value="7"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- PAYMENT MODULE                                                -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-payment-gateway-primary"/>
+            <column name="module_name" value="payment"/>
+            <column name="key_name" value="gateway.primary"/>
+            <column name="avalue" value="RAZORPAY"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-payment-gateway-fallback"/>
+            <column name="module_name" value="payment"/>
+            <column name="key_name" value="gateway.fallback"/>
+            <column name="avalue" value="CASHFREE"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-payment-retry-max"/>
+            <column name="module_name" value="payment"/>
+            <column name="key_name" value="retry.max.attempts"/>
+            <column name="avalue" value="3"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-payment-refund-auto-days"/>
+            <column name="module_name" value="payment"/>
+            <column name="key_name" value="refund.auto.process.days"/>
+            <column name="avalue" value="5"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-payment-upi-enabled"/>
+            <column name="module_name" value="payment"/>
+            <column name="key_name" value="upi.enabled"/>
+            <column name="avalue" value="true"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-payment-wallet-max"/>
+            <column name="module_name" value="payment"/>
+            <column name="key_name" value="wallet.max.balance"/>
+            <column name="avalue" value="100000"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- SHIPPING MODULE                                               -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-shipping-free-threshold"/>
+            <column name="module_name" value="shipping"/>
+            <column name="key_name" value="free.threshold"/>
+            <column name="avalue" value="499"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-shipping-default-carrier"/>
+            <column name="module_name" value="shipping"/>
+            <column name="key_name" value="default.carrier"/>
+            <column name="avalue" value="DELHIVERY"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-shipping-max-delivery-days"/>
+            <column name="module_name" value="shipping"/>
+            <column name="key_name" value="max.delivery.days"/>
+            <column name="avalue" value="10"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-shipping-express-surcharge"/>
+            <column name="module_name" value="shipping"/>
+            <column name="key_name" value="express.surcharge"/>
+            <column name="avalue" value="99"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-shipping-max-attempts"/>
+            <column name="module_name" value="shipping"/>
+            <column name="key_name" value="delivery.max.attempts"/>
+            <column name="avalue" value="3"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-shipping-cod-charge"/>
+            <column name="module_name" value="shipping"/>
+            <column name="key_name" value="cod.handling.charge"/>
+            <column name="avalue" value="40"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- RETURN MODULE                                                 -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-return-window"/>
+            <column name="module_name" value="return"/>
+            <column name="key_name" value="eligibility.days"/>
+            <column name="avalue" value="7"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-return-window-electronics"/>
+            <column name="module_name" value="return"/>
+            <column name="key_name" value="eligibility.days.electronics"/>
+            <column name="avalue" value="10"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-return-restocking-fee-pct"/>
+            <column name="module_name" value="return"/>
+            <column name="key_name" value="restocking.fee.percent"/>
+            <column name="avalue" value="0"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-return-auto-approve"/>
+            <column name="module_name" value="return"/>
+            <column name="key_name" value="auto.approve.below.amount"/>
+            <column name="avalue" value="2000"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-return-pickup-sla-hours"/>
+            <column name="module_name" value="return"/>
+            <column name="key_name" value="pickup.sla.hours"/>
+            <column name="avalue" value="48"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-return-non-returnable-categories"/>
+            <column name="module_name" value="return"/>
+            <column name="key_name" value="non.returnable.categories"/>
+            <column name="avalue" value="INNERWEAR,PERISHABLE,PERSONALCARE,GIFT_CARDS"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- PRODUCT MODULE                                                -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-product-max-images"/>
+            <column name="module_name" value="product"/>
+            <column name="key_name" value="max.images.per.product"/>
+            <column name="avalue" value="8"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-product-max-variants"/>
+            <column name="module_name" value="product"/>
+            <column name="key_name" value="max.variants.per.product"/>
+            <column name="avalue" value="20"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-product-title-max-length"/>
+            <column name="module_name" value="product"/>
+            <column name="key_name" value="title.max.length"/>
+            <column name="avalue" value="200"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-product-description-max"/>
+            <column name="module_name" value="product"/>
+            <column name="key_name" value="description.max.length"/>
+            <column name="avalue" value="5000"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-product-min-price"/>
+            <column name="module_name" value="product"/>
+            <column name="key_name" value="min.selling.price"/>
+            <column name="avalue" value="1"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-product-max-price"/>
+            <column name="module_name" value="product"/>
+            <column name="key_name" value="max.selling.price"/>
+            <column name="avalue" value="1000000"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- INVENTORY MODULE                                              -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-inv-low-stock-threshold"/>
+            <column name="module_name" value="inventory"/>
+            <column name="key_name" value="low.stock.threshold"/>
+            <column name="avalue" value="10"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-inv-reservation-ttl"/>
+            <column name="module_name" value="inventory"/>
+            <column name="key_name" value="reservation.ttl.minutes"/>
+            <column name="avalue" value="30"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-inv-oversell-allowed"/>
+            <column name="module_name" value="inventory"/>
+            <column name="key_name" value="oversell.allowed"/>
+            <column name="avalue" value="false"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- PROMO MODULE                                                  -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-promo-max-coupons-per-order"/>
+            <column name="module_name" value="promo"/>
+            <column name="key_name" value="max.coupons.per.order"/>
+            <column name="avalue" value="1"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-promo-max-discount-pct"/>
+            <column name="module_name" value="promo"/>
+            <column name="key_name" value="max.discount.percent"/>
+            <column name="avalue" value="50"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-promo-max-uses-per-user"/>
+            <column name="module_name" value="promo"/>
+            <column name="key_name" value="max.uses.per.user"/>
+            <column name="avalue" value="3"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- REVIEW MODULE                                                 -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-review-auto-publish-min-rating"/>
+            <column name="module_name" value="review"/>
+            <column name="key_name" value="auto.publish.min.rating"/>
+            <column name="avalue" value="4"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-review-verified-only"/>
+            <column name="module_name" value="review"/>
+            <column name="key_name" value="verified.purchase.required"/>
+            <column name="avalue" value="false"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-review-flag-threshold"/>
+            <column name="module_name" value="review"/>
+            <column name="key_name" value="flag.report.threshold"/>
+            <column name="avalue" value="5"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-review-max-images"/>
+            <column name="module_name" value="review"/>
+            <column name="key_name" value="max.images.per.review"/>
+            <column name="avalue" value="5"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- SUPPORT MODULE                                                -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-support-sla-first-response-hours"/>
+            <column name="module_name" value="support"/>
+            <column name="key_name" value="sla.first.response.hours"/>
+            <column name="avalue" value="4"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-support-sla-resolution-hours"/>
+            <column name="module_name" value="support"/>
+            <column name="key_name" value="sla.resolution.hours"/>
+            <column name="avalue" value="48"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-support-auto-close-days"/>
+            <column name="module_name" value="support"/>
+            <column name="key_name" value="auto.close.after.resolve.days"/>
+            <column name="avalue" value="3"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-support-escalation-enabled"/>
+            <column name="module_name" value="support"/>
+            <column name="key_name" value="auto.escalation.enabled"/>
+            <column name="avalue" value="true"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- SETTLEMENT MODULE                                             -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-settlement-payout-cycle-days"/>
+            <column name="module_name" value="settlement"/>
+            <column name="key_name" value="payout.cycle.days"/>
+            <column name="avalue" value="14"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-settlement-default-commission-pct"/>
+            <column name="module_name" value="settlement"/>
+            <column name="key_name" value="default.commission.percent"/>
+            <column name="avalue" value="15"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-settlement-tds-rate"/>
+            <column name="module_name" value="settlement"/>
+            <column name="key_name" value="tds.rate.percent"/>
+            <column name="avalue" value="1"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-settlement-min-payout"/>
+            <column name="module_name" value="settlement"/>
+            <column name="key_name" value="min.payout.amount"/>
+            <column name="avalue" value="500"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- NOTIFICATION MODULE                                           -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-notif-sms-enabled"/>
+            <column name="module_name" value="notification"/>
+            <column name="key_name" value="sms.enabled"/>
+            <column name="avalue" value="true"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-notif-email-enabled"/>
+            <column name="module_name" value="notification"/>
+            <column name="key_name" value="email.enabled"/>
+            <column name="avalue" value="true"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-notif-push-enabled"/>
+            <column name="module_name" value="notification"/>
+            <column name="key_name" value="push.enabled"/>
+            <column name="avalue" value="true"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-notif-dnd-start"/>
+            <column name="module_name" value="notification"/>
+            <column name="key_name" value="dnd.start.hour"/>
+            <column name="avalue" value="21"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-notif-dnd-end"/>
+            <column name="module_name" value="notification"/>
+            <column name="key_name" value="dnd.end.hour"/>
+            <column name="avalue" value="8"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-notif-retry-max"/>
+            <column name="module_name" value="notification"/>
+            <column name="key_name" value="retry.max.attempts"/>
+            <column name="avalue" value="3"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- SUPPLIER MODULE                                               -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-supplier-probation-days"/>
+            <column name="module_name" value="supplier"/>
+            <column name="key_name" value="probation.duration.days"/>
+            <column name="avalue" value="30"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-supplier-min-rating"/>
+            <column name="module_name" value="supplier"/>
+            <column name="key_name" value="min.performance.rating"/>
+            <column name="avalue" value="3.5"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-supplier-max-return-rate"/>
+            <column name="module_name" value="supplier"/>
+            <column name="key_name" value="max.return.rate.percent"/>
+            <column name="avalue" value="15"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-supplier-max-cancel-rate"/>
+            <column name="module_name" value="supplier"/>
+            <column name="key_name" value="max.cancellation.rate.percent"/>
+            <column name="avalue" value="5"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- PLATFORM / FEATURE FLAGS                                      -->
+        <!-- ============================================================ -->
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-platform-maintenance-mode"/>
+            <column name="module_name" value="platform"/>
+            <column name="key_name" value="maintenance.mode"/>
+            <column name="avalue" value="false"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-platform-new-registration"/>
+            <column name="module_name" value="platform"/>
+            <column name="key_name" value="registration.enabled"/>
+            <column name="avalue" value="true"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-platform-seller-registration"/>
+            <column name="module_name" value="platform"/>
+            <column name="key_name" value="seller.registration.enabled"/>
+            <column name="avalue" value="true"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-platform-currency"/>
+            <column name="module_name" value="platform"/>
+            <column name="key_name" value="default.currency"/>
+            <column name="avalue" value="INR"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-platform-country"/>
+            <column name="module_name" value="platform"/>
+            <column name="key_name" value="default.country"/>
+            <column name="avalue" value="IN"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-platform-gst-enabled"/>
+            <column name="module_name" value="platform"/>
+            <column name="key_name" value="gst.enabled"/>
+            <column name="avalue" value="true"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-platform-pagination-default"/>
+            <column name="module_name" value="platform"/>
+            <column name="key_name" value="pagination.default.size"/>
+            <column name="avalue" value="20"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="cconfig">
+            <column name="id" value="cfg-platform-pagination-max"/>
+            <column name="module_name" value="platform"/>
+            <column name="key_name" value="pagination.max.size"/>
+            <column name="avalue" value="100"/>
+            <column name="custom_attribute" value="__GLOBAL__"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

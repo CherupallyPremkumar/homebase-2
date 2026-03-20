@@ -10,7 +10,7 @@
 
     <artifactId>cart-query-api</artifactId>
     <packaging>jar</packaging>
-    <name>Cart Query API</name>
+    <name>cart-query-api</name>
 
     <dependencies>
         <dependency>

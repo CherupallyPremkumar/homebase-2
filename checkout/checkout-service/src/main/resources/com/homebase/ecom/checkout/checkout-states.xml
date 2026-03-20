@@ -1,25 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
 
-  <!-- ================================================================ -->
-  <!-- Event definitions with ACLs and payload types                     -->
-  <!-- ================================================================ -->
-  <event-information eventId='create' meta-acls="CUSTOMER,SYSTEM" meta-bodyType="com.homebase.ecom.checkout.dto.InitiateCheckoutPayload"/>
-  <event-information eventId='process' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='paymentSuccess' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.checkout.dto.PaymentResultPayload"/>
-  <event-information eventId='paymentFailed' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.checkout.dto.PaymentResultPayload"/>
-  <event-information eventId='cancel' meta-acls="CUSTOMER,SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='compensate' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='expire' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- Event definitions with ACLs and payload types                          -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (consumed via Kafka → PostSaveHook):                   -->
+  <!--   cart.CHECKOUT_INITIATED → create (from cart BC)                      -->
+  <!--   payment.SUCCEEDED       → paymentSuccess (from payment BC)           -->
+  <!--   payment.FAILED          → paymentFailed (from payment BC)            -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (published via PostSaveHook → Kafka):                  -->
+  <!--   checkout.COMPLETED      → cart.completeCheckout, order.create        -->
+  <!--   checkout.COMPENSATED    → cart.cancelCheckout (restore cart)          -->
+  <!--   checkout.CANCELLED      → cart.cancelCheckout (restore cart)         -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <event-information eventId='create'         meta-acls="CUSTOMER,SYSTEM" meta-bodyType="com.homebase.ecom.checkout.dto.InitiateCheckoutPayload"/>
+  <event-information eventId='process'        meta-acls="SYSTEM"          meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='paymentSuccess' meta-acls="SYSTEM"          meta-bodyType="com.homebase.ecom.checkout.dto.PaymentResultPayload"/>
+  <event-information eventId='paymentFailed'  meta-acls="SYSTEM"          meta-bodyType="com.homebase.ecom.checkout.dto.PaymentResultPayload"/>
+  <event-information eventId='retryPayment'   meta-acls="CUSTOMER"        meta-bodyType="com.homebase.ecom.checkout.dto.RetryPaymentPayload"/>
+  <event-information eventId='cancel'         meta-acls="CUSTOMER,SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='compensate'     meta-acls="SYSTEM"          meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='expire'         meta-acls="SYSTEM"          meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
 
   <flow id='checkout-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="checkoutEntryAction"/>
     <exit-action componentName="checkoutExitAction"/>
 
-    <!-- ================================================================ -->
-    <!-- INITIATED: Checkout created, saga not yet started                 -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- INITIATED: Checkout created, saga not yet started                   -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
     <manual-state id='INITIATED' initialState='true' meta-mainPath="true"
                   description="Checkout created, awaiting saga processing">
       <on eventId='process'
@@ -37,9 +50,9 @@
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <!-- ================================================================ -->
-    <!-- AWAITING_PAYMENT: Saga completed, waiting for payment callback    -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- AWAITING_PAYMENT: Saga completed, waiting for payment callback      -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
     <manual-state id='AWAITING_PAYMENT' meta-mainPath="true"
                   description="Saga steps done, payment initiated, awaiting callback">
       <on eventId='paymentSuccess'
@@ -60,27 +73,52 @@
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <!-- ================================================================ -->
-    <!-- COMPLETED: Payment successful, checkout done — terminal           -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- COMPLETED: Payment successful, checkout done — terminal             -->
+    <!-- PostSaveHook: publishes order.create + cart.completeCheckout        -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
     <manual-state id='COMPLETED' meta-mainPath="true"
                   description="Checkout completed successfully, order confirmed">
     </manual-state>
 
-    <!-- ================================================================ -->
-    <!-- PAYMENT_FAILED: Payment failed, needs compensation                -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- PAYMENT_FAILED: Payment failed — customer can retry or compensate   -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
     <manual-state id='PAYMENT_FAILED'
-                  description="Payment failed, awaiting compensation">
+                  description="Payment failed, customer can retry or cancel">
+      <on eventId='retryPayment'
+          componentName='checkoutRetryPaymentAction'
+          newStateId='CHECK_RETRY_ALLOWED'
+          meta-acls="CUSTOMER"/>
       <on eventId='compensate'
           componentName='checkoutCompensateAction'
           newStateId='COMPENSATED'
           meta-acls="SYSTEM"/>
+      <on eventId='cancel'
+          componentName='checkoutCancelAction'
+          newStateId='CANCELLED'
+          meta-acls="CUSTOMER,SYSTEM"/>
     </manual-state>
 
-    <!-- ================================================================ -->
-    <!-- CANCELLED: Customer or system cancelled checkout                  -->
-    <!-- ================================================================ -->
+    <!--
+      OGNL auto-state: CHECK_RETRY_ALLOWED
+      Allow max 3 payment retries per checkout session.
+      paymentRetryCount >= 3 → force cancel (too many failures)
+      else → back to AWAITING_PAYMENT for another attempt
+    -->
+    <auto-state id='CHECK_RETRY_ALLOWED'
+                componentName='ifAction'
+                condition='paymentRetryCount &gt;= 3'
+                then='maxRetries'
+                else='canRetry'>
+      <on eventId='maxRetries' newStateId='CANCELLED'/>
+      <on eventId='canRetry' newStateId='AWAITING_PAYMENT'/>
+    </auto-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- CANCELLED: Customer or system cancelled checkout                    -->
+    <!-- PostSaveHook: publishes cart.cancelCheckout (restores cart)         -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
     <manual-state id='CANCELLED'
                   description="Checkout cancelled, resources released">
       <on eventId='compensate'
@@ -89,9 +127,9 @@
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <!-- ================================================================ -->
-    <!-- EXPIRED: Checkout timed out                                       -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- EXPIRED: Checkout timed out (default 30 min)                        -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
     <manual-state id='EXPIRED'
                   description="Checkout expired due to timeout">
       <on eventId='compensate'
@@ -100,12 +138,16 @@
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <!-- ================================================================ -->
-    <!-- COMPENSATED: All saga steps rolled back — terminal                -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- COMPENSATED: All saga steps rolled back — terminal                  -->
+    <!-- PostSaveHook: publishes cart.cancelCheckout (restores cart)         -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
     <manual-state id='COMPENSATED'
-                  description="All saga compensations completed">
+                  description="All saga compensations completed, cart restored">
     </manual-state>
 
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
+    </manual-state>
   </flow>
 </states>

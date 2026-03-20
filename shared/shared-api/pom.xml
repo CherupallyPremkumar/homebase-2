@@ -14,7 +14,7 @@
 	<artifactId>shared-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Shared API Value Objects</name>
+	<name>shared-api</name>
 
 	<dependencies>
 		<dependency>

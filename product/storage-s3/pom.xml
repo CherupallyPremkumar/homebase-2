@@ -13,7 +13,7 @@
 	<artifactId>storage-s3</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Storage S3 — AWS S3 ObjectStorage for Production</name>
+	<name>storage-s3</name>
 
 	<properties>
 		<aws.sdk.version>2.29.51</aws.sdk.version>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Support test data — STM states from support-states.xml:
+        OPEN, ASSIGNED, IN_PROGRESS, AWAITING_CUSTOMER, RESOLVED,
+        REOPENED, CLOSED, ESCALATED, CHECK_SLA, CHECK_AUTO_CLOSE
+    -->
+    <changeSet id="support-test-data" author="homebase-test">
+
+        <!-- ticket-1: RESOLVED — Delivery inquiry resolved -->
+        <insert tableName="support_tickets">
+            <column name="id" value="ticket-1"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="subject" value="Where is my order? Tracking not updating"/>
+            <column name="category" value="DELIVERY"/>
+            <column name="priority" value="MEDIUM"/>
+            <column name="description" value="Order ORD-20260310-001 tracking shows no update for 24 hours. It was supposed to be delivered yesterday."/>
+            <column name="assigned_agent_id" value="user-8"/>
+            <column name="resolved_at" valueDate="2026-03-13T15:00:00"/>
+            <column name="channel" value="WEB"/>
+            <column name="related_entity_type" value="ORDER"/>
+            <column name="related_entity_id" value="ord-1"/>
+            <column name="satisfaction_rating" valueNumeric="4"/>
+            <column name="resolution_notes" value="Package was delayed at Mumbai hub. Delivered same day after escalation."/>
+            <column name="state_id" value="RESOLVED"/>
+            <column name="flow_id" value="support-flow"/>
+            <column name="created_time" valueDate="2026-03-13T09:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-13T15:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="5"/>
+        </insert>
+
+        <!-- ticket-2: OPEN — New payment issue -->
+        <insert tableName="support_tickets">
+            <column name="id" value="ticket-2"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="order_id" value="ord-5"/>
+            <column name="subject" value="Refund not received after 5 business days"/>
+            <column name="category" value="PAYMENT"/>
+            <column name="priority" value="HIGH"/>
+            <column name="description" value="Return was approved on March 8 but I have not received the refund of Rs.4128.82 yet."/>
+            <column name="channel" value="APP"/>
+            <column name="related_entity_type" value="PAYMENT"/>
+            <column name="related_entity_id" value="pay-5"/>
+            <column name="state_id" value="OPEN"/>
+            <column name="flow_id" value="support-flow"/>
+            <column name="created_time" valueDate="2026-03-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+        <!-- ticket-3: ESCALATED — SLA breached -->
+        <insert tableName="support_tickets">
+            <column name="id" value="ticket-3"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="order_id" value="ord-8"/>
+            <column name="subject" value="Package returned to origin — nobody informed me"/>
+            <column name="category" value="DELIVERY"/>
+            <column name="priority" value="CRITICAL"/>
+            <column name="description" value="My order was returned to warehouse after failed delivery attempts. Nobody called or messaged me about delivery."/>
+            <column name="assigned_agent_id" value="user-8"/>
+            <column name="sla_breached" valueBoolean="true"/>
+            <column name="escalated" valueBoolean="true"/>
+            <column name="escalation_reason" value="SLA breached — 48 hours without resolution. Customer threatening social media escalation."/>
+            <column name="channel" value="PHONE"/>
+            <column name="related_entity_type" value="ORDER"/>
+            <column name="related_entity_id" value="ord-8"/>
+            <column name="state_id" value="ESCALATED"/>
+            <column name="flow_id" value="support-flow"/>
+            <column name="created_time" valueDate="2026-03-11T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-14T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="6"/>
+        </insert>
+
+        <!-- ticket-4: CLOSED — Auto-closed after resolution -->
+        <insert tableName="support_tickets">
+            <column name="id" value="ticket-4"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="subject" value="How to change my default address?"/>
+            <column name="category" value="ACCOUNT"/>
+            <column name="priority" value="LOW"/>
+            <column name="description" value="I want to change my default delivery address to my office."/>
+            <column name="resolved_at" valueDate="2026-03-10T11:00:00"/>
+            <column name="auto_close_ready" valueBoolean="true"/>
+            <column name="satisfaction_rating" valueNumeric="5"/>
+            <column name="state_id" value="CLOSED"/>
+            <column name="flow_id" value="support-flow"/>
+            <column name="created_time" valueDate="2026-03-10T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-13T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <!-- Ticket Messages -->
+        <insert tableName="ticket_messages">
+            <column name="id" value="tmsg-1"/>
+            <column name="ticket_id" value="ticket-1"/>
+            <column name="sender_id" value="user-1"/>
+            <column name="sender_type" value="CUSTOMER"/>
+            <column name="message" value="Order tracking hasn't updated since yesterday. When will it be delivered?"/>
+            <column name="message_timestamp" valueDate="2026-03-13T09:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="ticket_messages">
+            <column name="id" value="tmsg-2"/>
+            <column name="ticket_id" value="ticket-1"/>
+            <column name="sender_id" value="user-8"/>
+            <column name="sender_type" value="AGENT"/>
+            <column name="message" value="Hi Priya, I've checked with the carrier. Your package was delayed at the Mumbai hub. It's now out for delivery and should reach you by 2 PM today."/>
+            <column name="message_timestamp" valueDate="2026-03-13T10:30:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="ticket_messages">
+            <column name="id" value="tmsg-3"/>
+            <column name="ticket_id" value="ticket-1"/>
+            <column name="sender_id" value="user-1"/>
+            <column name="sender_type" value="CUSTOMER"/>
+            <column name="message" value="Got it! Thank you for the quick help."/>
+            <column name="message_timestamp" valueDate="2026-03-13T15:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Ticket Activity -->
+        <insert tableName="ticket_activity">
+            <column name="id" value="tact-1"/>
+            <column name="activity_name" value="assign"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Auto-assigned to agent user-8 (delivery specialist)"/>
+            <column name="created_time" valueDate="2026-03-13T09:01:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

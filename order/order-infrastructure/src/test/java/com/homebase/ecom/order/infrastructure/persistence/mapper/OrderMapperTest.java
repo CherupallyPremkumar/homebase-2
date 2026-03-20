@@ -67,7 +67,7 @@ class OrderMapperTest {
         assertEquals("pm-001", model.getPaymentMethodId());
         assertEquals("Handle with care", model.getNotes());
         assertEquals("Customer request", model.getCancelReason());
-        assertEquals("Test order", model.description);
+        assertEquals("Test order", model.getDescription());
     }
 
     @Test
@@ -86,7 +86,7 @@ class OrderMapperTest {
         model.setPaymentMethodId("pm-002");
         model.setNotes("Fragile");
         model.setCancelReason(null);
-        model.description = "Another order";
+        model.setDescription("Another order");
 
         OrderEntity entity = mapper.toEntity(model);
 
@@ -162,7 +162,7 @@ class OrderMapperTest {
         original.setCustomerId("cust-rt");
         original.setTotalAmount(new BigDecimal("1500.00"));
         original.setCurrency("INR");
-        original.description = "Round trip test";
+        original.setDescription("Round trip test");
 
         OrderItem item = new OrderItem();
         item.setId("item-rt");
@@ -182,7 +182,7 @@ class OrderMapperTest {
         assertEquals(original.getCustomerId(), roundTripped.getCustomerId());
         assertEquals(original.getTotalAmount(), roundTripped.getTotalAmount());
         assertEquals(original.getCurrency(), roundTripped.getCurrency());
-        assertEquals(original.description, roundTripped.description);
+        assertEquals(original.getDescription(), roundTripped.getDescription());
         assertEquals(1, roundTripped.getItems().size());
         assertEquals("prod-rt", roundTripped.getItems().get(0).getProductId());
         assertEquals(2, roundTripped.getItems().get(0).getQuantity());

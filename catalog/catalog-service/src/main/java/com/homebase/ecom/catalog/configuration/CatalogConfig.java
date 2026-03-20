@@ -1,22 +1,23 @@
 package com.homebase.ecom.catalog.configuration;
 
-import com.homebase.ecom.catalog.domain.service.CatalogPolicyValidator;
-import com.homebase.ecom.catalog.domain.service.DynamicRuleEvaluator;
-import com.homebase.ecom.catalog.domain.port.in.UpdateCatalogUseCase;
-import com.homebase.ecom.catalog.domain.port.in.EvaluateDynamicCollectionUseCase;
-import com.homebase.ecom.catalog.domain.port.out.OfferClientPort;
-import com.homebase.ecom.catalog.domain.port.out.ProductClientPort;
+import com.homebase.ecom.catalog.service.CatalogPolicyValidator;
+import com.homebase.ecom.catalog.service.DynamicRuleEvaluator;
+import com.homebase.ecom.catalog.port.in.UpdateCatalogUseCase;
+import com.homebase.ecom.catalog.port.in.EvaluateDynamicCollectionUseCase;
+import com.homebase.ecom.catalog.port.client.OfferDataPort;
+import com.homebase.ecom.catalog.port.client.ProductDataPort;
 import com.homebase.ecom.catalog.repository.CatalogItemRepository;
 import com.homebase.ecom.catalog.repository.CollectionRepository;
 import com.homebase.ecom.catalog.repository.CollectionProductMappingRepository;
-import com.homebase.ecom.catalog.repository.ProductServiceClient;
-import com.homebase.ecom.catalog.infrastructure.integration.OfferClientAdapter;
-import com.homebase.ecom.catalog.infrastructure.integration.OfferEventConsumer;
-import com.homebase.ecom.catalog.infrastructure.integration.DynamicCollectionEventListener;
-import com.homebase.ecom.catalog.infrastructure.integration.ProductClientAdapter;
+import com.homebase.ecom.catalog.infrastructure.integration.ProductServiceAdapter;
+import com.homebase.ecom.catalog.infrastructure.integration.OfferServiceAdapter;
+import com.homebase.ecom.catalog.service.event.CatalogEventHandler;
 import com.homebase.ecom.catalog.service.impl.CatalogProjectorServiceImpl;
 import com.homebase.ecom.catalog.service.impl.DynamicCollectionProjectorImpl;
 import com.homebase.ecom.cconfig.sdk.CconfigClient;
+import com.homebase.ecom.offer.api.OfferService;
+import com.homebase.ecom.product.api.ProductService;
+import org.chenile.query.service.SearchService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,26 +34,26 @@ public class CatalogConfig {
         return new DynamicRuleEvaluator();
     }
 
+    // ── Driven Port Adapters (sync calls to other bounded contexts) ──
+
     @Bean
-    public ProductClientPort productClientPort() {
-        return new ProductClientAdapter(); // ACL Port
+    public ProductDataPort productDataPort(ProductService productService,
+                                            SearchService productSearchService) {
+        return new ProductServiceAdapter(productService, productSearchService);
     }
 
     @Bean
-    public OfferClientPort offerClientPort() {
-        return new OfferClientAdapter(); // ACL Port
+    public OfferDataPort offerDataPort(OfferService offerService) {
+        return new OfferServiceAdapter(offerService);
     }
 
-    @Bean
-    public UpdateCatalogUseCase catalogProjectorService(ProductClientPort productClientPort,
-            OfferClientPort offerClientPort,
-            CatalogItemRepository catalogItemRepository) {
-        return new CatalogProjectorServiceImpl(productClientPort, offerClientPort, catalogItemRepository);
-    }
+    // ── Use Cases ────────────────────────────────────────────────────
 
     @Bean
-    public OfferEventConsumer offerEventConsumer(UpdateCatalogUseCase updateCatalogUseCase) {
-        return new OfferEventConsumer(updateCatalogUseCase); // Inbound Adapter
+    public UpdateCatalogUseCase catalogProjectorService(ProductDataPort productDataPort,
+                                                         OfferDataPort offerDataPort,
+                                                         CatalogItemRepository catalogItemRepository) {
+        return new CatalogProjectorServiceImpl(productDataPort, offerDataPort, catalogItemRepository);
     }
 
     @Bean
@@ -60,15 +61,16 @@ public class CatalogConfig {
             DynamicRuleEvaluator dynamicRuleEvaluator,
             CollectionRepository collectionRepository,
             CatalogItemRepository catalogItemRepository,
-            CollectionProductMappingRepository mappingRepository,
-            ProductServiceClient productServiceClient) {
+            CollectionProductMappingRepository mappingRepository) {
         return new DynamicCollectionProjectorImpl(
-                dynamicRuleEvaluator, collectionRepository, catalogItemRepository, mappingRepository, productServiceClient);
+                dynamicRuleEvaluator, collectionRepository, catalogItemRepository,
+                mappingRepository);
     }
 
+    // ── Driving Adapter (Chenile Kafka event consumer) ───────────────
+
     @Bean
-    public DynamicCollectionEventListener dynamicCollectionEventListener(
-            EvaluateDynamicCollectionUseCase evaluateDynamicCollectionUseCase) {
-        return new DynamicCollectionEventListener(evaluateDynamicCollectionUseCase);
+    CatalogEventHandler catalogEventService() {
+        return new CatalogEventHandler();
     }
 }

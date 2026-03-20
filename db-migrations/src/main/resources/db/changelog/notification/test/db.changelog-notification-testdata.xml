@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Notification test data — STM states from notification-states.xml:
+        CREATED, DISPATCHING, DELIVERED, FAILED, BOUNCED, READ, CANCELLED,
+        CHECK_RETRY, RETRY_EXHAUSTED
+
+        + templates, preferences, batches
+    -->
+    <changeSet id="notification-test-data" author="homebase-test">
+
+        <!-- ============================================================ -->
+        <!-- NOTIFICATION TEMPLATES                                        -->
+        <!-- ============================================================ -->
+        <insert tableName="notification_templates">
+            <column name="id" value="tmpl-order-confirm"/>
+            <column name="code" value="ORDER_CONFIRMED"/>
+            <column name="channel" value="EMAIL"/>
+            <column name="subject_template" value="Order {{orderNumber}} Confirmed!"/>
+            <column name="body_template" value="Hi {{customerName}}, your order {{orderNumber}} worth Rs.{{totalAmount}} has been confirmed. Track it at {{trackingUrl}}."/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="notification_templates">
+            <column name="id" value="tmpl-order-confirm-sms"/>
+            <column name="code" value="ORDER_CONFIRMED_SMS"/>
+            <column name="channel" value="SMS"/>
+            <column name="subject_template" value=""/>
+            <column name="body_template" value="HomeBase: Order {{orderNumber}} confirmed. Delivery by {{estimatedDate}}. Track: {{shortUrl}}"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="notification_templates">
+            <column name="id" value="tmpl-ship-dispatched"/>
+            <column name="code" value="SHIPMENT_DISPATCHED"/>
+            <column name="channel" value="EMAIL"/>
+            <column name="subject_template" value="Your order {{orderNumber}} has been shipped!"/>
+            <column name="body_template" value="Hi {{customerName}}, your order has been shipped via {{carrier}}. Tracking: {{trackingNumber}}"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="notification_templates">
+            <column name="id" value="tmpl-payment-success"/>
+            <column name="code" value="PAYMENT_SUCCESS"/>
+            <column name="channel" value="EMAIL"/>
+            <column name="subject_template" value="Payment of Rs.{{amount}} received"/>
+            <column name="body_template" value="Hi {{customerName}}, we received Rs.{{amount}} for order {{orderNumber}}. Transaction ID: {{transactionId}}"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="notification_templates">
+            <column name="id" value="tmpl-abandoned-cart"/>
+            <column name="code" value="ABANDONED_CART"/>
+            <column name="channel" value="EMAIL"/>
+            <column name="subject_template" value="You left something in your cart!"/>
+            <column name="body_template" value="Hi {{customerName}}, you have {{itemCount}} items worth Rs.{{cartTotal}} in your cart. Complete your purchase now!"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- NOTIFICATION PREFERENCES                                      -->
+        <!-- ============================================================ -->
+        <insert tableName="notification_preferences">
+            <column name="id" value="npref-1"/>
+            <column name="user_id" value="user-1"/>
+            <column name="channel" value="EMAIL"/>
+            <column name="category" value="ORDER_UPDATES"/>
+            <column name="enabled" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="notification_preferences">
+            <column name="id" value="npref-2"/>
+            <column name="user_id" value="user-1"/>
+            <column name="channel" value="SMS"/>
+            <column name="category" value="ORDER_UPDATES"/>
+            <column name="enabled" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="notification_preferences">
+            <column name="id" value="npref-3"/>
+            <column name="user_id" value="user-1"/>
+            <column name="channel" value="EMAIL"/>
+            <column name="category" value="PROMOTIONS"/>
+            <column name="enabled" valueBoolean="false"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="notification_preferences">
+            <column name="id" value="npref-4"/>
+            <column name="user_id" value="user-2"/>
+            <column name="channel" value="EMAIL"/>
+            <column name="category" value="ORDER_UPDATES"/>
+            <column name="enabled" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- NOTIFICATIONS (various states)                                -->
+        <!-- ============================================================ -->
+
+        <!-- notif-1: DELIVERED (order confirmation email) -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-1"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="channel" value="EMAIL"/>
+            <column name="template_id" value="tmpl-order-confirm"/>
+            <column name="subject" value="Order ORD-20260310-001 Confirmed!"/>
+            <column name="body" value="Hi Priya, your order ORD-20260310-001 worth Rs.1499.00 has been confirmed."/>
+            <column name="recipient_address" value="priya.sharma@gmail.com"/>
+            <column name="sent_at" valueDate="2026-03-10T14:35:00"/>
+            <column name="delivered_at" valueDate="2026-03-10T14:35:02"/>
+            <column name="reference_type" value="ORDER"/>
+            <column name="reference_id" value="ord-1"/>
+            <column name="priority" value="HIGH"/>
+            <column name="state_id" value="DELIVERED"/>
+            <column name="flow_id" value="notification-flow"/>
+            <column name="created_time" valueDate="2026-03-10T14:34:00"/>
+            <column name="last_modified_time" valueDate="2026-03-10T14:35:02"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- notif-2: DELIVERED (SMS) -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-2"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="channel" value="SMS"/>
+            <column name="template_id" value="tmpl-order-confirm-sms"/>
+            <column name="body" value="HomeBase: Order ORD-20260310-001 confirmed. Delivery by 13 Mar. Track: https://hb.in/t/abc123"/>
+            <column name="recipient_address" value="+919876543210"/>
+            <column name="sent_at" valueDate="2026-03-10T14:35:05"/>
+            <column name="delivered_at" valueDate="2026-03-10T14:35:08"/>
+            <column name="reference_type" value="ORDER"/>
+            <column name="reference_id" value="ord-1"/>
+            <column name="state_id" value="DELIVERED"/>
+            <column name="flow_id" value="notification-flow"/>
+            <column name="created_time" valueDate="2026-03-10T14:34:00"/>
+            <column name="last_modified_time" valueDate="2026-03-10T14:35:08"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- notif-3: FAILED (bounce — invalid email) -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-3"/>
+            <column name="customer_id" value="user-5"/>
+            <column name="channel" value="EMAIL"/>
+            <column name="template_id" value="tmpl-order-confirm"/>
+            <column name="subject" value="Order ORD-20260301-005 Confirmed"/>
+            <column name="recipient_address" value="meera.nair-old@gmail.com"/>
+            <column name="failure_reason" value="550 5.1.1 The email account does not exist"/>
+            <column name="retry_count" valueNumeric="3"/>
+            <column name="reference_type" value="ORDER"/>
+            <column name="reference_id" value="ord-5"/>
+            <column name="state_id" value="FAILED"/>
+            <column name="flow_id" value="notification-flow"/>
+            <column name="created_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T10:05:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="5"/>
+        </insert>
+
+        <!-- notif-4: CREATED (queued, not yet dispatched) -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-4"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="channel" value="EMAIL"/>
+            <column name="template_id" value="tmpl-abandoned-cart"/>
+            <column name="subject" value="You left something in your cart!"/>
+            <column name="recipient_address" value="rahul.verma@outlook.com"/>
+            <column name="reference_type" value="CART"/>
+            <column name="reference_id" value="cart-2"/>
+            <column name="priority" value="LOW"/>
+            <column name="scheduled_at" valueDate="2026-03-16T09:00:00"/>
+            <column name="state_id" value="CREATED"/>
+            <column name="flow_id" value="notification-flow"/>
+            <column name="created_time" valueDate="2026-03-15T20:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-15T20:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+        <!-- notif-5: READ (opened by customer) -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-5"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="channel" value="EMAIL"/>
+            <column name="template_id" value="tmpl-ship-dispatched"/>
+            <column name="subject" value="Your order ORD-20260311-002 has been shipped!"/>
+            <column name="recipient_address" value="rahul.verma@outlook.com"/>
+            <column name="sent_at" valueDate="2026-03-12T16:00:00"/>
+            <column name="delivered_at" valueDate="2026-03-12T16:00:03"/>
+            <column name="opened_at" valueDate="2026-03-12T18:30:00"/>
+            <column name="reference_type" value="ORDER"/>
+            <column name="reference_id" value="ord-2"/>
+            <column name="state_id" value="READ"/>
+            <column name="flow_id" value="notification-flow"/>
+            <column name="created_time" valueDate="2026-03-12T15:59:00"/>
+            <column name="last_modified_time" valueDate="2026-03-12T18:30:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <!-- Notification Activity -->
+        <insert tableName="notification_activity">
+            <column name="id" value="nact-1"/>
+            <column name="notification_id" value="notif-1"/>
+            <column name="event_id" value="dispatch"/>
+            <column name="comment" value="Email dispatched via SES"/>
+            <column name="success" valueBoolean="true"/>
+            <column name="created_time" valueDate="2026-03-10T14:35:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="notification_activity">
+            <column name="id" value="nact-2"/>
+            <column name="notification_id" value="notif-3"/>
+            <column name="event_id" value="dispatch"/>
+            <column name="comment" value="Email bounced: mailbox not found"/>
+            <column name="success" valueBoolean="false"/>
+            <column name="created_time" valueDate="2026-03-01T10:01:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

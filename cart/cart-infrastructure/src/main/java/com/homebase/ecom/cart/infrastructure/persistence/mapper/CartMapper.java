@@ -111,6 +111,9 @@ public class CartMapper {
         entity.setUnitPrice(model.getUnitPrice().getAmount());
         entity.setLineTotal(model.getLineTotal().getAmount());
         entity.setAvailable(model.isAvailable());
+        entity.setSavedForLater(model.isSavedForLater());
+        entity.setImageUrl(model.getImageUrl());
+        entity.setOriginalPrice(model.getOriginalPrice() != null ? model.getOriginalPrice().getAmount() : null);
         return entity;
     }
 
@@ -154,6 +157,9 @@ public class CartMapper {
                     existingItem.setUnitPrice(updatedItem.getUnitPrice());
                     existingItem.setLineTotal(updatedItem.getLineTotal());
                     existingItem.setAvailable(updatedItem.isAvailable());
+                    existingItem.setSavedForLater(updatedItem.isSavedForLater());
+                    existingItem.setImageUrl(updatedItem.getImageUrl());
+                    existingItem.setOriginalPrice(updatedItem.getOriginalPrice());
                     existingItem.setCart(existing);
                     mergedItems.add(existingItem);
                 } else {
@@ -203,6 +209,9 @@ public class CartMapper {
         model.setUnitPrice(Money.of(entity.getUnitPrice(), currency));
         model.setLineTotal(Money.of(entity.getLineTotal(), currency));
         model.setAvailable(entity.isAvailable());
+        model.setSavedForLater(entity.isSavedForLater());
+        model.setImageUrl(entity.getImageUrl());
+        model.setOriginalPrice(entity.getOriginalPrice() != null ? Money.of(entity.getOriginalPrice(), currency) : null);
         return model;
     }
 

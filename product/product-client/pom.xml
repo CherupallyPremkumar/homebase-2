@@ -9,7 +9,7 @@
 	</parent>
 	<artifactId>product-client</artifactId>
 	<packaging>jar</packaging>
-	<name>Product Client — ProxyBuilder-based service client</name>
+	<name>product-client</name>
 
 	<dependencies>
 		<dependency>

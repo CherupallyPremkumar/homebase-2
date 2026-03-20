@@ -249,6 +249,46 @@ public class PaymentConfiguration {
         return new CompleteRefundPaymentAction();
     }
 
+    @Bean
+    RequestAuthenticationAction paymentRequestAuthenticationAction() {
+        return new RequestAuthenticationAction();
+    }
+
+    @Bean
+    CompleteAuthenticationAction paymentCompleteAuthenticationAction() {
+        return new CompleteAuthenticationAction();
+    }
+
+    @Bean
+    FailAuthenticationAction paymentFailAuthenticationAction() {
+        return new FailAuthenticationAction();
+    }
+
+    @Bean
+    TimeoutPaymentAction paymentTimeoutAction() {
+        return new TimeoutPaymentAction();
+    }
+
+    @Bean
+    InitiateChargebackAction paymentInitiateChargebackAction() {
+        return new InitiateChargebackAction();
+    }
+
+    @Bean
+    ResolveChargebackAction paymentResolveChargebackAction() {
+        return new ResolveChargebackAction();
+    }
+
+    @Bean
+    FailRefundAction paymentFailRefundAction() {
+        return new FailRefundAction();
+    }
+
+    @Bean
+    CollectCodAction paymentCollectCodAction() {
+        return new CollectCodAction();
+    }
+
     // ── PostSaveHooks ──────────────────────────────────────────────────────
     // Convention: "payment" + STATE_ID + "PostSaveHook"
 

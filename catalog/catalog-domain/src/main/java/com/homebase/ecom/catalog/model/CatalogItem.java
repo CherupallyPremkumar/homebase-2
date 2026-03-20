@@ -20,9 +20,17 @@ public class CatalogItem  extends AbstractExtendedStateEntity {
     private LocalDateTime visibilityEndDate;
     private String name;
     private BigDecimal price;
+    private String description;
+    private String brand;
+    private String imageUrl;
+    private Boolean inStock = true;
+    private Integer availableQty = 0;
+    private BigDecimal averageRating = BigDecimal.ZERO;
+    private Integer reviewCount = 0;
     private List<String> tags = new ArrayList<>();
     private List<String> categoryIds = new ArrayList<>();
     private List<String> collectionIds = new ArrayList<>();
+    private String tenant;
 
     // Getters and Setters
 
@@ -91,6 +99,62 @@ public class CatalogItem  extends AbstractExtendedStateEntity {
         this.price = price;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public Boolean getInStock() {
+        return inStock;
+    }
+
+    public void setInStock(Boolean inStock) {
+        this.inStock = inStock;
+    }
+
+    public Integer getAvailableQty() {
+        return availableQty;
+    }
+
+    public void setAvailableQty(Integer availableQty) {
+        this.availableQty = availableQty;
+    }
+
+    public BigDecimal getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(BigDecimal averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public Integer getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(Integer reviewCount) {
+        this.reviewCount = reviewCount;
+    }
+
     public List<String> getTags() {
         return tags;
     }
@@ -113,6 +177,14 @@ public class CatalogItem  extends AbstractExtendedStateEntity {
 
     public void setCollectionIds(List<String> collectionIds) {
         this.collectionIds = collectionIds;
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
     }
 
     public boolean isCurrentlyVisible() {

@@ -10,7 +10,7 @@
   <groupId>com.homebase.ecom.user</groupId>
   <artifactId>user-api</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>User API — DTOs, Service Interfaces, Exceptions</name>
+  <name>user-api</name>
   <licenses>
     <license>
       <name>MIT License</name>

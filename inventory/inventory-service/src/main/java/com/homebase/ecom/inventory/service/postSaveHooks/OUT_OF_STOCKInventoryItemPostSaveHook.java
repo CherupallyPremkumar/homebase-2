@@ -33,7 +33,7 @@ public class OUT_OF_STOCKInventoryItemPostSaveHook implements PostSaveHook<Inven
     public void execute(State startState, State endState, InventoryItem inventory, TransientMap map) {
         if (chenilePub == null) return;
 
-        StockDepletedEvent event = new StockDepletedEvent(inventory.getId(), inventory.getProductId());
+        StockDepletedEvent event = new StockDepletedEvent(inventory.getId(), inventory.getProductId(), inventory.getVariantId());
         try {
             String body = objectMapper.writeValueAsString(event);
             chenilePub.publish(KafkaTopics.INVENTORY_EVENTS, body,

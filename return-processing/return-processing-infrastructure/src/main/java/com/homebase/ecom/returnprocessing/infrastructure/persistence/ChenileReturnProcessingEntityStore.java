@@ -1,28 +1,26 @@
 package com.homebase.ecom.returnprocessing.infrastructure.persistence;
 
+import com.homebase.ecom.returnprocessing.infrastructure.persistence.mapper.ReturnProcessingSagaMapper;
+import com.homebase.ecom.returnprocessing.infrastructure.persistence.entity.ReturnProcessingSagaEntity;
+import com.homebase.ecom.returnprocessing.infrastructure.persistence.repository.ReturnProcessingSagaJpaRepository;
 import com.homebase.ecom.returnprocessing.model.ReturnProcessingSaga;
-import com.homebase.ecom.returnprocessing.port.ReturnProcessingSagaRepository;
-import org.chenile.base.exception.NotFoundException;
-import org.chenile.utils.entity.service.EntityStore;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.chenile.jpautils.store.ChenileJpaEntityStore;
 
-import java.util.Optional;
+/**
+ * Chenile EntityStore bridge for return processing saga.
+ * Uses ChenileJpaEntityStore which properly handles:
+ *  - ID generation (copies generated ID back to domain model)
+ *  - Version field for optimistic locking
+ *  - Entity merge on update path
+ * Wired as @Bean in ReturnProcessingConfiguration.
+ */
+public class ChenileReturnProcessingEntityStore extends ChenileJpaEntityStore<ReturnProcessingSaga, ReturnProcessingSagaEntity> {
 
-public class ChenileReturnProcessingEntityStore implements EntityStore<ReturnProcessingSaga> {
-
-    @Autowired
-    private ReturnProcessingSagaRepository returnProcessingSagaRepository;
-
-    @Override
-    public void store(ReturnProcessingSaga entity) {
-        returnProcessingSagaRepository.save(entity);
-    }
-
-    @Override
-    public ReturnProcessingSaga retrieve(String id) {
-        Optional<ReturnProcessingSaga> entity = returnProcessingSagaRepository.findById(id);
-        if (entity.isPresent())
-            return entity.get();
-        throw new NotFoundException(1600, "Unable to find ReturnProcessingSaga with ID " + id);
+    public ChenileReturnProcessingEntityStore(ReturnProcessingSagaJpaRepository repository,
+                                               ReturnProcessingSagaMapper mapper) {
+        super(repository,
+              entity -> mapper.toModel(entity),
+              model -> mapper.toEntity(model),
+              (existing, incoming) -> mapper.mergeJpaEntity(existing, incoming));
     }
 }

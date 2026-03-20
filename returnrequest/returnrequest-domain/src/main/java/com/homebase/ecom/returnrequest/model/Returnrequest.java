@@ -44,6 +44,9 @@ public class Returnrequest extends AbstractExtendedStateEntity
 
     public TransientMap getTransientMap() { return this.transientMap; }
 
+    public List<ActivityLog> getActivities() { return activities; }
+    public void setActivities(List<ActivityLog> activities) { this.activities = activities; }
+
     @Override
     public Collection<ActivityLog> obtainActivities() {
         return new ArrayList<>(activities);

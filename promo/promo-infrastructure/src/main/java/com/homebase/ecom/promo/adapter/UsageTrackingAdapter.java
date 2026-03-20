@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Item 12: Infrastructure adapter implementing UsageTrackingPort.
+ * Infrastructure adapter implementing UsageTrackingPort.
  * Uses CouponUsageLogRepository for persistence.
  */
 @Component
@@ -24,17 +24,17 @@ public class UsageTrackingAdapter implements UsageTrackingPort {
 
     @Override
     public int getUsageCountForCustomer(String promoCode, String customerId) {
-        List<CouponUsageLog> logs = usageLogRepository.findByCouponCodeAndUserId(
-                promoCode, UUID.fromString(customerId));
+        List<CouponUsageLog> logs = usageLogRepository.findByCouponCodeAndUserId(promoCode, customerId);
         return logs != null ? logs.size() : 0;
     }
 
     @Override
     public void recordUsage(String promoCode, String customerId, String orderId) {
         CouponUsageLog log = new CouponUsageLog();
+        log.setUsageId(UUID.randomUUID().toString());
         log.setCouponCode(promoCode);
-        log.setUserId(UUID.fromString(customerId));
-        log.setOrderId(UUID.fromString(orderId));
+        log.setUserId(customerId);
+        log.setOrderId(orderId);
         log.setUsedAt(LocalDateTime.now());
         usageLogRepository.save(log);
     }

@@ -12,7 +12,7 @@
 	<groupId>com.homebase.ecom.shared</groupId>
 	<artifactId>shared-security</artifactId>
 	<packaging>jar</packaging>
-	<name>Shared Security — Keycloak JWT Auto-Configuration</name>
+	<name>shared-security</name>
 	<description>Spring Boot auto-configuration for Keycloak JWT security with Chenile ACL integration</description>
 
 	<dependencies>

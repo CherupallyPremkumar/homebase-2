@@ -10,7 +10,7 @@
     </parent>
     <artifactId>analytics-service</artifactId>
     <packaging>jar</packaging>
-    <name>Analytics Service Implementations</name>
+    <name>analytics-service</name>
 
     <dependencies>
         <dependency>

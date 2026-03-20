@@ -51,6 +51,24 @@ class PaymentMapperTest {
     }
 
     @Test
+    void toModel_mapsAllNewFields() {
+        PaymentEntity entity = buildFullEntity();
+        Payment model = mapper.toModel(entity);
+
+        assertEquals("CREDIT_CARD", model.getPaymentMethodType());
+        assertEquals("4242", model.getCardLastFour());
+        assertEquals("VISA", model.getCardBrand());
+        assertEquals("priya@okicici", model.getUpiId());
+        assertEquals("RAZORPAY", model.getGatewayName());
+        assertEquals("order_RPay_001", model.getGatewayOrderId());
+        assertEquals("pay_RPay_001", model.getGatewayPaymentId());
+        assertEquals("chk-001", model.getCheckoutId());
+        assertEquals("idem-001", model.getIdempotencyKey());
+        assertEquals(new BigDecimal("500.00"), model.getRefundAmount());
+        assertEquals("Product defective", model.getRefundReason());
+    }
+
+    @Test
     void toModel_mapsActivities() {
         PaymentEntity entity = new PaymentEntity();
         entity.setId("pay-1");
@@ -139,6 +157,27 @@ class PaymentMapperTest {
         assertEquals(0, model.getRetryCount());
     }
 
+    @Test
+    void toModel_nullableFieldsPreservedAsNull() {
+        PaymentEntity entity = new PaymentEntity();
+        entity.setId("pay-1");
+        entity.setAmount(BigDecimal.ZERO);
+        // All nullable fields left null
+
+        Payment model = mapper.toModel(entity);
+
+        assertNull(model.getPaymentMethodType());
+        assertNull(model.getCardLastFour());
+        assertNull(model.getCardBrand());
+        assertNull(model.getUpiId());
+        assertNull(model.getGatewayName());
+        assertNull(model.getGatewayOrderId());
+        assertNull(model.getGatewayPaymentId());
+        assertNull(model.getCheckoutId());
+        assertNull(model.getIdempotencyKey());
+        assertNull(model.getRefundReason());
+    }
+
     // ── Model -> Entity tests ──────────────────────────────────────────────
 
     @Test
@@ -162,6 +201,24 @@ class PaymentMapperTest {
         assertEquals(2, entity.getRetryCount());
         assertEquals("Insufficient funds", entity.getFailureReason());
         assertEquals(new State("SUCCEEDED", "payment-flow"), entity.getCurrentState());
+    }
+
+    @Test
+    void toEntity_mapsAllNewFields() {
+        Payment model = buildFullModel();
+        PaymentEntity entity = mapper.toEntity(model);
+
+        assertEquals("CREDIT_CARD", entity.getPaymentMethodType());
+        assertEquals("4242", entity.getCardLastFour());
+        assertEquals("VISA", entity.getCardBrand());
+        assertEquals("priya@okicici", entity.getUpiId());
+        assertEquals("RAZORPAY", entity.getGatewayName());
+        assertEquals("order_RPay_001", entity.getGatewayOrderId());
+        assertEquals("pay_RPay_001", entity.getGatewayPaymentId());
+        assertEquals("chk-001", entity.getCheckoutId());
+        assertEquals("idem-001", entity.getIdempotencyKey());
+        assertEquals(new BigDecimal("500.00"), entity.getRefundAmount());
+        assertEquals("Product defective", entity.getRefundReason());
     }
 
     @Test
@@ -211,6 +268,53 @@ class PaymentMapperTest {
         assertEquals("payment-flow", entity.getCurrentState().getFlowId());
     }
 
+    // ── mergeEntity tests ───────────────────────────────────────────────────
+
+    @Test
+    void mergeEntity_nullIncoming_returnsExisting() {
+        PaymentEntity existing = buildFullEntity();
+        PaymentEntity result = mapper.mergeEntity(null, existing);
+        assertSame(existing, result);
+    }
+
+    @Test
+    void mergeEntity_nullExisting_returnsNewEntity() {
+        Payment incoming = buildFullModel();
+        PaymentEntity result = mapper.mergeEntity(incoming, null);
+        assertNotNull(result);
+        assertEquals("pay-1", result.getId());
+    }
+
+    @Test
+    void mergeEntity_updatesOnlyProvidedFields() {
+        PaymentEntity existing = buildFullEntity();
+        Payment incoming = new Payment();
+        incoming.setGatewayTransactionId("new-txn-id");
+        incoming.setCurrentState(new State("SETTLED", "payment-flow"));
+        incoming.setAmount(new BigDecimal("2500.00")); // explicitly set to preserve
+
+        PaymentEntity result = mapper.mergeEntity(incoming, existing);
+
+        assertEquals("new-txn-id", result.getGatewayTransactionId());
+        assertEquals("SETTLED", result.getCurrentState().getStateId());
+        // Existing fields preserved when not null in incoming
+        assertEquals("ORD-001", result.getOrderId());
+        assertEquals("CUST-001", result.getCustomerId());
+        assertEquals(new BigDecimal("2500.00"), result.getAmount());
+    }
+
+    @Test
+    void mergeEntity_clearableFields() {
+        PaymentEntity existing = buildFullEntity();
+        Payment incoming = new Payment();
+        incoming.setFailureReason(null); // explicitly cleared
+        incoming.setCurrentState(existing.getCurrentState());
+
+        PaymentEntity result = mapper.mergeEntity(incoming, existing);
+
+        assertNull(result.getFailureReason());
+    }
+
     // ── Round-trip tests ───────────────────────────────────────────────────
 
     @Test
@@ -230,6 +334,18 @@ class PaymentMapperTest {
         assertEquals(original.getRetryCount(), roundTripped.getRetryCount());
         assertEquals(original.getFailureReason(), roundTripped.getFailureReason());
         assertEquals(original.getCurrentState(), roundTripped.getCurrentState());
+        // New fields
+        assertEquals(original.getPaymentMethodType(), roundTripped.getPaymentMethodType());
+        assertEquals(original.getCardLastFour(), roundTripped.getCardLastFour());
+        assertEquals(original.getCardBrand(), roundTripped.getCardBrand());
+        assertEquals(original.getUpiId(), roundTripped.getUpiId());
+        assertEquals(original.getGatewayName(), roundTripped.getGatewayName());
+        assertEquals(original.getGatewayOrderId(), roundTripped.getGatewayOrderId());
+        assertEquals(original.getGatewayPaymentId(), roundTripped.getGatewayPaymentId());
+        assertEquals(original.getCheckoutId(), roundTripped.getCheckoutId());
+        assertEquals(original.getIdempotencyKey(), roundTripped.getIdempotencyKey());
+        assertEquals(original.getRefundAmount(), roundTripped.getRefundAmount());
+        assertEquals(original.getRefundReason(), roundTripped.getRefundReason());
     }
 
     @Test
@@ -247,6 +363,11 @@ class PaymentMapperTest {
         assertEquals(original.getGatewayTransactionId(), roundTripped.getGatewayTransactionId());
         assertEquals(original.getRetryCount(), roundTripped.getRetryCount());
         assertEquals(original.getFailureReason(), roundTripped.getFailureReason());
+        // New fields
+        assertEquals(original.getPaymentMethodType(), roundTripped.getPaymentMethodType());
+        assertEquals(original.getGatewayName(), roundTripped.getGatewayName());
+        assertEquals(original.getCheckoutId(), roundTripped.getCheckoutId());
+        assertEquals(original.getIdempotencyKey(), roundTripped.getIdempotencyKey());
     }
 
     @Test
@@ -291,6 +412,17 @@ class PaymentMapperTest {
         assertEquals(new BigDecimal("999999.99"), entity.getAmount());
     }
 
+    @Test
+    void toModel_versionMapped() {
+        PaymentEntity entity = new PaymentEntity();
+        entity.setId("pay-1");
+        entity.setAmount(BigDecimal.ZERO);
+        entity.setVersion(5L);
+
+        Payment model = mapper.toModel(entity);
+        assertEquals(5L, model.getVersion());
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────
 
     private PaymentEntity buildFullEntity() {
@@ -308,6 +440,18 @@ class PaymentMapperTest {
         entity.setCurrentState(new State("SUCCEEDED", "payment-flow"));
         entity.setCreatedTime(new Date());
         entity.setLastModifiedTime(new Date());
+        // New fields
+        entity.setPaymentMethodType("CREDIT_CARD");
+        entity.setCardLastFour("4242");
+        entity.setCardBrand("VISA");
+        entity.setUpiId("priya@okicici");
+        entity.setGatewayName("RAZORPAY");
+        entity.setGatewayOrderId("order_RPay_001");
+        entity.setGatewayPaymentId("pay_RPay_001");
+        entity.setCheckoutId("chk-001");
+        entity.setIdempotencyKey("idem-001");
+        entity.setRefundAmount(new BigDecimal("500.00"));
+        entity.setRefundReason("Product defective");
         return entity;
     }
 
@@ -324,6 +468,18 @@ class PaymentMapperTest {
         model.setRetryCount(2);
         model.setFailureReason("Insufficient funds");
         model.setCurrentState(new State("SUCCEEDED", "payment-flow"));
+        // New fields
+        model.setPaymentMethodType("CREDIT_CARD");
+        model.setCardLastFour("4242");
+        model.setCardBrand("VISA");
+        model.setUpiId("priya@okicici");
+        model.setGatewayName("RAZORPAY");
+        model.setGatewayOrderId("order_RPay_001");
+        model.setGatewayPaymentId("pay_RPay_001");
+        model.setCheckoutId("chk-001");
+        model.setIdempotencyKey("idem-001");
+        model.setRefundAmount(new BigDecimal("500.00"));
+        model.setRefundReason("Product defective");
         return model;
     }
 }

@@ -13,7 +13,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>inventory-query-service</artifactId>
 	<version>${revision}</version>
-	<name>Query Service Metadata for inventory </name>
+	<name>inventory-query-service</name>
 	<description>Query Service Metadata for inventory </description>
 
 	<properties>

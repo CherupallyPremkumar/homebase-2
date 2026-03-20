@@ -31,40 +31,44 @@ public class RuleSetDataLoader implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        log.info("Checking if default rule sets need to be loaded...");
+        log.info("Loading rule sets from policy-rules.json (merge by ID)...");
 
-        // Load default rule sets if the table is empty
-        if (ruleSetRepository.findAll().isEmpty()) {
-            log.info("No rule sets found in database. Loading defaults from policy-rules.json");
-            try (InputStream is = new ClassPathResource("policy-rules.json").getInputStream()) {
-                JsonNode rootNode = objectMapper.readTree(is);
-                JsonNode policiesNode = rootNode.get("policies");
+        try (InputStream is = new ClassPathResource("policy-rules.json").getInputStream()) {
+            JsonNode rootNode = objectMapper.readTree(is);
+            JsonNode policiesNode = rootNode.get("policies");
 
-                if (policiesNode != null && policiesNode.isArray()) {
-                    List<RuleSet> defaultRuleSets = objectMapper.convertValue(
-                            policiesNode,
-                            new TypeReference<List<RuleSet>>() {}
-                    );
+            if (policiesNode != null && policiesNode.isArray()) {
+                List<RuleSet> defaultRuleSets = objectMapper.convertValue(
+                        policiesNode,
+                        new TypeReference<List<RuleSet>>() {}
+                );
 
-                    for (RuleSet ruleSet : defaultRuleSets) {
-                        try {
-                            // Set tenant in ContextContainer so @PrePersist picks it up
-                            String tenant = ruleSet.getTenant();
-                            if (tenant != null && !tenant.isBlank()) {
-                                contextContainer.put(HeaderUtils.TENANT_ID_KEY, tenant);
-                            }
-                            ruleSetRepository.save(ruleSet);
-                            log.info("Successfully loaded rule set: {} ({}) for tenant: {}", ruleSet.getId(), ruleSet.getName(), tenant);
-                        } catch (Exception e) {
-                            log.error("Failed to save rule set: {}", ruleSet.getId(), e);
+                int loaded = 0;
+                int skipped = 0;
+                for (RuleSet ruleSet : defaultRuleSets) {
+                    try {
+                        // Skip if this specific rule set already exists by ID
+                        if (ruleSet.getId() != null && ruleSetRepository.findById(ruleSet.getId()).isPresent()) {
+                            skipped++;
+                            continue;
                         }
+
+                        // Set tenant in ContextContainer so @PrePersist picks it up
+                        String tenant = ruleSet.getTenant();
+                        if (tenant != null && !tenant.isBlank()) {
+                            contextContainer.put(HeaderUtils.TENANT_ID_KEY, tenant);
+                        }
+                        ruleSetRepository.save(ruleSet);
+                        loaded++;
+                        log.info("Loaded rule set: {} ({}) for tenant: {}", ruleSet.getId(), ruleSet.getName(), tenant);
+                    } catch (Exception e) {
+                        log.error("Failed to save rule set: {}", ruleSet.getId(), e);
                     }
                 }
-            } catch (Exception e) {
-                log.error("Error reading or parsing policy-rules.json", e);
+                log.info("Rule set loading complete: {} loaded, {} skipped (already exist)", loaded, skipped);
             }
-        } else {
-            log.info("Rule sets already exist in the database. Skipping default load.");
+        } catch (Exception e) {
+            log.error("Error reading or parsing policy-rules.json", e);
         }
     }
 }

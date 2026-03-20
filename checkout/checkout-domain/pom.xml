@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>checkout-domain</artifactId>
-    <name>Checkout Domain</name>
+    <name>checkout-domain</name>
 
     <dependencies>
         <dependency>

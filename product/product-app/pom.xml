@@ -9,7 +9,7 @@
 	</parent>
 	<artifactId>product-app</artifactId>
 	<packaging>jar</packaging>
-	<name>Product App — Spring Boot Launcher</name>
+	<name>product-app</name>
 
 	<dependencies>
 		<dependency>

@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>onboarding-service</artifactId>
-	<name>Onboarding Service</name>
+	<name>onboarding-service</name>
 	<description>Onboarding Service Module</description>
 
 	<dependencies>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Settlement Calculation Pipeline (Stateless OWIZ Chain)
+  ══════════════════════════════════════════════════════
+  Input:  SettlementRequest (supplier ID, settlement period, order line items)
+  Output: SettlementBreakdown (gross, commission, fees, deductions, TDS, net payout)
+
+  Called by: settlement STM CALCULATING → CALCULATED transition
+  References: commission_rules table, supplier agreement, GST on commission
+-->
+<flows>
+  <flow id="settlement-calculation-flow" defaultFlow="true">
+    <chain id="settlementCalcChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Fetch all completed order line items for the settlement period -->
+    <command id="fetchOrderLineItems" componentName="fetchOrderLineItemsCommand">
+      <attach-to index="1" parentId="settlementCalcChain"/>
+    </command>
+
+    <!-- Step 2: Calculate category-wise commission (e.g., Electronics 8%, Fashion 15%) -->
+    <command id="calculateCategoryCommission" componentName="calculateCategoryCommissionCommand">
+      <attach-to index="2" parentId="settlementCalcChain"/>
+    </command>
+
+    <!-- Step 3: Apply platform fees (fixed fee per order, closing fee, shipping fee share) -->
+    <command id="applyPlatformFees" componentName="applyPlatformFeesCommand">
+      <attach-to index="3" parentId="settlementCalcChain"/>
+    </command>
+
+    <!-- Step 4: Deduct return processing fees for returned items in this period -->
+    <command id="deductReturnFees" componentName="deductReturnFeesCommand">
+      <attach-to index="4" parentId="settlementCalcChain"/>
+    </command>
+
+    <!-- Step 5: Deduct chargeback amounts for disputed transactions -->
+    <command id="deductChargebacks" componentName="deductChargebacksCommand">
+      <attach-to index="5" parentId="settlementCalcChain"/>
+    </command>
+
+    <!-- Step 6: Calculate GST on commission (18% GST on marketplace commission) -->
+    <command id="calculateGSTOnCommission" componentName="calculateGSTOnCommissionCommand">
+      <attach-to index="6" parentId="settlementCalcChain"/>
+    </command>
+
+    <!-- Step 7: Apply TDS (Tax Deducted at Source — Section 194-O, 1% on gross amount) -->
+    <command id="applyTDS" componentName="applyTDSCommand">
+      <attach-to index="7" parentId="settlementCalcChain"/>
+    </command>
+
+    <!-- Step 8: Compute net payout = gross - commission - fees - returns - chargebacks - GST - TDS -->
+    <command id="computeNetPayout" componentName="computeNetPayoutCommand">
+      <attach-to index="8" parentId="settlementCalcChain"/>
+    </command>
+
+    <!-- Step 9: Build immutable settlement breakdown with line-item detail -->
+    <command id="buildSettlementBreakdown" componentName="buildSettlementBreakdownCommand">
+      <attach-to index="9" parentId="settlementCalcChain"/>
+    </command>
+  </flow>
+</flows>

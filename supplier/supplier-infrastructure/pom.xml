@@ -13,7 +13,7 @@
 
     <artifactId>supplier-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>Supplier Infrastructure — JPA Adapters, Entity Store</name>
+    <name>supplier-infrastructure</name>
 
     <dependencies>
         <dependency>
@@ -33,6 +33,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-kafka</artifactId>
         </dependency>
     </dependencies>
 </project>

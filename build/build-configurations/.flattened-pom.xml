@@ -10,7 +10,7 @@
   <groupId>com.homebase.ecom.build</groupId>
   <artifactId>build-configurations</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Build Configurations</name>
+  <name>build-configurations</name>
   <description>Build Configurations - contains only configurations for all environments</description>
   <licenses>
     <license>

@@ -3,40 +3,42 @@ package com.homebase.ecom.promo.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.Objects;
 
 @Entity
 @Table(name = "coupon_usage_log")
 public class CouponUsageLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID usageId;
+    @Column(name = "usage_id")
+    private String usageId;
 
-    @Column(nullable = false)
+    @Column(name = "coupon_code", nullable = false)
     private String couponCode;
 
-    @Column(nullable = false)
-    private UUID userId;
+    @Column(name = "user_id", nullable = false)
+    private String userId;
 
-    @Column(nullable = false)
-    private UUID orderId;
+    @Column(name = "order_id", nullable = false)
+    private String orderId;
 
-    @Column(nullable = false)
+    @Column(name = "used_at", nullable = false)
     private LocalDateTime usedAt;
 
+    @Column(name = "refunded_at")
     private LocalDateTime refundedAt;
 
+    @Column(name = "ip_address")
     private String ipAddress;
 
     public CouponUsageLog() {
     }
 
-    public UUID getUsageId() {
+    public String getUsageId() {
         return usageId;
     }
 
-    public void setUsageId(UUID usageId) {
+    public void setUsageId(String usageId) {
         this.usageId = usageId;
     }
 
@@ -48,19 +50,19 @@ public class CouponUsageLog {
         this.couponCode = couponCode;
     }
 
-    public UUID getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(UUID userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
-    public UUID getOrderId() {
+    public String getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(UUID orderId) {
+    public void setOrderId(String orderId) {
         this.orderId = orderId;
     }
 
@@ -95,17 +97,17 @@ public class CouponUsageLog {
         if (o == null || getClass() != o.getClass())
             return false;
         CouponUsageLog that = (CouponUsageLog) o;
-        return java.util.Objects.equals(usageId, that.usageId) &&
-                java.util.Objects.equals(couponCode, that.couponCode) &&
-                java.util.Objects.equals(userId, that.userId) &&
-                java.util.Objects.equals(orderId, that.orderId) &&
-                java.util.Objects.equals(usedAt, that.usedAt) &&
-                java.util.Objects.equals(refundedAt, that.refundedAt) &&
-                java.util.Objects.equals(ipAddress, that.ipAddress);
+        return Objects.equals(usageId, that.usageId) &&
+                Objects.equals(couponCode, that.couponCode) &&
+                Objects.equals(userId, that.userId) &&
+                Objects.equals(orderId, that.orderId) &&
+                Objects.equals(usedAt, that.usedAt) &&
+                Objects.equals(refundedAt, that.refundedAt) &&
+                Objects.equals(ipAddress, that.ipAddress);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(usageId, couponCode, userId, orderId, usedAt, refundedAt, ipAddress);
+        return Objects.hash(usageId, couponCode, userId, orderId, usedAt, refundedAt, ipAddress);
     }
 }

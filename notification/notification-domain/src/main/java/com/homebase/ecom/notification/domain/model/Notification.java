@@ -16,16 +16,18 @@ import org.chenile.workflow.model.TransientMap;
 /**
  * Notification domain model.
  *
- * Fields: id, customerId, channel (EMAIL/SMS/PUSH/IN_APP), templateId, subject, body,
- * recipientAddress, metadata (Map), sentAt, deliveredAt, failureReason, retryCount,
- * stateId, flowId.
+ * Maps to DB table: notifications (see db-migrations notification changelog).
+ * Fields align 1:1 with DB columns including changeset 006 additions
+ * (referenceType, referenceId, priority, scheduledAt, openedAt, clickedAt).
  *
  * No order/product/payment details beyond reference — those belong in the triggering event metadata.
  */
 public class Notification extends AbstractExtendedStateEntity
         implements ActivityEnabledStateEntity, ContainsTransientMap {
 
-    private String id;
+    // id, createdTime, lastModifiedTime, createdBy, lastModifiedBy, version inherited from BaseEntity
+    // stateEntryTime, slaTendingLate, slaLate inherited from AbstractExtendedStateEntity
+
     private String customerId;
     private String channel;       // EMAIL, SMS, PUSH, IN_APP
     private String templateId;
@@ -39,13 +41,21 @@ public class Notification extends AbstractExtendedStateEntity
     private int retryCount;
     private String tenant;
 
+    // Changeset 006 columns: reference, priority, scheduling, tracking
+    private String referenceType;
+    private String referenceId;
+    private String priority;      // NORMAL, HIGH, LOW
+    private Date scheduledAt;
+    private Date openedAt;
+    private Date clickedAt;
+
     // Workflow related
     private transient TransientMap transientMap = new TransientMap();
-    private List<ActivityLog> activities = new ArrayList<>();
+    private List<NotificationActivityLog> activities = new ArrayList<>();
+
+    public String description;
 
     // Getters and Setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
 
     public String getCustomerId() { return customerId; }
     public void setCustomerId(String customerId) { this.customerId = customerId; }
@@ -80,8 +90,29 @@ public class Notification extends AbstractExtendedStateEntity
     public int getRetryCount() { return retryCount; }
     public void setRetryCount(int retryCount) { this.retryCount = retryCount; }
 
+    public String getReferenceType() { return referenceType; }
+    public void setReferenceType(String referenceType) { this.referenceType = referenceType; }
+
+    public String getReferenceId() { return referenceId; }
+    public void setReferenceId(String referenceId) { this.referenceId = referenceId; }
+
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
+
+    public Date getScheduledAt() { return scheduledAt; }
+    public void setScheduledAt(Date scheduledAt) { this.scheduledAt = scheduledAt; }
+
+    public Date getOpenedAt() { return openedAt; }
+    public void setOpenedAt(Date openedAt) { this.openedAt = openedAt; }
+
+    public Date getClickedAt() { return clickedAt; }
+    public void setClickedAt(Date clickedAt) { this.clickedAt = clickedAt; }
+
     @Override
     public TransientMap getTransientMap() { return transientMap; }
+
+    public List<NotificationActivityLog> getActivities() { return activities; }
+    public void setActivities(List<NotificationActivityLog> activities) { this.activities = activities; }
 
     @Override
     public Collection<ActivityLog> obtainActivities() {

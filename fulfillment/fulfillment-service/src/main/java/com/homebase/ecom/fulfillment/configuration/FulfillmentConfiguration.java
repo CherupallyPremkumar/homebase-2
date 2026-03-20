@@ -8,6 +8,7 @@ import org.chenile.owiz.impl.OwizSpringFactoryAdapter;
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.impl.*;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,7 +29,10 @@ import com.homebase.ecom.fulfillment.service.owiz.*;
 import com.homebase.ecom.fulfillment.service.postSaveHooks.*;
 import com.homebase.ecom.fulfillment.infrastructure.persistence.ChenileFulfillmentSagaEntityStore;
 import com.homebase.ecom.fulfillment.infrastructure.persistence.adapter.FulfillmentSagaJpaRepository;
+import com.homebase.ecom.fulfillment.infrastructure.persistence.adapter.FulfillmentSagaRepositoryImpl;
 import com.homebase.ecom.fulfillment.infrastructure.persistence.mapper.FulfillmentSagaMapper;
+import com.homebase.ecom.fulfillment.port.FulfillmentSagaRepository;
+import com.homebase.ecom.fulfillment.service.consumer.OrderPaidEventConsumer;
 
 /**
  * Full Chenile STM configuration for the Fulfillment saga.
@@ -40,6 +44,12 @@ public class FulfillmentConfiguration {
     private static final String OWIZ_FLOW_DEFINITION_FILE = "com/homebase/ecom/fulfillment/fulfillment-owiz-chains.xml";
     public static final String PREFIX_FOR_PROPERTIES = "Fulfillment";
     public static final String PREFIX_FOR_RESOLVER = "fulfillment";
+
+    @Bean
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean(name = "ognlScriptingStrategy")
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
 
     @Bean
     BeanFactoryAdapter fulfillmentBeanFactoryAdapter() {
@@ -290,7 +300,33 @@ public class FulfillmentConfiguration {
         return executor;
     }
 
+    // --- Domain Repository Adapter ---
+
+    @Bean
+    FulfillmentSagaRepository fulfillmentSagaRepository(
+            FulfillmentSagaJpaRepository jpaRepository,
+            FulfillmentSagaMapper mapper) {
+        return new FulfillmentSagaRepositoryImpl(jpaRepository, mapper);
+    }
+
+    // --- Kafka Consumer ---
+
+    @Bean
+    OrderPaidEventConsumer orderPaidEventConsumer() {
+        return new OrderPaidEventConsumer();
+    }
+
     // --- OWIZ Command Beans (reserve inventory sub-steps) ---
+
+    @Bean
+    RouteToWarehouse routeToWarehouse() {
+        return new RouteToWarehouse();
+    }
+
+    @Bean
+    CheckSplitShipment checkSplitShipment() {
+        return new CheckSplitShipment();
+    }
 
     @Bean
     ValidateStockAvailability validateStockAvailability() {
@@ -310,8 +346,28 @@ public class FulfillmentConfiguration {
     // --- OWIZ Command Beans (create shipment sub-steps) ---
 
     @Bean
+    ValidateWeightDimensions validateWeightDimensions() {
+        return new ValidateWeightDimensions();
+    }
+
+    @Bean
     SelectCarrier selectCarrier() {
         return new SelectCarrier();
+    }
+
+    @Bean
+    CheckCarrierSLA checkCarrierSLA() {
+        return new CheckCarrierSLA();
+    }
+
+    @Bean
+    GeneratePickList generatePickList() {
+        return new GeneratePickList();
+    }
+
+    @Bean
+    GeneratePackSlip generatePackSlip() {
+        return new GeneratePackSlip();
     }
 
     @Bean
@@ -325,6 +381,11 @@ public class FulfillmentConfiguration {
     }
 
     // --- OWIZ Command Beans (notify customer sub-steps) ---
+
+    @Bean
+    ResolveChannelPreference resolveChannelPreference() {
+        return new ResolveChannelPreference();
+    }
 
     @Bean
     PrepareShipmentNotification prepareShipmentNotification() {

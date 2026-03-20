@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>supplier-lifecycle-api</artifactId>
-    <name>Supplier Lifecycle API</name>
+    <name>supplier-lifecycle-api</name>
 
     <dependencies>
         <dependency>

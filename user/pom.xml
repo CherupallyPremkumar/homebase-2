@@ -28,7 +28,7 @@
 	
 	<groupId>com.homebase.ecom.user</groupId>
 	<artifactId>user-parent</artifactId>
-	<name>All Modules that belong to the User </name>
+	<name>user-parent</name>
 	<description>Modules execution project and Parent Pom</description>
 
 	<dependencyManagement>

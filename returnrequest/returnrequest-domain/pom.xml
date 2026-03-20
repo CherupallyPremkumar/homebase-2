@@ -10,7 +10,7 @@
     </parent>
     <artifactId>returnrequest-domain</artifactId>
     <packaging>jar</packaging>
-    <name>Returnrequest Domain — Aggregate Root, Entities, Value Objects, Ports</name>
+    <name>returnrequest-domain</name>
 
     <dependencies>
         <dependency>

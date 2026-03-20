@@ -33,6 +33,17 @@ public class ProductMapper {
         product.setTags(entity.getTags() != null ? new ArrayList<>(entity.getTags()) : new ArrayList<>());
         product.setCurrentState(entity.getCurrentState());
         product.setTenant(entity.tenant);
+        // Amazon-standard fields
+        product.setWeightGrams(entity.getWeightGrams());
+        product.setDimensionsJson(entity.getDimensionsJson());
+        product.setHsnCode(entity.getHsnCode());
+        product.setCountryOfOrigin(entity.getCountryOfOrigin());
+        product.setWarrantyMonths(entity.getWarrantyMonths());
+        product.setReturnable(entity.isReturnable());
+        product.setReturnWindowDays(entity.getReturnWindowDays());
+        product.setBasePrice(entity.getBasePrice());
+        product.setTaxCategory(entity.getTaxCategory());
+        product.setActive(entity.isActive());
         // Base entity fields
         product.setVersion(entity.getVersion());
         product.setCreatedTime(entity.getCreatedTime());
@@ -85,6 +96,17 @@ public class ProductMapper {
         entity.setTags(model.getTags() != null ? new ArrayList<>(model.getTags()) : new ArrayList<>());
         entity.setCurrentState(model.getCurrentState());
         entity.tenant = model.getTenant();
+        // Amazon-standard fields
+        entity.setWeightGrams(model.getWeightGrams());
+        entity.setDimensionsJson(model.getDimensionsJson());
+        entity.setHsnCode(model.getHsnCode());
+        entity.setCountryOfOrigin(model.getCountryOfOrigin());
+        entity.setWarrantyMonths(model.getWarrantyMonths());
+        entity.setReturnable(model.isReturnable());
+        entity.setReturnWindowDays(model.getReturnWindowDays());
+        entity.setBasePrice(model.getBasePrice());
+        entity.setTaxCategory(model.getTaxCategory());
+        entity.setActive(model.isActive());
         // Base entity fields
         if (model.getVersion() != null) entity.setVersion(model.getVersion());
         entity.setCreatedTime(model.getCreatedTime());
@@ -210,5 +232,37 @@ public class ProductMapper {
         entity.setPrimary(model.isPrimary());
         entity.setSortOrder(model.getSortOrder());
         return entity;
+    }
+
+    /**
+     * Merges incoming (partial) data into an existing entity, preserving fields
+     * that the incoming model does not set (null-safe for nullable columns).
+     */
+    public ProductEntity mergeEntity(Product incoming, ProductEntity existing) {
+        if (incoming == null || existing == null) return existing;
+
+        if (incoming.getName() != null) existing.setName(incoming.getName());
+        if (incoming.getDescription() != null) existing.setDescription(incoming.getDescription());
+        if (incoming.getShortDescription() != null) existing.setShortDescription(incoming.getShortDescription());
+        if (incoming.getBrand() != null) existing.setBrand(incoming.getBrand());
+        if (incoming.getCategoryId() != null) existing.setCategoryId(incoming.getCategoryId());
+        if (incoming.getSlug() != null) existing.setSlug(incoming.getSlug());
+        if (incoming.getMetaTitle() != null) existing.setMetaTitle(incoming.getMetaTitle());
+        if (incoming.getMetaDescription() != null) existing.setMetaDescription(incoming.getMetaDescription());
+        if (incoming.getTags() != null && !incoming.getTags().isEmpty()) {
+            existing.setTags(new ArrayList<>(incoming.getTags()));
+        }
+        // Amazon-standard fields
+        if (incoming.getWeightGrams() != null) existing.setWeightGrams(incoming.getWeightGrams());
+        if (incoming.getDimensionsJson() != null) existing.setDimensionsJson(incoming.getDimensionsJson());
+        if (incoming.getHsnCode() != null) existing.setHsnCode(incoming.getHsnCode());
+        if (incoming.getCountryOfOrigin() != null) existing.setCountryOfOrigin(incoming.getCountryOfOrigin());
+        if (incoming.getWarrantyMonths() != null) existing.setWarrantyMonths(incoming.getWarrantyMonths());
+        if (incoming.getReturnWindowDays() != null) existing.setReturnWindowDays(incoming.getReturnWindowDays());
+        if (incoming.getBasePrice() != null) existing.setBasePrice(incoming.getBasePrice());
+        if (incoming.getTaxCategory() != null) existing.setTaxCategory(incoming.getTaxCategory());
+
+        // STM fields are managed by the framework, not merged here
+        return existing;
     }
 }

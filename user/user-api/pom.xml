@@ -13,7 +13,7 @@
 
     <artifactId>user-api</artifactId>
     <packaging>jar</packaging>
-    <name>User API — DTOs, Service Interfaces, Exceptions</name>
+    <name>user-api</name>
 
     <dependencies>
         <!-- Shared: Money, Email value objects -->

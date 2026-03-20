@@ -1,34 +1,24 @@
 package com.homebase.ecom.shipping.infrastructure.persistence;
 
-import org.chenile.utils.entity.service.EntityStore;
 import com.homebase.ecom.shipping.model.Shipping;
 import com.homebase.ecom.shipping.infrastructure.persistence.adapter.ShippingJpaRepository;
+import com.homebase.ecom.shipping.infrastructure.persistence.entity.ShippingEntity;
 import com.homebase.ecom.shipping.infrastructure.persistence.mapper.ShippingMapper;
-import org.chenile.base.exception.NotFoundException;
+import org.chenile.jpautils.store.ChenileJpaEntityStore;
 
-import java.util.Optional;
+/**
+ * Bridges Chenile STM's EntityStore with JPA persistence for Shipping.
+ * Uses ChenileJpaEntityStore which properly handles:
+ * - Optimistic locking via @Version (loads existing entity before update)
+ * - Merge function to copy fields from updated entity to managed entity
+ * - ID propagation back to domain model after persist
+ */
+public class ChenileShippingEntityStore extends ChenileJpaEntityStore<Shipping, ShippingEntity> {
 
-public class ChenileShippingEntityStore implements EntityStore<Shipping> {
-
-    private final ShippingJpaRepository shippingJpaRepository;
-    private final ShippingMapper shippingMapper;
-
-    public ChenileShippingEntityStore(ShippingJpaRepository shippingJpaRepository, ShippingMapper shippingMapper) {
-        this.shippingJpaRepository = shippingJpaRepository;
-        this.shippingMapper = shippingMapper;
-    }
-
-    @Override
-    public void store(Shipping entity) {
-        shippingJpaRepository.save(shippingMapper.toEntity(entity));
-    }
-
-    @Override
-    public Shipping retrieve(String id) {
-        Optional<Shipping> entity = shippingJpaRepository.findById(id)
-                .map(shippingMapper::toModel);
-        if (entity.isPresent())
-            return entity.get();
-        throw new NotFoundException(1700, "Unable to find Shipping with ID " + id);
+    public ChenileShippingEntityStore(ShippingJpaRepository repository, ShippingMapper mapper) {
+        super(repository,
+                entity -> mapper.toModel(entity),
+                model -> mapper.toEntity(model),
+                (existing, updated) -> mapper.mergeEntity(existing, updated));
     }
 }

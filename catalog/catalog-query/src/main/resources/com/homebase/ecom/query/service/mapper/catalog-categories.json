@@ -71,7 +71,7 @@
         "columnType": "Text"
       },
       "displayOrder": {
-        "name": "displayOrder",
+        "name": "display_order",
         "columnType": "Number",
         "sortable": true
       }

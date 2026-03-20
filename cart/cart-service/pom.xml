@@ -12,7 +12,7 @@
 	<artifactId>cart-service</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Cart Service Implementations</name>
+	<name>cart-service</name>
 
 	<dependencies>
 		<dependency>

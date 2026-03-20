@@ -26,7 +26,7 @@
 
 	<groupId>com.homebase.ecom.notification</groupId>
 	<artifactId>notification-parent</artifactId>
-	<name>All Modules that belong to Notification</name>
+	<name>notification-parent</name>
 	<description>Modules execution project and Parent Pom</description>
 
 	<dependencyManagement>

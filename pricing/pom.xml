@@ -13,7 +13,7 @@
     <groupId>com.homebase.ecom.pricing</groupId>
     <artifactId>pricing</artifactId>
     <packaging>pom</packaging>
-    <name>Pricing Parent</name>
+    <name>pricing-parent</name>
 
     <modules>
         <module>pricing-domain</module>

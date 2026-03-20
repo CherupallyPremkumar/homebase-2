@@ -1,11 +1,18 @@
 package com.homebase.ecom.returnprocessing.configuration;
 
 import com.homebase.ecom.returnprocessing.infrastructure.persistence.ChenileReturnProcessingEntityStore;
+import com.homebase.ecom.returnprocessing.infrastructure.persistence.adapter.ReturnProcessingSagaRepositoryImpl;
+import com.homebase.ecom.returnprocessing.infrastructure.persistence.mapper.ReturnProcessingSagaMapper;
+import com.homebase.ecom.returnprocessing.infrastructure.persistence.repository.ReturnProcessingSagaJpaRepository;
+import com.homebase.ecom.returnprocessing.port.ReturnProcessingSagaRepository;
 import com.homebase.ecom.returnprocessing.model.ReturnProcessingSaga;
+import com.homebase.ecom.returnprocessing.port.ReturnProcessingSagaRepository;
 import com.homebase.ecom.returnprocessing.service.cmds.*;
 import com.homebase.ecom.returnprocessing.service.postSaveHooks.*;
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
+import org.chenile.stm.action.scriptsupport.IfAction;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.stm.impl.*;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.utils.entity.service.EntityStore;
@@ -19,7 +26,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Full Chenile STM configuration for the return processing saga.
- * Replaces the old OWIZ-only orchestration chain.
+ * All beans are wired explicitly here -- no @Component/@Service/@Repository on classes.
  */
 @Configuration
 public class ReturnProcessingConfiguration {
@@ -27,6 +34,32 @@ public class ReturnProcessingConfiguration {
     private static final String FLOW_DEFINITION_FILE =
             "com/homebase/ecom/returnprocessing/return-processing-states.xml";
     public static final String PREFIX_FOR_RESOLVER = "returnProcessing";
+
+    // ==================== OGNL / Scripting ====================
+
+    @Bean
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
+
+    @Bean
+    IfAction<ReturnProcessingSaga> ifAction() {
+        return new IfAction<>();
+    }
+
+    // ==================== Infrastructure Beans ====================
+
+    @Bean
+    ReturnProcessingSagaMapper returnProcessingSagaMapper() {
+        return new ReturnProcessingSagaMapper();
+    }
+
+    @Bean
+    ReturnProcessingSagaRepository returnProcessingSagaRepository(
+            ReturnProcessingSagaJpaRepository jpaRepository,
+            ReturnProcessingSagaMapper mapper) {
+        return new ReturnProcessingSagaRepositoryImpl(jpaRepository, mapper);
+    }
 
     // ==================== STM Core Wiring ====================
 
@@ -60,8 +93,10 @@ public class ReturnProcessingConfiguration {
     }
 
     @Bean
-    EntityStore<ReturnProcessingSaga> returnProcessingEntityStore() {
-        return new ChenileReturnProcessingEntityStore();
+    EntityStore<ReturnProcessingSaga> returnProcessingEntityStore(
+            ReturnProcessingSagaJpaRepository jpaRepository,
+            ReturnProcessingSagaMapper mapper) {
+        return new ChenileReturnProcessingEntityStore(jpaRepository, mapper);
     }
 
     @Bean
@@ -159,6 +194,11 @@ public class ReturnProcessingConfiguration {
     }
 
     @Bean
+    InspectItemAction returnProcessingInspectItemAction() {
+        return new InspectItemAction();
+    }
+
+    @Bean
     RestockInventoryAction returnProcessingRestockInventoryAction() {
         return new RestockInventoryAction();
     }
@@ -181,6 +221,21 @@ public class ReturnProcessingConfiguration {
     @Bean
     RetryAction returnProcessingRetryAction() {
         return new RetryAction();
+    }
+
+    @Bean
+    FailAction returnProcessingFailAction() {
+        return new FailAction();
+    }
+
+    @Bean
+    CancelAction returnProcessingCancelAction() {
+        return new CancelAction();
+    }
+
+    @Bean
+    CompensateAction returnProcessingCompensateAction() {
+        return new CompensateAction();
     }
 
     // ==================== Post-Save Hooks ====================

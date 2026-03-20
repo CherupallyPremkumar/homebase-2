@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- Reconciliation Batch Lifecycle                                         -->
+  <!--                                                                        -->
+  <!-- A reconciliation batch compares gateway transactions against system     -->
+  <!-- transactions, identifies matches and mismatches, and generates reports. -->
+  <!--                                                                        -->
+  <!-- The internal processing steps are handled by the OWIZ pipeline         -->
+  <!-- (reconciliation-flow.xml): fetch → match → flag → auto-resolve → report-->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (consumed via Kafka):                                  -->
+  <!--   payment.SETTLED      → triggers batch creation (daily/on-demand)     -->
+  <!--   settlement.COMPLETED → triggers batch creation for settlement recon  -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (published via PostSaveHook → Kafka):                  -->
+  <!--   COMPLETED            → notification to finance team                  -->
+  <!--   MISMATCHES_FOUND     → settlement.adjust (if adjustments needed)     -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <event-information eventId='startProcessing'   meta-acls="SYSTEM,FINANCE"  meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='completeMatching'  meta-acls="SYSTEM"          meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='reviewMismatches'  meta-acls="FINANCE,ADMIN"   meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='resolveMismatches' meta-acls="FINANCE,ADMIN"   meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='approve'           meta-acls="FINANCE"         meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='reject'            meta-acls="FINANCE"         meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='retry'             meta-acls="SYSTEM,FINANCE"  meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+
+  <flow id='reconciliation-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="reconciliationEntryAction" />
+    <exit-action componentName="reconciliationExitAction" />
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- HAPPY PATH: CREATED → PROCESSING → MATCHED → CHECK_MISMATCHES     -->
+    <!--   → REVIEW_REQUIRED / ALL_MATCHED → APPROVED → COMPLETED          -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Batch created, awaiting processing trigger -->
+    <manual-state id='CREATED' initialState='true' meta-mainPath="true"
+                  description="Reconciliation batch created, awaiting processing">
+      <on eventId='startProcessing'
+          componentName='reconciliationStartProcessingAction'
+          newStateId='PROCESSING'
+          meta-mainPath="true" meta-acls="SYSTEM,FINANCE"/>
+    </manual-state>
+
+    <!-- OWIZ pipeline executing: fetch, match, flag, auto-resolve -->
+    <manual-state id='PROCESSING' meta-mainPath="true"
+                  description="Reconciliation batch processing — matching transactions">
+      <on eventId='completeMatching'
+          componentName='reconciliationCompleteMatchingAction'
+          newStateId='CHECK_MISMATCHES'
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <!--
+      OGNL auto-state: CHECK_MISMATCHES
+      After matching, check if any unresolved mismatches exist.
+      unresolvedMismatchCount > 0 → REVIEW_REQUIRED (manual finance review)
+      Else → ALL_MATCHED (clean batch, auto-approve)
+    -->
+    <auto-state id='CHECK_MISMATCHES'
+                componentName='ifAction'
+                condition='unresolvedMismatchCount != null and unresolvedMismatchCount.intValue() &gt; 0'
+                then='hasMismatches'
+                else='allClean'>
+      <on eventId='hasMismatches' newStateId='REVIEW_REQUIRED'/>
+      <on eventId='allClean' newStateId='APPROVED'/>
+    </auto-state>
+
+    <!-- All transactions matched — auto-approved -->
+    <!-- (Routes directly to APPROVED via auto-state) -->
+
+    <!-- Mismatches found — finance team must review and resolve -->
+    <manual-state id='REVIEW_REQUIRED'
+                  description="Mismatches found, awaiting finance review">
+      <on eventId='resolveMismatches'
+          componentName='reconciliationResolveMismatchesAction'
+          newStateId='RESOLVED'
+          meta-acls="FINANCE,ADMIN"/>
+      <on eventId='reject'
+          componentName='reconciliationRejectAction'
+          newStateId='REJECTED'
+          meta-acls="FINANCE"/>
+    </manual-state>
+
+    <!-- Mismatches resolved by finance team -->
+    <manual-state id='RESOLVED'
+                  description="Mismatches resolved, awaiting approval">
+      <on eventId='approve'
+          componentName='reconciliationApproveAction'
+          newStateId='APPROVED'
+          meta-mainPath="true" meta-acls="FINANCE"/>
+    </manual-state>
+
+    <!-- Batch approved — ready for completion -->
+    <manual-state id='APPROVED' meta-mainPath="true"
+                  description="Reconciliation batch approved">
+      <on eventId='approve'
+          componentName='reconciliationApproveAction'
+          newStateId='COMPLETED'
+          meta-mainPath="true" meta-acls="FINANCE"/>
+    </manual-state>
+
+    <!-- Batch completed — terminal -->
+    <manual-state id='COMPLETED' meta-mainPath="true"
+                  description="Reconciliation batch completed and archived">
+    </manual-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- FAILURE / REJECTION                                                 -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Batch rejected — needs re-processing -->
+    <manual-state id='REJECTED'
+                  description="Reconciliation batch rejected, needs re-processing">
+      <on eventId='retry'
+          componentName='reconciliationRetryAction'
+          newStateId='CREATED'
+          meta-acls="SYSTEM,FINANCE"/>
+    </manual-state>
+
+    <manual-state id='FAILED'
+                  description="Reconciliation batch processing failed">
+      <on eventId='retry'
+          componentName='reconciliationRetryAction'
+          newStateId='CREATED'
+          meta-acls="SYSTEM,FINANCE"/>
+    </manual-state>
+
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
+    </manual-state>
+  </flow>
+</states>

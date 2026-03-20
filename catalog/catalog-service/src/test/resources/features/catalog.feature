@@ -1,6 +1,4 @@
-Feature: Catalog — tests Category and Collection REST controllers.
-  Catalog uses Chenile controllers (not STM-based).
-  Tests CRUD operations for categories and collections.
+Feature: Catalog — Category and Collection CRUD via Chenile REST controllers.
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CATEGORY CRUD

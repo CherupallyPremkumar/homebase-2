@@ -103,7 +103,12 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
-            "http://localhost:4200",  // Angular dev server
+            "http://localhost:3000",  // Storefront
+            "http://localhost:3002",  // Seller Central
+            "http://localhost:3003",  // Warehouse WMS
+            "http://localhost:3004",  // OMS
+            "http://localhost:3005",  // Finance
+            "http://localhost:3006",  // Platform Admin
             "http://localhost:8080"   // Same origin
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

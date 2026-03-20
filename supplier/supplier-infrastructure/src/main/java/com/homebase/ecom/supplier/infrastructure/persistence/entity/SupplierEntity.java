@@ -7,6 +7,7 @@ import org.chenile.workflow.activities.model.ActivityLog;
 import org.chenile.workflow.model.ContainsTransientMap;
 import org.chenile.workflow.model.TransientMap;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,22 +52,22 @@ public class SupplierEntity extends AbstractJpaStateEntity
     // --- Performance Metrics ---
 
     @Column(name = "rating")
-    private double rating;
+    private Double rating;
 
     @Column(name = "total_orders")
-    private int totalOrders;
+    private Integer totalOrders;
 
     @Column(name = "total_returns")
-    private int totalReturns;
+    private Integer totalReturns;
 
     @Column(name = "fulfillment_rate")
-    private double fulfillmentRate;
+    private Double fulfillmentRate;
 
     @Column(name = "avg_shipping_days")
-    private double avgShippingDays;
+    private Double avgShippingDays;
 
     @Column(name = "commission_rate")
-    private double commissionRate;
+    private Double commissionRate;
 
     // --- Lifecycle Tracking ---
 
@@ -96,6 +97,9 @@ public class SupplierEntity extends AbstractJpaStateEntity
 
     @Column(name = "products_disabled")
     private boolean productsDisabled;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "supplier_id")
@@ -153,23 +157,23 @@ public class SupplierEntity extends AbstractJpaStateEntity
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
 
-    public double getRating() { return rating; }
-    public void setRating(double rating) { this.rating = rating; }
+    public Double getRating() { return rating; }
+    public void setRating(Double rating) { this.rating = rating; }
 
-    public int getTotalOrders() { return totalOrders; }
-    public void setTotalOrders(int totalOrders) { this.totalOrders = totalOrders; }
+    public Integer getTotalOrders() { return totalOrders; }
+    public void setTotalOrders(Integer totalOrders) { this.totalOrders = totalOrders; }
 
-    public int getTotalReturns() { return totalReturns; }
-    public void setTotalReturns(int totalReturns) { this.totalReturns = totalReturns; }
+    public Integer getTotalReturns() { return totalReturns; }
+    public void setTotalReturns(Integer totalReturns) { this.totalReturns = totalReturns; }
 
-    public double getFulfillmentRate() { return fulfillmentRate; }
-    public void setFulfillmentRate(double fulfillmentRate) { this.fulfillmentRate = fulfillmentRate; }
+    public Double getFulfillmentRate() { return fulfillmentRate; }
+    public void setFulfillmentRate(Double fulfillmentRate) { this.fulfillmentRate = fulfillmentRate; }
 
-    public double getAvgShippingDays() { return avgShippingDays; }
-    public void setAvgShippingDays(double avgShippingDays) { this.avgShippingDays = avgShippingDays; }
+    public Double getAvgShippingDays() { return avgShippingDays; }
+    public void setAvgShippingDays(Double avgShippingDays) { this.avgShippingDays = avgShippingDays; }
 
-    public double getCommissionRate() { return commissionRate; }
-    public void setCommissionRate(double commissionRate) { this.commissionRate = commissionRate; }
+    public Double getCommissionRate() { return commissionRate; }
+    public void setCommissionRate(Double commissionRate) { this.commissionRate = commissionRate; }
 
     public LocalDateTime getActiveDate() { return activeDate; }
     public void setActiveDate(LocalDateTime activeDate) { this.activeDate = activeDate; }
@@ -197,6 +201,9 @@ public class SupplierEntity extends AbstractJpaStateEntity
 
     public boolean isProductsDisabled() { return productsDisabled; }
     public void setProductsDisabled(boolean productsDisabled) { this.productsDisabled = productsDisabled; }
+
+    public Instant getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
 
     public List<SupplierActivityLogEntity> getActivities() { return activities; }
     public void setActivities(List<SupplierActivityLogEntity> activities) { this.activities = activities; }

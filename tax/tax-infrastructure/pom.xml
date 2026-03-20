@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>tax-infrastructure</artifactId>
-    <name>Tax Infrastructure</name>
+    <name>tax-infrastructure</name>
 
     <dependencies>
         <dependency>

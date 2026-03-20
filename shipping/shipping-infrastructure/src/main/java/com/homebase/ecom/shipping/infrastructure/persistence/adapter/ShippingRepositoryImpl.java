@@ -4,19 +4,22 @@ import com.homebase.ecom.shipping.model.Shipping;
 import com.homebase.ecom.shipping.domain.port.ShippingRepository;
 import com.homebase.ecom.shipping.infrastructure.persistence.entity.ShippingEntity;
 import com.homebase.ecom.shipping.infrastructure.persistence.mapper.ShippingMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
+/**
+ * Adapter implementing ShippingRepository port.
+ * Wired as @Bean in ShippingConfiguration -- no @Repository annotation.
+ */
 public class ShippingRepositoryImpl implements ShippingRepository {
 
-    @Autowired
-    private ShippingJpaRepository shippingJpaRepository;
+    private final ShippingJpaRepository shippingJpaRepository;
+    private final ShippingMapper shippingMapper;
 
-    @Autowired
-    private ShippingMapper shippingMapper;
+    public ShippingRepositoryImpl(ShippingJpaRepository shippingJpaRepository, ShippingMapper shippingMapper) {
+        this.shippingJpaRepository = shippingJpaRepository;
+        this.shippingMapper = shippingMapper;
+    }
 
     @Override
     public Optional<Shipping> findById(String id) {

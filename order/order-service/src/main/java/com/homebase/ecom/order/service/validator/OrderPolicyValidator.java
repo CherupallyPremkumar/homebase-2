@@ -11,8 +11,6 @@ import com.homebase.ecom.cconfig.sdk.CconfigClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -23,6 +21,7 @@ import java.util.Map;
 /**
  * Central component enforcing all Order lifecycle policies.
  * All values sourced from order.json via CconfigClient.
+ * Wired via @Bean in OrderConfiguration -- never use @Component.
  *
  * Policies:
  * - Order value limits (min/max)
@@ -32,7 +31,6 @@ import java.util.Map;
  * - Return window expiry
  * - Return reason validity
  */
-@Component
 public class OrderPolicyValidator {
 
     private static final Logger log = LoggerFactory.getLogger(OrderPolicyValidator.class);

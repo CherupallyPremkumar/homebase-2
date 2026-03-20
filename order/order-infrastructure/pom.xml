@@ -10,7 +10,7 @@
     </parent>
     <artifactId>order-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>Order Infrastructure — JPA Adapters</name>
+    <name>order-infrastructure</name>
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom.order</groupId>

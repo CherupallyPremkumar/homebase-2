@@ -9,20 +9,23 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * Order aggregate root — domain model for the Order bounded context.
+ * Order aggregate root -- domain model for the Order bounded context.
  *
- * Fields per spec item #11:
- * - id, orderNumber, customerId, items, subtotal, taxAmount, shippingAmount,
- *   totalAmount, currency, shippingAddressId, billingAddressId, paymentMethodId,
- *   notes, cancelReason, stateId, flowId (from AbstractExtendedStateEntity)
+ * Fields aligned with DB schema in db-migrations/order/db.changelog-order.xml:
+ * - orders table: order_number, customer_id, subtotal, tax_amount, shipping_amount,
+ *   total_amount, currency, shipping_address_id, billing_address_id, payment_method_id,
+ *   notes, cancel_reason, description, item_count, discount_amount, shipping_address (JSON),
+ *   payment_id, checkout_id, invoice_number, invoice_url, estimated_delivery_date,
+ *   actual_delivery_date, tracking_number, carrier, coupon_codes
  *
- * Removed: gateway fields, webhook fields, metadata, promo fields, retry fields,
- *          delivery tracking, SLA fields — those belong in Payment/Shipping/Fulfillment BCs.
+ * Inherited from AbstractExtendedStateEntity: id, createdTime, lastModifiedTime,
+ *   createdBy, lastModifiedBy, version, currentState (stateId/flowId)
  */
 public class Order extends AbstractExtendedStateEntity
         implements ActivityEnabledStateEntity,
         ContainsTransientMap {
 
+    // --- Core order fields ---
     private String orderNumber;
     private String customerId;
     private List<OrderItem> items = new ArrayList<>();
@@ -36,14 +39,32 @@ public class Order extends AbstractExtendedStateEntity
     private String paymentMethodId;
     private String notes;
     private String cancelReason;
+    private String description;
     private String tenant;
+    private int itemCount;
+    private BigDecimal discountAmount;
+    private String shippingAddress; // JSON text of shipping address
+
+    // --- Cross-BC reference fields (order-004) ---
+    private String paymentId;
+    private String checkoutId;
+    private String invoiceNumber;
+    private String invoiceUrl;
+    private LocalDateTime estimatedDeliveryDate;
+    private LocalDateTime actualDeliveryDate;
+    private String trackingNumber;
+    private String carrier;
+    private String couponCodes;
+
+    // --- SLA fields (from AbstractJpaStateEntity) ---
+    private Date slaYellowDate;
+    private Date slaRedDate;
+
+    /** Fraud risk score set by payment gateway, checked by CHECK_FRAUD auto-state */
+    private Integer riskScore;
 
     /** Flag set by requestCancellation action for CHECK_CANCELLATION_WINDOW auto-state */
     private boolean cancellationAllowed;
-
-    public String description;
-    private Date slaYellowDate;
-    private Date slaRedDate;
 
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
@@ -89,6 +110,48 @@ public class Order extends AbstractExtendedStateEntity
     public String getCancelReason() { return cancelReason; }
     public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
 
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public int getItemCount() { return itemCount; }
+    public void setItemCount(int itemCount) { this.itemCount = itemCount; }
+
+    public BigDecimal getDiscountAmount() { return discountAmount; }
+    public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
+
+    public String getShippingAddress() { return shippingAddress; }
+    public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
+
+    public String getPaymentId() { return paymentId; }
+    public void setPaymentId(String paymentId) { this.paymentId = paymentId; }
+
+    public String getCheckoutId() { return checkoutId; }
+    public void setCheckoutId(String checkoutId) { this.checkoutId = checkoutId; }
+
+    public String getInvoiceNumber() { return invoiceNumber; }
+    public void setInvoiceNumber(String invoiceNumber) { this.invoiceNumber = invoiceNumber; }
+
+    public String getInvoiceUrl() { return invoiceUrl; }
+    public void setInvoiceUrl(String invoiceUrl) { this.invoiceUrl = invoiceUrl; }
+
+    public LocalDateTime getEstimatedDeliveryDate() { return estimatedDeliveryDate; }
+    public void setEstimatedDeliveryDate(LocalDateTime estimatedDeliveryDate) { this.estimatedDeliveryDate = estimatedDeliveryDate; }
+
+    public LocalDateTime getActualDeliveryDate() { return actualDeliveryDate; }
+    public void setActualDeliveryDate(LocalDateTime actualDeliveryDate) { this.actualDeliveryDate = actualDeliveryDate; }
+
+    public String getTrackingNumber() { return trackingNumber; }
+    public void setTrackingNumber(String trackingNumber) { this.trackingNumber = trackingNumber; }
+
+    public String getCarrier() { return carrier; }
+    public void setCarrier(String carrier) { this.carrier = carrier; }
+
+    public String getCouponCodes() { return couponCodes; }
+    public void setCouponCodes(String couponCodes) { this.couponCodes = couponCodes; }
+
+    public Integer getRiskScore() { return riskScore; }
+    public void setRiskScore(Integer riskScore) { this.riskScore = riskScore; }
+
     public boolean isCancellationAllowed() { return cancellationAllowed; }
     public void setCancellationAllowed(boolean cancellationAllowed) { this.cancellationAllowed = cancellationAllowed; }
 
@@ -99,6 +162,13 @@ public class Order extends AbstractExtendedStateEntity
     public void setSlaRedDate(Date slaRedDate) { this.slaRedDate = slaRedDate; }
 
     public TransientMap getTransientMap() { return this.transientMap; }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
+
+    /** Direct getter for the activities list (used by mapper). */
+    public List<ActivityLog> getActivities() { return activities; }
+    public void setActivities(List<ActivityLog> activities) { this.activities = activities; }
 
     @Override
     public Collection<ActivityLog> obtainActivities() {
@@ -114,7 +184,4 @@ public class Order extends AbstractExtendedStateEntity
         activities.add(activityLog);
         return activityLog;
     }
-
-    public String getTenant() { return tenant; }
-    public void setTenant(String tenant) { this.tenant = tenant; }
 }

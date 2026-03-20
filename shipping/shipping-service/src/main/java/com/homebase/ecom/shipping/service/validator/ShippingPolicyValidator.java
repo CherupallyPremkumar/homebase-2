@@ -6,7 +6,6 @@ import com.homebase.ecom.cconfig.sdk.CconfigClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Set;
@@ -16,8 +15,8 @@ import java.util.Set;
  *
  * <p>Reads configurable rules from {@code org/chenile/config/shipping.json}
  * (overridable per tenant in DB via cconfig).
+ * Wired as @Bean in ShippingConfiguration -- no @Component annotation.
  */
-@Component
 public class ShippingPolicyValidator {
 
     private static final Logger log = LoggerFactory.getLogger(ShippingPolicyValidator.class);

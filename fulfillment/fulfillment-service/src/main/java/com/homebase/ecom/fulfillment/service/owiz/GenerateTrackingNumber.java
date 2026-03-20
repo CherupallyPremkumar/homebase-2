@@ -4,14 +4,11 @@ import org.chenile.core.context.ChenileExchange;
 import org.chenile.owiz.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import com.homebase.ecom.fulfillment.model.FulfillmentSaga;
 
 /**
  * OWIZ command that generates a tracking number for the shipment.
  */
-@Component("generateTrackingNumber")
 public class GenerateTrackingNumber implements Command<ChenileExchange> {
 
     private static final Logger log = LoggerFactory.getLogger(GenerateTrackingNumber.class);

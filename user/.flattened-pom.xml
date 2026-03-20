@@ -11,7 +11,7 @@
   <artifactId>user-parent</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>All Modules that belong to the User</name>
+  <name>user-parent</name>
   <description>Modules execution project and Parent Pom</description>
   <licenses>
     <license>

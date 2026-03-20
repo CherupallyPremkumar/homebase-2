@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Review test data — STM states from review-states.xml:
+        SUBMITTED, CHECK_AUTO_PUBLISH, UNDER_MODERATION, PUBLISHED,
+        REJECTED, FLAGGED, REMOVED, APPEALED
+    -->
+    <changeSet id="review-test-data" author="homebase-test">
+
+        <!-- rev-1: PUBLISHED — 5-star verified purchase -->
+        <insert tableName="product_reviews">
+            <column name="id" value="rev-1"/>
+            <column name="product_id" value="prod-1"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="rating" valueNumeric="5"/>
+            <column name="title" value="Excellent quality widget!"/>
+            <column name="body" value="This widget is exactly what I needed. Build quality is superb, works perfectly for daily use. Highly recommend."/>
+            <column name="verified_purchase" valueBoolean="true"/>
+            <column name="helpful_count" valueNumeric="23"/>
+            <column name="report_count" valueNumeric="0"/>
+            <column name="variant_id" value="var-1a"/>
+            <column name="review_source" value="WEB"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="flow_id" value="review-flow"/>
+            <column name="created_time" valueDate="2026-03-14T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-14T10:05:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- rev-2: PUBLISHED — 3-star review with images -->
+        <insert tableName="product_reviews">
+            <column name="id" value="rev-2"/>
+            <column name="product_id" value="prod-2"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="order_id" value="ord-2"/>
+            <column name="rating" valueNumeric="3"/>
+            <column name="title" value="Decent but Bluetooth range is poor"/>
+            <column name="body" value="The gadget works fine for basic use, but Bluetooth range drops significantly beyond 3 metres. Expected better for the price."/>
+            <column name="verified_purchase" valueBoolean="true"/>
+            <column name="helpful_count" valueNumeric="15"/>
+            <column name="report_count" valueNumeric="0"/>
+            <column name="review_source" value="APP"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="flow_id" value="review-flow"/>
+            <column name="created_time" valueDate="2026-03-15T14:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-15T14:10:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- rev-3: SUBMITTED — Awaiting moderation -->
+        <insert tableName="product_reviews">
+            <column name="id" value="rev-3"/>
+            <column name="product_id" value="prod-3"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="order_id" value="ord-3"/>
+            <column name="rating" valueNumeric="4"/>
+            <column name="title" value="Good value for money"/>
+            <column name="body" value="Multi-purpose gizmo that does what it promises. Packaging could be better."/>
+            <column name="verified_purchase" valueBoolean="true"/>
+            <column name="review_source" value="WEB"/>
+            <column name="state_id" value="SUBMITTED"/>
+            <column name="flow_id" value="review-flow"/>
+            <column name="created_time" valueDate="2026-03-16T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-16T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+        <!-- rev-4: FLAGGED — Potential fake review -->
+        <insert tableName="product_reviews">
+            <column name="id" value="rev-4"/>
+            <column name="product_id" value="prod-1"/>
+            <column name="customer_id" value="user-5"/>
+            <column name="rating" valueNumeric="1"/>
+            <column name="title" value="DO NOT BUY FAKE PRODUCT"/>
+            <column name="body" value="This is a fake product and the seller is a scam. I am filing a police complaint."/>
+            <column name="verified_purchase" valueBoolean="false"/>
+            <column name="helpful_count" valueNumeric="2"/>
+            <column name="report_count" valueNumeric="8"/>
+            <column name="moderator_notes" value="Flagged: no purchase history, inflammatory language, potential competitor attack"/>
+            <column name="state_id" value="FLAGGED"/>
+            <column name="flow_id" value="review-flow"/>
+            <column name="created_time" valueDate="2026-03-10T08:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-10T12:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- rev-5: REJECTED — Violates guidelines -->
+        <insert tableName="product_reviews">
+            <column name="id" value="rev-5"/>
+            <column name="product_id" value="prod-2"/>
+            <column name="customer_id" value="user-5"/>
+            <column name="rating" valueNumeric="1"/>
+            <column name="title" value="Profanity-laden review"/>
+            <column name="body" value="[Content removed — violated community guidelines]"/>
+            <column name="moderator_notes" value="Rejected: profanity and personal attacks on seller"/>
+            <column name="state_id" value="REJECTED"/>
+            <column name="flow_id" value="review-flow"/>
+            <column name="created_time" valueDate="2026-03-05T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-05T15:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- Review Images -->
+        <insert tableName="review_images">
+            <column name="id" value="rimg-1"/>
+            <column name="review_id" value="rev-2"/>
+            <column name="image_url" value="https://cdn.homebase.in/reviews/rev-2-1.jpg"/>
+            <column name="thumbnail_url" value="https://cdn.homebase.in/reviews/rev-2-1-thumb.jpg"/>
+            <column name="sort_order" valueNumeric="0"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="review_images">
+            <column name="id" value="rimg-2"/>
+            <column name="review_id" value="rev-2"/>
+            <column name="image_url" value="https://cdn.homebase.in/reviews/rev-2-2.jpg"/>
+            <column name="thumbnail_url" value="https://cdn.homebase.in/reviews/rev-2-2-thumb.jpg"/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Review Votes -->
+        <insert tableName="review_votes">
+            <column name="id" value="rvote-1"/>
+            <column name="review_id" value="rev-1"/>
+            <column name="user_id" value="user-2"/>
+            <column name="vote_type" value="HELPFUL"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="review_votes">
+            <column name="id" value="rvote-2"/>
+            <column name="review_id" value="rev-1"/>
+            <column name="user_id" value="user-3"/>
+            <column name="vote_type" value="HELPFUL"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Review Responses (seller reply) -->
+        <insert tableName="review_responses">
+            <column name="id" value="rresp-1"/>
+            <column name="review_id" value="rev-2"/>
+            <column name="responder_id" value="supplier-2"/>
+            <column name="responder_type" value="SELLER"/>
+            <column name="responder_name" value="TechVista Electronics"/>
+            <column name="response_text" value="Thank you for your feedback. We have improved the Bluetooth antenna in the latest batch. Please contact support for a replacement under warranty."/>
+            <column name="is_official" valueBoolean="true"/>
+            <column name="moderation_status" value="APPROVED"/>
+            <column name="moderated_at" valueDate="2026-03-16T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Review Activity -->
+        <insert tableName="review_activity">
+            <column name="id" value="rvact-1"/>
+            <column name="review_id" value="rev-1"/>
+            <column name="activity_name" value="autoPublish"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Auto-published: verified purchase, rating 4+, no flagged content"/>
+            <column name="created_time" valueDate="2026-03-14T10:05:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

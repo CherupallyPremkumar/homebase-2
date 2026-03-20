@@ -6,30 +6,40 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 
+/**
+ * JPA entity for supplier_lifecycle_saga_activity table.
+ * DB columns: activity_name, activity_success, activity_comment
+ * (plus BaseJpaEntity columns: id, created_time, last_modified_time, etc.)
+ */
 @Entity
 @Table(name = "supplier_lifecycle_saga_activity")
 public class SupplierLifecycleSagaActivityLogEntity extends BaseJpaEntity implements ActivityLog {
 
-    @Column(name = "event_id")
-    private String eventId;
+    @Column(name = "activity_name")
+    private String activityName;
 
-    @Column(name = "comment")
-    private String comment;
+    @Column(name = "activity_success")
+    private boolean activitySuccess = true;
 
-    @Column(name = "success")
-    private boolean success = true;
-
-    @Override
-    public String getName() { return eventId; }
+    @Column(name = "activity_comment", length = 2000)
+    private String activityComment;
 
     @Override
-    public String getComment() { return comment; }
+    public String getName() { return activityName; }
 
     @Override
-    public boolean getSuccess() { return success; }
+    public String getComment() { return activityComment; }
+
+    @Override
+    public boolean getSuccess() { return activitySuccess; }
 
     // Setters
-    public void setEventId(String eventId) { this.eventId = eventId; }
-    public void setComment(String comment) { this.comment = comment; }
-    public void setSuccess(boolean success) { this.success = success; }
+    public String getActivityName() { return activityName; }
+    public void setActivityName(String activityName) { this.activityName = activityName; }
+
+    public boolean isActivitySuccess() { return activitySuccess; }
+    public void setActivitySuccess(boolean activitySuccess) { this.activitySuccess = activitySuccess; }
+
+    public String getActivityComment() { return activityComment; }
+    public void setActivityComment(String activityComment) { this.activityComment = activityComment; }
 }

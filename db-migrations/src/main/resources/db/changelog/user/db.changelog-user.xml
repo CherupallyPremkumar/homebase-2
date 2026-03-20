@@ -1,100 +1,176 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<databaseChangeLog
-    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
-    <changeSet id="V001-create-user-profiles" author="homebase">
+    <changeSet id="user-001-create-user-profiles" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="user_profiles"/></not></preConditions>
         <createTable tableName="user_profiles">
-            <column name="id" type="VARCHAR(36)">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="tenant" type="VARCHAR(50)" defaultValue="homebase"/>
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
             <column name="keycloak_id" type="VARCHAR(255)"/>
             <column name="email" type="VARCHAR(255)"/>
-            <column name="first_name" type="VARCHAR(100)"/>
-            <column name="last_name" type="VARCHAR(100)"/>
-            <column name="phone" type="VARCHAR(20)"/>
-            <column name="role" type="VARCHAR(30)" defaultValue="CUSTOMER"/>
-            <column name="default_address_id" type="VARCHAR(36)"/>
-            <column name="kyc_status" type="VARCHAR(30)"/>
+            <column name="first_name" type="VARCHAR(255)"/>
+            <column name="last_name" type="VARCHAR(255)"/>
+            <column name="phone" type="VARCHAR(255)"/>
+            <column name="role" type="VARCHAR(255)"/>
+            <column name="default_address_id" type="VARCHAR(255)"/>
+            <column name="kyc_status" type="VARCHAR(255)"/>
             <column name="login_attempts" type="INT" defaultValueNumeric="0"/>
             <column name="last_login_at" type="TIMESTAMP"/>
-            <column name="lock_reason" type="VARCHAR(500)"/>
-            <column name="suspend_reason" type="VARCHAR(500)"/>
-            <column name="pref_language" type="VARCHAR(10)" defaultValue="en"/>
-            <column name="pref_currency" type="VARCHAR(10)" defaultValue="INR"/>
-            <column name="pref_email_notif" type="BOOLEAN" defaultValueBoolean="true"/>
-            <column name="pref_sms_notif" type="BOOLEAN" defaultValueBoolean="true"/>
-            <column name="pref_timezone" type="VARCHAR(50)" defaultValue="Asia/Kolkata"/>
-            <column name="state_id" type="VARCHAR(50)"/>
-            <column name="flow_id" type="VARCHAR(50)"/>
-            <column name="version" type="INT" defaultValueNumeric="0"/>
-            <column name="created_time" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-            <column name="last_modified_time" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="lock_reason" type="VARCHAR(255)"/>
+            <column name="suspend_reason" type="VARCHAR(255)"/>
+            <column name="pref_language" type="VARCHAR(255)"/>
+            <column name="pref_currency" type="VARCHAR(255)"/>
+            <column name="pref_email_notif" type="BOOLEAN"/>
+            <column name="pref_sms_notif" type="BOOLEAN"/>
+            <column name="pref_timezone" type="VARCHAR(255)"/>
         </createTable>
-
         <addUniqueConstraint tableName="user_profiles" columnNames="keycloak_id" constraintName="uk_user_keycloak_id"/>
         <addUniqueConstraint tableName="user_profiles" columnNames="email" constraintName="uk_user_email"/>
-
-        <createIndex tableName="user_profiles" indexName="idx_user_state">
-            <column name="state_id"/>
-        </createIndex>
-        <createIndex tableName="user_profiles" indexName="idx_user_role">
-            <column name="role"/>
-        </createIndex>
     </changeSet>
 
-    <changeSet id="V001-create-user-address" author="homebase">
+    <changeSet id="user-002-create-user-address" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="user_address"/></not></preConditions>
         <createTable tableName="user_address">
-            <column name="id" type="VARCHAR(36)">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="tenant" type="VARCHAR(50)" defaultValue="homebase"/>
-            <column name="user_id" type="VARCHAR(36)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="label" type="VARCHAR(50)"/>
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="label" type="VARCHAR(255)"/>
             <column name="line1" type="VARCHAR(255)"/>
             <column name="line2" type="VARCHAR(255)"/>
-            <column name="city" type="VARCHAR(100)"/>
-            <column name="state" type="VARCHAR(100)"/>
-            <column name="postal_code" type="VARCHAR(20)"/>
-            <column name="country" type="VARCHAR(100)"/>
-            <column name="is_default" type="BOOLEAN" defaultValueBoolean="false"/>
-            <column name="version" type="INT" defaultValueNumeric="0"/>
-            <column name="created_time" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-            <column name="last_modified_time" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="city" type="VARCHAR(255)"/>
+            <column name="state" type="VARCHAR(255)"/>
+            <column name="postal_code" type="VARCHAR(255)"/>
+            <column name="country" type="VARCHAR(255)"/>
+            <column name="is_default" type="BOOLEAN"/>
         </createTable>
-
-        <addForeignKeyConstraint
-            constraintName="fk_address_user"
-            baseTableName="user_address" baseColumnNames="user_id"
-            referencedTableName="user_profiles" referencedColumnNames="id"/>
     </changeSet>
 
-    <changeSet id="V001-create-user-activity-log" author="homebase">
+    <changeSet id="user-003-create-user-activity-log" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="user_activity_log"/></not></preConditions>
         <createTable tableName="user_activity_log">
-            <column name="id" type="VARCHAR(36)">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="tenant" type="VARCHAR(50)" defaultValue="homebase"/>
-            <column name="user_id" type="VARCHAR(36)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="activity_name" type="VARCHAR(100)"/>
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
             <column name="activity_success" type="BOOLEAN"/>
-            <column name="activity_comment" type="VARCHAR(500)"/>
-            <column name="version" type="INT" defaultValueNumeric="0"/>
-            <column name="created_time" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-            <column name="last_modified_time" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="activity_comment" type="VARCHAR(255)"/>
         </createTable>
+    </changeSet>
 
-        <addForeignKeyConstraint
-            constraintName="fk_activity_user"
-            baseTableName="user_activity_log" baseColumnNames="user_id"
-            referencedTableName="user_profiles" referencedColumnNames="id"/>
+    <!-- Add Amazon-standard columns to user_profiles -->
+    <changeSet id="user-004-add-profile-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_profiles"/>
+            <not><columnExists tableName="user_profiles" columnName="profile_image_url"/></not>
+        </preConditions>
+        <addColumn tableName="user_profiles">
+            <column name="profile_image_url" type="VARCHAR(500)"/>
+            <column name="date_of_birth" type="DATE"/>
+            <column name="gender" type="VARCHAR(20)"/>
+            <column name="email_verified" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="phone_verified" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="referral_code" type="VARCHAR(50)"/>
+            <column name="referred_by" type="VARCHAR(255)"/>
+            <column name="customer_tier" type="VARCHAR(50)" defaultValue="REGULAR"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Create user_recently_viewed table -->
+    <changeSet id="user-005-create-user-recently-viewed" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="user_recently_viewed"/></not>
+        </preConditions>
+        <createTable tableName="user_recently_viewed">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="user_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="viewed_at" type="TIMESTAMP"><constraints nullable="false"/></column>
+        </createTable>
+        <createIndex indexName="idx_recently_viewed_user" tableName="user_recently_viewed">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_recently_viewed_time" tableName="user_recently_viewed">
+            <column name="viewed_at"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Create wishlist_items table -->
+    <changeSet id="user-006-create-wishlist-items" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="wishlist_items"/></not>
+        </preConditions>
+        <createTable tableName="wishlist_items">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="user_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="added_at" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="price_when_added" type="DECIMAL(12,2)"/>
+            <column name="notify_on_price_drop" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="notes" type="VARCHAR(500)"/>
+        </createTable>
+        <createIndex indexName="idx_wishlist_user" tableName="wishlist_items">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_wishlist_product" tableName="wishlist_items">
+            <column name="product_id"/>
+        </createIndex>
+        <addUniqueConstraint tableName="wishlist_items" columnNames="user_id, variant_id" constraintName="uk_wishlist_user_variant"/>
+    </changeSet>
+
+    <!-- Add indexes to user_profiles and user_address -->
+    <changeSet id="user-007-add-profile-and-address-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_profiles"/>
+            <not><indexExists indexName="idx_user_profiles_state"/></not>
+        </preConditions>
+        <createIndex indexName="idx_user_profiles_state" tableName="user_profiles">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex indexName="idx_user_profiles_email" tableName="user_profiles">
+            <column name="email"/>
+        </createIndex>
+        <createIndex indexName="idx_user_profiles_phone" tableName="user_profiles">
+            <column name="phone"/>
+        </createIndex>
+        <createIndex indexName="idx_user_address_user" tableName="user_address">
+            <column name="user_id"/>
+        </createIndex>
     </changeSet>
 
 </databaseChangeLog>

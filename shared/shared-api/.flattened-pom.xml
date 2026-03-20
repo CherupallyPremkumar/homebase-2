@@ -10,7 +10,7 @@
   <groupId>com.homebase.ecom.shared</groupId>
   <artifactId>shared-api</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Shared API Value Objects</name>
+  <name>shared-api</name>
   <licenses>
     <license>
       <name>MIT License</name>

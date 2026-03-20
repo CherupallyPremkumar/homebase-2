@@ -11,7 +11,7 @@
 
     <artifactId>cart-domain</artifactId>
     <packaging>jar</packaging>
-    <name>Cart Domain Entities and Logic</name>
+    <name>cart-domain</name>
 
     <dependencies>
 

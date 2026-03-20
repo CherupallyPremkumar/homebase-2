@@ -6,7 +6,6 @@ import com.homebase.ecom.promo.model.PromotionDetail;
 import com.homebase.ecom.promo.model.StrategyType;
 import com.homebase.ecom.shared.Money;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,7 +40,7 @@ public class BundleDiscountStrategy implements DiscountStrategy {
     @Override
     public Money calculateSavings(CartSnapshot cart) {
         if (!isEligible(cart)) {
-            return new Money(BigDecimal.ZERO, bundleDiscount.getCurrency());
+            return Money.zero(bundleDiscount.getCurrency());
         }
 
         // Find how many full bundles are in the cart
@@ -53,7 +52,7 @@ public class BundleDiscountStrategy implements DiscountStrategy {
                 .min()
                 .orElse(0);
 
-        return bundleDiscount.multiply(BigDecimal.valueOf(maxBundles));
+        return bundleDiscount.multiply(maxBundles);
     }
 
     @Override

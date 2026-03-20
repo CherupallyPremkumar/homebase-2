@@ -4,14 +4,10 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
-    <!-- 1. Create core tables (V1 products table needed for FK) -->
-    <include file="db/changelog/common/db.changelog-common.xml" />
+    <!-- Master changelog — all domain tables -->
+    <include file="db/changelog/db.changelog-master.xml" />
 
-    <!-- 2. Catalog production columns (V63: categories→catalog_categories, collections enrichment) -->
-    <!-- 3. Catalog items FTS + projection (V64: description, in_stock, rating, search_vector) -->
-    <include file="db/changelog/catalog/db.changelog-catalog-production.xml" />
-
-    <!-- 4. Catalog test data (catalog_categories, collections, catalog_items, tags, mappings) -->
+    <!-- Catalog test data -->
     <include file="db/changelog/catalog/test/db.changelog-catalog-testdata.xml" />
 
 </databaseChangeLog>

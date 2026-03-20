@@ -194,6 +194,14 @@ public class ReturnrequestConfiguration {
         return new CompletedExitAction();
     }
 
+    @Bean EscalateReturnrequestAction returnrequestEscalateAction() {
+        return new EscalateReturnrequestAction();
+    }
+
+    @Bean CompleteReturnReturnrequestAction returnrequestCompleteReturnAction() {
+        return new CompleteReturnReturnrequestAction();
+    }
+
     // ================================================================
     // Config and Enablement
     // ================================================================

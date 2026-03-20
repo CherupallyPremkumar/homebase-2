@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>fulfillment-service</artifactId>
-    <name>Fulfillment Service</name>
+    <name>fulfillment-service</name>
 
     <dependencies>
         <dependency>

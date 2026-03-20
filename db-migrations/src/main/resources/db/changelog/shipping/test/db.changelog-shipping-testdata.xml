@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Shipping test data — STM states from shipping-states.xml:
+        LABEL_CREATED, PICKED_UP, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED,
+        DELIVERY_ATTEMPTED, RETURNED_TO_ORIGIN, LOST, HELD_AT_HUB,
+        CHECK_DELIVERY_ATTEMPTS
+    -->
+    <changeSet id="shipping-test-data" author="homebase-test">
+
+        <!-- ship-1: DELIVERED — Delhivery for ord-1 -->
+        <insert tableName="shipments">
+            <column name="id" value="ship-1"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="tracking_number" value="DELHIVERY-TRK-001"/>
+            <column name="carrier" value="Delhivery"/>
+            <column name="shipping_method" value="STANDARD"/>
+            <column name="to_address" value='{"name":"Priya Sharma","city":"Mumbai","state":"Maharashtra","pincode":"400050"}'/>
+            <column name="from_address" value='{"warehouse":"FC-CHENNAI","city":"Chennai","pincode":"602105"}'/>
+            <column name="estimated_delivery_date" valueDate="2026-03-14T00:00:00"/>
+            <column name="actual_delivery_date" valueDate="2026-03-13T14:00:00"/>
+            <column name="delivery_attempts" valueNumeric="1"/>
+            <column name="shipping_cost" valueNumeric="0.00"/>
+            <column name="package_weight_grams" valueNumeric="450"/>
+            <column name="signature_required" valueBoolean="false"/>
+            <column name="state_id" value="DELIVERED"/>
+            <column name="flow_id" value="shipping-flow"/>
+            <column name="created_time" valueDate="2026-03-11T08:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-13T14:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="5"/>
+        </insert>
+
+        <!-- ship-2: IN_TRANSIT — Blue Dart for ord-2 -->
+        <insert tableName="shipments">
+            <column name="id" value="ship-2"/>
+            <column name="order_id" value="ord-2"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="tracking_number" value="BLUEDART-TRK-002"/>
+            <column name="carrier" value="Blue Dart"/>
+            <column name="shipping_method" value="EXPRESS"/>
+            <column name="to_address" value='{"name":"Rahul Verma","city":"New Delhi","state":"Delhi","pincode":"110070"}'/>
+            <column name="from_address" value='{"warehouse":"FC-MUMBAI","city":"Mumbai","pincode":"421302"}'/>
+            <column name="estimated_delivery_date" valueDate="2026-03-15T00:00:00"/>
+            <column name="current_location" value="Delhi Hub"/>
+            <column name="shipping_cost" valueNumeric="99.00"/>
+            <column name="package_weight_grams" valueNumeric="220"/>
+            <column name="state_id" value="IN_TRANSIT"/>
+            <column name="flow_id" value="shipping-flow"/>
+            <column name="created_time" valueDate="2026-03-12T09:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-14T16:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- ship-3: RETURNED_TO_ORIGIN — Failed delivery for ord-8 -->
+        <insert tableName="shipments">
+            <column name="id" value="ship-3"/>
+            <column name="order_id" value="ord-8"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="tracking_number" value="ECOM-TRK-008"/>
+            <column name="carrier" value="Ecom Express"/>
+            <column name="shipping_method" value="STANDARD"/>
+            <column name="to_address" value='{"name":"Anita Desai","city":"Bangalore","state":"Karnataka","pincode":"560038"}'/>
+            <column name="delivery_attempts" valueNumeric="3"/>
+            <column name="delivery_instructions" value="Customer was not available at all 3 attempts"/>
+            <column name="state_id" value="RETURNED_TO_ORIGIN"/>
+            <column name="flow_id" value="shipping-flow"/>
+            <column name="created_time" valueDate="2026-03-06T08:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-10T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="7"/>
+        </insert>
+
+        <!-- ship-4: LABEL_CREATED — Awaiting pickup for ord-3 -->
+        <insert tableName="shipments">
+            <column name="id" value="ship-4"/>
+            <column name="order_id" value="ord-3"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="tracking_number" value="DELHIVERY-TRK-004"/>
+            <column name="carrier" value="Delhivery"/>
+            <column name="shipping_method" value="STANDARD"/>
+            <column name="label_url" value="https://labels.homebase.in/ship-4.pdf"/>
+            <column name="estimated_delivery_date" valueDate="2026-03-16T00:00:00"/>
+            <column name="package_weight_grams" valueNumeric="1200"/>
+            <column name="state_id" value="LABEL_CREATED"/>
+            <column name="flow_id" value="shipping-flow"/>
+            <column name="created_time" valueDate="2026-03-12T15:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-12T15:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="1"/>
+        </insert>
+
+        <!-- Tracking Events for ship-1 (delivered) -->
+        <insert tableName="shipping_tracking_events">
+            <column name="id" value="trk-1a"/>
+            <column name="shipment_id" value="ship-1"/>
+            <column name="event_type" value="PICKED_UP"/>
+            <column name="location" value="Chennai FC"/>
+            <column name="description" value="Package picked up from warehouse"/>
+            <column name="event_time" valueDate="2026-03-11T10:00:00"/>
+            <column name="carrier_status_code" value="PKD"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="shipping_tracking_events">
+            <column name="id" value="trk-1b"/>
+            <column name="shipment_id" value="ship-1"/>
+            <column name="event_type" value="IN_TRANSIT"/>
+            <column name="location" value="Mumbai Hub"/>
+            <column name="description" value="Arrived at destination hub"/>
+            <column name="event_time" valueDate="2026-03-12T22:00:00"/>
+            <column name="carrier_status_code" value="ARR"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="shipping_tracking_events">
+            <column name="id" value="trk-1c"/>
+            <column name="shipment_id" value="ship-1"/>
+            <column name="event_type" value="OUT_FOR_DELIVERY"/>
+            <column name="location" value="Mumbai — Bandra"/>
+            <column name="description" value="Out for delivery"/>
+            <column name="event_time" valueDate="2026-03-13T09:00:00"/>
+            <column name="carrier_status_code" value="OFD"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="shipping_tracking_events">
+            <column name="id" value="trk-1d"/>
+            <column name="shipment_id" value="ship-1"/>
+            <column name="event_type" value="DELIVERED"/>
+            <column name="location" value="Mumbai — Bandra West"/>
+            <column name="description" value="Delivered to customer"/>
+            <column name="event_time" valueDate="2026-03-13T14:00:00"/>
+            <column name="carrier_status_code" value="DLV"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Shipping Rates -->
+        <insert tableName="shipping_rates">
+            <column name="id" value="rate-del-std"/>
+            <column name="carrier" value="Delhivery"/>
+            <column name="shipping_method" value="STANDARD"/>
+            <column name="zone_from" value="SOUTH"/>
+            <column name="zone_to" value="WEST"/>
+            <column name="min_weight_grams" valueNumeric="0"/>
+            <column name="max_weight_grams" valueNumeric="5000"/>
+            <column name="base_rate" valueNumeric="49.00"/>
+            <column name="per_kg_rate" valueNumeric="15.00"/>
+            <column name="estimated_days_min" valueNumeric="2"/>
+            <column name="estimated_days_max" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="shipping_rates">
+            <column name="id" value="rate-bd-exp"/>
+            <column name="carrier" value="Blue Dart"/>
+            <column name="shipping_method" value="EXPRESS"/>
+            <column name="zone_from" value="WEST"/>
+            <column name="zone_to" value="NORTH"/>
+            <column name="base_rate" valueNumeric="99.00"/>
+            <column name="per_kg_rate" valueNumeric="25.00"/>
+            <column name="estimated_days_min" valueNumeric="1"/>
+            <column name="estimated_days_max" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Shipping Activity -->
+        <insert tableName="shipping_activity">
+            <column name="id" value="shact-1"/>
+            <column name="shipping_id" value="ship-1"/>
+            <column name="activity_name" value="createLabel"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Delhivery label generated"/>
+            <column name="created_time" valueDate="2026-03-11T08:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

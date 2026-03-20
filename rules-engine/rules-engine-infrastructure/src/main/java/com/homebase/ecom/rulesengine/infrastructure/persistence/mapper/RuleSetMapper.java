@@ -22,7 +22,12 @@ public class RuleSetMapper {
         model.setActive(entity.isActive());
         model.setTargetModule(entity.getTargetModule());
         model.setTenant(entity.tenant);
-        // State is managed by AbstractJpaStateEntity and AbstractExtendedStateEntity
+        // STM and base entity fields
+        model.setCurrentState(entity.getCurrentState());
+        model.setStateEntryTime(entity.getStateEntryTime());
+        model.setCreatedTime(entity.getCreatedTime());
+        model.setLastModifiedTime(entity.getLastModifiedTime());
+        model.setVersion(entity.getVersion());
 
         if (entity.getRules() != null) {
             model.setRules(entity.getRules().stream()
@@ -48,6 +53,12 @@ public class RuleSetMapper {
         entity.setActive(model.isActive());
         entity.setTargetModule(model.getTargetModule());
         entity.tenant = model.getTenant();
+        // STM and base entity fields
+        entity.setCurrentState(model.getCurrentState());
+        if (model.getStateEntryTime() != null) entity.setStateEntryTime(model.getStateEntryTime());
+        if (model.getCreatedTime() != null) entity.setCreatedTime(model.getCreatedTime());
+        if (model.getLastModifiedTime() != null) entity.setLastModifiedTime(model.getLastModifiedTime());
+        if (model.getVersion() != null) entity.setVersion(model.getVersion());
 
         if (model.getRules() != null) {
             entity.setRules(model.getRules().stream()
@@ -73,6 +84,7 @@ public class RuleSetMapper {
         model.setPriority(entity.getPriority());
         model.setMetadata(entity.getMetadata());
         model.setTenant(entity.tenant);
+        model.setVersion(entity.getVersion());
 
         return model;
     }
@@ -86,6 +98,7 @@ public class RuleSetMapper {
         } else {
             entity.setId(model.getId());
         }
+        if (model.getVersion() != null) entity.setVersion(model.getVersion());
         entity.setName(model.getName());
         entity.setExpression(model.getExpression());
         entity.setEffect(model.getEffect());

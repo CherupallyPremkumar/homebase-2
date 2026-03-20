@@ -10,7 +10,7 @@
     </parent>
     <artifactId>notification-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>Notification Infrastructure — JPA Adapters</name>
+    <name>notification-infrastructure</name>
 
     <dependencies>
         <dependency>

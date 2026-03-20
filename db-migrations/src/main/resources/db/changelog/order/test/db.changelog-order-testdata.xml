@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Order test data - 8 orders covering STM states from order-states.xml:
+        CREATED, PAID, FRAUD_HOLD, SHIPPED, PARTIALLY_SHIPPED, DELIVERED,
+        CANCELLED, RETURN_REQUESTED, ON_HOLD, DELIVERY_FAILED
+
+        Shared IDs: ord-1..ord-8 (referenced by payment, shipping, settlement, fulfillment, return)
+
+        NOTE: Columns paid_at, shipped_at, delivered_at, cancelled_at, cancellation_window_ends_at
+        are NOT in the orders schema. Timestamps are tracked via state_entry_time and
+        order_status_history table. Removed to match actual DB schema.
+    -->
+    <changeSet id="order-test-data" author="homebase-test">
+
+        <!-- ord-1: DELIVERED - Priya's electronics order, completed lifecycle -->
+        <insert tableName="orders">
+            <column name="id" value="ord-1"/>
+            <column name="order_number" value="ORD-20260310-001"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="subtotal" valueNumeric="1499.00"/>
+            <column name="tax_amount" valueNumeric="269.82"/>
+            <column name="shipping_amount" valueNumeric="0.00"/>
+            <column name="discount_amount" valueNumeric="200.00"/>
+            <column name="total_amount" valueNumeric="1568.82"/>
+            <column name="currency" value="INR"/>
+            <column name="item_count" valueNumeric="2"/>
+            <column name="coupon_codes" value="FLAT200"/>
+            <column name="payment_id" value="pay-1"/>
+            <column name="checkout_id" value="chk-1"/>
+            <column name="shipping_address" value='{"name":"Priya Sharma","line1":"Flat 402, Sagar Apartments","city":"Mumbai","state":"Maharashtra","pincode":"400050"}'/>
+            <column name="invoice_number" value="INV-20260310-001"/>
+            <column name="tracking_number" value="DELHIVERY-TRK-001"/>
+            <column name="carrier" value="Delhivery"/>
+            <column name="estimated_delivery_date" valueDate="2026-03-14T00:00:00"/>
+            <column name="actual_delivery_date" valueDate="2026-03-13T14:00:00"/>
+            <column name="state_id" value="DELIVERED"/>
+            <column name="flow_id" value="order-flow"/>
+            <column name="created_time" valueDate="2026-03-10T14:30:00"/>
+            <column name="last_modified_time" valueDate="2026-03-13T14:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="6"/>
+        </insert>
+
+        <!-- ord-2: SHIPPED - Rahul's gadget order, in transit -->
+        <insert tableName="orders">
+            <column name="id" value="ord-2"/>
+            <column name="order_number" value="ORD-20260311-002"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="subtotal" valueNumeric="4990.00"/>
+            <column name="tax_amount" valueNumeric="898.20"/>
+            <column name="shipping_amount" valueNumeric="0.00"/>
+            <column name="discount_amount" valueNumeric="498.50"/>
+            <column name="total_amount" valueNumeric="5389.70"/>
+            <column name="currency" value="INR"/>
+            <column name="item_count" valueNumeric="1"/>
+            <column name="coupon_codes" value="ELEC15"/>
+            <column name="payment_id" value="pay-2"/>
+            <column name="shipping_address" value='{"name":"Rahul Verma","line1":"B-12, Vasant Kunj","city":"New Delhi","state":"Delhi","pincode":"110070"}'/>
+            <column name="invoice_number" value="INV-20260311-002"/>
+            <column name="tracking_number" value="BLUEDART-TRK-002"/>
+            <column name="carrier" value="Blue Dart"/>
+            <column name="estimated_delivery_date" valueDate="2026-03-15T00:00:00"/>
+            <column name="state_id" value="SHIPPED"/>
+            <column name="flow_id" value="order-flow"/>
+            <column name="created_time" valueDate="2026-03-11T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-12T09:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <!-- ord-3: PAID - Anita's order, awaiting fulfillment -->
+        <insert tableName="orders">
+            <column name="id" value="ord-3"/>
+            <column name="order_number" value="ORD-20260312-003"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="subtotal" valueNumeric="2397.00"/>
+            <column name="tax_amount" valueNumeric="431.46"/>
+            <column name="shipping_amount" valueNumeric="49.00"/>
+            <column name="total_amount" valueNumeric="2677.46"/>
+            <column name="currency" value="INR"/>
+            <column name="item_count" valueNumeric="3"/>
+            <column name="payment_id" value="pay-3"/>
+            <column name="shipping_address" value='{"name":"Anita Desai","line1":"No. 45, 3rd Cross","city":"Bangalore","state":"Karnataka","pincode":"560038"}'/>
+            <column name="invoice_number" value="INV-20260312-003"/>
+            <column name="state_id" value="PAID"/>
+            <column name="flow_id" value="order-flow"/>
+            <column name="created_time" valueDate="2026-03-12T09:15:00"/>
+            <column name="last_modified_time" valueDate="2026-03-12T09:20:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- ord-4: CANCELLED - Cancelled within cancellation window -->
+        <insert tableName="orders">
+            <column name="id" value="ord-4"/>
+            <column name="order_number" value="ORD-20260308-004"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="subtotal" valueNumeric="799.00"/>
+            <column name="tax_amount" valueNumeric="143.82"/>
+            <column name="total_amount" valueNumeric="942.82"/>
+            <column name="currency" value="INR"/>
+            <column name="item_count" valueNumeric="1"/>
+            <column name="payment_id" value="pay-4"/>
+            <column name="cancel_reason" value="Found cheaper price on another platform"/>
+            <column name="state_id" value="CANCELLED"/>
+            <column name="flow_id" value="order-flow"/>
+            <column name="created_time" valueDate="2026-03-08T14:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-08T16:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <!-- ord-5: RETURN_REQUESTED - Delivered but return initiated -->
+        <insert tableName="orders">
+            <column name="id" value="ord-5"/>
+            <column name="order_number" value="ORD-20260301-005"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="subtotal" valueNumeric="3499.00"/>
+            <column name="tax_amount" valueNumeric="629.82"/>
+            <column name="total_amount" valueNumeric="4128.82"/>
+            <column name="currency" value="INR"/>
+            <column name="item_count" valueNumeric="1"/>
+            <column name="payment_id" value="pay-5"/>
+            <column name="shipping_address" value='{"name":"Rahul Verma","line1":"B-12, Vasant Kunj","city":"New Delhi","state":"Delhi","pincode":"110070"}'/>
+            <column name="invoice_number" value="INV-20260301-005"/>
+            <column name="tracking_number" value="DELHIVERY-TRK-005"/>
+            <column name="carrier" value="Delhivery"/>
+            <column name="state_id" value="RETURN_REQUESTED"/>
+            <column name="flow_id" value="order-flow"/>
+            <column name="created_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-08T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="7"/>
+        </insert>
+
+        <!-- ord-6: CREATED - Just placed, payment not yet initiated -->
+        <insert tableName="orders">
+            <column name="id" value="ord-6"/>
+            <column name="order_number" value="ORD-20260315-006"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="subtotal" valueNumeric="599.00"/>
+            <column name="tax_amount" valueNumeric="107.82"/>
+            <column name="total_amount" valueNumeric="706.82"/>
+            <column name="currency" value="INR"/>
+            <column name="item_count" valueNumeric="1"/>
+            <column name="state_id" value="CREATED"/>
+            <column name="flow_id" value="order-flow"/>
+            <column name="created_time" valueDate="2026-03-15T18:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-15T18:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+        <!-- ord-7: FRAUD_HOLD - High-value order flagged for fraud review -->
+        <insert tableName="orders">
+            <column name="id" value="ord-7"/>
+            <column name="order_number" value="ORD-20260315-007"/>
+            <column name="customer_id" value="user-4"/>
+            <column name="subtotal" valueNumeric="52000.00"/>
+            <column name="tax_amount" valueNumeric="9360.00"/>
+            <column name="total_amount" valueNumeric="61360.00"/>
+            <column name="currency" value="INR"/>
+            <column name="item_count" valueNumeric="5"/>
+            <column name="notes" value="Risk score 85: new account, high value, first order"/>
+            <column name="state_id" value="FRAUD_HOLD"/>
+            <column name="flow_id" value="order-flow"/>
+            <column name="created_time" valueDate="2026-03-15T20:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-15T20:01:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- ord-8: DELIVERY_FAILED - Multiple delivery attempts failed -->
+        <insert tableName="orders">
+            <column name="id" value="ord-8"/>
+            <column name="order_number" value="ORD-20260305-008"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="subtotal" valueNumeric="1299.00"/>
+            <column name="tax_amount" valueNumeric="233.82"/>
+            <column name="total_amount" valueNumeric="1532.82"/>
+            <column name="currency" value="INR"/>
+            <column name="item_count" valueNumeric="1"/>
+            <column name="payment_id" value="pay-8"/>
+            <column name="shipping_address" value='{"name":"Anita Desai","line1":"No. 45, 3rd Cross","city":"Bangalore","state":"Karnataka","pincode":"560038"}'/>
+            <column name="invoice_number" value="INV-20260305-008"/>
+            <column name="tracking_number" value="ECOM-TRK-008"/>
+            <column name="carrier" value="Ecom Express"/>
+            <column name="state_id" value="DELIVERY_FAILED"/>
+            <column name="flow_id" value="order-flow"/>
+            <column name="created_time" valueDate="2026-03-05T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-10T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="6"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- ORDER ITEMS                                                   -->
+        <!-- ============================================================ -->
+        <insert tableName="order_items">
+            <column name="id" value="oi-1a"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="product_id" value="prod-1"/>
+            <column name="variant_id" value="var-1a"/>
+            <column name="sku" value="SKU-001"/>
+            <column name="product_name" value="Widget A"/>
+            <column name="quantity" valueNumeric="2"/>
+            <column name="unit_price" valueNumeric="500.00"/>
+            <column name="total_price" valueNumeric="1000.00"/>
+            <column name="supplier_id" value="supplier-1"/>
+            <column name="supplier_name" value="GreenLeaf Organics"/>
+            <column name="tax_amount" valueNumeric="180.00"/>
+            <column name="hsn_code" value="8471"/>
+            <column name="return_eligible" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" value="oi-1b"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="product_id" value="prod-2"/>
+            <column name="variant_id" value="var-2a"/>
+            <column name="sku" value="SKU-002"/>
+            <column name="product_name" value="Gadget B"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="499.00"/>
+            <column name="total_price" valueNumeric="499.00"/>
+            <column name="supplier_id" value="supplier-2"/>
+            <column name="supplier_name" value="TechVista Electronics"/>
+            <column name="tax_amount" valueNumeric="89.82"/>
+            <column name="hsn_code" value="8517"/>
+            <column name="return_eligible" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" value="oi-2a"/>
+            <column name="order_id" value="ord-2"/>
+            <column name="product_id" value="prod-4"/>
+            <column name="variant_id" value="var-4a"/>
+            <column name="sku" value="SKU-004"/>
+            <column name="product_name" value="SmartWatch Pro"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="4990.00"/>
+            <column name="total_price" valueNumeric="4990.00"/>
+            <column name="supplier_id" value="supplier-2"/>
+            <column name="tax_amount" valueNumeric="898.20"/>
+            <column name="hsn_code" value="9102"/>
+            <column name="return_eligible" valueBoolean="false"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" value="oi-3a"/>
+            <column name="order_id" value="ord-3"/>
+            <column name="product_id" value="prod-3"/>
+            <column name="variant_id" value="var-3a"/>
+            <column name="sku" value="SKU-003"/>
+            <column name="product_name" value="Gizmo C"/>
+            <column name="quantity" valueNumeric="3"/>
+            <column name="unit_price" valueNumeric="799.00"/>
+            <column name="total_price" valueNumeric="2397.00"/>
+            <column name="supplier_id" value="supplier-1"/>
+            <column name="tax_amount" valueNumeric="431.46"/>
+            <column name="hsn_code" value="8471"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" value="oi-5a"/>
+            <column name="order_id" value="ord-5"/>
+            <column name="product_id" value="prod-5"/>
+            <column name="variant_id" value="var-5a"/>
+            <column name="sku" value="SKU-005"/>
+            <column name="product_name" value="Bluetooth Speaker"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="3499.00"/>
+            <column name="total_price" valueNumeric="3499.00"/>
+            <column name="supplier_id" value="supplier-2"/>
+            <column name="tax_amount" valueNumeric="629.82"/>
+            <column name="hsn_code" value="8518"/>
+            <column name="return_eligible" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- ORDER ADDRESSES                                               -->
+        <!-- ============================================================ -->
+        <insert tableName="order_addresses">
+            <column name="id" value="oa-1-ship"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="address_type" value="SHIPPING"/>
+            <column name="name" value="Priya Sharma"/>
+            <column name="phone" value="+919876543210"/>
+            <column name="line1" value="Flat 402, Sagar Apartments"/>
+            <column name="line2" value="Bandra West"/>
+            <column name="city" value="Mumbai"/>
+            <column name="state" value="Maharashtra"/>
+            <column name="pincode" value="400050"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="order_addresses">
+            <column name="id" value="oa-2-ship"/>
+            <column name="order_id" value="ord-2"/>
+            <column name="address_type" value="SHIPPING"/>
+            <column name="name" value="Rahul Verma"/>
+            <column name="phone" value="+919876543211"/>
+            <column name="line1" value="B-12, Vasant Kunj"/>
+            <column name="city" value="New Delhi"/>
+            <column name="state" value="Delhi"/>
+            <column name="pincode" value="110070"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- ORDER STATUS HISTORY                                          -->
+        <!-- ============================================================ -->
+        <insert tableName="order_status_history">
+            <column name="id" value="osh-1a"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="from_state" value="CREATED"/>
+            <column name="to_state" value="PAID"/>
+            <column name="changed_by" value="SYSTEM"/>
+            <column name="reason" value="Payment confirmed via Razorpay"/>
+            <column name="created_time" valueDate="2026-03-10T14:32:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="order_status_history">
+            <column name="id" value="osh-1b"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="from_state" value="PAID"/>
+            <column name="to_state" value="SHIPPED"/>
+            <column name="changed_by" value="SYSTEM"/>
+            <column name="created_time" valueDate="2026-03-11T08:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="order_status_history">
+            <column name="id" value="osh-1c"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="from_state" value="SHIPPED"/>
+            <column name="to_state" value="DELIVERED"/>
+            <column name="changed_by" value="SYSTEM"/>
+            <column name="created_time" valueDate="2026-03-13T14:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="order_status_history">
+            <column name="id" value="osh-4a"/>
+            <column name="order_id" value="ord-4"/>
+            <column name="from_state" value="PAID"/>
+            <column name="to_state" value="CANCELLED"/>
+            <column name="changed_by" value="user-1"/>
+            <column name="reason" value="Customer requested cancellation"/>
+            <column name="created_time" valueDate="2026-03-08T16:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- ORDER ACTIVITY LOG                                            -->
+        <!-- ============================================================ -->
+        <insert tableName="order_activity">
+            <column name="id" value="oact-1"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="activity_name" value="create"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Order created from checkout chk-1"/>
+            <column name="created_time" valueDate="2026-03-10T14:30:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="order_activity">
+            <column name="id" value="oact-2"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="activity_name" value="paymentSucceeded"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Razorpay payment pay-1 confirmed"/>
+            <column name="created_time" valueDate="2026-03-10T14:32:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="order_activity">
+            <column name="id" value="oact-3"/>
+            <column name="order_id" value="ord-4"/>
+            <column name="activity_name" value="cancel"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Cancelled by customer within cancellation window"/>
+            <column name="created_time" valueDate="2026-03-08T16:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

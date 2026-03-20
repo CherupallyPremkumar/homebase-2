@@ -2,8 +2,8 @@ package com.homebase.ecom.catalog.service.impl;
 
 import com.homebase.ecom.catalog.model.Collection;
 import com.homebase.ecom.catalog.repository.CollectionRepository;
-import com.homebase.ecom.catalog.domain.port.in.CollectionService;
-import com.homebase.ecom.catalog.domain.service.CatalogPolicyValidator;
+import com.homebase.ecom.catalog.service.CollectionService;
+import com.homebase.ecom.catalog.service.CatalogPolicyValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

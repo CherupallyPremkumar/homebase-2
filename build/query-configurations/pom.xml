@@ -12,7 +12,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>query-configurations</artifactId>
-    <name>Query Configurations</name>
+    <name>query-configurations</name>
     <description>Query Configurations - contains only configurations for all environments</description>
 
     <dependencies>

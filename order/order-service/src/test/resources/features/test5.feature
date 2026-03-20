@@ -11,7 +11,10 @@ When I POST a REST request to URL "/order" with payload
     "description": "Refund from completed",
     "customerId": "cust-test5",
     "totalAmount": 900,
-    "currency": "INR"
+    "currency": "INR",
+    "items": [
+        { "productId": "prod-t5", "productName": "Test Item", "quantity": 1, "unitPrice": 900 }
+    ]
 }
 """
 Then store "$.payload.mutatedEntity.id" from response to "id"

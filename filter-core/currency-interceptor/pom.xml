@@ -11,7 +11,7 @@
     <artifactId>currency-interceptor</artifactId>
     <packaging>jar</packaging>
 
-    <name>currency</name>
+    <name>currency-interceptor</name>
 
 
     <properties>

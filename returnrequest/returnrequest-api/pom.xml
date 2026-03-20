@@ -13,7 +13,7 @@
 	<artifactId>returnrequest-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Returnrequest API Model and Interfaces</name>
+	<name>returnrequest-api</name>
 
 	<dependencies>
 		<dependency>

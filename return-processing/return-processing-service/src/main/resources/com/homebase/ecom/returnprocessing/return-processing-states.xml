@@ -1,89 +1,173 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
   <default-transition-action componentName="returnProcessingBaseTransitionAction"/>
 
   <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
 
-  <event-information eventId='schedulePickup' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='receiveItem' meta-acls="WAREHOUSE" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='restockInventory' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='adjustSettlement' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='processRefund' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='notifyCustomer' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='retry' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- Return Processing Saga — orchestrates:                                 -->
+  <!--   pickup → receive → inspect → restock → adjust settlement → refund   -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (consumed via Kafka):                                  -->
+  <!--   returnrequest.APPROVED → initiates this saga                         -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (published via PostSaveHook → Kafka):                  -->
+  <!--   INVENTORY_RESTOCKED   → inventory.returnStock                        -->
+  <!--   SETTLEMENT_ADJUSTED   → settlement.adjust                           -->
+  <!--   REFUNDED              → payment.initiateRefund                       -->
+  <!--   COMPLETED             → returnrequest.completeReturn                 -->
+  <!--   COMPENSATION_DONE     → inventory.releaseReservedStock               -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <event-information eventId='schedulePickup'    meta-acls="SYSTEM"    meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='receiveItem'       meta-acls="WAREHOUSE" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='inspectItem'       meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.returnprocessing.dto.InspectItemPayload"/>
+  <event-information eventId='restockInventory'  meta-acls="SYSTEM"    meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='adjustSettlement'  meta-acls="SYSTEM"    meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='processRefund'     meta-acls="SYSTEM"    meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='notifyCustomer'    meta-acls="SYSTEM"    meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='fail'              meta-acls="SYSTEM"    meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='cancel'            meta-acls="SYSTEM,ADMIN" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='compensate'        meta-acls="SYSTEM"    meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='retry'             meta-acls="SYSTEM"    meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='rejectItem'        meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.returnprocessing.dto.RejectItemPayload"/>
 
   <flow id='return-processing-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="returnProcessingEntryAction" />
     <exit-action componentName="returnProcessingExitAction" />
 
-    <!-- ========== INITIAL STATE ========== -->
-    <status id='INITIATED' initialState='true' meta-mainPath="true" description="Return processing saga initiated">
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- HAPPY PATH: INITIATED → PICKUP_SCHEDULED → ITEM_RECEIVED           -->
+    <!--   → CHECK_ITEM_CONDITION → INVENTORY_RESTOCKED → SETTLEMENT_ADJUSTED -->
+    <!--   → REFUNDED → COMPLETED                                           -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <status id='INITIATED' initialState='true' meta-mainPath="true"
+            description="Return processing saga initiated">
       <on eventId='schedulePickup'
           componentName="returnProcessingSchedulePickupAction"
           newStateId='PICKUP_SCHEDULED'
-          meta-mainPath="true"
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='fail'
+          componentName="returnProcessingFailAction"
+          newStateId='FAILED'
           meta-acls="SYSTEM"/>
+      <on eventId='cancel'
+          componentName="returnProcessingCancelAction"
+          newStateId='CANCELLING'
+          meta-acls="SYSTEM,ADMIN"/>
     </status>
 
-    <!-- ========== PICKUP SCHEDULED ========== -->
-    <status id='PICKUP_SCHEDULED' meta-mainPath="true" description="Return pickup has been scheduled with carrier">
+    <status id='PICKUP_SCHEDULED' meta-mainPath="true"
+            description="Return pickup scheduled with carrier">
       <on eventId='receiveItem'
           componentName="returnProcessingReceiveItemAction"
           newStateId='ITEM_RECEIVED'
-          meta-mainPath="true"
-          meta-acls="WAREHOUSE"/>
+          meta-mainPath="true" meta-acls="WAREHOUSE"/>
+      <on eventId='fail'
+          componentName="returnProcessingFailAction"
+          newStateId='FAILED'
+          meta-acls="SYSTEM"/>
+      <on eventId='cancel'
+          componentName="returnProcessingCancelAction"
+          newStateId='CANCELLING'
+          meta-acls="SYSTEM,ADMIN"/>
     </status>
 
-    <!-- ========== ITEM RECEIVED ========== -->
-    <status id='ITEM_RECEIVED' meta-mainPath="true" description="Returned item received at warehouse">
-      <on eventId='restockInventory'
-          componentName="returnProcessingRestockInventoryAction"
-          newStateId='INVENTORY_RESTOCKED'
-          meta-mainPath="true"
+    <status id='ITEM_RECEIVED' meta-mainPath="true"
+            description="Returned item received at warehouse">
+      <on eventId='inspectItem'
+          componentName="returnProcessingInspectItemAction"
+          newStateId='CHECK_ITEM_CONDITION'
+          meta-mainPath="true" meta-acls="WAREHOUSE"/>
+      <on eventId='fail'
+          componentName="returnProcessingFailAction"
+          newStateId='FAILED'
           meta-acls="SYSTEM"/>
     </status>
 
-    <!-- ========== INVENTORY RESTOCKED ========== -->
-    <status id='INVENTORY_RESTOCKED' meta-mainPath="true" description="Returned item restocked in inventory">
+    <!--
+      OGNL auto-state: CHECK_ITEM_CONDITION
+      After warehouse inspection, route based on item condition.
+      If itemCondition == 'GOOD' or itemCondition == 'LIKE_NEW' → restock
+      Else → rejected (damaged/tampered, no restock, partial refund)
+    -->
+    <auto-state id='CHECK_ITEM_CONDITION'
+                componentName='ifAction'
+                condition='transientMap.get("itemCondition") != null and (transientMap.get("itemCondition").equals("GOOD") or transientMap.get("itemCondition").equals("LIKE_NEW"))'
+                then='restockable'
+                else='notRestockable'>
+      <on eventId='restockable' newStateId='INVENTORY_RESTOCKED'/>
+      <on eventId='notRestockable' newStateId='ITEM_REJECTED'/>
+    </auto-state>
+
+    <!-- Item rejected — damaged/tampered, skip restock, proceed to partial refund -->
+    <status id='ITEM_REJECTED'
+            description="Returned item rejected due to condition, partial refund only">
       <on eventId='adjustSettlement'
           componentName="returnProcessingAdjustSettlementAction"
           newStateId='SETTLEMENT_ADJUSTED'
-          meta-mainPath="true"
           meta-acls="SYSTEM"/>
     </status>
 
-    <!-- ========== SETTLEMENT ADJUSTED ========== -->
-    <status id='SETTLEMENT_ADJUSTED' meta-mainPath="true" description="Supplier settlement adjusted for return">
+    <status id='INVENTORY_RESTOCKED' meta-mainPath="true"
+            description="Returned item restocked in inventory">
+      <on eventId='adjustSettlement'
+          componentName="returnProcessingAdjustSettlementAction"
+          newStateId='SETTLEMENT_ADJUSTED'
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+    </status>
+
+    <status id='SETTLEMENT_ADJUSTED' meta-mainPath="true"
+            description="Supplier settlement adjusted for return">
       <on eventId='processRefund'
           componentName="returnProcessingProcessRefundAction"
           newStateId='REFUNDED'
-          meta-mainPath="true"
-          meta-acls="SYSTEM"/>
+          meta-mainPath="true" meta-acls="SYSTEM"/>
     </status>
 
-    <!-- ========== REFUNDED ========== -->
-    <status id='REFUNDED' meta-mainPath="true" description="Customer refund processed">
+    <status id='REFUNDED' meta-mainPath="true"
+            description="Customer refund processed">
       <on eventId='notifyCustomer'
           componentName="returnProcessingNotifyCustomerAction"
           newStateId='COMPLETED'
-          meta-mainPath="true"
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+    </status>
+
+    <status id='COMPLETED' description="Return processing saga completed successfully">
+    </status>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- CANCELLATION / COMPENSATION                                         -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <status id='CANCELLING' description="Return processing being cancelled, compensating steps">
+      <on eventId='compensate'
+          componentName="returnProcessingCompensateAction"
+          newStateId='COMPENSATION_DONE'
           meta-acls="SYSTEM"/>
     </status>
 
-    <!-- ========== COMPLETED (TERMINAL) ========== -->
-    <status id='COMPLETED' description="Return processing saga completed successfully">
-      <!-- Terminal state -->
+    <status id='COMPENSATION_DONE' description="All saga steps compensated">
     </status>
 
-    <!-- ========== FAILED ========== -->
-    <status id='FAILED' description="Return processing failed, can be retried">
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- FAILURE: Can retry or compensate                                    -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <status id='FAILED' description="Return processing failed, can be retried or compensated">
       <on eventId='retry'
           componentName="returnProcessingRetryAction"
           newStateId='INITIATED'
           meta-acls="SYSTEM"/>
+      <on eventId='compensate'
+          componentName="returnProcessingCompensateAction"
+          newStateId='COMPENSATION_DONE'
+          meta-acls="SYSTEM"/>
     </status>
-    <!-- __TERMINAL_STATE__ is used by BDD tests for mandatory activity completion checks -->
+
     <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
     </manual-state>
   </flow>

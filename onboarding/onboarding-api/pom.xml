@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>onboarding-api</artifactId>
-	<name>Onboarding API</name>
+	<name>onboarding-api</name>
 	<description>Onboarding API Module</description>
 
 	<dependencies>

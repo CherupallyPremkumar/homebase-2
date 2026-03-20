@@ -46,7 +46,7 @@ public class RuleEvaluator {
         boolean ruleSatisfied = evaluateRule(promotion, cart);
         if (ruleSatisfied) {
             return new PromotionResult(promotion,
-                    new Money(BigDecimal.valueOf(10.0), cart.getTotalAmount().getCurrency()), true);
+                    Money.of(1000, cart.getTotalAmount().getCurrency()), true);
         } else {
             return PromotionResult.notSatisfied(promotion);
         }

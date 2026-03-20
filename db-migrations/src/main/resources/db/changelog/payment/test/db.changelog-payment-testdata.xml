@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Payment test data — STM states from payment-states.xml:
+        INITIATED, PROCESSING, AWAITING_AUTHENTICATION, SUCCEEDED, FAILED,
+        TIMED_OUT, REFUND_INITIATED, REFUNDED, PARTIALLY_REFUNDED,
+        COD_PENDING, CHARGEBACK_INITIATED, SETTLED
+
+        Shared IDs: pay-1..pay-8 (referenced by orders, settlement, reconciliation)
+    -->
+    <changeSet id="payment-test-data" author="homebase-test">
+
+        <!-- pay-1: SUCCEEDED — Razorpay UPI for ord-1 -->
+        <insert tableName="payment">
+            <column name="id" value="pay-1"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="amount" valueNumeric="1568.82"/>
+            <column name="currency" value="INR"/>
+            <column name="payment_method" value="UPI"/>
+            <column name="payment_method_type" value="UPI"/>
+            <column name="upi_id" value="priya@okicici"/>
+            <column name="gateway_name" value="RAZORPAY"/>
+            <column name="gateway_order_id" value="order_RPay_001"/>
+            <column name="gateway_payment_id" value="pay_RPay_001"/>
+            <column name="gateway_transaction_id" value="txn_RPay_001"/>
+            <column name="idempotency_key" value="idem-pay-1"/>
+            <column name="checkout_id" value="chk-1"/>
+            <column name="state_id" value="SUCCEEDED"/>
+            <column name="flow_id" value="payment-flow"/>
+            <column name="created_time" valueDate="2026-03-10T14:30:00"/>
+            <column name="last_modified_time" valueDate="2026-03-10T14:32:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- pay-2: SUCCEEDED — Blue Dart COD collected → settled, for ord-2 -->
+        <insert tableName="payment">
+            <column name="id" value="pay-2"/>
+            <column name="order_id" value="ord-2"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="amount" valueNumeric="5389.70"/>
+            <column name="currency" value="INR"/>
+            <column name="payment_method" value="CARD"/>
+            <column name="payment_method_type" value="CREDIT_CARD"/>
+            <column name="card_last_four" value="4242"/>
+            <column name="card_brand" value="VISA"/>
+            <column name="gateway_name" value="RAZORPAY"/>
+            <column name="gateway_order_id" value="order_RPay_002"/>
+            <column name="gateway_payment_id" value="pay_RPay_002"/>
+            <column name="gateway_transaction_id" value="txn_RPay_002"/>
+            <column name="idempotency_key" value="idem-pay-2"/>
+            <column name="state_id" value="SUCCEEDED"/>
+            <column name="flow_id" value="payment-flow"/>
+            <column name="created_time" valueDate="2026-03-11T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-11T10:05:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- pay-3: SUCCEEDED — for ord-3 -->
+        <insert tableName="payment">
+            <column name="id" value="pay-3"/>
+            <column name="order_id" value="ord-3"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="amount" valueNumeric="2677.46"/>
+            <column name="currency" value="INR"/>
+            <column name="payment_method" value="UPI"/>
+            <column name="upi_id" value="anita@ybl"/>
+            <column name="gateway_name" value="CASHFREE"/>
+            <column name="gateway_payment_id" value="pay_CF_003"/>
+            <column name="idempotency_key" value="idem-pay-3"/>
+            <column name="state_id" value="SUCCEEDED"/>
+            <column name="flow_id" value="payment-flow"/>
+            <column name="created_time" valueDate="2026-03-12T09:15:00"/>
+            <column name="last_modified_time" valueDate="2026-03-12T09:20:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- pay-4: REFUNDED — Full refund for cancelled ord-4 -->
+        <insert tableName="payment">
+            <column name="id" value="pay-4"/>
+            <column name="order_id" value="ord-4"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="amount" valueNumeric="942.82"/>
+            <column name="currency" value="INR"/>
+            <column name="payment_method" value="UPI"/>
+            <column name="gateway_name" value="RAZORPAY"/>
+            <column name="gateway_payment_id" value="pay_RPay_004"/>
+            <column name="idempotency_key" value="idem-pay-4"/>
+            <column name="refund_amount" valueNumeric="942.82"/>
+            <column name="refund_reason" value="Order cancelled by customer"/>
+            <column name="state_id" value="REFUNDED"/>
+            <column name="flow_id" value="payment-flow"/>
+            <column name="created_time" valueDate="2026-03-08T14:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-09T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="6"/>
+        </insert>
+
+        <!-- pay-5: REFUND_INITIATED — Return in progress for ord-5 -->
+        <insert tableName="payment">
+            <column name="id" value="pay-5"/>
+            <column name="order_id" value="ord-5"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="amount" valueNumeric="4128.82"/>
+            <column name="currency" value="INR"/>
+            <column name="payment_method" value="CARD"/>
+            <column name="card_last_four" value="1234"/>
+            <column name="card_brand" value="MASTERCARD"/>
+            <column name="gateway_name" value="RAZORPAY"/>
+            <column name="gateway_payment_id" value="pay_RPay_005"/>
+            <column name="idempotency_key" value="idem-pay-5"/>
+            <column name="refund_amount" valueNumeric="4128.82"/>
+            <column name="refund_reason" value="Return approved — defective product"/>
+            <column name="state_id" value="REFUND_INITIATED"/>
+            <column name="flow_id" value="payment-flow"/>
+            <column name="created_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-09T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="5"/>
+        </insert>
+
+        <!-- pay-6: FAILED — Card declined -->
+        <insert tableName="payment">
+            <column name="id" value="pay-6"/>
+            <column name="order_id" value="ord-6"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="amount" valueNumeric="706.82"/>
+            <column name="currency" value="INR"/>
+            <column name="payment_method" value="CARD"/>
+            <column name="card_last_four" value="9876"/>
+            <column name="gateway_name" value="RAZORPAY"/>
+            <column name="failure_reason" value="Card declined: insufficient funds"/>
+            <column name="retry_count" valueNumeric="2"/>
+            <column name="idempotency_key" value="idem-pay-6"/>
+            <column name="state_id" value="FAILED"/>
+            <column name="flow_id" value="payment-flow"/>
+            <column name="created_time" valueDate="2026-03-15T18:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-15T18:05:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <!-- pay-7: CHARGEBACK_INITIATED -->
+        <insert tableName="payment">
+            <column name="id" value="pay-7"/>
+            <column name="order_id" value="ord-8"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="amount" valueNumeric="1532.82"/>
+            <column name="currency" value="INR"/>
+            <column name="payment_method" value="CARD"/>
+            <column name="gateway_name" value="RAZORPAY"/>
+            <column name="gateway_payment_id" value="pay_RPay_007"/>
+            <column name="idempotency_key" value="idem-pay-7"/>
+            <column name="state_id" value="CHARGEBACK_INITIATED"/>
+            <column name="flow_id" value="payment-flow"/>
+            <column name="created_time" valueDate="2026-03-05T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-12T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="5"/>
+        </insert>
+
+        <!-- pay-8: SETTLED — for ord-8 original payment before chargeback -->
+        <insert tableName="payment">
+            <column name="id" value="pay-8"/>
+            <column name="order_id" value="ord-8"/>
+            <column name="customer_id" value="user-3"/>
+            <column name="amount" valueNumeric="1532.82"/>
+            <column name="currency" value="INR"/>
+            <column name="payment_method" value="UPI"/>
+            <column name="gateway_name" value="CASHFREE"/>
+            <column name="gateway_payment_id" value="pay_CF_008"/>
+            <column name="idempotency_key" value="idem-pay-8"/>
+            <column name="state_id" value="SETTLED"/>
+            <column name="flow_id" value="payment-flow"/>
+            <column name="created_time" valueDate="2026-03-05T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-08T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <!-- Payment Refunds -->
+        <insert tableName="payment_refunds">
+            <column name="id" value="refund-1"/>
+            <column name="payment_id" value="pay-4"/>
+            <column name="amount" valueNumeric="942.82"/>
+            <column name="currency" value="INR"/>
+            <column name="reason" value="Order cancelled by customer"/>
+            <column name="refund_type" value="FULL"/>
+            <column name="gateway_refund_id" value="rfnd_RPay_001"/>
+            <column name="status" value="PROCESSED"/>
+            <column name="processed_at" valueDate="2026-03-09T10:00:00"/>
+            <column name="created_time" valueDate="2026-03-08T16:05:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Saved Payment Methods -->
+        <insert tableName="saved_payment_methods">
+            <column name="id" value="spm-1"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="method_type" value="UPI"/>
+            <column name="display_name" value="priya@okicici"/>
+            <column name="upi_id" value="priya@okicici"/>
+            <column name="gateway_token" value="tok_upi_001"/>
+            <column name="is_default" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="saved_payment_methods">
+            <column name="id" value="spm-2"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="method_type" value="CREDIT_CARD"/>
+            <column name="display_name" value="Visa ending 4242"/>
+            <column name="card_last_four" value="4242"/>
+            <column name="card_brand" value="VISA"/>
+            <column name="card_expiry_month" valueNumeric="12"/>
+            <column name="card_expiry_year" valueNumeric="2028"/>
+            <column name="gateway_token" value="tok_card_002"/>
+            <column name="is_default" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Payment Activity -->
+        <insert tableName="payment_activity_log">
+            <column name="id" valueNumeric="1"/>
+            <column name="payment_id" value="pay-1"/>
+            <column name="event_id" value="process"/>
+            <column name="comment" value="UPI payment initiated via Razorpay"/>
+            <column name="success" valueBoolean="true"/>
+        </insert>
+        <insert tableName="payment_activity_log">
+            <column name="id" valueNumeric="2"/>
+            <column name="payment_id" value="pay-6"/>
+            <column name="event_id" value="process"/>
+            <column name="comment" value="Card declined: insufficient funds"/>
+            <column name="success" valueBoolean="false"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

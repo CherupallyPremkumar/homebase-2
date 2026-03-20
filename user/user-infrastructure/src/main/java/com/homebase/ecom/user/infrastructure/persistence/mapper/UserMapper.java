@@ -9,6 +9,7 @@ import com.homebase.ecom.user.infrastructure.persistence.entity.PreferencesJpaEn
 import com.homebase.ecom.user.infrastructure.persistence.entity.UserActivityLogEntity;
 import com.homebase.ecom.user.infrastructure.persistence.entity.UserJpaEntity;
 
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -25,8 +26,15 @@ public class UserMapper {
         model.setId(entity.getId());
         model.setCreatedTime(entity.getCreatedTime());
         model.setLastModifiedTime(entity.getLastModifiedTime());
-        model.setVersion(entity.getVersion());
+        model.setLastModifiedBy(entity.getLastModifiedBy());
+        model.setCreatedBy(entity.getCreatedBy());
+        model.setVersion(entity.getVersion() != null ? entity.getVersion() : 0L);
+
+        // STM state fields
         model.setCurrentState(entity.getCurrentState());
+        model.setStateEntryTime(entity.getStateEntryTime());
+        model.setSlaTendingLate(entity.getSlaTendingLate());
+        model.setSlaLate(entity.getSlaLate());
 
         // User fields
         model.setKeycloakId(entity.getKeycloakId());
@@ -43,6 +51,16 @@ public class UserMapper {
         model.setSuspendReason(entity.getSuspendReason());
         model.setTenant(entity.tenant);
 
+        // Extended profile (DB: user-004)
+        model.setProfileImageUrl(entity.getProfileImageUrl());
+        model.setDateOfBirth(entity.getDateOfBirth());
+        model.setGender(entity.getGender());
+        model.setEmailVerified(entity.isEmailVerified());
+        model.setPhoneVerified(entity.isPhoneVerified());
+        model.setReferralCode(entity.getReferralCode());
+        model.setReferredBy(entity.getReferredBy());
+        model.setCustomerTier(entity.getCustomerTier());
+
         if (entity.getPreferences() != null) {
             model.setPreferences(toModel(entity.getPreferences()));
         }
@@ -54,9 +72,9 @@ public class UserMapper {
         }
 
         if (entity.getActivities() != null) {
-            model.getActivities().addAll(entity.getActivities().stream()
+            model.setActivities(new ArrayList<>(entity.getActivities().stream()
                     .map(this::toModel)
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toList())));
         }
 
         return model;
@@ -70,8 +88,15 @@ public class UserMapper {
         entity.setId(model.getId());
         entity.setCreatedTime(model.getCreatedTime());
         entity.setLastModifiedTime(model.getLastModifiedTime());
+        entity.setLastModifiedBy(model.getLastModifiedBy());
+        entity.setCreatedBy(model.getCreatedBy());
         entity.setVersion(model.getVersion() != null ? model.getVersion() : 0L);
+
+        // STM state fields
         entity.setCurrentState(model.getCurrentState());
+        entity.setStateEntryTime(model.getStateEntryTime());
+        entity.setSlaTendingLate(model.getSlaTendingLate());
+        entity.setSlaLate(model.getSlaLate());
 
         // User fields
         entity.setKeycloakId(model.getKeycloakId());
@@ -87,6 +112,16 @@ public class UserMapper {
         entity.setLockReason(model.getLockReason());
         entity.setSuspendReason(model.getSuspendReason());
         entity.tenant = model.getTenant();
+
+        // Extended profile (DB: user-004)
+        entity.setProfileImageUrl(model.getProfileImageUrl());
+        entity.setDateOfBirth(model.getDateOfBirth());
+        entity.setGender(model.getGender());
+        entity.setEmailVerified(model.isEmailVerified());
+        entity.setPhoneVerified(model.isPhoneVerified());
+        entity.setReferralCode(model.getReferralCode());
+        entity.setReferredBy(model.getReferredBy());
+        entity.setCustomerTier(model.getCustomerTier());
 
         if (model.getPreferences() != null) {
             entity.setPreferences(toEntity(model.getPreferences()));
@@ -118,6 +153,7 @@ public class UserMapper {
         model.setCreatedTime(entity.getCreatedTime());
         model.setLastModifiedTime(entity.getLastModifiedTime());
         model.setVersion(entity.getVersion());
+        model.setTenant(entity.tenant);
 
         model.setLabel(entity.getLabel());
         model.setLine1(entity.getLine1());
@@ -137,6 +173,7 @@ public class UserMapper {
         entity.setCreatedTime(model.getCreatedTime());
         entity.setLastModifiedTime(model.getLastModifiedTime());
         entity.setVersion(model.getVersion() != null ? model.getVersion() : 0L);
+        entity.tenant = model.getTenant();
 
         entity.setLabel(model.getLabel());
         entity.setLine1(model.getLine1());
@@ -178,6 +215,7 @@ public class UserMapper {
         model.setCreatedTime(entity.getCreatedTime());
         model.setLastModifiedTime(entity.getLastModifiedTime());
         model.setVersion(entity.getVersion());
+        model.setTenant(entity.tenant);
         model.setActivityName(entity.getName());
         model.setActivityComment(entity.getComment());
         model.setActivitySuccess(entity.getSuccess());
@@ -191,9 +229,70 @@ public class UserMapper {
         entity.setCreatedTime(model.getCreatedTime());
         entity.setLastModifiedTime(model.getLastModifiedTime());
         entity.setVersion(model.getVersion() != null ? model.getVersion() : 0L);
+        entity.tenant = model.getTenant();
         entity.setName(model.getActivityName());
         entity.setComment(model.getActivityComment());
         entity.setSuccess(model.isActivitySuccess());
         return entity;
+    }
+
+    /**
+     * Merges updated fields from a new entity into an existing managed JPA entity.
+     * Used by ChenileJpaEntityStore to properly update managed entities
+     * and preserve optimistic locking via @Version.
+     */
+    public void mergeEntity(UserJpaEntity existing, UserJpaEntity updated) {
+        // STM state (critical)
+        existing.setCurrentState(updated.getCurrentState());
+        existing.setStateEntryTime(updated.getStateEntryTime());
+        existing.setSlaTendingLate(updated.getSlaTendingLate());
+        existing.setSlaLate(updated.getSlaLate());
+
+        // User fields
+        existing.setKeycloakId(updated.getKeycloakId());
+        existing.setEmail(updated.getEmail());
+        existing.setFirstName(updated.getFirstName());
+        existing.setLastName(updated.getLastName());
+        existing.setPhone(updated.getPhone());
+        existing.setRole(updated.getRole());
+        existing.setDefaultAddressId(updated.getDefaultAddressId());
+        existing.setKycStatus(updated.getKycStatus());
+        existing.setLoginAttempts(updated.getLoginAttempts());
+        existing.setLastLoginAt(updated.getLastLoginAt());
+        existing.setLockReason(updated.getLockReason());
+        existing.setSuspendReason(updated.getSuspendReason());
+        existing.tenant = updated.tenant;
+
+        // Extended profile (DB: user-004)
+        existing.setProfileImageUrl(updated.getProfileImageUrl());
+        existing.setDateOfBirth(updated.getDateOfBirth());
+        existing.setGender(updated.getGender());
+        existing.setEmailVerified(updated.isEmailVerified());
+        existing.setPhoneVerified(updated.isPhoneVerified());
+        existing.setReferralCode(updated.getReferralCode());
+        existing.setReferredBy(updated.getReferredBy());
+        existing.setCustomerTier(updated.getCustomerTier());
+
+        // Preferences
+        existing.setPreferences(updated.getPreferences());
+
+        // Audit
+        existing.setLastModifiedBy(updated.getLastModifiedBy());
+        existing.setLastModifiedTime(updated.getLastModifiedTime());
+
+        // Addresses -- replace collection contents
+        existing.getAddresses().clear();
+        if (updated.getAddresses() != null) {
+            for (AddressJpaEntity addr : updated.getAddresses()) {
+                addr.setUser(existing);
+                existing.getAddresses().add(addr);
+            }
+        }
+
+        // Activities -- merge by clearing and re-adding
+        existing.getActivities().clear();
+        if (updated.getActivities() != null) {
+            existing.getActivities().addAll(updated.getActivities());
+        }
     }
 }

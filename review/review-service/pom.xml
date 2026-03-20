@@ -12,7 +12,7 @@
 	<artifactId>review-service</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Review Service Implementations</name>
+	<name>review-service</name>
 
 	<dependencies>
 		<dependency>
@@ -37,11 +37,20 @@
 		</dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
+			<artifactId>chenile-kafka</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
 			<artifactId>chenile-security-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>chenile-security</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>security-interceptor</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -83,7 +92,12 @@
 			<version>3.4.0</version>
 			<scope>test</scope>
 		</dependency>
-			<dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-liquibase</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.homebase.ecom</groupId>
 			<artifactId>db-migrations</artifactId>
 			<version>${revision}</version>

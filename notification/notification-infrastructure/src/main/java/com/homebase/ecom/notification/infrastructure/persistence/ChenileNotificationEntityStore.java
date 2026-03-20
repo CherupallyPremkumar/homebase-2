@@ -9,6 +9,7 @@ import org.chenile.jpautils.store.ChenileJpaEntityStore;
 public class ChenileNotificationEntityStore extends ChenileJpaEntityStore<Notification, NotificationEntity> {
 
     public ChenileNotificationEntityStore(NotificationJpaRepository repository, NotificationMapper mapper) {
-        super(repository, (entity) -> mapper.toModel(entity), (model) -> mapper.toEntity(model));
+        super(repository, (entity) -> mapper.toModel(entity), (model) -> mapper.toEntity(model),
+                (existing, updated) -> mapper.mergeEntity(existing, updated));
     }
 }

@@ -14,5 +14,5 @@ public interface WebhookEventRepository extends JpaRepository<WebhookEvent, Stri
 
     Optional<WebhookEvent> findByGatewayEventId(String gatewayEventId);
 
-    List<WebhookEvent> findByProcessedFalseOrderByCreatedAtAsc();
+    List<WebhookEvent> findByProcessedFalseOrderByCreatedTimeAsc();
 }

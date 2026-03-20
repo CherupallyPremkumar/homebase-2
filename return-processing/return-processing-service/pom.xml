@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>return-processing-service</artifactId>
-    <name>Return Processing Service</name>
+    <name>return-processing-service</name>
 
     <dependencies>
         <dependency>
@@ -77,57 +77,38 @@
             <groupId>org.chenile</groupId>
             <artifactId>chenile-kafka</artifactId>
         </dependency>
-    <dependency>
-			<groupId>org.junit.vintage</groupId>
-			<artifactId>junit-vintage-engine</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>cucumber-utils</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>cucumber-workflow-utils</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>cucumber-sec-utils</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>chenile-security-api</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>chenile-security</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>security-interceptor</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.github.dasniko</groupId>
-			<artifactId>testcontainers-keycloak</artifactId>
-			<version>3.4.0</version>
-			<scope>test</scope>
-		</dependency>
-			<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>db-migrations</artifactId>
-			<version>${revision}</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>cucumber-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>cucumber-workflow-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom</groupId>
+            <artifactId>db-migrations</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

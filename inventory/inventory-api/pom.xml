@@ -13,7 +13,7 @@
 	<artifactId>inventory-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Inventory API Model and Interfaces</name>
+	<name>inventory-api</name>
 
 	<dependencies>
 		<dependency>

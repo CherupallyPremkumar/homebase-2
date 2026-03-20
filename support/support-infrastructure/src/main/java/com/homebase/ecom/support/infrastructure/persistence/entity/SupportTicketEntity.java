@@ -51,6 +51,28 @@ public class SupportTicketEntity extends AbstractJpaStateEntity
     @Column(name = "auto_close_ready")
     private boolean autoCloseReady = false;
 
+    // --- Fields from changeset support-004 ---
+    @Column(name = "channel", length = 50)
+    private String channel = "WEB";
+
+    @Column(name = "related_entity_type", length = 50)
+    private String relatedEntityType;
+
+    @Column(name = "related_entity_id")
+    private String relatedEntityId;
+
+    @Column(name = "satisfaction_rating")
+    private Integer satisfactionRating;
+
+    @Column(name = "resolution_notes", length = 2000)
+    private String resolutionNotes;
+
+    @Column(name = "escalated")
+    private boolean escalated = false;
+
+    @Column(name = "escalation_reason", length = 500)
+    private String escalationReason;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "ticket_id")
     private List<TicketMessageEntity> messages = new ArrayList<>();
@@ -102,6 +124,27 @@ public class SupportTicketEntity extends AbstractJpaStateEntity
 
     public List<SupportTicketActivityLogEntity> getActivities() { return activities; }
     public void setActivities(List<SupportTicketActivityLogEntity> activities) { this.activities = activities; }
+
+    public String getChannel() { return channel; }
+    public void setChannel(String channel) { this.channel = channel; }
+
+    public String getRelatedEntityType() { return relatedEntityType; }
+    public void setRelatedEntityType(String relatedEntityType) { this.relatedEntityType = relatedEntityType; }
+
+    public String getRelatedEntityId() { return relatedEntityId; }
+    public void setRelatedEntityId(String relatedEntityId) { this.relatedEntityId = relatedEntityId; }
+
+    public Integer getSatisfactionRating() { return satisfactionRating; }
+    public void setSatisfactionRating(Integer satisfactionRating) { this.satisfactionRating = satisfactionRating; }
+
+    public String getResolutionNotes() { return resolutionNotes; }
+    public void setResolutionNotes(String resolutionNotes) { this.resolutionNotes = resolutionNotes; }
+
+    public boolean isEscalated() { return escalated; }
+    public void setEscalated(boolean escalated) { this.escalated = escalated; }
+
+    public String getEscalationReason() { return escalationReason; }
+    public void setEscalationReason(String escalationReason) { this.escalationReason = escalationReason; }
 
     // --- Workflow Support ---
 

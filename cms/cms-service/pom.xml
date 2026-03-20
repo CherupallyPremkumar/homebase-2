@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>cms-service</artifactId>
-    <name>CMS Service</name>
+    <name>cms-service</name>
 
     <dependencies>
         <dependency>

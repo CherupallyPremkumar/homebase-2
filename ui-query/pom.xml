@@ -12,7 +12,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>ui-query-service</artifactId>
-	<name>UI Query Service - Storefront and Dashboard Queries</name>
+	<name>ui-query</name>
 	<description>Cross-service joined queries for storefront and admin dashboard</description>
 
 	<dependencies>

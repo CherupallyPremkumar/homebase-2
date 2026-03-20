@@ -1,79 +1,132 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
   <default-transition-action componentName="fulfillmentBaseTransitionAction"/>
 
   <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
 
-  <event-information eventId='reserveInventory' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='createShipment' meta-acls="SYSTEM,WAREHOUSE" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='ship' meta-acls="WAREHOUSE" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='notifyCustomer' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='confirmDelivery' meta-acls="SYSTEM,CUSTOMER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
-  <event-information eventId='retry' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- Fulfillment Saga — orchestrates: inventory → shipment → ship → notify  -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (published via PostSaveHook → Kafka):                  -->
+  <!--   INVENTORY_RESERVED  → shipping.createLabel                           -->
+  <!--   SHIPPED             → order.markShipped, notification.create         -->
+  <!--   COMPLETED           → order.confirmDelivery                          -->
+  <!--   COMPENSATION_DONE   → inventory.releaseReservedStock                 -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <event-information eventId='reserveInventory' meta-acls="SYSTEM"           meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='createShipment'   meta-acls="SYSTEM,WAREHOUSE" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='ship'             meta-acls="WAREHOUSE"        meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='notifyCustomer'   meta-acls="SYSTEM"           meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='confirmDelivery'  meta-acls="SYSTEM,CUSTOMER"  meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='fail'             meta-acls="SYSTEM"           meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='cancel'           meta-acls="SYSTEM,ADMIN"     meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='compensate'       meta-acls="SYSTEM"           meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='retry'            meta-acls="SYSTEM"           meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
 
   <flow id='fulfillment-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="fulfillmentEntryAction" />
     <exit-action componentName="fulfillmentExitAction" />
 
-    <!-- ========== INITIAL STATE ========== -->
-    <status id='INITIATED' initialState='true' meta-mainPath="true" description="Fulfillment saga initiated for order">
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- HAPPY PATH: INITIATED → INVENTORY_RESERVED → SHIPMENT_CREATED      -->
+    <!--             → SHIPPED → CUSTOMER_NOTIFIED → COMPLETED              -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <status id='INITIATED' initialState='true' meta-mainPath="true"
+            description="Fulfillment saga initiated for order">
       <on eventId='reserveInventory'
           componentName='fulfillmentReserveInventoryAction'
           newStateId='INVENTORY_RESERVED'
-          meta-mainPath="true"
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='fail'
+          newStateId='FAILED'
           meta-acls="SYSTEM"/>
+      <on eventId='cancel'
+          newStateId='CANCELLING'
+          meta-acls="SYSTEM,ADMIN"/>
     </status>
 
-    <!-- ========== INVENTORY RESERVED ========== -->
-    <status id='INVENTORY_RESERVED' meta-mainPath="true" description="Inventory reserved for fulfillment">
+    <status id='INVENTORY_RESERVED' meta-mainPath="true"
+            description="Inventory reserved for fulfillment">
       <on eventId='createShipment'
           componentName='fulfillmentCreateShipmentAction'
           newStateId='SHIPMENT_CREATED'
-          meta-mainPath="true"
-          meta-acls="SYSTEM,WAREHOUSE"/>
+          meta-mainPath="true" meta-acls="SYSTEM,WAREHOUSE"/>
+      <on eventId='fail'
+          newStateId='FAILED'
+          meta-acls="SYSTEM"/>
+      <on eventId='cancel'
+          newStateId='CANCELLING'
+          meta-acls="SYSTEM,ADMIN"/>
     </status>
 
-    <!-- ========== SHIPMENT CREATED ========== -->
-    <status id='SHIPMENT_CREATED' meta-mainPath="true" description="Shipment created with carrier">
+    <status id='SHIPMENT_CREATED' meta-mainPath="true"
+            description="Shipment created with carrier">
       <on eventId='ship'
           componentName='fulfillmentShipAction'
           newStateId='SHIPPED'
-          meta-mainPath="true"
-          meta-acls="WAREHOUSE"/>
+          meta-mainPath="true" meta-acls="WAREHOUSE"/>
+      <on eventId='fail'
+          newStateId='FAILED'
+          meta-acls="SYSTEM"/>
+      <on eventId='cancel'
+          newStateId='CANCELLING'
+          meta-acls="SYSTEM,ADMIN"/>
     </status>
 
-    <!-- ========== SHIPPED ========== -->
-    <status id='SHIPPED' meta-mainPath="true" description="Order shipped and in transit">
+    <status id='SHIPPED' meta-mainPath="true"
+            description="Order shipped and in transit">
       <on eventId='notifyCustomer'
           componentName='fulfillmentNotifyCustomerAction'
           newStateId='CUSTOMER_NOTIFIED'
-          meta-mainPath="true"
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='fail'
+          newStateId='FAILED'
           meta-acls="SYSTEM"/>
     </status>
 
-    <!-- ========== CUSTOMER NOTIFIED ========== -->
-    <status id='CUSTOMER_NOTIFIED' meta-mainPath="true" description="Customer notified about shipment status">
+    <status id='CUSTOMER_NOTIFIED' meta-mainPath="true"
+            description="Customer notified about shipment status">
       <on eventId='confirmDelivery'
           componentName='fulfillmentConfirmDeliveryAction'
           newStateId='COMPLETED'
-          meta-mainPath="true"
-          meta-acls="SYSTEM,CUSTOMER"/>
+          meta-mainPath="true" meta-acls="SYSTEM,CUSTOMER"/>
     </status>
 
-    <!-- ========== COMPLETED (TERMINAL) ========== -->
     <status id='COMPLETED' description="Fulfillment completed successfully">
-      <!-- Terminal state -->
     </status>
 
-    <!-- ========== FAILED ========== -->
-    <status id='FAILED' description="Fulfillment failed, can be retried">
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- CANCELLATION: Rolls back completed saga steps in reverse order      -->
+    <!-- PostSaveHook: releases inventory, cancels shipment                  -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <status id='CANCELLING' description="Fulfillment being cancelled, compensating saga steps">
+      <on eventId='compensate'
+          newStateId='COMPENSATION_DONE'
+          meta-acls="SYSTEM"/>
+    </status>
+
+    <status id='COMPENSATION_DONE' description="All saga steps compensated, fulfillment cancelled">
+    </status>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- FAILURE: Can retry from beginning or compensate                     -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <status id='FAILED' description="Fulfillment failed, can be retried or compensated">
       <on eventId='retry'
           componentName='fulfillmentRetryAction'
           newStateId='INITIATED'
           meta-acls="SYSTEM"/>
+      <on eventId='compensate'
+          newStateId='COMPENSATION_DONE'
+          meta-acls="SYSTEM"/>
     </status>
-    <!-- __TERMINAL_STATE__ is used by BDD tests for mandatory activity completion checks -->
+
     <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
     </manual-state>
   </flow>

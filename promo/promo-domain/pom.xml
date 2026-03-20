@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>promo-domain</artifactId>
-    <name>Promo Domain</name>
+    <name>promo-domain</name>
 
     <dependencies>
         <dependency>

@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>payment-stripe</artifactId>
-    <name>Payment Stripe</name>
+    <name>payment-stripe</name>
     <description>Stripe payment gateway implementation</description>
 
     <dependencies>

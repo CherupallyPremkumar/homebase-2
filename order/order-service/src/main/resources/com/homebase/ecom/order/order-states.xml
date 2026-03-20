@@ -4,17 +4,40 @@
 
   <!-- ════════════════════════════════════════════════════════════════════════ -->
   <!-- Event definitions with ACLs and payload types                          -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (consumed via Kafka → PostSaveHook):                   -->
+  <!--   payment.SUCCEEDED    → paymentSucceeded (from payment BC)            -->
+  <!--   payment.FAILED       → paymentFailed (from payment BC)               -->
+  <!--   shipping.DELIVERED   → markDelivered (from shipping BC)              -->
+  <!--   shipping.RETURNED    → deliveryFailed (from shipping BC)             -->
+  <!--   fulfillment.COMPLETED → confirmFulfillment (from fulfillment BC)     -->
+  <!--   returnrequest.APPROVED → requestRefund (from returnrequest BC)       -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (published via PostSaveHook → Kafka):                  -->
+  <!--   order.PAID           → triggers fulfillment saga                     -->
+  <!--   order.CANCELLED      → triggers inventory release, payment refund    -->
+  <!--   order.COMPLETED      → triggers settlement calculation               -->
+  <!--   order.REFUNDED       → triggers settlement adjustment                -->
   <!-- ════════════════════════════════════════════════════════════════════════ -->
-  <event-information eventId='paymentSucceeded' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.order.dto.PaymentSucceededOrderPayload"/>
-  <event-information eventId='paymentFailed' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.order.dto.PaymentFailedOrderPayload"/>
-  <event-information eventId='requestCancellation' meta-acls="CUSTOMER,ADMIN" meta-bodyType="com.homebase.ecom.order.dto.RequestCancellationOrderPayload"/>
-  <event-information eventId='confirmCancellation' meta-acls="ADMIN,SYSTEM" meta-bodyType="com.homebase.ecom.order.dto.ConfirmCancellationOrderPayload"/>
-  <event-information eventId='startProcessing' meta-acls="SYSTEM,WAREHOUSE" meta-bodyType="com.homebase.ecom.order.dto.StartProcessingOrderPayload"/>
-  <event-information eventId='markShipped' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.order.dto.MarkShippedOrderPayload"/>
-  <event-information eventId='markDelivered' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.order.dto.MarkDeliveredOrderPayload"/>
-  <event-information eventId='confirmDelivery' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.order.dto.ConfirmDeliveryOrderPayload"/>
-  <event-information eventId='requestRefund' meta-acls="CUSTOMER,ADMIN" meta-bodyType="com.homebase.ecom.order.dto.RequestRefundOrderPayload"/>
-  <event-information eventId='completeRefund' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.order.dto.CompleteRefundOrderPayload"/>
+
+  <event-information eventId='paymentSucceeded'    meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.order.dto.PaymentSucceededOrderPayload"/>
+  <event-information eventId='paymentFailed'       meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.order.dto.PaymentFailedOrderPayload"/>
+  <event-information eventId='holdForFraud'        meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.order.dto.HoldForFraudOrderPayload"/>
+  <event-information eventId='clearFraud'          meta-acls="ADMIN,SYSTEM"     meta-bodyType="com.homebase.ecom.order.dto.ClearFraudOrderPayload"/>
+  <event-information eventId='confirmFraud'        meta-acls="ADMIN"            meta-bodyType="com.homebase.ecom.order.dto.ConfirmFraudOrderPayload"/>
+  <event-information eventId='requestCancellation' meta-acls="CUSTOMER,ADMIN"   meta-bodyType="com.homebase.ecom.order.dto.RequestCancellationOrderPayload"/>
+  <event-information eventId='confirmCancellation' meta-acls="ADMIN,SYSTEM"     meta-bodyType="com.homebase.ecom.order.dto.ConfirmCancellationOrderPayload"/>
+  <event-information eventId='startProcessing'     meta-acls="SYSTEM,WAREHOUSE" meta-bodyType="com.homebase.ecom.order.dto.StartProcessingOrderPayload"/>
+  <event-information eventId='partialShip'         meta-acls="WAREHOUSE"        meta-bodyType="com.homebase.ecom.order.dto.PartialShipOrderPayload"/>
+  <event-information eventId='markShipped'         meta-acls="WAREHOUSE"        meta-bodyType="com.homebase.ecom.order.dto.MarkShippedOrderPayload"/>
+  <event-information eventId='markDelivered'       meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.order.dto.MarkDeliveredOrderPayload"/>
+  <event-information eventId='confirmDelivery'     meta-acls="CUSTOMER,SYSTEM"  meta-bodyType="com.homebase.ecom.order.dto.ConfirmDeliveryOrderPayload"/>
+  <event-information eventId='deliveryFailed'      meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.order.dto.DeliveryFailedOrderPayload"/>
+  <event-information eventId='requestRefund'       meta-acls="CUSTOMER,ADMIN"   meta-bodyType="com.homebase.ecom.order.dto.RequestRefundOrderPayload"/>
+  <event-information eventId='completeRefund'      meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.order.dto.CompleteRefundOrderPayload"/>
+  <event-information eventId='placeOnHold'         meta-acls="ADMIN"            meta-bodyType="com.homebase.ecom.order.dto.PlaceOnHoldOrderPayload"/>
+  <event-information eventId='releaseHold'         meta-acls="ADMIN"            meta-bodyType="com.homebase.ecom.order.dto.ReleaseHoldOrderPayload"/>
+  <event-information eventId='requestReturn'       meta-acls="CUSTOMER"         meta-bodyType="com.homebase.ecom.order.dto.RequestReturnOrderPayload"/>
 
   <flow id='order-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
@@ -22,17 +45,17 @@
     <exit-action componentName="orderExitAction"/>
 
     <!-- ════════════════════════════════════════════════════════════════════ -->
-    <!-- HAPPY PATH: CREATED -> PAYMENT_PENDING -> PAID -> PROCESSING       -->
-    <!--             -> SHIPPED -> DELIVERED -> COMPLETED                    -->
+    <!-- HAPPY PATH: CREATED → PAYMENT_PENDING → PAID → CHECK_FRAUD        -->
+    <!--   → PROCESSING → SHIPPED → DELIVERED → COMPLETED                  -->
     <!-- ════════════════════════════════════════════════════════════════════ -->
 
+    <!-- Order created from checkout, awaiting payment initiation -->
     <manual-state id='CREATED' initialState='true' meta-mainPath="true"
                   description="Order created, awaiting payment initiation">
       <on eventId='paymentSucceeded'
           componentName='orderPaymentSucceededAction'
           newStateId='PAID'
-          meta-mainPath="true"
-          meta-acls="SYSTEM"/>
+          meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='paymentFailed'
           componentName='orderPaymentFailedAction'
           newStateId='PAYMENT_FAILED'
@@ -43,13 +66,13 @@
           meta-acls="CUSTOMER,ADMIN"/>
     </manual-state>
 
+    <!-- Payment initiated, awaiting gateway confirmation -->
     <manual-state id='PAYMENT_PENDING' meta-mainPath="true"
                   description="Payment initiated, awaiting confirmation from payment gateway">
       <on eventId='paymentSucceeded'
           componentName='orderPaymentSucceededAction'
           newStateId='PAID'
-          meta-mainPath="true"
-          meta-acls="SYSTEM"/>
+          meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='paymentFailed'
           componentName='orderPaymentFailedAction'
           newStateId='PAYMENT_FAILED'
@@ -60,50 +83,162 @@
           meta-acls="CUSTOMER,ADMIN"/>
     </manual-state>
 
-    <manual-state id='PAYMENT_FAILED' description="Payment failed — order cannot proceed">
+    <!-- Payment failed — customer can retry or system cancels -->
+    <manual-state id='PAYMENT_FAILED'
+                  description="Payment failed, awaiting retry or cancellation">
+      <on eventId='paymentSucceeded'
+          componentName='orderPaymentSucceededAction'
+          newStateId='PAID'
+          meta-acls="SYSTEM"/>
+      <on eventId='requestCancellation'
+          componentName='orderRequestCancellationAction'
+          newStateId='CANCELLED'
+          meta-acls="CUSTOMER,ADMIN,SYSTEM"/>
     </manual-state>
 
+    <!-- Payment confirmed, route through fraud check -->
     <manual-state id='PAID' meta-mainPath="true"
-                  description="Payment confirmed, awaiting warehouse processing">
+                  description="Payment confirmed, routing through fraud check">
       <on eventId='startProcessing'
           componentName='orderStartProcessingAction'
-          newStateId='PROCESSING'
-          meta-mainPath="true"
-          meta-acls="SYSTEM,WAREHOUSE"/>
+          newStateId='CHECK_FRAUD'
+          meta-mainPath="true" meta-acls="SYSTEM,WAREHOUSE"/>
+      <on eventId='holdForFraud'
+          componentName='orderHoldForFraudAction'
+          newStateId='FRAUD_HOLD'
+          meta-acls="SYSTEM"/>
       <on eventId='requestCancellation'
           componentName='orderRequestCancellationAction'
           newStateId='CHECK_CANCELLATION_WINDOW'
           meta-acls="CUSTOMER,ADMIN"/>
     </manual-state>
 
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- FRAUD CHECK: Auto-state routes to PROCESSING or FRAUD_HOLD         -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <!--
+      OGNL auto-state: Check fraud risk score from payment gateway.
+      If riskScore > fraudThreshold (80) → FRAUD_HOLD for manual review
+      Else → PROCESSING (clear to ship)
+    -->
+    <auto-state id='CHECK_FRAUD'
+                componentName='ifAction'
+                condition='riskScore != null and riskScore.intValue() &gt; 80'
+                then='highRisk'
+                else='lowRisk'>
+      <on eventId='highRisk' newStateId='FRAUD_HOLD'/>
+      <on eventId='lowRisk' newStateId='PROCESSING'/>
+    </auto-state>
+
+    <!-- Fraud hold — admin reviews and clears or confirms fraud -->
+    <manual-state id='FRAUD_HOLD'
+                  description="Order held for fraud review by risk team">
+      <on eventId='clearFraud'
+          componentName='orderClearFraudAction'
+          newStateId='PROCESSING'
+          meta-mainPath="true" meta-acls="ADMIN,SYSTEM"/>
+      <on eventId='confirmFraud'
+          componentName='orderConfirmFraudAction'
+          newStateId='CANCELLED'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- PROCESSING → SHIPPING: Warehouse picks, packs, ships               -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Order being processed at warehouse (pick, pack) -->
     <manual-state id='PROCESSING' meta-mainPath="true"
                   description="Order being processed at warehouse">
       <on eventId='markShipped'
           componentName='orderMarkShippedAction'
           newStateId='SHIPPED'
-          meta-mainPath="true"
+          meta-mainPath="true" meta-acls="WAREHOUSE"/>
+      <on eventId='partialShip'
+          componentName='orderPartialShipAction'
+          newStateId='PARTIALLY_SHIPPED'
           meta-acls="WAREHOUSE"/>
+      <on eventId='placeOnHold'
+          componentName='orderPlaceOnHoldAction'
+          newStateId='ON_HOLD'
+          meta-acls="ADMIN"/>
       <on eventId='requestCancellation'
           componentName='orderRequestCancellationAction'
           newStateId='CHECK_CANCELLATION_WINDOW'
           meta-acls="CUSTOMER,ADMIN"/>
     </manual-state>
 
+    <!-- Admin placed order on hold (inventory issue, address verification, etc.) -->
+    <manual-state id='ON_HOLD'
+                  description="Order placed on hold by admin">
+      <on eventId='releaseHold'
+          componentName='orderReleaseHoldAction'
+          newStateId='PROCESSING'
+          meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='requestCancellation'
+          componentName='orderRequestCancellationAction'
+          newStateId='CANCEL_REQUESTED'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- Some items shipped, others still processing (multi-package orders) -->
+    <manual-state id='PARTIALLY_SHIPPED'
+                  description="Some items shipped, remaining items still processing">
+      <on eventId='markShipped'
+          componentName='orderMarkShippedAction'
+          newStateId='SHIPPED'
+          meta-mainPath="true" meta-acls="WAREHOUSE"/>
+      <on eventId='partialShip'
+          componentName='orderPartialShipAction'
+          newStateId='PARTIALLY_SHIPPED'
+          meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- SHIPPING → DELIVERY                                                 -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- All items shipped, in transit to customer -->
     <manual-state id='SHIPPED' meta-mainPath="true"
                   description="Order shipped, in transit to customer">
       <on eventId='markDelivered'
           componentName='orderMarkDeliveredAction'
           newStateId='DELIVERED'
-          meta-mainPath="true"
+          meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='deliveryFailed'
+          componentName='orderDeliveryFailedAction'
+          newStateId='DELIVERY_FAILED'
           meta-acls="SYSTEM"/>
     </manual-state>
 
+    <!-- Delivery failed after max carrier attempts — needs intervention -->
+    <manual-state id='DELIVERY_FAILED'
+                  description="All delivery attempts exhausted, shipment returned to warehouse">
+      <on eventId='startProcessing'
+          componentName='orderStartProcessingAction'
+          newStateId='PROCESSING'
+          meta-acls="ADMIN"/>
+      <on eventId='requestCancellation'
+          componentName='orderRequestCancellationAction'
+          newStateId='CANCEL_REQUESTED'
+          meta-acls="CUSTOMER,ADMIN"/>
+      <on eventId='requestRefund'
+          componentName='orderRequestRefundAction'
+          newStateId='REFUND_REQUESTED'
+          meta-acls="CUSTOMER,ADMIN"/>
+    </manual-state>
+
+    <!-- Order delivered to customer -->
     <manual-state id='DELIVERED' meta-mainPath="true"
                   description="Order delivered to customer">
       <on eventId='confirmDelivery'
           componentName='orderConfirmDeliveryAction'
           newStateId='COMPLETED'
-          meta-mainPath="true"
+          meta-mainPath="true" meta-acls="CUSTOMER,SYSTEM"/>
+      <on eventId='requestReturn'
+          componentName='orderRequestReturnAction'
+          newStateId='RETURN_REQUESTED'
           meta-acls="CUSTOMER"/>
       <on eventId='requestRefund'
           componentName='orderRequestRefundAction'
@@ -111,7 +246,13 @@
           meta-acls="CUSTOMER,ADMIN"/>
     </manual-state>
 
-    <manual-state id='COMPLETED' description="Order completed and confirmed by customer">
+    <!-- Order completed and confirmed by customer -->
+    <manual-state id='COMPLETED' meta-mainPath="true"
+                  description="Order completed and confirmed by customer">
+      <on eventId='requestReturn'
+          componentName='orderRequestReturnAction'
+          newStateId='RETURN_REQUESTED'
+          meta-acls="CUSTOMER"/>
       <on eventId='requestRefund'
           componentName='orderRequestRefundAction'
           newStateId='REFUND_REQUESTED'
@@ -123,9 +264,9 @@
     <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <!--
-      OGNL auto-state: Check if the order is still within the cancellation window.
-      Uses cancellationWindowHours from order config. If the order was created
-      more than N hours ago, the cancellation is rejected (stays in current state).
+      OGNL auto-state: Check if order is within cancellation window.
+      cancellationAllowed is computed by the transition action based on
+      cancellationWindowHours config and order creation time.
     -->
     <auto-state id='CHECK_CANCELLATION_WINDOW'
                 componentName='ifAction'
@@ -136,31 +277,54 @@
       <on eventId='denied' newStateId='CANCELLATION_DENIED'/>
     </auto-state>
 
-    <manual-state id='CANCEL_REQUESTED' description="Cancellation requested, awaiting confirmation">
+    <!-- Cancellation requested, awaiting admin/system confirmation -->
+    <manual-state id='CANCEL_REQUESTED'
+                  description="Cancellation requested, awaiting confirmation">
       <on eventId='confirmCancellation'
           componentName='orderConfirmCancellationAction'
           newStateId='CANCELLED'
           meta-acls="ADMIN,SYSTEM"/>
     </manual-state>
 
-    <manual-state id='CANCELLATION_DENIED' description="Cancellation denied — window expired or not eligible">
+    <!-- Cancellation denied — order reverts to its previous processing state -->
+    <manual-state id='CANCELLATION_DENIED'
+                  description="Cancellation denied, window expired or not eligible">
     </manual-state>
 
-    <manual-state id='CANCELLED' description="Order cancelled, inventory released">
+    <!-- Order cancelled — inventory released, payment refunded via PostSaveHook -->
+    <manual-state id='CANCELLED'
+                  description="Order cancelled, inventory released, refund initiated">
+    </manual-state>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- RETURN FLOW                                                         -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Return requested by customer — triggers returnrequest BC -->
+    <manual-state id='RETURN_REQUESTED'
+                  description="Return requested, handed off to return-request BC">
+      <on eventId='requestRefund'
+          componentName='orderRequestRefundAction'
+          newStateId='REFUND_REQUESTED'
+          meta-acls="SYSTEM"/>
     </manual-state>
 
     <!-- ════════════════════════════════════════════════════════════════════ -->
     <!-- REFUND FLOW                                                         -->
     <!-- ════════════════════════════════════════════════════════════════════ -->
 
-    <manual-state id='REFUND_REQUESTED' description="Refund requested by customer or admin">
+    <!-- Refund requested by customer/admin or triggered by return -->
+    <manual-state id='REFUND_REQUESTED'
+                  description="Refund requested, awaiting payment BC processing">
       <on eventId='completeRefund'
           componentName='orderCompleteRefundAction'
           newStateId='REFUNDED'
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <manual-state id='REFUNDED' description="Refund completed for the order">
+    <!-- Refund completed — terminal -->
+    <manual-state id='REFUNDED'
+                  description="Refund completed for the order">
     </manual-state>
 
     <!-- BDD test terminal state -->

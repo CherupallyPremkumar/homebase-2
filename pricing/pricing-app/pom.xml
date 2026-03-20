@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>pricing-app</artifactId>
-    <name>Pricing Service - Application</name>
+    <name>pricing-app</name>
 
     <dependencies>
         <dependency>

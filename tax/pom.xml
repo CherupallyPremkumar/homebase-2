@@ -13,7 +13,7 @@
     <groupId>com.homebase.ecom.tax</groupId>
     <artifactId>tax-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Tax Parent</name>
+    <name>tax-parent</name>
 
     <modules>
         <module>tax-api</module>

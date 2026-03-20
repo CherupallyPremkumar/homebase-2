@@ -13,7 +13,7 @@
 	<artifactId>support-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Support API Model and Interfaces</name>
+	<name>support-api</name>
 
 	<dependencies>
 		<dependency>

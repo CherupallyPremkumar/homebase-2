@@ -2,25 +2,37 @@
 <states>
   <scripting-strategy componentName="ognlScriptingStrategy"/>
 
-  <!-- Event definitions with ACLs and payload types -->
-  <event-information eventId='calculate' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.settlement.dto.CalculateSettlementPayload"/>
-  <event-information eventId='approve' meta-acls="FINANCE,ADMIN" meta-bodyType="com.homebase.ecom.settlement.dto.ApproveSettlementPayload"/>
-  <event-information eventId='disburse' meta-acls="FINANCE" meta-bodyType="com.homebase.ecom.settlement.dto.DisburseSettlementPayload"/>
-  <event-information eventId='dispute' meta-acls="SUPPLIER" meta-bodyType="com.homebase.ecom.settlement.dto.DisputeSettlementPayload"/>
-  <event-information eventId='resolve' meta-acls="FINANCE,ADMIN" meta-bodyType="com.homebase.ecom.settlement.dto.ResolveSettlementPayload"/>
-  <event-information eventId='adjust' meta-acls="FINANCE,ADMIN" meta-bodyType="com.homebase.ecom.settlement.dto.AdjustSettlementPayload"/>
-  <event-information eventId='reject' meta-acls="FINANCE,ADMIN" meta-bodyType="com.homebase.ecom.settlement.dto.RejectSettlementPayload"/>
-  <event-information eventId='retry' meta-acls="FINANCE,ADMIN" meta-bodyType="com.homebase.ecom.settlement.dto.RetrySettlementPayload"/>
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- Event definitions with ACLs and payload types                          -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (consumed via Kafka → PostSaveHook):                   -->
+  <!--   order.COMPLETED       → calculate (from order BC)                    -->
+  <!--   payment.SETTLED       → calculate (from payment BC)                  -->
+  <!--   order.REFUNDED        → adjust (triggers settlement adjustment)      -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (published via PostSaveHook → Kafka):                  -->
+  <!--   settlement.DISBURSED  → notification to supplier                     -->
+  <!--   settlement.COMPLETED  → reconciliation.flagForRecon                  -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <event-information eventId='calculate' meta-acls="SYSTEM,test.premium"          meta-bodyType="com.homebase.ecom.settlement.dto.CalculateSettlementPayload"/>
+  <event-information eventId='approve'   meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.ApproveSettlementPayload"/>
+  <event-information eventId='disburse'  meta-acls="FINANCE,test.premium"         meta-bodyType="com.homebase.ecom.settlement.dto.DisburseSettlementPayload"/>
+  <event-information eventId='dispute'   meta-acls="SUPPLIER,test.premium"        meta-bodyType="com.homebase.ecom.settlement.dto.DisputeSettlementPayload"/>
+  <event-information eventId='resolve'   meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.ResolveSettlementPayload"/>
+  <event-information eventId='adjust'    meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.AdjustSettlementPayload"/>
+  <event-information eventId='reject'    meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.RejectSettlementPayload"/>
+  <event-information eventId='retry'     meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.RetrySettlementPayload"/>
 
   <flow id='settlement-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
     <entry-action componentName="settlementEntryAction" />
     <exit-action componentName="settlementExitAction" />
 
-    <!-- ================================================================ -->
-    <!-- MAIN PATH: PENDING -> CALCULATING -> CALCULATED -> CHECK_AUTO_APPROVE -->
-    <!--            -> APPROVED -> DISBURSED -> COMPLETED                      -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- MAIN PATH: PENDING → CALCULATING → CALCULATED → CHECK_AUTO_APPROVE -->
+    <!--            → APPROVED → DISBURSED → COMPLETED                      -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <!-- Settlement created, awaiting calculation trigger -->
     <manual-state id='PENDING' initialState='true' meta-mainPath="true"
@@ -51,17 +63,34 @@
 
     <!--
       OGNL auto-state: CHECK_AUTO_APPROVE
-      If netAmount <= autoApproveThreshold (10000) -> APPROVED automatically
-      Else -> PENDING_APPROVAL (requires manual approval)
+      If netAmount <= autoApproveThreshold (10000 INR) → auto-approve
+      Else → PENDING_APPROVAL (requires manual finance review)
     -->
     <auto-state id='CHECK_AUTO_APPROVE'
                 componentName='ifAction'
-                condition='netAmount != null and netAmount.getAmount().doubleValue() &lt;= 10000'
+                condition='netAmount != null and netAmount.getAmount() &lt;= 10000'
                 then='autoApproved'
                 else='needsApproval'>
       <on eventId='autoApproved' newStateId='APPROVED'/>
-      <on eventId='needsApproval' newStateId='APPROVED'/>
+      <on eventId='needsApproval' newStateId='PENDING_APPROVAL'/>
     </auto-state>
+
+    <!-- Awaiting manual finance approval for large settlements -->
+    <manual-state id='PENDING_APPROVAL'
+                  description="Settlement requires manual finance approval (above threshold)">
+      <on eventId='approve'
+          componentName='settlementApproveAction'
+          newStateId='APPROVED'
+          meta-mainPath="true" meta-acls="FINANCE,ADMIN"/>
+      <on eventId='reject'
+          componentName='settlementRejectAction'
+          newStateId='REJECTED'
+          meta-acls="FINANCE,ADMIN"/>
+      <on eventId='dispute'
+          componentName='settlementDisputeAction'
+          newStateId='DISPUTED'
+          meta-acls="SUPPLIER"/>
+    </manual-state>
 
     <!-- Settlement approved, ready for disbursement -->
     <manual-state id='APPROVED' meta-mainPath="true"
@@ -94,9 +123,9 @@
                   description="Settlement fully completed and reconciled">
     </manual-state>
 
-    <!-- ================================================================ -->
-    <!-- DISPUTE PATH: DISPUTED -> RESOLVED or ADJUSTED                    -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- DISPUTE PATH: DISPUTED → RESOLVED or ADJUSTED                      -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <manual-state id='DISPUTED'
                   description="Settlement disputed by supplier, awaiting resolution">
@@ -110,9 +139,18 @@
           meta-acls="FINANCE,ADMIN"/>
     </manual-state>
 
-    <!-- ================================================================ -->
-    <!-- FAILURE PATH: FAILED -> retry -> PENDING                          -->
-    <!-- ================================================================ -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- FAILURE / REJECTION PATH                                            -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Settlement rejected by finance — needs recalculation -->
+    <manual-state id='REJECTED'
+                  description="Settlement rejected by finance, needs recalculation">
+      <on eventId='calculate'
+          componentName='settlementCalculateAction'
+          newStateId='CALCULATING'
+          meta-acls="SYSTEM"/>
+    </manual-state>
 
     <manual-state id='FAILED'
                   description="Settlement processing failed, can be retried">

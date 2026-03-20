@@ -13,7 +13,7 @@
 	<artifactId>cart-infrastructure</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Cart Infrastructure Persistence and Adapters</name>
+	<name>cart-infrastructure</name>
 
 	<dependencies>
 		<dependency>

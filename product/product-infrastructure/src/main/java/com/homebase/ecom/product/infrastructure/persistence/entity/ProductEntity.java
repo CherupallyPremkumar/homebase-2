@@ -38,6 +38,37 @@ public class ProductEntity extends AbstractJpaStateEntity
     @Column(name = "meta_description", length = 500)
     private String metaDescription;
 
+    // Amazon-standard fields (product-014)
+    @Column(name = "weight_grams")
+    private Integer weightGrams;
+
+    @Column(name = "dimensions_json", columnDefinition = "TEXT")
+    private String dimensionsJson;
+
+    @Column(name = "hsn_code", length = 20)
+    private String hsnCode;
+
+    @Column(name = "country_of_origin", length = 100)
+    private String countryOfOrigin;
+
+    @Column(name = "warranty_months")
+    private Integer warrantyMonths;
+
+    @Column(name = "is_returnable")
+    private boolean returnable = true;
+
+    @Column(name = "return_window_days")
+    private Integer returnWindowDays = 7;
+
+    @Column(name = "base_price", precision = 12, scale = 2)
+    private java.math.BigDecimal basePrice;
+
+    @Column(name = "tax_category", length = 100)
+    private String taxCategory;
+
+    @Column(name = "is_active")
+    private boolean active = true;
+
     @ElementCollection
     @CollectionTable(name = "product_tags", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "tag")
@@ -101,6 +132,36 @@ public class ProductEntity extends AbstractJpaStateEntity
 
     public List<ProductActivityLogEntity> getActivities() { return activities; }
     public void setActivities(List<ProductActivityLogEntity> activities) { this.activities = activities; }
+
+    public Integer getWeightGrams() { return weightGrams; }
+    public void setWeightGrams(Integer weightGrams) { this.weightGrams = weightGrams; }
+
+    public String getDimensionsJson() { return dimensionsJson; }
+    public void setDimensionsJson(String dimensionsJson) { this.dimensionsJson = dimensionsJson; }
+
+    public String getHsnCode() { return hsnCode; }
+    public void setHsnCode(String hsnCode) { this.hsnCode = hsnCode; }
+
+    public String getCountryOfOrigin() { return countryOfOrigin; }
+    public void setCountryOfOrigin(String countryOfOrigin) { this.countryOfOrigin = countryOfOrigin; }
+
+    public Integer getWarrantyMonths() { return warrantyMonths; }
+    public void setWarrantyMonths(Integer warrantyMonths) { this.warrantyMonths = warrantyMonths; }
+
+    public boolean isReturnable() { return returnable; }
+    public void setReturnable(boolean returnable) { this.returnable = returnable; }
+
+    public Integer getReturnWindowDays() { return returnWindowDays; }
+    public void setReturnWindowDays(Integer returnWindowDays) { this.returnWindowDays = returnWindowDays; }
+
+    public java.math.BigDecimal getBasePrice() { return basePrice; }
+    public void setBasePrice(java.math.BigDecimal basePrice) { this.basePrice = basePrice; }
+
+    public String getTaxCategory() { return taxCategory; }
+    public void setTaxCategory(String taxCategory) { this.taxCategory = taxCategory; }
+
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 
     @Override
     public TransientMap getTransientMap() { return transientMap; }

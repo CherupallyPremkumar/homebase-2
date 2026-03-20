@@ -12,7 +12,7 @@
 	<artifactId>notification-service</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Notification Service Implementations</name>
+	<name>notification-service</name>
 
 	<dependencies>
 		<dependency>

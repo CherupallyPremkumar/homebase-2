@@ -61,7 +61,7 @@ public class TieredDiscountStrategy implements DiscountStrategy {
     public Money calculateSavings(CartSnapshot cart) {
         if (!isEligible(cart)) {
             String currency = tiers.get(0).getMinAmount().getCurrency();
-            return new Money(BigDecimal.ZERO, currency);
+            return Money.zero(currency);
         }
 
         Money total = cart.getTotalAmount();
@@ -71,10 +71,14 @@ public class TieredDiscountStrategy implements DiscountStrategy {
                 .orElse(null);
 
         if (applicableTier == null)
-            return new Money(BigDecimal.ZERO, total.getCurrency());
+            return Money.zero(total.getCurrency());
 
-        return total.multiply(
-                applicableTier.getDiscountPercent().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+        // Calculate discount: amount * percent / 100
+        long discountAmount = BigDecimal.valueOf(total.getAmount())
+                .multiply(applicableTier.getDiscountPercent())
+                .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP)
+                .longValue();
+        return Money.of(discountAmount, total.getCurrency());
     }
 
     @Override

@@ -1,0 +1,35 @@
+package com.homebase.ecom.supplier.service.cmds;
+
+import org.chenile.stm.STMInternalTransitionInvoker;
+import org.chenile.stm.State;
+import org.chenile.stm.model.Transition;
+import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
+import com.homebase.ecom.supplier.model.Supplier;
+import com.homebase.ecom.supplier.dto.ActivateSupplierPayload;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.LocalDateTime;
+
+/**
+ * Transition action for activateSupplier event (APPROVED -> ACTIVE).
+ * Called after onboarding is complete. Sets active date and enables product listing.
+ */
+public class ActivateSupplierAction extends AbstractSTMTransitionAction<Supplier, ActivateSupplierPayload> {
+
+    private static final Logger log = LoggerFactory.getLogger(ActivateSupplierAction.class);
+
+    @Override
+    public void transitionTo(Supplier supplier, ActivateSupplierPayload payload,
+            State startState, String eventId,
+            State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
+
+        supplier.setActiveDate(LocalDateTime.now());
+        supplier.setProductsDisabled(false);
+
+        supplier.getTransientMap().previousPayload = payload;
+
+        log.info("Supplier '{}' (ID: {}) activated from APPROVED state",
+                supplier.getBusinessName(), supplier.getId());
+    }
+}

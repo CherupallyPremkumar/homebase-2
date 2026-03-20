@@ -13,7 +13,7 @@
     <groupId>com.homebase.ecom.fulfillment</groupId>
     <artifactId>fulfillment-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Fulfillment Parent</name>
+    <name>fulfillment-parent</name>
 
     <modules>
         <module>fulfillment-api</module>

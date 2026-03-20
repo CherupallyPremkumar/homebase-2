@@ -3,7 +3,6 @@ package com.homebase.ecom.promo.model;
 import com.homebase.ecom.shared.Money;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 public class PromotionResult implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -46,12 +45,10 @@ public class PromotionResult implements Serializable {
     }
 
     public static PromotionResult notApplicable(Promotion promotion) {
-        String currency = "USD"; // Default
-        return new PromotionResult(promotion, new Money(BigDecimal.ZERO, currency), false);
+        return new PromotionResult(promotion, Money.zero("INR"), false);
     }
 
     public static PromotionResult notSatisfied(Promotion promotion) {
-        String currency = "USD"; // Default
-        return new PromotionResult(promotion, new Money(BigDecimal.ZERO, currency), false);
+        return new PromotionResult(promotion, Money.zero("INR"), false);
     }
 }

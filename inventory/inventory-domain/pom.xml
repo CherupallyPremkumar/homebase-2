@@ -10,7 +10,7 @@
     </parent>
     <artifactId>inventory-domain</artifactId>
     <packaging>jar</packaging>
-    <name>Inventory Domain — Aggregate Root, Entities, Value Objects, Ports</name>
+    <name>inventory-domain</name>
 
     <dependencies>
         <dependency>

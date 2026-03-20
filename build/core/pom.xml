@@ -12,7 +12,7 @@
 	
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>core</artifactId>
-	<name>Build Core Test Module</name>
+	<name>core</name>
 	<description>Core test module containing database setup, Liquibase config, and base setups for queries</description>
 
 	<dependencies>

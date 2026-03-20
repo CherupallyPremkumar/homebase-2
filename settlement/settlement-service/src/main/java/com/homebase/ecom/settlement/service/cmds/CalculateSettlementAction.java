@@ -20,6 +20,9 @@ import java.math.RoundingMode;
  * Handles the calculate event.
  * Computes commission, platform fee, and net amount from order amount
  * using cconfig-driven rates.
+ *
+ * Money amounts are in smallest currency unit (paise for INR).
+ * All intermediate calculations use BigDecimal for precision, then convert back to paise.
  */
 public class CalculateSettlementAction extends AbstractSTMTransitionAction<Settlement, CalculateSettlementPayload> {
 
@@ -50,30 +53,34 @@ public class CalculateSettlementAction extends AbstractSTMTransitionAction<Settl
         BigDecimal platformFeeRate = policyValidator.getPlatformFeePercent()
                 .divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
 
-        BigDecimal orderAmount = settlement.getOrderAmount() != null
+        // Order amount in paise — convert to BigDecimal for calculation
+        long orderAmountPaise = settlement.getOrderAmount() != null
                 ? settlement.getOrderAmount().getAmount()
-                : BigDecimal.ZERO;
+                : 0L;
+        BigDecimal orderAmount = BigDecimal.valueOf(orderAmountPaise);
 
-        // Calculate amounts
-        BigDecimal commissionAmount = orderAmount.multiply(commissionRate).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal platformFee = orderAmount.multiply(platformFeeRate).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal netAmount = orderAmount.subtract(commissionAmount).subtract(platformFee).setScale(2, RoundingMode.HALF_UP);
+        // Calculate amounts in paise
+        long commissionPaise = orderAmount.multiply(commissionRate)
+                .setScale(0, RoundingMode.HALF_UP).longValue();
+        long platformFeePaise = orderAmount.multiply(platformFeeRate)
+                .setScale(0, RoundingMode.HALF_UP).longValue();
+        long netPaise = orderAmountPaise - commissionPaise - platformFeePaise;
 
-        // Apply any existing adjustments
-        BigDecimal totalAdjustments = settlement.getTotalAdjustmentAmount();
-        if (totalAdjustments.compareTo(BigDecimal.ZERO) != 0) {
-            netAmount = netAmount.add(totalAdjustments).setScale(2, RoundingMode.HALF_UP);
+        // Apply any existing adjustments (adjustment amounts stored as BigDecimal in SettlementAdjustment)
+        long totalAdjustmentPaise = settlement.getTotalAdjustmentAmountPaise();
+        if (totalAdjustmentPaise != 0) {
+            netPaise += totalAdjustmentPaise;
         }
 
-        settlement.setCommissionAmount(new Money(commissionAmount, currency));
-        settlement.setPlatformFee(new Money(platformFee, currency));
-        settlement.setNetAmount(new Money(netAmount, currency));
+        settlement.setCommissionAmount(Money.of(commissionPaise, currency));
+        settlement.setPlatformFee(Money.of(platformFeePaise, currency));
+        settlement.setNetAmount(Money.of(netPaise, currency));
 
-        // Validate minimum settlement amount
-        policyValidator.validateMinSettlementAmount(netAmount);
+        // Validate minimum settlement amount (compare in paise)
+        policyValidator.validateMinSettlementAmountPaise(netPaise);
 
-        log.info("Settlement {} calculated: orderAmount={}, commission={}, platformFee={}, netAmount={}",
-                settlement.getId(), orderAmount, commissionAmount, platformFee, netAmount);
+        log.info("Settlement {} calculated: orderAmount={} paise, commission={} paise, platformFee={} paise, netAmount={} paise",
+                settlement.getId(), orderAmountPaise, commissionPaise, platformFeePaise, netPaise);
 
         settlement.getTransientMap().previousPayload = payload;
     }

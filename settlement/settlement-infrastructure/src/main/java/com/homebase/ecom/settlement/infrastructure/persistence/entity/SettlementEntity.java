@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import org.chenile.jpautils.entity.AbstractJpaStateEntity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,26 +33,14 @@ public class SettlementEntity extends AbstractJpaStateEntity {
     })
     private Money orderAmount;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "commission_amount")),
-            @AttributeOverride(name = "currency", column = @Column(name = "currency", length = 3, insertable = false, updatable = false))
-    })
-    private Money commissionAmount;
+    @Column(name = "commission_amount")
+    private Long commissionAmountPaise;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "platform_fee")),
-            @AttributeOverride(name = "currency", column = @Column(name = "currency", length = 3, insertable = false, updatable = false))
-    })
-    private Money platformFee;
+    @Column(name = "platform_fee")
+    private Long platformFeePaise;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "net_amount")),
-            @AttributeOverride(name = "currency", column = @Column(name = "currency", length = 3, insertable = false, updatable = false))
-    })
-    private Money netAmount;
+    @Column(name = "net_amount")
+    private Long netAmountPaise;
 
     @Column(name = "settlement_period_start")
     private LocalDate settlementPeriodStart;
@@ -61,6 +50,31 @@ public class SettlementEntity extends AbstractJpaStateEntity {
 
     @Column(name = "disbursement_reference")
     private String disbursementReference;
+
+    // --- Fields from changeset settlement-004 ---
+
+    @Column(name = "payment_id")
+    private String paymentId;
+
+    @Column(name = "settlement_number", length = 100)
+    private String settlementNumber;
+
+    @Column(name = "tax_amount")
+    private Long taxAmountPaise;
+
+    @Column(name = "adjustment_amount")
+    private Long adjustmentAmountPaise;
+
+    @Column(name = "bank_account_id")
+    private String bankAccountId;
+
+    @Column(name = "disbursement_date")
+    private LocalDateTime disbursementDate;
+
+    @Column(name = "disbursement_method", length = 50)
+    private String disbursementMethod;
+
+    // --- Child collections ---
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "settlement_id")
@@ -84,14 +98,14 @@ public class SettlementEntity extends AbstractJpaStateEntity {
     public Money getOrderAmount() { return orderAmount; }
     public void setOrderAmount(Money orderAmount) { this.orderAmount = orderAmount; }
 
-    public Money getCommissionAmount() { return commissionAmount; }
-    public void setCommissionAmount(Money commissionAmount) { this.commissionAmount = commissionAmount; }
+    public Long getCommissionAmountPaise() { return commissionAmountPaise; }
+    public void setCommissionAmountPaise(Long commissionAmountPaise) { this.commissionAmountPaise = commissionAmountPaise; }
 
-    public Money getPlatformFee() { return platformFee; }
-    public void setPlatformFee(Money platformFee) { this.platformFee = platformFee; }
+    public Long getPlatformFeePaise() { return platformFeePaise; }
+    public void setPlatformFeePaise(Long platformFeePaise) { this.platformFeePaise = platformFeePaise; }
 
-    public Money getNetAmount() { return netAmount; }
-    public void setNetAmount(Money netAmount) { this.netAmount = netAmount; }
+    public Long getNetAmountPaise() { return netAmountPaise; }
+    public void setNetAmountPaise(Long netAmountPaise) { this.netAmountPaise = netAmountPaise; }
 
     public LocalDate getSettlementPeriodStart() { return settlementPeriodStart; }
     public void setSettlementPeriodStart(LocalDate settlementPeriodStart) { this.settlementPeriodStart = settlementPeriodStart; }
@@ -101,6 +115,27 @@ public class SettlementEntity extends AbstractJpaStateEntity {
 
     public String getDisbursementReference() { return disbursementReference; }
     public void setDisbursementReference(String disbursementReference) { this.disbursementReference = disbursementReference; }
+
+    public String getPaymentId() { return paymentId; }
+    public void setPaymentId(String paymentId) { this.paymentId = paymentId; }
+
+    public String getSettlementNumber() { return settlementNumber; }
+    public void setSettlementNumber(String settlementNumber) { this.settlementNumber = settlementNumber; }
+
+    public Long getTaxAmountPaise() { return taxAmountPaise; }
+    public void setTaxAmountPaise(Long taxAmountPaise) { this.taxAmountPaise = taxAmountPaise; }
+
+    public Long getAdjustmentAmountPaise() { return adjustmentAmountPaise; }
+    public void setAdjustmentAmountPaise(Long adjustmentAmountPaise) { this.adjustmentAmountPaise = adjustmentAmountPaise; }
+
+    public String getBankAccountId() { return bankAccountId; }
+    public void setBankAccountId(String bankAccountId) { this.bankAccountId = bankAccountId; }
+
+    public LocalDateTime getDisbursementDate() { return disbursementDate; }
+    public void setDisbursementDate(LocalDateTime disbursementDate) { this.disbursementDate = disbursementDate; }
+
+    public String getDisbursementMethod() { return disbursementMethod; }
+    public void setDisbursementMethod(String disbursementMethod) { this.disbursementMethod = disbursementMethod; }
 
     public List<SettlementAdjustmentEntity> getAdjustments() { return adjustments; }
     public void setAdjustments(List<SettlementAdjustmentEntity> adjustments) { this.adjustments = adjustments; }

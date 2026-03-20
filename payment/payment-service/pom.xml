@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>payment-service</artifactId>
-    <name>Payment Service</name>
+    <name>payment-service</name>
 
     <dependencies>
         <dependency>
@@ -49,6 +49,15 @@
         <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>chenile-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-security-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-security</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -212,6 +212,14 @@ public class Cart extends AbstractExtendedStateEntity implements ActivityEnabled
 
     public List<CartActivityLog> activities = new ArrayList<>();
 
+    public List<CartActivityLog> getActivities() {
+        return activities;
+    }
+
+    public void setActivities(List<CartActivityLog> activities) {
+        this.activities = activities;
+    }
+
     @Override
     public Collection<ActivityLog> obtainActivities() {
         Collection<ActivityLog> acts = new ArrayList<>();

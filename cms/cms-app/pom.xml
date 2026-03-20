@@ -9,7 +9,7 @@
 	</parent>
 	<artifactId>cms-app</artifactId>
 	<packaging>jar</packaging>
-	<name>CMS App — Spring Boot Launcher</name>
+	<name>cms-app</name>
 
 	<dependencies>
 		<dependency>

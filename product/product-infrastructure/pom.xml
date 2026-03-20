@@ -9,7 +9,7 @@
 	</parent>
 	<artifactId>product-infrastructure</artifactId>
 	<packaging>jar</packaging>
-	<name>Product Infrastructure — JPA Adapters, Flyway Migrations</name>
+	<name>product-infrastructure</name>
 
 	<dependencies>
 		<dependency>

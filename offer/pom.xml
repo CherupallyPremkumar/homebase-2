@@ -12,7 +12,7 @@
     <groupId>com.homebase.ecom.offer</groupId>
     <artifactId>offer-parent</artifactId>
     <packaging>pom</packaging>
-    <name>All Modules that belong to the Offer</name>
+    <name>offer-parent</name>
 
     <modules>
         <module>offer-api</module>

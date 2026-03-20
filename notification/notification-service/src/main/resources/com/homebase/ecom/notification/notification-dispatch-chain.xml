@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Notification Dispatch Pipeline (OWIZ Chain)
+  ════════════════════════════════════════════
+  Input:  NotificationRequest (recipient, type, template ID, channel, data)
+  Output: NotificationResult (delivery status per channel)
+
+  Called by: notification STM QUEUED → SENDING transition
+  Channels: EMAIL (SES/SMTP), SMS (SNS/Twilio), PUSH (FCM/APNs), WHATSAPP (Business API)
+-->
+<flows>
+  <flow id="notification-dispatch-flow" defaultFlow="true">
+    <chain id="notificationDispatchChain" componentName="org.chenile.owiz.impl.Chain" first="true">
+    </chain>
+
+    <!-- Step 1: Resolve notification template (Thymeleaf/Mustache) by type + locale -->
+    <command id="resolveTemplate" componentName="resolveTemplateCommand">
+      <attach-to index="1" parentId="notificationDispatchChain"/>
+    </command>
+
+    <!-- Step 2: Resolve channel preference from customer notification_preferences table -->
+    <command id="resolveChannelPreference" componentName="resolveChannelPreferenceCommand">
+      <attach-to index="2" parentId="notificationDispatchChain"/>
+    </command>
+
+    <!-- Step 3: Check DND registry (TRAI DND for SMS in India — mandatory compliance) -->
+    <command id="checkDNDRegistry" componentName="checkDNDRegistryCommand">
+      <attach-to index="3" parentId="notificationDispatchChain"/>
+    </command>
+
+    <!-- Step 4: Format message — merge template with data, generate subject/body per channel -->
+    <command id="formatMessage" componentName="formatMessageCommand">
+      <attach-to index="4" parentId="notificationDispatchChain"/>
+    </command>
+
+    <!-- Step 5: Dispatch to selected channel adapter (email/SMS/push/WhatsApp) -->
+    <command id="dispatchToChannel" componentName="dispatchToChannelCommand">
+      <attach-to index="5" parentId="notificationDispatchChain"/>
+    </command>
+
+    <!-- Step 6: Handle bounce/failure — mark for retry or fallback to alternate channel -->
+    <command id="handleBounce" componentName="handleBounceCommand">
+      <attach-to index="6" parentId="notificationDispatchChain"/>
+    </command>
+
+    <!-- Step 7: Confirm delivery status and update notification record -->
+    <command id="confirmDelivery" componentName="confirmDeliveryCommand">
+      <attach-to index="7" parentId="notificationDispatchChain"/>
+    </command>
+  </flow>
+</flows>

@@ -12,7 +12,7 @@
 
     <artifactId>db-migrations</artifactId>
     <packaging>jar</packaging>
-    <name>DB Migrations — Centralized DB schema management</name>
+    <name>db-migrations</name>
     <description>
         All database migration changelogs in one place.
         Can be run standalone via maven plugin or included as dependency by any service.

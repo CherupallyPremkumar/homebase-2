@@ -11,7 +11,7 @@
     </parent>
     <artifactId>offer-app</artifactId>
     <packaging>jar</packaging>
-    <name>Offer Boot Application</name>
+    <name>offer-app</name>
 
     <dependencies>
         <dependency>

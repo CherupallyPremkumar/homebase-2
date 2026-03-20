@@ -13,7 +13,7 @@
 	<artifactId>notification-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Notification API Model and Interfaces</name>
+	<name>notification-api</name>
 
 	<dependencies>
 		<dependency>

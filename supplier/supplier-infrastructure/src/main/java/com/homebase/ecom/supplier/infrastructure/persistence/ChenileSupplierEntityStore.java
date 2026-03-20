@@ -4,33 +4,21 @@ import com.homebase.ecom.supplier.model.Supplier;
 import com.homebase.ecom.supplier.infrastructure.persistence.adapter.SupplierJpaRepository;
 import com.homebase.ecom.supplier.infrastructure.persistence.entity.SupplierEntity;
 import com.homebase.ecom.supplier.infrastructure.persistence.mapper.SupplierMapper;
-import org.chenile.base.exception.NotFoundException;
-import org.chenile.utils.entity.service.EntityStore;
+import org.chenile.jpautils.store.ChenileJpaEntityStore;
 
 /**
- * Bridges Chenile STM's EntityStore with JPA persistence.
- * Uses SupplierJpaRepository directly and maps via SupplierMapper.
+ * Bridges Chenile STM's EntityStore with JPA persistence for Supplier.
+ * Uses ChenileJpaEntityStore which properly handles:
+ * - Optimistic locking via @Version (loads existing entity before update)
+ * - Merge function to copy fields from updated entity to managed entity
+ * - ID propagation back to domain model after persist
  */
-public class ChenileSupplierEntityStore implements EntityStore<Supplier> {
+public class ChenileSupplierEntityStore extends ChenileJpaEntityStore<Supplier, SupplierEntity> {
 
-    private final SupplierJpaRepository jpaRepository;
-    private final SupplierMapper mapper;
-
-    public ChenileSupplierEntityStore(SupplierJpaRepository jpaRepository, SupplierMapper mapper) {
-        this.jpaRepository = jpaRepository;
-        this.mapper = mapper;
-    }
-
-    @Override
-    public void store(Supplier supplier) {
-        SupplierEntity entity = mapper.toEntity(supplier);
-        jpaRepository.save(entity);
-    }
-
-    @Override
-    public Supplier retrieve(String id) {
-        SupplierEntity entity = jpaRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(1500, "Supplier not found: " + id));
-        return mapper.toModel(entity);
+    public ChenileSupplierEntityStore(SupplierJpaRepository repository, SupplierMapper mapper) {
+        super(repository,
+                entity -> mapper.toModel(entity),
+                model -> mapper.toEntity(model),
+                (existing, updated) -> mapper.mergeEntity(existing, updated));
     }
 }

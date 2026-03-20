@@ -10,7 +10,7 @@
 	</parent>
 	<artifactId>analytics-app</artifactId>
 	<packaging>jar</packaging>
-	<name>Analytics App — Spring Boot Launcher</name>
+	<name>analytics-app</name>
 
 	<dependencies>
 		<dependency>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Supplier Lifecycle Saga + performance metrics, probation, appeals
+        STM states (suspend-flow): INITIATED, PRODUCTS_DISABLED, CATALOG_CLEARED,
+        INVENTORY_FROZEN, ORDERS_CANCELLED, COMPLETED, CANCELLING, COMPENSATION_DONE
+    -->
+    <changeSet id="supplier-lifecycle-saga-test-data" author="homebase-test">
+
+        <!-- Suspend saga for supplier-4: COMPLETED -->
+        <insert tableName="supplier_lifecycle_saga">
+            <column name="id" value="slsaga-1"/>
+            <column name="supplier_id" value="supplier-4"/>
+            <column name="action" value="SUSPEND"/>
+            <column name="reason" value="Counterfeit product complaints — IP violation"/>
+            <column name="products_affected" valueNumeric="45"/>
+            <column name="catalog_entries_removed" valueNumeric="45"/>
+            <column name="inventory_frozen" valueNumeric="1200"/>
+            <column name="orders_cancelled" valueNumeric="8"/>
+            <column name="state_id" value="COMPLETED"/>
+            <column name="flow_id" value="suspend-flow"/>
+            <column name="created_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T12:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="6"/>
+        </insert>
+
+        <!-- Suspend saga for supplier-3 (probation → suspend): INITIATED -->
+        <insert tableName="supplier_lifecycle_saga">
+            <column name="id" value="slsaga-2"/>
+            <column name="supplier_id" value="supplier-3"/>
+            <column name="action" value="SUSPEND"/>
+            <column name="reason" value="Performance metrics below threshold after probation"/>
+            <column name="state_id" value="INITIATED"/>
+            <column name="flow_id" value="suspend-flow"/>
+            <column name="created_time" valueDate="2026-03-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+        <!-- Performance Metrics -->
+        <insert tableName="supplier_performance_metrics">
+            <column name="id" value="spm-1"/>
+            <column name="supplier_id" value="supplier-1"/>
+            <column name="metric_date" valueDate="2026-03-15"/>
+            <column name="period_type" value="MONTHLY"/>
+            <column name="total_orders" valueNumeric="780"/>
+            <column name="orders_fulfilled" valueNumeric="768"/>
+            <column name="orders_cancelled" valueNumeric="5"/>
+            <column name="orders_returned" valueNumeric="7"/>
+            <column name="defect_rate_pct" valueNumeric="0.90"/>
+            <column name="on_time_ship_rate_pct" valueNumeric="98.50"/>
+            <column name="late_ship_rate_pct" valueNumeric="1.50"/>
+            <column name="return_rate_pct" valueNumeric="0.90"/>
+            <column name="cancellation_rate_pct" valueNumeric="0.64"/>
+            <column name="customer_satisfaction_avg" valueNumeric="4.70"/>
+            <column name="total_revenue" valueNumeric="4560000.00"/>
+            <column name="total_refunds" valueNumeric="45600.00"/>
+            <column name="buy_box_win_rate_pct" valueNumeric="72.50"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="supplier_performance_metrics">
+            <column name="id" value="spm-2"/>
+            <column name="supplier_id" value="supplier-3"/>
+            <column name="metric_date" valueDate="2026-03-15"/>
+            <column name="period_type" value="MONTHLY"/>
+            <column name="total_orders" valueNumeric="107"/>
+            <column name="orders_fulfilled" valueNumeric="88"/>
+            <column name="orders_cancelled" valueNumeric="8"/>
+            <column name="orders_returned" valueNumeric="21"/>
+            <column name="defect_rate_pct" valueNumeric="5.60"/>
+            <column name="on_time_ship_rate_pct" valueNumeric="82.00"/>
+            <column name="late_ship_rate_pct" valueNumeric="18.00"/>
+            <column name="return_rate_pct" valueNumeric="19.60"/>
+            <column name="cancellation_rate_pct" valueNumeric="7.48"/>
+            <column name="customer_satisfaction_avg" valueNumeric="3.40"/>
+            <column name="total_revenue" valueNumeric="320000.00"/>
+            <column name="total_refunds" valueNumeric="64000.00"/>
+            <column name="buy_box_win_rate_pct" valueNumeric="15.00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Probation History -->
+        <insert tableName="supplier_probation_history">
+            <column name="id" value="sprob-1"/>
+            <column name="supplier_id" value="supplier-3"/>
+            <column name="probation_type" value="PERFORMANCE"/>
+            <column name="reason" value="Return rate exceeded 15% for 3 consecutive months"/>
+            <column name="triggered_by_metric" value="return_rate_pct"/>
+            <column name="metric_value" valueNumeric="19.60"/>
+            <column name="threshold_value" valueNumeric="15.00"/>
+            <column name="start_date" valueDate="2026-02-15"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="repeat_offense_count" valueNumeric="1"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Appeal Request -->
+        <insert tableName="supplier_appeal_requests">
+            <column name="id" value="appeal-1"/>
+            <column name="supplier_id" value="supplier-4"/>
+            <column name="lifecycle_saga_id" value="slsaga-1"/>
+            <column name="previous_action" value="SUSPEND"/>
+            <column name="appeal_reason" value="The products were genuine. We have brand authorization letters from the manufacturer."/>
+            <column name="supporting_docs_json" value='["auth-letter-brand-x.pdf","invoice-proof.pdf"]'/>
+            <column name="corrective_action_plan" value="Will add brand authorization certificates to all listings. Will use only original packaging."/>
+            <column name="status" value="PENDING"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

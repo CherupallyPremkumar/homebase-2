@@ -2,6 +2,8 @@ package com.homebase.ecom.order.configuration;
 
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
+import org.chenile.stm.action.scriptsupport.IfAction;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.stm.impl.*;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
@@ -193,6 +195,18 @@ public class OrderConfiguration {
         return enablementStrategy;
     }
 
+    // --- OGNL + Auto-state support ---
+
+    @Bean
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
+
+    @Bean
+    IfAction<Order> ifAction() {
+        return new IfAction<>();
+    }
+
     // ════════════════════════════════════════════════════════════════════════
     // STM Transition Actions — convention: "order" + eventId + "Action"
     // ════════════════════════════════════════════════════════════════════════
@@ -207,6 +221,14 @@ public class OrderConfiguration {
     @Bean ConfirmDeliveryOrderAction orderConfirmDeliveryAction() { return new ConfirmDeliveryOrderAction(); }
     @Bean RequestRefundOrderAction orderRequestRefundAction() { return new RequestRefundOrderAction(); }
     @Bean CompleteRefundOrderAction orderCompleteRefundAction() { return new CompleteRefundOrderAction(); }
+    @Bean HoldForFraudOrderAction orderHoldForFraudAction() { return new HoldForFraudOrderAction(); }
+    @Bean ClearFraudOrderAction orderClearFraudAction() { return new ClearFraudOrderAction(); }
+    @Bean ConfirmFraudOrderAction orderConfirmFraudAction() { return new ConfirmFraudOrderAction(); }
+    @Bean PartialShipOrderAction orderPartialShipAction() { return new PartialShipOrderAction(); }
+    @Bean DeliveryFailedOrderAction orderDeliveryFailedAction() { return new DeliveryFailedOrderAction(); }
+    @Bean PlaceOnHoldOrderAction orderPlaceOnHoldAction() { return new PlaceOnHoldOrderAction(); }
+    @Bean ReleaseHoldOrderAction orderReleaseHoldAction() { return new ReleaseHoldOrderAction(); }
+    @Bean RequestReturnOrderAction orderRequestReturnAction() { return new RequestReturnOrderAction(); }
 
     // ════════════════════════════════════════════════════════════════════════
     // PostSaveHooks — convention: "order" + STATE_ID + "PostSaveHook"

@@ -1,0 +1,151 @@
+[
+  {
+    "id": "RulesEngine.getRuleSets",
+    "name": "rulesets",
+    "workflowName": "ruleSet",
+    "stateColumn": "stateId",
+    "flowColumn": "flowId",
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "columnType": "Text"
+      },
+      "name": {
+        "name": "name",
+        "columnType": "Text",
+        "filterable": true,
+        "likeQuery": true,
+        "sortable": true
+      },
+      "description": {
+        "name": "description",
+        "columnType": "Text"
+      },
+      "targetModule": {
+        "name": "targetModule",
+        "columnType": "Text",
+        "filterable": true
+      },
+      "defaultEffect": {
+        "name": "defaultEffect",
+        "columnType": "Text"
+      },
+      "active": {
+        "name": "active",
+        "columnType": "CheckBox",
+        "filterable": true
+      },
+      "stateId": {
+        "name": "stateId",
+        "columnType": "Text",
+        "filterable": true,
+        "containsQuery": true
+      },
+      "flowId": {
+        "name": "flowId",
+        "columnType": "Text"
+      },
+      "createdTime": {
+        "name": "createdTime",
+        "columnType": "DateTime",
+        "sortable": true
+      },
+      "lastModifiedTime": {
+        "name": "lastModifiedTime",
+        "columnType": "DateTime",
+        "sortable": true
+      },
+      "tenant": {
+        "name": "tenant",
+        "columnType": "Text"
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "RulesEngine.getRulesByRuleSet",
+    "name": "rulesByRuleset",
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "columnType": "Text"
+      },
+      "name": {
+        "name": "name",
+        "columnType": "Text"
+      },
+      "expression": {
+        "name": "expression",
+        "columnType": "Text"
+      },
+      "effect": {
+        "name": "effect",
+        "columnType": "Text"
+      },
+      "priority": {
+        "name": "priority",
+        "columnType": "Number",
+        "sortable": true
+      },
+      "policyId": {
+        "name": "policyId",
+        "columnType": "Text",
+        "filterable": true,
+        "display": false
+      },
+      "policyName": {
+        "name": "policyName",
+        "columnType": "Text"
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "RulesEngine.getDecisions",
+    "name": "decisionAudit",
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "columnType": "Text"
+      },
+      "policyId": {
+        "name": "policyId",
+        "columnType": "Text",
+        "filterable": true
+      },
+      "subjectId": {
+        "name": "subjectId",
+        "columnType": "Text"
+      },
+      "effect": {
+        "name": "effect",
+        "columnType": "Text",
+        "filterable": true,
+        "containsQuery": true
+      },
+      "reasons": {
+        "name": "reasons",
+        "columnType": "Text"
+      },
+      "targetModule": {
+        "name": "targetModule",
+        "columnType": "Text",
+        "filterable": true
+      },
+      "createdTime": {
+        "name": "createdTime",
+        "columnType": "DateTime",
+        "sortable": true,
+        "filterable": true,
+        "betweenQuery": true
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  }
+]

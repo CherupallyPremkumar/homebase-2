@@ -4,15 +4,12 @@ import org.chenile.core.context.ChenileExchange;
 import org.chenile.owiz.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import com.homebase.ecom.fulfillment.model.FulfillmentSaga;
 
 /**
  * OWIZ command that calls the inventory API to deduct stock from the warehouse
  * for each item in the order.
  */
-@Component("deductStockFromWarehouse")
 public class DeductStockFromWarehouse implements Command<ChenileExchange> {
 
     private static final Logger log = LoggerFactory.getLogger(DeductStockFromWarehouse.class);

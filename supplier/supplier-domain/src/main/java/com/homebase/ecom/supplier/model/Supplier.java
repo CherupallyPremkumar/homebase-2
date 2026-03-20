@@ -3,6 +3,7 @@ package com.homebase.ecom.supplier.model;
 import org.chenile.workflow.activities.model.ActivityEnabledStateEntity;
 import org.chenile.workflow.activities.model.ActivityLog;
 import java.util.*;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import org.chenile.workflow.model.*;
 import org.chenile.utils.entity.model.AbstractExtendedStateEntity;
@@ -27,12 +28,12 @@ public class Supplier extends AbstractExtendedStateEntity
     private String address;
 
     // --- Performance Metrics ---
-    private double rating;
-    private int totalOrders;
-    private int totalReturns;
-    private double fulfillmentRate;
-    private double avgShippingDays;
-    private double commissionRate;
+    private Double rating;
+    private Integer totalOrders;
+    private Integer totalReturns;
+    private Double fulfillmentRate;
+    private Double avgShippingDays;
+    private Double commissionRate;
 
     // --- Lifecycle Tracking ---
     private LocalDateTime activeDate;
@@ -44,6 +45,7 @@ public class Supplier extends AbstractExtendedStateEntity
     private LocalDateTime terminatedDate;
     private LocalDateTime probationDate;
     private boolean productsDisabled;
+    private Instant deletedAt;
     private String tenant;
 
     private transient TransientMap transientMap = new TransientMap();
@@ -77,23 +79,23 @@ public class Supplier extends AbstractExtendedStateEntity
 
     // --- Performance Metrics Accessors ---
 
-    public double getRating() { return rating; }
-    public void setRating(double rating) { this.rating = rating; }
+    public Double getRating() { return rating; }
+    public void setRating(Double rating) { this.rating = rating; }
 
-    public int getTotalOrders() { return totalOrders; }
-    public void setTotalOrders(int totalOrders) { this.totalOrders = totalOrders; }
+    public Integer getTotalOrders() { return totalOrders; }
+    public void setTotalOrders(Integer totalOrders) { this.totalOrders = totalOrders; }
 
-    public int getTotalReturns() { return totalReturns; }
-    public void setTotalReturns(int totalReturns) { this.totalReturns = totalReturns; }
+    public Integer getTotalReturns() { return totalReturns; }
+    public void setTotalReturns(Integer totalReturns) { this.totalReturns = totalReturns; }
 
-    public double getFulfillmentRate() { return fulfillmentRate; }
-    public void setFulfillmentRate(double fulfillmentRate) { this.fulfillmentRate = fulfillmentRate; }
+    public Double getFulfillmentRate() { return fulfillmentRate; }
+    public void setFulfillmentRate(Double fulfillmentRate) { this.fulfillmentRate = fulfillmentRate; }
 
-    public double getAvgShippingDays() { return avgShippingDays; }
-    public void setAvgShippingDays(double avgShippingDays) { this.avgShippingDays = avgShippingDays; }
+    public Double getAvgShippingDays() { return avgShippingDays; }
+    public void setAvgShippingDays(Double avgShippingDays) { this.avgShippingDays = avgShippingDays; }
 
-    public double getCommissionRate() { return commissionRate; }
-    public void setCommissionRate(double commissionRate) { this.commissionRate = commissionRate; }
+    public Double getCommissionRate() { return commissionRate; }
+    public void setCommissionRate(Double commissionRate) { this.commissionRate = commissionRate; }
 
     // --- Lifecycle Tracking Accessors ---
 
@@ -124,6 +126,9 @@ public class Supplier extends AbstractExtendedStateEntity
     public boolean isProductsDisabled() { return productsDisabled; }
     public void setProductsDisabled(boolean productsDisabled) { this.productsDisabled = productsDisabled; }
 
+    public Instant getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
+
     // --- Backward compatibility: name maps to businessName ---
 
     public String getName() { return businessName; }
@@ -135,6 +140,9 @@ public class Supplier extends AbstractExtendedStateEntity
     public void setTransientMap(TransientMap transientMap) { this.transientMap = transientMap; }
 
     // --- Activities ---
+
+    public List<ActivityLog> getActivities() { return activities; }
+    public void setActivities(List<ActivityLog> activities) { this.activities = activities; }
 
     @Override
     public Collection<ActivityLog> obtainActivities() {

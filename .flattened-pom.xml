@@ -12,7 +12,7 @@
   <artifactId>homebase-parent</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>HomeBase Parent</name>
+  <name>homebase-parent</name>
   <description>Parent POM for HomeBase microservices</description>
   <licenses>
     <license>
@@ -52,21 +52,22 @@
     <module>cms</module>
     <module>analytics</module>
     <module>reconciliation</module>
+    <module>compliance</module>
     <module>supplier-lifecycle</module>
     <module>ui-query</module>
   </modules>
   <properties>
     <maven.compiler.release>25</maven.compiler.release>
+    <maven.compiler.target>25</maven.compiler.target>
+    <java.version>25</java.version>
     <micrometer-tracing.version>1.6.1</micrometer-tracing.version>
+    <maven.compiler.source>25</maven.compiler.source>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <chenile.config.version>0.0.1-SNAPSHOT</chenile.config.version>
+    <resilience4j.version>2.2.0</resilience4j.version>
     <chenile.client.version>2.1.12</chenile.client.version>
     <opentelemetry.version>1.55.0</opentelemetry.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <resilience4j.version>2.2.0</resilience4j.version>
-    <java.version>25</java.version>
-    <maven.compiler.source>25</maven.compiler.source>
     <revision>0.0.1-SNAPSHOT</revision>
-    <maven.compiler.target>25</maven.compiler.target>
-    <chenile.config.version>0.0.1-SNAPSHOT</chenile.config.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -544,7 +545,42 @@
       </dependency>
       <dependency>
         <groupId>com.homebase.ecom.reconciliation</groupId>
+        <artifactId>reconciliation-domain</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.reconciliation</groupId>
+        <artifactId>reconciliation-infrastructure</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.reconciliation</groupId>
         <artifactId>reconciliation-service</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.compliance</groupId>
+        <artifactId>compliance-api</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.compliance</groupId>
+        <artifactId>compliance-domain</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.compliance</groupId>
+        <artifactId>compliance-infrastructure</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.compliance</groupId>
+        <artifactId>compliance-service</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.compliance</groupId>
+        <artifactId>compliance-client</artifactId>
         <version>0.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>

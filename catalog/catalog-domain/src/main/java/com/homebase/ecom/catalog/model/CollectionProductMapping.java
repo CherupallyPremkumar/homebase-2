@@ -11,8 +11,7 @@ public class CollectionProductMapping  extends BaseEntity {
     private String productId;
     private Integer displayOrder;
     private String addedBy;
-
-
+    private String tenant;
 
     public String getCollectionId() {
         return collectionId;
@@ -44,5 +43,13 @@ public class CollectionProductMapping  extends BaseEntity {
 
     public void setAddedBy(String addedBy) {
         this.addedBy = addedBy;
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
     }
 }

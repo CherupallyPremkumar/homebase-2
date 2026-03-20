@@ -16,7 +16,7 @@
 
 	<artifactId>shared-parent</artifactId>
 	<packaging>pom</packaging>
-	<name>Shared Parent</name>
+	<name>shared-parent</name>
 
 
 	<properties>

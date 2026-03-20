@@ -27,7 +27,7 @@
 	<groupId>com.homebase.ecom.support</groupId>
 	<version>${revision}</version>
 	<artifactId>support-parent</artifactId>
-	<name>All Modules that belong to Support</name>
+	<name>support-parent</name>
 	<description>Modules execution project and Parent Pom</description>
 
 	<dependencyManagement>

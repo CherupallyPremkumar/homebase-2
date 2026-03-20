@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>rules-engine-api</artifactId>
-    <name>Rules Engine API</name>
+    <name>rules-engine-api</name>
 
     <dependencies>
         <dependency>

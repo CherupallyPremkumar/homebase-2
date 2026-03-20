@@ -1,7 +1,6 @@
 package com.homebase.ecom.user.service.cmds;
 
 import com.homebase.ecom.user.domain.model.User;
-import com.homebase.ecom.user.dto.VerifyEmailUserPayload;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;

@@ -29,7 +29,7 @@
 	
 	<groupId>com.homebase.ecom.product</groupId>
 	<artifactId>product-parent</artifactId>
-	<name>All Modules that belong to the Product </name>
+	<name>product-parent</name>
 	<description>Modules execution project and Parent Pom</description>
 
 	<dependencyManagement>

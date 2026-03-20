@@ -13,7 +13,7 @@
 	<artifactId>review-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Review API Model and Interfaces</name>
+	<name>review-api</name>
 
 	<dependencies>
 		<dependency>

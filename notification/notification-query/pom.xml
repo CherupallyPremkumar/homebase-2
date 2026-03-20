@@ -13,7 +13,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>notification-query-service</artifactId>
 	<version>${revision}</version>
-	<name>Query Service Metadata for notification</name>
+	<name>notification-query-service</name>
 	<description>Query Service Metadata for notification</description>
 
 	<properties>

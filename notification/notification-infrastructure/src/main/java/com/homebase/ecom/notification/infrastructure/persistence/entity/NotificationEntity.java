@@ -51,6 +51,28 @@ public class NotificationEntity extends AbstractJpaStateEntity {
     @Column(name = "retry_count")
     private int retryCount;
 
+    // Changeset 006 columns: reference, priority, scheduling, tracking
+    @Column(name = "reference_type", length = 50)
+    private String referenceType;
+
+    @Column(name = "reference_id")
+    private String referenceId;
+
+    @Column(name = "priority", length = 20)
+    private String priority;
+
+    @Column(name = "scheduled_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date scheduledAt;
+
+    @Column(name = "opened_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date openedAt;
+
+    @Column(name = "clicked_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date clickedAt;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "notification_id")
     private List<NotificationActivityLogEntity> activities = new ArrayList<>();
@@ -88,6 +110,24 @@ public class NotificationEntity extends AbstractJpaStateEntity {
 
     public int getRetryCount() { return retryCount; }
     public void setRetryCount(int retryCount) { this.retryCount = retryCount; }
+
+    public String getReferenceType() { return referenceType; }
+    public void setReferenceType(String referenceType) { this.referenceType = referenceType; }
+
+    public String getReferenceId() { return referenceId; }
+    public void setReferenceId(String referenceId) { this.referenceId = referenceId; }
+
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
+
+    public Date getScheduledAt() { return scheduledAt; }
+    public void setScheduledAt(Date scheduledAt) { this.scheduledAt = scheduledAt; }
+
+    public Date getOpenedAt() { return openedAt; }
+    public void setOpenedAt(Date openedAt) { this.openedAt = openedAt; }
+
+    public Date getClickedAt() { return clickedAt; }
+    public void setClickedAt(Date clickedAt) { this.clickedAt = clickedAt; }
 
     public List<NotificationActivityLogEntity> getActivities() { return activities; }
     public void setActivities(List<NotificationActivityLogEntity> activities) { this.activities = activities; }

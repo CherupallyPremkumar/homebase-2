@@ -12,7 +12,7 @@
     <groupId>com.homebase.ecom.analytics</groupId>
     <artifactId>analytics-parent</artifactId>
     <packaging>pom</packaging>
-    <name>All Modules that belong to Analytics</name>
+    <name>analytics-parent</name>
 
     <modules>
         <module>analytics-api</module>

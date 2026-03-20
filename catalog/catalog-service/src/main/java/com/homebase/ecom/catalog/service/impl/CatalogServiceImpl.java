@@ -1,12 +1,13 @@
 package com.homebase.ecom.catalog.service.impl;
 
 import com.homebase.ecom.catalog.model.CatalogItem;
-import com.homebase.ecom.catalog.domain.port.in.CatalogService;
-import com.homebase.ecom.catalog.domain.service.CatalogPolicyValidator;
+import com.homebase.ecom.catalog.port.in.CatalogService;
+import com.homebase.ecom.catalog.service.CatalogPolicyValidator;
+import com.homebase.ecom.catalog.exception.ProductNotFoundException;
 import com.homebase.ecom.catalog.repository.CatalogItemRepository;
 import com.homebase.ecom.catalog.repository.CategoryProductMappingRepository;
-import com.homebase.ecom.catalog.repository.ProductServiceClient;
-import com.homebase.ecom.product.dto.ProductCatalogDetails;
+import com.homebase.ecom.catalog.port.client.ProductDataPort;
+import com.homebase.ecom.catalog.port.client.ProductSnapshot;
 import com.homebase.ecom.shared.event.ProductPublishedEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,17 +18,17 @@ import java.math.BigDecimal;
 public class CatalogServiceImpl implements CatalogService {
 
     private final CatalogItemRepository catalogItemRepository;
-    private final ProductServiceClient productServiceClient;
+    private final ProductDataPort productDataPort;
     private final CategoryProductMappingRepository categoryMappingRepository;
     private final CatalogPolicyValidator policyValidator;
 
     public CatalogServiceImpl(
             CatalogItemRepository catalogItemRepository,
-            ProductServiceClient productServiceClient,
+            ProductDataPort productDataPort,
             CategoryProductMappingRepository categoryMappingRepository,
             CatalogPolicyValidator policyValidator) {
         this.catalogItemRepository = catalogItemRepository;
-        this.productServiceClient = productServiceClient;
+        this.productDataPort = productDataPort;
         this.categoryMappingRepository = categoryMappingRepository;
         this.policyValidator = policyValidator;
     }
@@ -37,12 +38,12 @@ public class CatalogServiceImpl implements CatalogService {
     public CatalogItem createOrUpdateCatalogItem(ProductPublishedEvent event) {
         String productId = event.getProductId();
 
-        Optional<ProductCatalogDetails> detailsOpt = productServiceClient.getProduct(productId);
+        Optional<ProductSnapshot> snapshotOpt = productDataPort.getProduct(productId);
 
-        if (detailsOpt.isEmpty()) {
-            throw new RuntimeException("Product details for ID " + productId + " not found in external service");
+        if (snapshotOpt.isEmpty()) {
+            throw new ProductNotFoundException(productId);
         }
-        ProductCatalogDetails details = detailsOpt.get();
+        ProductSnapshot snapshot = snapshotOpt.get();
 
         Optional<CatalogItem> existingItemOpt = catalogItemRepository.findByProductId(productId);
         CatalogItem catalogItem;
@@ -57,24 +58,28 @@ public class CatalogServiceImpl implements CatalogService {
             catalogItem.setActive(true);
         }
 
-        catalogItem.setName(details.getName());
-        catalogItem.setPrice(details.getPrice() != null ? details.getPrice().getAmount() : BigDecimal.ZERO);
+        catalogItem.setName(snapshot.getName());
+        catalogItem.setDescription(snapshot.getDescription());
+        catalogItem.setBrand(snapshot.getBrand());
+        catalogItem.setImageUrl(snapshot.getImageUrl());
+        catalogItem.setPrice(snapshot.getPrice() != null ? snapshot.getPrice() : BigDecimal.ZERO);
 
         policyValidator.validateCatalogItemTags(catalogItem.getTags());
 
-        if (details.getActive() != null && !details.getActive()) {
+        if (snapshot.getActive() != null && !snapshot.getActive()) {
             catalogItem.setActive(false);
         }
 
         CatalogItem savedItem = catalogItemRepository.save(catalogItem);
 
-        String category = details.getCategory();
+        String category = snapshot.getCategory();
         if (category != null && !category.trim().isEmpty()) {
-            Optional<com.homebase.ecom.catalog.model.CategoryProductMapping> existingMapping = categoryMappingRepository
-                    .findByCategoryIdAndProductId(category, productId);
+            Optional<com.homebase.ecom.catalog.model.CategoryProductMapping> existingMapping =
+                    categoryMappingRepository.findByCategoryIdAndProductId(category, productId);
 
             if (existingMapping.isEmpty()) {
-                com.homebase.ecom.catalog.model.CategoryProductMapping mapping = new com.homebase.ecom.catalog.model.CategoryProductMapping();
+                com.homebase.ecom.catalog.model.CategoryProductMapping mapping =
+                        new com.homebase.ecom.catalog.model.CategoryProductMapping();
                 mapping.setCategoryId(category);
                 mapping.setProductId(productId);
                 mapping.setDisplayOrder(999);
@@ -93,9 +98,8 @@ public class CatalogServiceImpl implements CatalogService {
         if (itemOpt.isPresent()) {
             CatalogItem item = itemOpt.get();
 
-            if (newQuantity <= policyValidator.getLowStockThreshold()) {
-                // Future: add low stock badge
-            }
+            item.setAvailableQty(newQuantity);
+            item.setInStock(newQuantity > 0);
 
             if (newQuantity <= 0 && policyValidator.shouldHideOutOfStockItems()) {
                 item.setActive(false);

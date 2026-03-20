@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>pricing-api</artifactId>
-    <name>Pricing Service - API</name>
+    <name>pricing-api</name>
 
     <dependencies>
         <dependency>

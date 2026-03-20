@@ -12,7 +12,7 @@
 	<artifactId>support-service</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Support Service Implementations</name>
+	<name>support-service</name>
 
 	<dependencies>
 		<dependency>

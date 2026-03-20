@@ -12,7 +12,7 @@
 	<artifactId>user-service</artifactId>
 	<packaging>jar</packaging>
 
-	<name>User Service Implementations</name>
+	<name>user-service</name>
 
 	<dependencies>
 		<dependency>
@@ -61,6 +61,11 @@
 			<artifactId>chenile-proxy</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>service-registry-service</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
@@ -83,6 +88,11 @@
 			<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>cucumber-sec-utils</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-kafka</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
@@ -99,7 +109,17 @@
 			<version>3.4.0</version>
 			<scope>test</scope>
 		</dependency>
-			<dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>security-interceptor</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-liquibase</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.homebase.ecom</groupId>
 			<artifactId>db-migrations</artifactId>
 			<version>${revision}</version>

@@ -4,7 +4,6 @@ import com.homebase.ecom.payment.domain.ReconciliationMismatch;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,14 +12,14 @@ public interface ReconciliationMismatchRepository extends JpaRepository<Reconcil
 
     List<ReconciliationMismatch> findByResolvedFalse();
 
-    List<ReconciliationMismatch> findByResolvedFalseOrderByCreatedAtDesc();
+    List<ReconciliationMismatch> findByResolvedFalseOrderByCreatedTimeDesc();
 
-    List<ReconciliationMismatch> findByResolvedFalseAndCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime createdAt);
+    List<ReconciliationMismatch> findByResolvedFalseAndCreatedTimeAfterOrderByCreatedTimeDesc(java.util.Date createdTime);
 
     List<ReconciliationMismatch> findByOrderId(String orderId);
 
     Optional<ReconciliationMismatch> findByGatewayTypeAndProviderTransactionIdAndResolvedFalse(String gatewayType,
             String providerTransactionId);
 
-    List<ReconciliationMismatch> findByGatewayTypeAndResolvedFalseOrderByCreatedAtDesc(String gatewayType);
+    List<ReconciliationMismatch> findByGatewayTypeAndResolvedFalseOrderByCreatedTimeDesc(String gatewayType);
 }

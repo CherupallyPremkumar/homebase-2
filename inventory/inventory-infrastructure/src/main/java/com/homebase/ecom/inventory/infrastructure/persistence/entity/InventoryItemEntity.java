@@ -1,6 +1,8 @@
 package com.homebase.ecom.inventory.infrastructure.persistence.entity;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +62,21 @@ public class InventoryItemEntity extends AbstractJpaStateEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private InventoryStatus status;
+
+    @Column(name = "supplier_id")
+    private String supplierId;
+
+    @Column(name = "cost_price", precision = 12, scale = 2)
+    private BigDecimal costPrice;
+
+    @Column(name = "batch_number", length = 100)
+    private String batchNumber;
+
+    @Column(name = "expiry_date")
+    private LocalDate expiryDate;
+
+    @Column(name = "shelf_location", length = 100)
+    private String shelfLocation;
 
     @ElementCollection
     @CollectionTable(name = "inventory_reservations", joinColumns = @JoinColumn(name = "inventory_item_id"))
@@ -131,6 +148,21 @@ public class InventoryItemEntity extends AbstractJpaStateEntity {
 
     public InventoryStatus getStatus() { return status; }
     public void setStatus(InventoryStatus status) { this.status = status; }
+
+    public String getSupplierId() { return supplierId; }
+    public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
+
+    public BigDecimal getCostPrice() { return costPrice; }
+    public void setCostPrice(BigDecimal costPrice) { this.costPrice = costPrice; }
+
+    public String getBatchNumber() { return batchNumber; }
+    public void setBatchNumber(String batchNumber) { this.batchNumber = batchNumber; }
+
+    public LocalDate getExpiryDate() { return expiryDate; }
+    public void setExpiryDate(LocalDate expiryDate) { this.expiryDate = expiryDate; }
+
+    public String getShelfLocation() { return shelfLocation; }
+    public void setShelfLocation(String shelfLocation) { this.shelfLocation = shelfLocation; }
 
     public List<InventoryReservationEntity> getActiveReservations() { return activeReservations; }
     public void setActiveReservations(List<InventoryReservationEntity> activeReservations) { this.activeReservations = activeReservations; }

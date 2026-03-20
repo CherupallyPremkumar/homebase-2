@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>payment-client</artifactId>
-    <name>Payment Client — ProxyBuilder-based service client</name>
+    <name>payment-client</name>
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom</groupId>

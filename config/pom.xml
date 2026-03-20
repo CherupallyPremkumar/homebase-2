@@ -6,6 +6,7 @@
 	<modules>
 		<module>cconfig-api</module>
 		<module>cconfig-service</module>
+		<module>cconfig-query</module>
 	</modules>
 	<parent>
 		<groupId>com.homebase.ecom</groupId>
@@ -20,6 +21,6 @@
 	<groupId>com.homebase.ecom.cconfig</groupId>
 	<version>${revision}</version>
 	<artifactId>cconfig-parent</artifactId>
-	<name>Chenile config</name>
+	<name>cconfig-parent</name>
 	<description>Chenile Configuration Management</description>
 </project>

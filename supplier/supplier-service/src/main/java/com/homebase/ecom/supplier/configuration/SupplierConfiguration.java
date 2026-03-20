@@ -8,7 +8,7 @@ import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationEventPublisher;
+import org.chenile.pubsub.ChenilePub;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -91,8 +91,8 @@ public class SupplierConfiguration {
     // --- Event Publisher ---
 
     @Bean
-    SupplierEventPublisher supplierEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-        return new SupplierEventPublisherImpl(applicationEventPublisher);
+    SupplierEventPublisher supplierEventPublisher(ChenilePub chenilePub, tools.jackson.databind.ObjectMapper objectMapper) {
+        return new SupplierEventPublisherImpl(chenilePub, objectMapper);
     }
 
     // --- OGNL Scripting for auto-states ---
@@ -203,6 +203,11 @@ public class SupplierConfiguration {
     @Bean
     SupplierFlowEntryAction supplierFlowEntryAction() {
         return new SupplierFlowEntryAction();
+    }
+
+    @Bean
+    ActivateSupplierAction supplierActivateSupplierAction() {
+        return new ActivateSupplierAction();
     }
 
     @Bean
@@ -334,7 +339,6 @@ public class SupplierConfiguration {
     // --- Kafka Event Handler ---
 
     @Bean("supplierEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     SupplierEventHandler supplierEventService(
             @Qualifier("supplierEntityStore") EntityStore<Supplier> entityStore,
             @Qualifier("supplierEntityStm") STM<Supplier> stm,

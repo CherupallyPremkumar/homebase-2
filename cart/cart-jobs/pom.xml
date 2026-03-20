@@ -13,7 +13,7 @@
 	<artifactId>cart-jobs</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Cart Jobs</name>
+	<name>cart-jobs</name>
     <description>Event translators and scheduled jobs for the Cart module.
         Translates external events (inventory, product, promo, checkout) into cart STM events.
         Runs cron jobs for cart expiration and abandonment detection.</description>

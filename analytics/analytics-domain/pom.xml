@@ -10,7 +10,7 @@
     </parent>
     <artifactId>analytics-domain</artifactId>
     <packaging>jar</packaging>
-    <name>Analytics Domain — Models, Ports</name>
+    <name>analytics-domain</name>
 
     <dependencies>
         <dependency>

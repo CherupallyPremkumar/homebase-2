@@ -3,6 +3,7 @@ package com.homebase.ecom.supplierlifecycle.configuration;
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.impl.*;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,8 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
-import org.chenile.workflow.service.impl.StateEntityServiceImpl;
-import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
+import com.homebase.ecom.supplierlifecycle.service.SupplierLifecycleStateEntityService;
 import org.chenile.workflow.service.stmcmds.*;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.workflow.service.activities.ActivityChecker;
@@ -35,6 +35,13 @@ public class SupplierLifecycleConfiguration {
     private static final String FLOW_DEFINITION_FILE = "com/homebase/ecom/supplierlifecycle/supplier-lifecycle-states.xml";
     public static final String PREFIX_FOR_PROPERTIES = "SupplierLifecycle";
     public static final String PREFIX_FOR_RESOLVER = "supplierLifecycle";
+
+    // --- OGNL + Auto-state support ---
+
+    @Bean
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
 
     // --- STM Infrastructure ---
 
@@ -89,11 +96,11 @@ public class SupplierLifecycleConfiguration {
     // --- State Entity Service ---
 
     @Bean
-    StateEntityServiceImpl<SupplierLifecycleSaga> _supplierLifecycleStateEntityService_(
+    SupplierLifecycleStateEntityService _supplierLifecycleStateEntityService_(
             @Qualifier("supplierLifecycleEntityStm") STM<SupplierLifecycleSaga> stm,
             @Qualifier("supplierLifecycleActionsInfoProvider") STMActionsInfoProvider infoProvider,
             @Qualifier("supplierLifecycleEntityStore") EntityStore<SupplierLifecycleSaga> entityStore) {
-        return new HmStateEntityServiceImpl<>(stm, infoProvider, entityStore);
+        return new SupplierLifecycleStateEntityService(stm, infoProvider, entityStore);
     }
 
     // --- STM Transition Action Resolver ---
@@ -252,6 +259,21 @@ public class SupplierLifecycleConfiguration {
     @Bean
     RetryAction supplierLifecycleRetryAction() {
         return new RetryAction();
+    }
+
+    @Bean
+    STMTransitionAction<SupplierLifecycleSaga> supplierLifecycleFailAction() {
+        return new DefaultSTMTransitionAction<MinimalPayload>();
+    }
+
+    @Bean
+    STMTransitionAction<SupplierLifecycleSaga> supplierLifecycleCancelAction() {
+        return new DefaultSTMTransitionAction<MinimalPayload>();
+    }
+
+    @Bean
+    STMTransitionAction<SupplierLifecycleSaga> supplierLifecycleCompensateAction() {
+        return new DefaultSTMTransitionAction<MinimalPayload>();
     }
 
     // --- PostSaveHooks (one per state) ---

@@ -12,10 +12,10 @@ chenile:
       id: authz-servlet
       secret: secret
     keycloak:
-      host: \${KEYCLOAK_HOST:http://localhost:8180}
-      port: \${KEYCLOAK_PORT:8180}
+      host: ${KEYCLOAK_HOST:http://localhost:8180}
+      port: ${KEYCLOAK_PORT:8180}
       base:
-        realm: \${KEYCLOAK_REALM:tenant0}
+        realm: ${KEYCLOAK_REALM:tenant0}
 
 spring:
   banner:

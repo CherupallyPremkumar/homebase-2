@@ -4,19 +4,23 @@ import com.homebase.ecom.returnprocessing.infrastructure.persistence.mapper.Retu
 import com.homebase.ecom.returnprocessing.infrastructure.persistence.repository.ReturnProcessingSagaJpaRepository;
 import com.homebase.ecom.returnprocessing.model.ReturnProcessingSaga;
 import com.homebase.ecom.returnprocessing.port.ReturnProcessingSagaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
+/**
+ * Infrastructure adapter implementing the domain port for return processing saga persistence.
+ * Wired as @Bean in ReturnProcessingConfiguration.
+ */
 public class ReturnProcessingSagaRepositoryImpl implements ReturnProcessingSagaRepository {
 
-    @Autowired
-    private ReturnProcessingSagaJpaRepository jpaRepository;
+    private final ReturnProcessingSagaJpaRepository jpaRepository;
+    private final ReturnProcessingSagaMapper mapper;
 
-    @Autowired
-    private ReturnProcessingSagaMapper mapper;
+    public ReturnProcessingSagaRepositoryImpl(ReturnProcessingSagaJpaRepository jpaRepository,
+                                              ReturnProcessingSagaMapper mapper) {
+        this.jpaRepository = jpaRepository;
+        this.mapper = mapper;
+    }
 
     @Override
     public Optional<ReturnProcessingSaga> findById(String id) {

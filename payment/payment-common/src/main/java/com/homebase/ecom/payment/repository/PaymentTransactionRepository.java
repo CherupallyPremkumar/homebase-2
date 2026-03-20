@@ -20,10 +20,10 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
     Optional<PaymentTransaction> findByGatewayTransactionId(String gatewayTransactionId);
 
     @Query("SELECT pt FROM PaymentTransaction pt WHERE pt.status = 'SUCCEEDED' " +
-            "AND pt.createdAt >= :start AND pt.createdAt <= :end")
+            "AND pt.createdTime >= :start AND pt.createdTime <= :end")
     List<PaymentTransaction> findSucceededInRange(
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end);
+            @Param("start") java.util.Date start,
+            @Param("end") java.util.Date end);
 
     List<PaymentTransaction> findByStatus(String status);
 

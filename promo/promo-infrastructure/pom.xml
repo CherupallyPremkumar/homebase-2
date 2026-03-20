@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>promo-infrastructure</artifactId>
-    <name>Promo Infrastructure</name>
+    <name>promo-infrastructure</name>
 
     <dependencies>
         <dependency>

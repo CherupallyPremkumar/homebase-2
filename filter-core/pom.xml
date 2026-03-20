@@ -11,7 +11,7 @@
     <artifactId>filter-core</artifactId>
     <packaging>pom</packaging>
 
-    <name>filter-core</name>
+    <name>filter-core-parent</name>
     <modules>
         <module>currency-interceptor</module>
     </modules>

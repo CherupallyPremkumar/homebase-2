@@ -1,34 +1,48 @@
 package com.homebase.ecom.catalog.service.impl;
 
-import com.homebase.ecom.catalog.domain.port.in.UpdateCatalogUseCase;
-import com.homebase.ecom.catalog.domain.port.out.OfferClientPort;
-import com.homebase.ecom.catalog.domain.port.out.ProductClientPort;
+import com.homebase.ecom.catalog.port.in.UpdateCatalogUseCase;
+import com.homebase.ecom.catalog.port.client.OfferDataPort;
+import com.homebase.ecom.catalog.port.client.OfferSnapshot;
+import com.homebase.ecom.catalog.port.client.ProductDataPort;
+import com.homebase.ecom.catalog.port.client.ProductSnapshot;
 import com.homebase.ecom.catalog.model.CatalogItem;
 import com.homebase.ecom.catalog.repository.CatalogItemRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 public class CatalogProjectorServiceImpl implements UpdateCatalogUseCase {
 
-    private final ProductClientPort productClient;
-    private final OfferClientPort offerClient;
+    private static final Logger log = LoggerFactory.getLogger(CatalogProjectorServiceImpl.class);
+
+    private final ProductDataPort productDataPort;
+    private final OfferDataPort offerDataPort;
     private final CatalogItemRepository catalogRepository;
 
-    public CatalogProjectorServiceImpl(ProductClientPort productClient, OfferClientPort offerClient, CatalogItemRepository catalogRepository) {
-        this.productClient = productClient;
-        this.offerClient = offerClient;
+    public CatalogProjectorServiceImpl(ProductDataPort productDataPort,
+                                        OfferDataPort offerDataPort,
+                                        CatalogItemRepository catalogRepository) {
+        this.productDataPort = productDataPort;
+        this.offerDataPort = offerDataPort;
         this.catalogRepository = catalogRepository;
     }
 
     @Override
     @Transactional
     public void syncCatalogItem(String offerId, String productId) {
-        // 1. Fetch data from different Bounded Contexts via ACL Ports
-        ProductClientPort.ProductOverview productData = productClient.fetchProductOverview(productId);
-        OfferClientPort.OfferOverview offerData = offerClient.fetchOfferDetails(offerId);
+        Optional<ProductSnapshot> productOpt = productDataPort.getProduct(productId);
+        Optional<OfferSnapshot> offerOpt = offerDataPort.getOffer(offerId);
 
-        // 2. Build or Update the Read Model (CatalogItem)
+        if (productOpt.isEmpty()) {
+            log.warn("Product {} not found — skipping catalog sync", productId);
+            return;
+        }
+        ProductSnapshot productData = productOpt.get();
+
         CatalogItem item = catalogRepository.findByProductId(productId)
                 .orElseGet(() -> {
                     CatalogItem newItem = new CatalogItem();
@@ -38,12 +52,20 @@ public class CatalogProjectorServiceImpl implements UpdateCatalogUseCase {
                 });
 
         item.setName(productData.getName());
-        item.setCategoryIds(productData.getCategoryIds());
-        
-        item.setPrice(offerData.getPrice());
-        item.setActive(offerData.isActive());
+        item.setDescription(productData.getDescription());
+        item.setBrand(productData.getBrand());
+        item.setImageUrl(productData.getImageUrl());
+        if (productData.getCategory() != null) {
+            item.setCategoryIds(List.of(productData.getCategory()));
+        }
 
-        // 3. Save to the optimized Storefront DB/Cache
+        offerOpt.ifPresent(offer -> {
+            if (offer.getOfferPrice() != null) {
+                item.setPrice(offer.getOfferPrice());
+            }
+            item.setActive(!"SUSPENDED".equals(offer.getStatus()) && !"EXPIRED".equals(offer.getStatus()));
+        });
+
         catalogRepository.save(item);
     }
 }

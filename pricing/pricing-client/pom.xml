@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>pricing-client</artifactId>
-    <name>Pricing Client — ProxyBuilder-based service client</name>
+    <name>pricing-client</name>
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom.pricing</groupId>

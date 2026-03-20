@@ -2,7 +2,9 @@ package com.homebase.ecom.support.configuration;
 
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
+import org.chenile.stm.action.scriptsupport.IfAction;
 import org.chenile.stm.impl.*;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
-import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.support.model.SupportTicket;
 import com.homebase.ecom.support.service.cmds.*;
@@ -77,7 +78,7 @@ public class SupportConfiguration {
             @Qualifier("supportEntityStm") STM<SupportTicket> stm,
             @Qualifier("supportActionsInfoProvider") STMActionsInfoProvider supportInfoProvider,
             @Qualifier("supportEntityStore") EntityStore<SupportTicket> entityStore) {
-        return new HmStateEntityServiceImpl<>(stm, supportInfoProvider, entityStore);
+        return new StateEntityServiceImpl<>(stm, supportInfoProvider, entityStore);
     }
 
     // STM Components
@@ -115,6 +116,18 @@ public class SupportConfiguration {
         GenericExitAction<SupportTicket> exitAction = new GenericExitAction<>();
         stmFlowStore.setExitAction(exitAction);
         return exitAction;
+    }
+
+    @Bean
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean(name = "ognlScriptingStrategy")
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
+
+    @Bean
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean(name = "ifAction")
+    IfAction<SupportTicket> ifAction() {
+        return new IfAction<>();
     }
 
     @Bean

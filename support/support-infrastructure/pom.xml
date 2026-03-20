@@ -10,7 +10,7 @@
     </parent>
     <artifactId>support-infrastructure</artifactId>
     <packaging>jar</packaging>
-    <name>Support Infrastructure — JPA Adapters</name>
+    <name>support-infrastructure</name>
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom.support</groupId>

@@ -49,6 +49,12 @@ public class ReviewEntity extends AbstractJpaStateEntity
     @Column(name = "moderator_notes", columnDefinition = "TEXT")
     private String moderatorNotes;
 
+    @Column(name = "variant_id")
+    private String variantId;
+
+    @Column(name = "review_source", length = 50)
+    private String reviewSource;
+
     @Transient
     private TransientMap transientMap = new TransientMap();
 
@@ -90,6 +96,12 @@ public class ReviewEntity extends AbstractJpaStateEntity
 
     public String getModeratorNotes() { return moderatorNotes; }
     public void setModeratorNotes(String moderatorNotes) { this.moderatorNotes = moderatorNotes; }
+
+    public String getVariantId() { return variantId; }
+    public void setVariantId(String variantId) { this.variantId = variantId; }
+
+    public String getReviewSource() { return reviewSource; }
+    public void setReviewSource(String reviewSource) { this.reviewSource = reviewSource; }
 
     public List<ReviewActivityLogEntity> getActivities() { return activities; }
     public void setActivities(List<ReviewActivityLogEntity> activities) { this.activities = activities; }

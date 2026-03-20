@@ -6,17 +6,7 @@ logging:
 
 chenile:
   base:
-    url:
-  security:
-    client:
-      id: authz-servlet
-      secret: secret
-    keycloak:
-      host: ${KEYCLOAK_HOST:http://localhost:8180}
-      port: ${KEYCLOAK_PORT:8180}
-      base:
-        realm: ${KEYCLOAK_REALM:tenant0}
-
+    url: http://localhost:8080
 
 spring:
   main:
@@ -36,9 +26,11 @@ spring:
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.H2Dialect
+  kafka:
+    consumer:
+      auto-startup: false
 
 server:
   error:
     whitelabel:
       enabled: false
-

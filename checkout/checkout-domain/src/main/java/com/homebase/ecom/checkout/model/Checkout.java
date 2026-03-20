@@ -2,6 +2,8 @@ package com.homebase.ecom.checkout.model;
 
 import com.homebase.ecom.shared.Money;
 import org.chenile.utils.entity.model.AbstractExtendedStateEntity;
+import org.chenile.workflow.activities.model.ActivityEnabledStateEntity;
+import org.chenile.workflow.activities.model.ActivityLog;
 import org.chenile.workflow.model.ContainsTransientMap;
 import org.chenile.workflow.model.TransientMap;
 
@@ -16,7 +18,8 @@ import java.util.List;
  *
  * Extends Chenile's AbstractExtendedStateEntity for STM integration.
  */
-public class Checkout extends AbstractExtendedStateEntity implements ContainsTransientMap {
+public class Checkout extends AbstractExtendedStateEntity
+        implements ActivityEnabledStateEntity, ContainsTransientMap {
 
     private String customerId;
     private String cartId;
@@ -47,9 +50,20 @@ public class Checkout extends AbstractExtendedStateEntity implements ContainsTra
     private String failureReason;
     private LocalDateTime expiresAt;
 
+    // Idempotency and locks (from checkout-003 migration)
+    private String idempotencyKey;
+    private String priceLockToken;
+    private String paymentSessionId;
+    private LocalDateTime completedAt;
+    private LocalDateTime cancelledAt;
+
+    // Retry tracking for CHECK_RETRY_ALLOWED auto-state
+    private int paymentRetryCount;
+
     public String description;
     private String tenant;
 
+    private List<CheckoutActivityLog> activities = new ArrayList<>();
     public TransientMap transientMap = new TransientMap();
 
     // ── Getters & Setters ──────────────────────────────────────────────
@@ -107,6 +121,46 @@ public class Checkout extends AbstractExtendedStateEntity implements ContainsTra
 
     public LocalDateTime getExpiresAt() { return expiresAt; }
     public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
+
+    public String getIdempotencyKey() { return idempotencyKey; }
+    public void setIdempotencyKey(String idempotencyKey) { this.idempotencyKey = idempotencyKey; }
+
+    public String getPriceLockToken() { return priceLockToken; }
+    public void setPriceLockToken(String priceLockToken) { this.priceLockToken = priceLockToken; }
+
+    public String getPaymentSessionId() { return paymentSessionId; }
+    public void setPaymentSessionId(String paymentSessionId) { this.paymentSessionId = paymentSessionId; }
+
+    public LocalDateTime getCompletedAt() { return completedAt; }
+    public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+
+    public LocalDateTime getCancelledAt() { return cancelledAt; }
+    public void setCancelledAt(LocalDateTime cancelledAt) { this.cancelledAt = cancelledAt; }
+
+    public int getPaymentRetryCount() { return paymentRetryCount; }
+    public void setPaymentRetryCount(int paymentRetryCount) { this.paymentRetryCount = paymentRetryCount; }
+
+    public List<CheckoutActivityLog> getActivities() { return activities; }
+    public void setActivities(List<CheckoutActivityLog> activities) { this.activities = activities; }
+
+    @Override
+    public java.util.Collection<ActivityLog> obtainActivities() {
+        java.util.Collection<ActivityLog> acts = new ArrayList<>();
+        for (ActivityLog a : activities) {
+            acts.add(a);
+        }
+        return acts;
+    }
+
+    @Override
+    public ActivityLog addActivity(String eventId, String comment) {
+        CheckoutActivityLog log = new CheckoutActivityLog();
+        log.activityName = eventId;
+        log.activityComment = comment;
+        log.activitySuccess = true;
+        activities.add(log);
+        return log;
+    }
 
     @Override
     public TransientMap getTransientMap() { return this.transientMap; }

@@ -2,7 +2,9 @@ package com.homebase.ecom.checkout.configuration;
 
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
+import org.chenile.stm.action.scriptsupport.IfAction;
 import org.chenile.stm.impl.*;
+import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,6 +48,16 @@ public class CheckoutConfiguration {
     }
 
     @Bean
+    OgnlScriptingStrategy ognlScriptingStrategy() {
+        return new OgnlScriptingStrategy();
+    }
+
+    @Bean
+    IfAction<Checkout> ifAction() {
+        return new IfAction<>();
+    }
+
+    @Bean
     STMFlowStoreImpl checkoutFlowStore(
             @Qualifier("checkoutBeanFactoryAdapter") BeanFactoryAdapter checkoutBeanFactoryAdapter) throws Exception {
         STMFlowStoreImpl stmFlowStore = new STMFlowStoreImpl();
@@ -65,6 +77,11 @@ public class CheckoutConfiguration {
         STMActionsInfoProvider provider = new STMActionsInfoProvider(stmFlowStore);
         WorkflowRegistry.addSTMActionsInfoProvider("checkout", provider);
         return provider;
+    }
+
+    @Bean
+    CheckoutMapper checkoutMapper() {
+        return new CheckoutMapper();
     }
 
     @Bean
@@ -205,6 +222,11 @@ public class CheckoutConfiguration {
     }
 
     @Bean
+    RetryPaymentAction checkoutRetryPaymentAction() {
+        return new RetryPaymentAction();
+    }
+
+    @Bean
     CompensateCheckoutAction checkoutCompensateAction(
             CartLockPort cartLockPort,
             InventoryReservePort inventoryReservePort,
@@ -218,6 +240,11 @@ public class CheckoutConfiguration {
     // ═══════════════════════════════════════════════════════════════════
     // OWIZ Saga Commands (wired into checkout-saga.xml chain)
     // ═══════════════════════════════════════════════════════════════════
+
+    @Bean
+    ValidateAddressCommand validateAddressCommand() {
+        return new ValidateAddressCommand();
+    }
 
     @Bean
     LockCartCommand lockCartCommand(CartLockPort cartLockPort) {
@@ -242,6 +269,16 @@ public class CheckoutConfiguration {
     @Bean
     CreateOrderCommand createOrderCommand(OrderCreationPort orderCreationPort) {
         return new CreateOrderCommand(orderCreationPort);
+    }
+
+    @Bean
+    EstimateDeliveryCommand estimateDeliveryCommand() {
+        return new EstimateDeliveryCommand();
+    }
+
+    @Bean
+    ScreenFraudCommand screenFraudCommand() {
+        return new ScreenFraudCommand();
     }
 
     @Bean

@@ -1,6 +1,8 @@
 package com.homebase.ecom.inventory.domain.model;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -42,6 +44,13 @@ public class InventoryItem extends AbstractExtendedStateEntity
     private Integer outOfStockThreshold = 0;
     private InventoryStatus status = InventoryStatus.AVAILABLE;
     
+    // Supply chain fields (from inventory-006 migration)
+    private String supplierId;
+    private BigDecimal costPrice;
+    private String batchNumber;
+    private LocalDate expiryDate;
+    private String shelfLocation;
+
     // Domain-specific Timestamps (createdTime/lastModifiedTime inherited from BaseEntity)
     private Instant lastSaleAt;
     private Instant lastRestockAt;
@@ -129,6 +138,21 @@ public class InventoryItem extends AbstractExtendedStateEntity
 
     public List<DamageRecord> getDamageRecords() { return damageRecords; }
     public void setDamageRecords(List<DamageRecord> damageRecords) { this.damageRecords = damageRecords; }
+
+    public String getSupplierId() { return supplierId; }
+    public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
+
+    public BigDecimal getCostPrice() { return costPrice; }
+    public void setCostPrice(BigDecimal costPrice) { this.costPrice = costPrice; }
+
+    public String getBatchNumber() { return batchNumber; }
+    public void setBatchNumber(String batchNumber) { this.batchNumber = batchNumber; }
+
+    public LocalDate getExpiryDate() { return expiryDate; }
+    public void setExpiryDate(LocalDate expiryDate) { this.expiryDate = expiryDate; }
+
+    public String getShelfLocation() { return shelfLocation; }
+    public void setShelfLocation(String shelfLocation) { this.shelfLocation = shelfLocation; }
 
     public Instant getLastSaleAt() { return lastSaleAt; }
     public void setLastSaleAt(Instant lastSaleAt) { this.lastSaleAt = lastSaleAt; }

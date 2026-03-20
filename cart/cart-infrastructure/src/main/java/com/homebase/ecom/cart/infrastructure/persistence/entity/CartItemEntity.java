@@ -38,6 +38,15 @@ public class CartItemEntity extends BaseJpaEntity {
     @Column(name = "available")
     private boolean available = true;
 
+    @Column(name = "saved_for_later")
+    private boolean savedForLater;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
+    @Column(name = "original_price")
+    private Long originalPrice;
+
     public CartEntity getCart() {
         return cart;
     }
@@ -116,5 +125,29 @@ public class CartItemEntity extends BaseJpaEntity {
 
     public void setAvailable(boolean available) {
         this.available = available;
+    }
+
+    public boolean isSavedForLater() {
+        return savedForLater;
+    }
+
+    public void setSavedForLater(boolean savedForLater) {
+        this.savedForLater = savedForLater;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public Long getOriginalPrice() {
+        return originalPrice;
+    }
+
+    public void setOriginalPrice(Long originalPrice) {
+        this.originalPrice = originalPrice;
     }
 }

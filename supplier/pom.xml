@@ -25,7 +25,7 @@
 	
 	<groupId>com.homebase.ecom.supplier</groupId>
 	<artifactId>supplier-parent</artifactId>
-	<name>All Modules that belong to the Supplier </name>
+	<name>supplier-parent</name>
 	<description>Modules execution project and Parent Pom</description>
 
 	<dependencyManagement>

@@ -11,7 +11,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>product-query-api</artifactId>
-	<name>Product Query API — Shared DTOs for product query responses</name>
+	<name>product-query-api</name>
 	<description>
 		Pure DTO jar. Contains OfferDto used as MyBatis resultType in offer.xml
 		and as return type in ChenileRepository consumer interfaces (e.g., cart-service).

@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <databaseChangeLog
-	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd
-        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
-	<!--minclude file="liquibase/query/changelog/changelog-1.0.xml" / -->
-	
+    <!-- All domain tables -->
+    <include file="db/changelog/db.changelog-master.xml" />
+
+    <!-- Order test data -->
+    <include file="db/changelog/order/test/db.changelog-order-testdata.xml" />
+
 </databaseChangeLog>

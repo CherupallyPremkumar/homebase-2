@@ -13,7 +13,7 @@
 	<artifactId>supplier-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Supplier API Model and Interfaces</name>
+	<name>supplier-api</name>
 
 	<dependencies>
 		<dependency>

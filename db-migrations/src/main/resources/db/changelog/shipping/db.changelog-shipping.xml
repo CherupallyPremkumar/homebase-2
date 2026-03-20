@@ -1,104 +1,152 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<databaseChangeLog
-    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
-    <!-- ================================================================== -->
-    <!-- V17: Create shipments table                                        -->
-    <!-- ================================================================== -->
-    <changeSet id="V17__create_shipments_table" author="homebase" runOnChange="false">
+    <changeSet id="shipping-001-create-shipments" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="shipments"/></not></preConditions>
         <createTable tableName="shipments">
-            <column name="id" type="VARCHAR(36)">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="order_id" type="VARCHAR(36)">
-                <constraints nullable="false" foreignKeyName="fk_shipment_order" referencedTableName="orders" referencedColumnNames="id"/>
-            </column>
-            <column name="carrier" type="VARCHAR(50)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="tracking_number" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="tracking_url" type="VARCHAR(512)"/>
-            <column name="shipped_at" type="TIMESTAMP"/>
-            <column name="estimated_delivery" type="TIMESTAMP"/>
-            <column name="status" type="VARCHAR(30)" defaultValue="SHIPPED"/>
-            <column name="created_at" type="TIMESTAMP" defaultValueComputed="NOW()">
-                <constraints nullable="false"/>
-            </column>
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="tracking_number" type="VARCHAR(255)"/>
+            <column name="carrier" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="shipping_method" type="VARCHAR(255)"/>
+            <column name="from_address" type="TEXT"/>
+            <column name="to_address" type="TEXT"/>
+            <column name="weight" type="VARCHAR(255)"/>
+            <column name="dimensions" type="VARCHAR(255)"/>
+            <column name="estimated_delivery_date" type="TIMESTAMP"/>
+            <column name="actual_delivery_date" type="TIMESTAMP"/>
+            <column name="delivery_attempts" type="INT"/>
+            <column name="delivery_instructions" type="VARCHAR(255)"/>
+            <column name="current_location" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(255)"/>
         </createTable>
+    </changeSet>
 
-        <createIndex indexName="idx_shipment_order" tableName="shipments">
-            <column name="order_id"/>
+    <changeSet id="shipping-002-create-shipping-activity" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="shipping_activity"/></not></preConditions>
+        <createTable tableName="shipping_activity">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="shipping_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Add missing columns to shipments for Amazon-standard schema -->
+    <changeSet id="shipping-003-add-shipments-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="shipments"/>
+            <not><columnExists tableName="shipments" columnName="shipping_cost"/></not>
+        </preConditions>
+        <addColumn tableName="shipments">
+            <column name="shipping_cost" type="DECIMAL(12,2)" defaultValueNumeric="0"/>
+            <column name="label_url" type="VARCHAR(500)"/>
+            <column name="return_label_url" type="VARCHAR(500)"/>
+            <column name="pod_image_url" type="VARCHAR(500)"/>
+            <column name="carrier_tracking_url" type="VARCHAR(500)"/>
+            <column name="package_weight_grams" type="INT"/>
+            <column name="package_dimensions_json" type="TEXT"/>
+            <column name="insurance_amount" type="DECIMAL(12,2)"/>
+            <column name="signature_required" type="BOOLEAN" defaultValueBoolean="false"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- shipping_tracking_events (BaseJpaEntity) -->
+    <changeSet id="shipping-004-create-shipping-tracking-events" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="shipping_tracking_events"/></not>
+        </preConditions>
+        <createTable tableName="shipping_tracking_events">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="shipment_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="event_type" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="location" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="event_time" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="carrier_status_code" type="VARCHAR(50)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="shipping_tracking_events" baseColumnNames="shipment_id"
+            referencedTableName="shipments" referencedColumnNames="id" constraintName="fk_tracking_events_shipment"/>
+        <createIndex indexName="idx_tracking_events_shipment" tableName="shipping_tracking_events">
+            <column name="shipment_id"/>
         </createIndex>
     </changeSet>
 
-    <!-- ================================================================== -->
-    <!-- V50: Shipping production readiness                                 -->
-    <!-- ================================================================== -->
-    <changeSet id="V50__shipping_production_readiness" author="homebase" runOnChange="false">
-        <!-- Add new columns -->
-        <addColumn tableName="shipments">
-            <column name="customer_id" type="VARCHAR(36)"/>
-            <column name="shipping_method" type="VARCHAR(20)" defaultValue="STANDARD"/>
-            <column name="from_address" type="JSONB"/>
-            <column name="to_address" type="JSONB"/>
-            <column name="weight" type="VARCHAR(20)"/>
-            <column name="dimensions" type="VARCHAR(50)"/>
-            <column name="delivery_attempts" type="INT" defaultValueNumeric="0"/>
-            <column name="delivery_instructions" type="TEXT"/>
-            <column name="current_location" type="VARCHAR(255)"/>
-            <column name="description" type="VARCHAR(500)"/>
-            <column name="estimated_delivery_date" type="TIMESTAMP"/>
-            <column name="actual_delivery_date" type="TIMESTAMP"/>
-            <column name="state_id" type="VARCHAR(50)"/>
-            <column name="flow_id" type="VARCHAR(50)"/>
-        </addColumn>
-
-        <!-- Make tracking_number nullable -->
-        <dropNotNullConstraint tableName="shipments" columnName="tracking_number" columnDataType="VARCHAR(255)"/>
-
-        <!-- Change carrier default -->
-        <addDefaultValue tableName="shipments" columnName="carrier" defaultValue="HOMEBASE-LOGISTICS"/>
-
-        <!-- Indexes for common queries -->
-        <createIndex indexName="idx_shipment_customer" tableName="shipments">
-            <column name="customer_id"/>
-        </createIndex>
-        <createIndex indexName="idx_shipment_state" tableName="shipments">
-            <column name="state_id"/>
-        </createIndex>
-        <createIndex indexName="idx_shipment_carrier" tableName="shipments">
+    <!-- shipping_rates (BaseJpaEntity) -->
+    <changeSet id="shipping-005-create-shipping-rates" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="shipping_rates"/></not>
+        </preConditions>
+        <createTable tableName="shipping_rates">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="carrier" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="shipping_method" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="zone_from" type="VARCHAR(10)"/>
+            <column name="zone_to" type="VARCHAR(10)"/>
+            <column name="min_weight_grams" type="INT" defaultValueNumeric="0"/>
+            <column name="max_weight_grams" type="INT" defaultValueNumeric="99999"/>
+            <column name="base_rate" type="DECIMAL(10,2)"><constraints nullable="false"/></column>
+            <column name="per_kg_rate" type="DECIMAL(10,2)" defaultValueNumeric="0"/>
+            <column name="estimated_days_min" type="INT"/>
+            <column name="estimated_days_max" type="INT"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <createIndex indexName="idx_shipping_rates_carrier_method" tableName="shipping_rates">
             <column name="carrier"/>
-        </createIndex>
-        <createIndex indexName="idx_shipment_tracking" tableName="shipments">
-            <column name="tracking_number"/>
-        </createIndex>
-        <createIndex indexName="idx_shipment_method" tableName="shipments">
             <column name="shipping_method"/>
         </createIndex>
+    </changeSet>
 
-        <!-- Shipping activity log table -->
-        <createTable tableName="shipping_activity">
-            <column name="id" type="VARCHAR(36)">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="shipping_id" type="VARCHAR(36)">
-                <constraints nullable="false" foreignKeyName="fk_shipping_activity_shipment" referencedTableName="shipments" referencedColumnNames="id"/>
-            </column>
-            <column name="activity_name" type="VARCHAR(100)"/>
-            <column name="activity_comment" type="TEXT"/>
-            <column name="activity_success" type="BOOLEAN" defaultValueBoolean="true"/>
-            <column name="created_at" type="TIMESTAMP" defaultValueComputed="NOW()">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-
-        <createIndex indexName="idx_shipping_activity_shipment" tableName="shipping_activity">
-            <column name="shipping_id"/>
+    <!-- Indexes on shipments table -->
+    <changeSet id="shipping-006-add-shipments-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="shipments"/>
+            <not><indexExists indexName="idx_shipments_order"/></not>
+        </preConditions>
+        <createIndex indexName="idx_shipments_order" tableName="shipments">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex indexName="idx_shipments_tracking" tableName="shipments">
+            <column name="tracking_number"/>
+        </createIndex>
+        <createIndex indexName="idx_shipments_state" tableName="shipments">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex indexName="idx_shipments_carrier" tableName="shipments">
+            <column name="carrier"/>
         </createIndex>
     </changeSet>
 

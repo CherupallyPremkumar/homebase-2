@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>rules-engine-infrastructure</artifactId>
-    <name>Rules Engine Infrastructure</name>
+    <name>rules-engine-infrastructure</name>
 
     <dependencies>
         <dependency>

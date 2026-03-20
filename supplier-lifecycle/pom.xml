@@ -13,7 +13,7 @@
     <groupId>com.homebase.ecom.supplierlifecycle</groupId>
     <artifactId>supplier-lifecycle-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Supplier Lifecycle Parent</name>
+    <name>supplier-lifecycle-parent</name>
 
     <modules>
         <module>supplier-lifecycle-api</module>

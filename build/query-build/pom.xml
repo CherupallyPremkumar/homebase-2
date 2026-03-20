@@ -14,7 +14,7 @@
 	<artifactId>query-build</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Query Build - Standalone Query Service</name>
+	<name>query-build</name>
 	<description>Aggregates all query implementation services into a single executable</description>
 
 	<dependencies>
