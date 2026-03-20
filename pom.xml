@@ -33,39 +33,52 @@
         <opentelemetry.version>1.55.0</opentelemetry.version>
     </properties>
     <modules>
-        <module>cart</module>
-        <module>catalog</module>
-        <module>checkout</module>
-        <module>config</module>
-        <module>inventory</module>
-        <module>onboarding</module>
-        <module>order</module>
-        <module>payment</module>
-        <module>product</module>
-        <module>promo</module>
-        <module>review</module>
-        <module>rules-engine</module>
-        <module>pricing</module>
-        <module>return-processing</module>
-        <module>returnrequest</module>
-        <module>settlement</module>
+        <!-- Layer 0: Shared foundation (no HomeBase dependencies) -->
         <module>shared</module>
-        <module>shipping</module>
-        <module>support</module>
-        <module>supplier</module>
-        <module>user</module>
-        <module>notification</module>
-        <module>fulfillment</module>
         <module>filter-core</module>
         <module>db-migrations</module>
+
+        <!-- Layer 1: Config (depended on by most modules for cconfig validation) -->
+        <module>config</module>
+
+        <!-- Layer 2: Domain modules (independent bounded contexts) -->
+        <module>user</module>
+        <module>product</module>
+        <module>inventory</module>
         <module>offer</module>
+        <module>cart</module>
+        <module>pricing</module>
+        <module>promo</module>
+        <module>order</module>
+        <module>payment</module>
+        <module>checkout</module>
+        <module>shipping</module>
+        <module>notification</module>
+        <module>supplier</module>
+        <module>onboarding</module>
+        <module>review</module>
+        <module>support</module>
+        <module>settlement</module>
+        <module>returnrequest</module>
         <module>tax</module>
+        <module>rules-engine</module>
+        <module>compliance</module>
+
+        <!-- Layer 3: Read models and cross-module queries -->
+        <module>catalog</module>
         <module>cms</module>
         <module>analytics</module>
         <module>reconciliation</module>
-        <module>compliance</module>
+
+        <!-- Layer 4: Sagas (depend on multiple domain modules) -->
+        <module>fulfillment</module>
+        <module>return-processing</module>
         <module>supplier-lifecycle</module>
+
+        <!-- Layer 5: Cross-module UI queries -->
         <module>ui-query</module>
+
+        <!-- Layer 6: Final deployable (aggregates everything) -->
         <module>build</module>
     </modules>
 
