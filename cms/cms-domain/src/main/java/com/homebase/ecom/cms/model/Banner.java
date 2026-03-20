@@ -93,4 +93,8 @@ public class Banner {
     public void setActive(boolean active) {
         this.active = active;
     }
+
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

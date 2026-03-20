@@ -13,4 +13,8 @@ public class NotificationActivityLog implements ActivityLog {
     public boolean getSuccess() { return activitySuccess; }
     @Override
     public String getComment() { return activityComment; }
+
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

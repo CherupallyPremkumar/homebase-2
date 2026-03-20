@@ -81,4 +81,8 @@ public class OrderItem {
 
     public String getFulfillmentStatus() { return fulfillmentStatus; }
     public void setFulfillmentStatus(String fulfillmentStatus) { this.fulfillmentStatus = fulfillmentStatus; }
+
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

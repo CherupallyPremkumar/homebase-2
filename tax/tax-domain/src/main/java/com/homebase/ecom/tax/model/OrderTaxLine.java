@@ -79,4 +79,7 @@ public class OrderTaxLine {
     public void setRateApplied(BigDecimal rateApplied) {
         this.rateApplied = rateApplied;
     }
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

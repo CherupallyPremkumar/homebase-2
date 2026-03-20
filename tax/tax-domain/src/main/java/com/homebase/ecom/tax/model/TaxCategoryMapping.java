@@ -41,4 +41,7 @@ public class TaxCategoryMapping {
     public void setTaxRateId(String taxRateId) {
         this.taxRateId = taxRateId;
     }
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

@@ -13,6 +13,7 @@ public class TaxRate {
     private LocalDate effectiveFrom;
     private LocalDate effectiveTo;
     private boolean active;
+    private String tenant;
 
     public TaxRate() {
     }
@@ -80,4 +81,7 @@ public class TaxRate {
     public void setActive(boolean active) {
         this.active = active;
     }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

@@ -44,4 +44,8 @@ public class SupplierPerformance {
 
     public BigDecimal getCancellationRate() { return cancellationRate; }
     public void setCancellationRate(BigDecimal cancellationRate) { this.cancellationRate = cancellationRate; }
+
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

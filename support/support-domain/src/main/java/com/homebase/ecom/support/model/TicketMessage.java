@@ -32,4 +32,8 @@ public class TicketMessage {
 
     public List<String> getAttachments() { return attachments; }
     public void setAttachments(List<String> attachments) { this.attachments = attachments; }
+
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

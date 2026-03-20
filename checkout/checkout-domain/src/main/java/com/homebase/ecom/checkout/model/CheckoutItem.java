@@ -38,4 +38,8 @@ public class CheckoutItem {
 
     public Money getLineTotal() { return lineTotal; }
     public void setLineTotal(Money lineTotal) { this.lineTotal = lineTotal; }
+
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

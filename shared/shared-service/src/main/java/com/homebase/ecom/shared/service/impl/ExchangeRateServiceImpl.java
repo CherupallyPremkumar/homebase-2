@@ -46,9 +46,9 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         if (amount.getCurrency().equals(targetCurrency)) return amount;
 
         BigDecimal rate = getRate(amount.getCurrency(), targetCurrency);
-        BigDecimal convertedAmount = amount.getAmount().multiply(rate);
-        
+        long convertedAmount = BigDecimal.valueOf(amount.getAmount()).multiply(rate).longValue();
+
         // TODO: Rounding and scale based on target currency metadata
-        return new Money(convertedAmount, targetCurrency);
+        return Money.of(convertedAmount, targetCurrency);
     }
 }

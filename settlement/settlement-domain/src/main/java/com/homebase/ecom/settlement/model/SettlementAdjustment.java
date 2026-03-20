@@ -37,4 +37,8 @@ public class SettlementAdjustment {
 
     public LocalDateTime getAdjustedAt() { return adjustedAt; }
     public void setAdjustedAt(LocalDateTime adjustedAt) { this.adjustedAt = adjustedAt; }
+
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

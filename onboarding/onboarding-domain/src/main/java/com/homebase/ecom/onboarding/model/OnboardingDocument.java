@@ -43,4 +43,8 @@ public class OnboardingDocument implements Serializable {
     public boolean isVerified() { return "VERIFIED".equals(status); }
     public boolean isRejected() { return "REJECTED".equals(status); }
     public boolean isPending() { return "PENDING".equals(status); }
+
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

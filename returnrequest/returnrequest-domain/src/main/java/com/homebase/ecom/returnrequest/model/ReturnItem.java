@@ -26,4 +26,8 @@ public class ReturnItem implements Serializable {
         this.reason = reason;
         this.condition = condition;
     }
+
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

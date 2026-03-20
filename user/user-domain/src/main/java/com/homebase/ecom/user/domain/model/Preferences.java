@@ -63,4 +63,8 @@ public class Preferences {
     public void setEmailNotifications(boolean emailNotifications)  { this.emailNotifications = emailNotifications; }
     public void setSmsNotifications(boolean smsNotifications)      { this.smsNotifications = smsNotifications; }
     public void setTimezone(String timezone)                       { this.timezone = timezone; }
+
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

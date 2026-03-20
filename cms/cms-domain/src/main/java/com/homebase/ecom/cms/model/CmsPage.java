@@ -84,4 +84,8 @@ public class CmsPage {
     public void setPublishedAt(Date publishedAt) {
         this.publishedAt = publishedAt;
     }
+
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }

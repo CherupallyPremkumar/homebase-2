@@ -45,4 +45,8 @@ public class ProductPerformance {
 
     public BigDecimal getAvgRating() { return avgRating; }
     public void setAvgRating(BigDecimal avgRating) { this.avgRating = avgRating; }
+
+    private String tenant;
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 }
