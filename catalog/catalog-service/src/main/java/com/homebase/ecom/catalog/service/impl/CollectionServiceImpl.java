@@ -4,13 +4,11 @@ import com.homebase.ecom.catalog.model.Collection;
 import com.homebase.ecom.catalog.repository.CollectionRepository;
 import com.homebase.ecom.catalog.service.CollectionService;
 import com.homebase.ecom.catalog.service.CatalogPolicyValidator;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
 public class CollectionServiceImpl implements CollectionService {
 
     private final CollectionRepository collectionRepository;

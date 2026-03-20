@@ -25,6 +25,7 @@
         <module>payment-batch</module>
         <module>payment-app</module>
         <module>payment-client</module>
+        <module>payment-query</module>
     </modules>
 
 

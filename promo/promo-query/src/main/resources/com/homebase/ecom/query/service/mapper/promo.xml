@@ -111,12 +111,12 @@
             p.usage_count as "usageCount",
             p.usage_limit as "usageLimit",
             p.state_id as "stateId",
-            EXTRACT(DAY FROM (p.end_date - CURRENT_TIMESTAMP)) as "daysUntilExpiry"
+            DATEDIFF(DAY, CURRENT_TIMESTAMP, p.end_date) as "daysUntilExpiry"
         FROM coupon p
         WHERE p.state_id = 'ACTIVE'
           AND p.end_date IS NOT NULL
           AND p.end_date > CURRENT_TIMESTAMP
-          AND p.end_date &lt;= CURRENT_TIMESTAMP + INTERVAL '7 days'
+          AND p.end_date &lt;= DATEADD(DAY, 7, CURRENT_TIMESTAMP)
         ORDER BY p.end_date ASC
     </select>
 
@@ -125,7 +125,7 @@
         WHERE p.state_id = 'ACTIVE'
           AND p.end_date IS NOT NULL
           AND p.end_date > CURRENT_TIMESTAMP
-          AND p.end_date &lt;= CURRENT_TIMESTAMP + INTERVAL '7 days'
+          AND p.end_date &lt;= DATEADD(DAY, 7, CURRENT_TIMESTAMP)
     </select>
 
     <!-- Storefront: getAvailableForCart -->

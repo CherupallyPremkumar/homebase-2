@@ -17,7 +17,6 @@
 	<description>Query Service Metadata for notification</description>
 
 	<properties>
-		<notification-query.version>${revision}</notification-query.version>
 	</properties>
 
 	<dependencies>
@@ -38,6 +37,18 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-query-controller</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-query-service</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-liquibase</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -56,13 +67,23 @@
 		</dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
-			<artifactId>chenile-query-controller</artifactId>
+			<artifactId>cucumber-utils</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
-			<artifactId>cucumber-utils</artifactId>
+			<artifactId>cucumber-sec-utils</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>db-migrations</artifactId>
+			<version>${revision}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

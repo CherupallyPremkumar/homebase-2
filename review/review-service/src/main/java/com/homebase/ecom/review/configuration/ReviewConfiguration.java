@@ -339,7 +339,6 @@ public class ReviewConfiguration {
     // ================================================================
 
     @Bean("reviewEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     ReviewEventHandler reviewEventService(
             org.chenile.pubsub.ChenilePub chenilePub,
             tools.jackson.databind.ObjectMapper objectMapper) {

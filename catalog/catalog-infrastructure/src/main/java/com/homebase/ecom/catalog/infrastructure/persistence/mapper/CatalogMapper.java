@@ -3,9 +3,10 @@ package com.homebase.ecom.catalog.infrastructure.persistence.mapper;
 import com.homebase.ecom.catalog.infrastructure.persistence.entity.*;
 import com.homebase.ecom.catalog.model.*;
 import com.homebase.ecom.catalog.model.Collection;
-import org.springframework.stereotype.Component;
-
-@Component
+/**
+ * Maps between domain models and JPA entities for all catalog aggregates.
+ * Wired as @Bean in CatalogConfig — never use @Component.
+ */
 public class CatalogMapper {
 
     // --- CatalogItem ---

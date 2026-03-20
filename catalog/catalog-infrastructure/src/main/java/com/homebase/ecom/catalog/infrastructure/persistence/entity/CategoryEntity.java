@@ -20,7 +20,7 @@ public class CategoryEntity extends BaseJpaEntity {
     @Column(name = "description", length = 500)
     private String description;
     
-    @Column(name = "parent_id", length = 50)
+    @Column(name = "parent_id", length = 255)
     private String parentId;
     
     @Column(name = "level")

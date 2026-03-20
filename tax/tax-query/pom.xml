@@ -3,7 +3,6 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-
 	<parent>
 		<groupId>com.homebase.ecom</groupId>
 		<artifactId>homebase-parent</artifactId>
@@ -14,7 +13,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>tax-query-service</artifactId>
 	<name>tax-query-service</name>
-	<description>Query Service Test Cases for tax </description>
+	<description>Query Service for tax</description>
 
 	<properties>
 	</properties>
@@ -34,8 +33,20 @@
 			<artifactId>chenile-http</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-query-controller</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.chenile</groupId>
+			<artifactId>chenile-query-service</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-liquibase</artifactId>
 		</dependency>
 
 		<dependency>
@@ -54,12 +65,6 @@
     		<scope>test</scope>
 		</dependency>
 		<dependency>
-    		<groupId>org.chenile</groupId>
-    		<artifactId>chenile-query-controller</artifactId>
-    		<scope>test</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>cucumber-utils</artifactId>
 			<scope>test</scope>
@@ -72,6 +77,12 @@
 		<dependency>
 			<groupId>com.homebase.ecom.build</groupId>
 			<artifactId>core</artifactId>
+			<version>${revision}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>db-migrations</artifactId>
 			<version>${revision}</version>
 			<scope>test</scope>
 		</dependency>

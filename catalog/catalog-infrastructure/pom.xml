@@ -40,6 +40,12 @@
             <groupId>com.homebase.ecom.offer</groupId>
             <artifactId>offer-client</artifactId>
             <version>${revision}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-starter-openfeign</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

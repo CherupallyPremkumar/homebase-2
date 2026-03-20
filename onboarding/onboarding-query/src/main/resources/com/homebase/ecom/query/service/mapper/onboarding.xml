@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Onboarding">
+
+<!-- All onboardings (admin listing) -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM supplier_onboarding
+    <where>
+        <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+        <if test="businessType != null">AND business_type = #{businessType}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="applicantName != null">AND applicant_name LIKE CONCAT('%', #{applicantName}, '%')</if>
+        <if test="businessName != null">AND business_name LIKE CONCAT('%', #{businessName}, '%')</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="map">
+    SELECT
+        id as "id",
+        supplier_id as "supplierId",
+        applicant_name as "applicantName",
+        business_name as "businessName",
+        business_type as "businessType",
+        training_progress as "trainingProgress",
+        state_id as "stateId",
+        flow_id as "flowId",
+        submitted_at as "submittedAt",
+        created_time as "createdTime"
+    FROM supplier_onboarding
+    <where>
+        <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+        <if test="businessType != null">AND business_type = #{businessType}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="applicantName != null">AND applicant_name LIKE CONCAT('%', #{applicantName}, '%')</if>
+        <if test="businessName != null">AND business_name LIKE CONCAT('%', #{businessName}, '%')</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Get onboarding by id (detail view) -->
+<select id="getById" resultType="map">
+    SELECT
+        id as "id",
+        supplier_id as "supplierId",
+        applicant_name as "applicantName",
+        business_name as "businessName",
+        business_type as "businessType",
+        documents_json as "documentsJson",
+        verification_notes as "verificationNotes",
+        training_progress as "trainingProgress",
+        training_completed_modules_json as "trainingCompletedModulesJson",
+        resubmission_count as "resubmissionCount",
+        rejection_reason as "rejectionReason",
+        state_id as "stateId",
+        flow_id as "flowId",
+        submitted_at as "submittedAt",
+        created_time as "createdTime",
+        last_modified_time as "lastModifiedTime"
+    FROM supplier_onboarding
+    WHERE id = #{id}
+</select>
+
+<!-- Pending review (DOCUMENTS_SUBMITTED or UNDER_REVIEW) -->
+<select id="getPendingReview-count" resultType="int">
+    SELECT count(*) FROM supplier_onboarding
+    WHERE state_id IN ('DOCUMENTS_SUBMITTED', 'UNDER_REVIEW')
+</select>
+
+<select id="getPendingReview" resultType="map">
+    SELECT
+        id as "id",
+        supplier_id as "supplierId",
+        applicant_name as "applicantName",
+        business_name as "businessName",
+        business_type as "businessType",
+        state_id as "stateId",
+        submitted_at as "submittedAt",
+        created_time as "createdTime"
+    FROM supplier_onboarding
+    WHERE state_id IN ('DOCUMENTS_SUBMITTED', 'UNDER_REVIEW')
+    ${orderby} ${pagination}
+</select>
+
+<!-- Get onboarding by supplier ID -->
+<select id="getBySupplier" resultType="map">
+    SELECT
+        id as "id",
+        supplier_id as "supplierId",
+        applicant_name as "applicantName",
+        business_name as "businessName",
+        business_type as "businessType",
+        training_progress as "trainingProgress",
+        state_id as "stateId",
+        flow_id as "flowId",
+        submitted_at as "submittedAt",
+        created_time as "createdTime",
+        last_modified_time as "lastModifiedTime"
+    FROM supplier_onboarding
+    WHERE supplier_id = #{supplierId}
+</select>
+
+</mapper>

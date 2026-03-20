@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 })
 public class CatalogItemEntity extends BaseJpaEntity {
 
-    @Column(name = "product_id", nullable = false, length = 50)
+    @Column(name = "product_id", nullable = false, length = 255)
     private String productId;
 
     @Column(name = "featured")

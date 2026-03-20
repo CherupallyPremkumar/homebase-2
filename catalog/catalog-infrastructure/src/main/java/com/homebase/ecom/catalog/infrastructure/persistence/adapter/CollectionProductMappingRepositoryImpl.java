@@ -5,20 +5,19 @@ import com.homebase.ecom.catalog.repository.CollectionProductMappingRepository;
 import com.homebase.ecom.catalog.infrastructure.persistence.entity.CollectionProductMappingEntity;
 import com.homebase.ecom.catalog.infrastructure.persistence.mapper.CatalogMapper;
 import com.homebase.ecom.catalog.infrastructure.persistence.repository.CollectionProductMappingJpaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
 public class CollectionProductMappingRepositoryImpl implements CollectionProductMappingRepository {
 
-    @Autowired
-    private CollectionProductMappingJpaRepository jpaRepository;
+    private final CollectionProductMappingJpaRepository jpaRepository;
+    private final CatalogMapper mapper;
 
-    @Autowired
-    private CatalogMapper mapper;
+    public CollectionProductMappingRepositoryImpl(CollectionProductMappingJpaRepository jpaRepository, CatalogMapper mapper) {
+        this.jpaRepository = jpaRepository;
+        this.mapper = mapper;
+    }
 
     @Override
     public void deleteByCollectionId(String collectionId) {

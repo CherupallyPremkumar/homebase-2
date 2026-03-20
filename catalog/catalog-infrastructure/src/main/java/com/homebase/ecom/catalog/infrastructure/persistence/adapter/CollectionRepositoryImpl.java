@@ -5,20 +5,19 @@ import com.homebase.ecom.catalog.repository.CollectionRepository;
 import com.homebase.ecom.catalog.infrastructure.persistence.entity.CollectionEntity;
 import com.homebase.ecom.catalog.infrastructure.persistence.mapper.CatalogMapper;
 import com.homebase.ecom.catalog.infrastructure.persistence.repository.CollectionJpaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
 public class CollectionRepositoryImpl implements CollectionRepository {
 
-    @Autowired
-    private CollectionJpaRepository jpaRepository;
+    private final CollectionJpaRepository jpaRepository;
+    private final CatalogMapper mapper;
 
-    @Autowired
-    private CatalogMapper mapper;
+    public CollectionRepositoryImpl(CollectionJpaRepository jpaRepository, CatalogMapper mapper) {
+        this.jpaRepository = jpaRepository;
+        this.mapper = mapper;
+    }
 
     @Override
     public Optional<Collection> findById(String id) {

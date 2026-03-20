@@ -6,8 +6,8 @@
 			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" },
 			"brand": { "name": "brand", "filterable": true, "columnType": "Text", "sortable": true },
 			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true },
-			"minPrice": { "name": "minPrice", "filterable": true, "columnType": "Numeric" },
-			"maxPrice": { "name": "maxPrice", "filterable": true, "columnType": "Numeric" }
+			"minPrice": { "name": "minPrice", "filterable": true, "columnType": "Number" },
+			"maxPrice": { "name": "maxPrice", "filterable": true, "columnType": "Number" }
 		},
 		"paginated": true,
 		"sortable": true

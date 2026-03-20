@@ -4,13 +4,11 @@ import com.homebase.ecom.catalog.model.Category;
 import com.homebase.ecom.catalog.repository.CategoryRepository;
 import com.homebase.ecom.catalog.service.CategoryService;
 import com.homebase.ecom.catalog.service.CatalogPolicyValidator;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;

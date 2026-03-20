@@ -7,71 +7,59 @@
 
     <!--
         Catalog query test data for H2.
-        Tables are created by V36 (common) + V63 (catalog-production).
+        Tables are created by the main db.changelog-master.xml.
     -->
     <changeSet id="catalog-query-test-data" author="homebase-test">
         <sql>
-            -- ═══════════════════════════════════════════════════════════
             -- Categories
-            -- ═══════════════════════════════════════════════════════════
+            INSERT INTO catalog_categories (id, tenant, name, slug, description, parent_id, level, image_url, icon, display_order, active, featured, product_count, banner_image_url, show_in_menu, show_in_footer)
+            VALUES ('cat-1', 'homebase', 'Handmade Textiles', 'handmade-textiles', 'Artisan fabrics and woven goods', NULL, 0, 'https://cdn.homebase.com/cat/textiles.jpg', 'fabric', 1, true, true, 3, 'https://cdn.homebase.com/banners/textiles.jpg', true, true);
 
-            INSERT INTO catalog_categories (id, name, slug, description, parent_id, level, image_url, icon, display_order, active, featured, product_count, banner_image_url, show_in_menu, show_in_footer)
-            VALUES ('cat-1', 'Handmade Textiles', 'handmade-textiles', 'Artisan fabrics and woven goods', NULL, 0, 'https://cdn.homebase.com/cat/textiles.jpg', 'fabric', 1, true, true, 3, 'https://cdn.homebase.com/banners/textiles.jpg', true, true);
+            INSERT INTO catalog_categories (id, tenant, name, slug, description, parent_id, level, image_url, icon, display_order, active, featured, product_count, show_in_menu)
+            VALUES ('cat-2', 'homebase', 'Silk Scarves', 'silk-scarves', 'Hand-woven silk scarves', 'cat-1', 1, 'https://cdn.homebase.com/cat/silk.jpg', 'scarf', 1, true, false, 2, true);
 
-            INSERT INTO catalog_categories (id, name, slug, description, parent_id, level, image_url, icon, display_order, active, featured, product_count, show_in_menu)
-            VALUES ('cat-2', 'Silk Scarves', 'silk-scarves', 'Hand-woven silk scarves', 'cat-1', 1, 'https://cdn.homebase.com/cat/silk.jpg', 'scarf', 1, true, false, 2, true);
+            INSERT INTO catalog_categories (id, tenant, name, slug, description, parent_id, level, image_url, icon, display_order, active, featured, product_count, show_in_menu)
+            VALUES ('cat-3', 'homebase', 'Cotton Fabrics', 'cotton-fabrics', 'Handloom cotton fabrics', 'cat-1', 1, 'https://cdn.homebase.com/cat/cotton.jpg', 'cotton', 2, true, false, 1, true);
 
-            INSERT INTO catalog_categories (id, name, slug, description, parent_id, level, image_url, icon, display_order, active, featured, product_count, show_in_menu)
-            VALUES ('cat-3', 'Cotton Fabrics', 'cotton-fabrics', 'Handloom cotton fabrics', 'cat-1', 1, 'https://cdn.homebase.com/cat/cotton.jpg', 'cotton', 2, true, false, 1, true);
+            INSERT INTO catalog_categories (id, tenant, name, slug, description, parent_id, level, image_url, icon, display_order, active, featured, product_count, banner_image_url, show_in_menu)
+            VALUES ('cat-4', 'homebase', 'Home Decor', 'home-decor', 'Artisan home decoration items', NULL, 0, 'https://cdn.homebase.com/cat/decor.jpg', 'home', 2, true, true, 2, 'https://cdn.homebase.com/banners/decor.jpg', true);
 
-            INSERT INTO catalog_categories (id, name, slug, description, parent_id, level, image_url, icon, display_order, active, featured, product_count, banner_image_url, show_in_menu)
-            VALUES ('cat-4', 'Home Decor', 'home-decor', 'Artisan home decoration items', NULL, 0, 'https://cdn.homebase.com/cat/decor.jpg', 'home', 2, true, true, 2, 'https://cdn.homebase.com/banners/decor.jpg', true);
+            INSERT INTO catalog_categories (id, tenant, name, slug, description, parent_id, level, display_order, active, show_in_menu)
+            VALUES ('cat-5', 'homebase', 'Archived Category', 'archived', 'No longer active', NULL, 0, 99, false, false);
 
-            INSERT INTO catalog_categories (id, name, slug, description, parent_id, level, display_order, active, show_in_menu)
-            VALUES ('cat-5', 'Archived Category', 'archived', 'No longer active', NULL, 0, 99, false, false);
-
-            -- ═══════════════════════════════════════════════════════════
             -- Collections
-            -- ═══════════════════════════════════════════════════════════
+            INSERT INTO collections (id, tenant, name, slug, description, type, image_url, display_order, active, featured, product_count)
+            VALUES ('coll-1', 'homebase', 'Summer Essentials', 'summer-essentials', 'Curated collection of summer products', 'CURATED', 'https://cdn.homebase.com/coll/summer.jpg', 1, true, true, 3);
 
-            INSERT INTO collections (id, name, slug, description, type, image_url, display_order, active, featured, product_count)
-            VALUES ('coll-1', 'Summer Essentials', 'summer-essentials', 'Curated collection of summer products', 'CURATED', 'https://cdn.homebase.com/coll/summer.jpg', 1, true, true, 3);
+            INSERT INTO collections (id, tenant, name, slug, description, type, display_order, active, featured, auto_update, rule_expression, product_count)
+            VALUES ('coll-2', 'homebase', 'New Arrivals', 'new-arrivals', 'Automatically populated with latest products', 'DYNAMIC', 2, true, false, true, '#price &lt; 5000', 2);
 
-            INSERT INTO collections (id, name, slug, description, type, display_order, active, featured, auto_update, rule_expression, product_count)
-            VALUES ('coll-2', 'New Arrivals', 'new-arrivals', 'Automatically populated with latest products', 'DYNAMIC', 2, true, false, true, '#price &lt; 5000', 2);
+            INSERT INTO collections (id, tenant, name, slug, description, type, image_url, display_order, active, featured, product_count)
+            VALUES ('coll-3', 'homebase', 'Festive Collection', 'festive-collection', 'Festive season specials', 'SEASONAL', 'https://cdn.homebase.com/coll/festive.jpg', 3, true, true, 1);
 
-            INSERT INTO collections (id, name, slug, description, type, image_url, display_order, active, featured, product_count)
-            VALUES ('coll-3', 'Festive Collection', 'festive-collection', 'Festive season specials', 'SEASONAL', 'https://cdn.homebase.com/coll/festive.jpg', 3, true, true, 1);
+            INSERT INTO collections (id, tenant, name, slug, description, type, display_order, active, featured)
+            VALUES ('coll-4', 'homebase', 'Inactive Collection', 'inactive-coll', 'Not active', 'CURATED', 99, false, false);
 
-            INSERT INTO collections (id, name, slug, description, type, display_order, active, featured)
-            VALUES ('coll-4', 'Inactive Collection', 'inactive-coll', 'Not active', 'CURATED', 99, false, false);
-
-            -- ═══════════════════════════════════════════════════════════
             -- Catalog Items
-            -- ═══════════════════════════════════════════════════════════
+            INSERT INTO catalog_items (id, tenant, product_id, name, description, brand, image_url, price, featured, active, display_order, in_stock, available_qty, average_rating, review_count)
+            VALUES ('ci-1', 'homebase', 'prod-1', 'Banarasi Silk Saree', 'Pure handwoven Banarasi silk saree with intricate zari work', 'Varanasi Weaves', 'https://cdn.homebase.com/items/silk-saree.jpg', 4999.00, true, true, 1, true, 25, 4.50, 87);
 
-            INSERT INTO catalog_items (id, product_id, name, description, brand, image_url, price, featured, active, display_order, in_stock, available_qty, average_rating, review_count)
-            VALUES ('ci-1', 'prod-1', 'Banarasi Silk Saree', 'Pure handwoven Banarasi silk saree with intricate zari work', 'Varanasi Weaves', 'https://cdn.homebase.com/items/silk-saree.jpg', 4999.00, true, true, 1, true, 25, 4.50, 87);
+            INSERT INTO catalog_items (id, tenant, product_id, name, description, brand, image_url, price, featured, active, display_order, in_stock, available_qty, average_rating, review_count)
+            VALUES ('ci-2', 'homebase', 'prod-2', 'Organic Cotton Shirt', 'GOTS certified organic cotton casual shirt in earthy tones', 'EcoThread', 'https://cdn.homebase.com/items/cotton-shirt.jpg', 1299.00, true, true, 2, true, 150, 4.20, 43);
 
-            INSERT INTO catalog_items (id, product_id, name, description, brand, image_url, price, featured, active, display_order, in_stock, available_qty, average_rating, review_count)
-            VALUES ('ci-2', 'prod-2', 'Organic Cotton Shirt', 'GOTS certified organic cotton casual shirt in earthy tones', 'EcoThread', 'https://cdn.homebase.com/items/cotton-shirt.jpg', 1299.00, true, true, 2, true, 150, 4.20, 43);
+            INSERT INTO catalog_items (id, tenant, product_id, name, description, brand, image_url, price, featured, active, display_order, in_stock, available_qty, average_rating, review_count)
+            VALUES ('ci-3', 'homebase', 'prod-3', 'Handmade Pottery Vase', 'Blue pottery vase handcrafted by Jaipur artisans', 'Jaipur Crafts', 'https://cdn.homebase.com/items/pottery-vase.jpg', 2499.00, false, true, 3, true, 8, 4.70, 21);
 
-            INSERT INTO catalog_items (id, product_id, name, description, brand, image_url, price, featured, active, display_order, in_stock, available_qty, average_rating, review_count)
-            VALUES ('ci-3', 'prod-3', 'Handmade Pottery Vase', 'Blue pottery vase handcrafted by Jaipur artisans', 'Jaipur Crafts', 'https://cdn.homebase.com/items/pottery-vase.jpg', 2499.00, false, true, 3, true, 8, 4.70, 21);
+            INSERT INTO catalog_items (id, tenant, product_id, name, description, brand, image_url, price, featured, active, display_order, in_stock, available_qty, average_rating, review_count)
+            VALUES ('ci-4', 'homebase', 'prod-4', 'Block Print Cushion Cover', 'Hand block printed cotton cushion cover with natural dyes', 'Bagru Prints', 'https://cdn.homebase.com/items/cushion.jpg', 799.00, true, true, 4, true, 200, 4.10, 65);
 
-            INSERT INTO catalog_items (id, product_id, name, description, brand, image_url, price, featured, active, display_order, in_stock, available_qty, average_rating, review_count)
-            VALUES ('ci-4', 'prod-4', 'Block Print Cushion Cover', 'Hand block printed cotton cushion cover with natural dyes', 'Bagru Prints', 'https://cdn.homebase.com/items/cushion.jpg', 799.00, true, true, 4, true, 200, 4.10, 65);
+            INSERT INTO catalog_items (id, tenant, product_id, name, description, brand, image_url, price, featured, active, display_order, in_stock, available_qty, average_rating, review_count)
+            VALUES ('ci-5', 'homebase', 'prod-5', 'Brass Table Lamp', 'Antique finish brass table lamp with adjustable shade', 'Heritage Brass', 'https://cdn.homebase.com/items/brass-lamp.jpg', 3499.00, false, true, 5, false, 0, 3.90, 12);
 
-            INSERT INTO catalog_items (id, product_id, name, description, brand, image_url, price, featured, active, display_order, in_stock, available_qty, average_rating, review_count)
-            VALUES ('ci-5', 'prod-5', 'Brass Table Lamp', 'Antique finish brass table lamp with adjustable shade', 'Heritage Brass', 'https://cdn.homebase.com/items/brass-lamp.jpg', 3499.00, false, true, 5, false, 0, 3.90, 12);
+            INSERT INTO catalog_items (id, tenant, product_id, name, description, brand, image_url, price, featured, active, display_order, in_stock, available_qty, average_rating, review_count)
+            VALUES ('ci-6', 'homebase', 'prod-6', 'Inactive Item', 'This item has been discontinued', 'None', null, 999.00, false, false, 99, false, 0, 0, 0);
 
-            INSERT INTO catalog_items (id, product_id, name, description, brand, image_url, price, featured, active, display_order, in_stock, available_qty, average_rating, review_count)
-            VALUES ('ci-6', 'prod-6', 'Inactive Item', 'This item has been discontinued', 'None', null, 999.00, false, false, 99, false, 0, 0, 0);
-
-            -- ═══════════════════════════════════════════════════════════
             -- Catalog Item Tags
-            -- ═══════════════════════════════════════════════════════════
-
             INSERT INTO catalog_item_tags (catalog_item_id, tag) VALUES ('ci-1', 'silk');
             INSERT INTO catalog_item_tags (catalog_item_id, tag) VALUES ('ci-1', 'traditional');
             INSERT INTO catalog_item_tags (catalog_item_id, tag) VALUES ('ci-1', 'festive');
@@ -84,24 +72,21 @@
             INSERT INTO catalog_item_tags (catalog_item_id, tag) VALUES ('ci-5', 'decor');
             INSERT INTO catalog_item_tags (catalog_item_id, tag) VALUES ('ci-5', 'brass');
 
-            -- ═══════════════════════════════════════════════════════════
             -- Category-Product Mappings
-            -- ═══════════════════════════════════════════════════════════
+            INSERT INTO category_product_mapping (id, tenant, category_id, product_id, display_order)
+            VALUES ('cpm-1', 'homebase', 'cat-2', 'prod-1', 1);
 
-            INSERT INTO category_product_mapping (id, category_id, product_id, display_order)
-            VALUES ('cpm-1', 'cat-2', 'prod-1', 1);
+            INSERT INTO category_product_mapping (id, tenant, category_id, product_id, display_order)
+            VALUES ('cpm-2', 'homebase', 'cat-3', 'prod-2', 1);
 
-            INSERT INTO category_product_mapping (id, category_id, product_id, display_order)
-            VALUES ('cpm-2', 'cat-3', 'prod-2', 1);
+            INSERT INTO category_product_mapping (id, tenant, category_id, product_id, display_order)
+            VALUES ('cpm-3', 'homebase', 'cat-4', 'prod-3', 1);
 
-            INSERT INTO category_product_mapping (id, category_id, product_id, display_order)
-            VALUES ('cpm-3', 'cat-4', 'prod-3', 1);
+            INSERT INTO category_product_mapping (id, tenant, category_id, product_id, display_order)
+            VALUES ('cpm-4', 'homebase', 'cat-2', 'prod-4', 2);
 
-            INSERT INTO category_product_mapping (id, category_id, product_id, display_order)
-            VALUES ('cpm-4', 'cat-2', 'prod-4', 2);
-
-            INSERT INTO category_product_mapping (id, category_id, product_id, display_order)
-            VALUES ('cpm-5', 'cat-4', 'prod-5', 2);
+            INSERT INTO category_product_mapping (id, tenant, category_id, product_id, display_order)
+            VALUES ('cpm-5', 'homebase', 'cat-4', 'prod-5', 2);
         </sql>
     </changeSet>
 

@@ -5,20 +5,19 @@ import com.homebase.ecom.catalog.repository.CategoryProductMappingRepository;
 import com.homebase.ecom.catalog.infrastructure.persistence.entity.CategoryProductMappingEntity;
 import com.homebase.ecom.catalog.infrastructure.persistence.mapper.CatalogMapper;
 import com.homebase.ecom.catalog.infrastructure.persistence.repository.CategoryProductMappingJpaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
 public class CategoryProductMappingRepositoryImpl implements CategoryProductMappingRepository {
 
-    @Autowired
-    private CategoryProductMappingJpaRepository jpaRepository;
+    private final CategoryProductMappingJpaRepository jpaRepository;
+    private final CatalogMapper mapper;
 
-    @Autowired
-    private CatalogMapper mapper;
+    public CategoryProductMappingRepositoryImpl(CategoryProductMappingJpaRepository jpaRepository, CatalogMapper mapper) {
+        this.jpaRepository = jpaRepository;
+        this.mapper = mapper;
+    }
 
     @Override
     public List<CategoryProductMapping> findByCategoryIdOrderByDisplayOrderAsc(String categoryId) {

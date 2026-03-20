@@ -1,6 +1,6 @@
 package com.homebase.ecom.catalog.model;
 
-import org.chenile.utils.entity.model.AbstractExtendedStateEntity;
+import org.chenile.utils.entity.model.BaseEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,9 +8,10 @@ import java.util.List;
 import java.math.BigDecimal;
 
 /**
- * CatalogItem - Pure Domain Model
+ * CatalogItem - Pure Domain Model (read model, NOT an STM entity).
+ * Materialized view aggregating product, offer, inventory, and review data.
  */
-public class CatalogItem  extends AbstractExtendedStateEntity {
+public class CatalogItem extends BaseEntity {
 
     private String productId;
     private Boolean featured = false;

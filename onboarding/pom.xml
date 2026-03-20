@@ -9,6 +9,7 @@
 		<module>onboarding-infrastructure</module>
 		<module>onboarding-service</module>
 		<module>onboarding-client</module>
+		<module>onboarding-query</module>
 	</modules>
 	<parent>
 		<groupId>com.homebase.ecom</groupId>

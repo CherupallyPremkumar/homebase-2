@@ -5,19 +5,18 @@ import com.homebase.ecom.catalog.repository.CatalogItemRepository;
 import com.homebase.ecom.catalog.infrastructure.persistence.entity.CatalogItemEntity;
 import com.homebase.ecom.catalog.infrastructure.persistence.mapper.CatalogMapper;
 import com.homebase.ecom.catalog.infrastructure.persistence.repository.CatalogItemJpaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
-@Component
 public class CatalogItemRepositoryImpl implements CatalogItemRepository {
 
-    @Autowired
-    private CatalogItemJpaRepository jpaRepository;
+    private final CatalogItemJpaRepository jpaRepository;
+    private final CatalogMapper mapper;
 
-    @Autowired
-    private CatalogMapper mapper;
+    public CatalogItemRepositoryImpl(CatalogItemJpaRepository jpaRepository, CatalogMapper mapper) {
+        this.jpaRepository = jpaRepository;
+        this.mapper = mapper;
+    }
 
     @Override
     public Optional<CatalogItem> findById(String id) {

@@ -8,15 +8,15 @@ import org.chenile.jpautils.entity.BaseJpaEntity;
  */
 @Entity
 @Table(name = "category_product_mapping", indexes = {
-        @Index(name = "idx_category_id", columnList = "category_id"),
-        @Index(name = "idx_product_id", columnList = "product_id")
+        @Index(name = "idx_cpm_category_id", columnList = "category_id"),
+        @Index(name = "idx_cpm_product_id", columnList = "product_id")
 })
 public class CategoryProductMappingEntity extends BaseJpaEntity {
 
-    @Column(name = "category_id", nullable = false, length = 100)
+    @Column(name = "category_id", nullable = false, length = 255)
     private String categoryId;
 
-    @Column(name = "product_id", nullable = false, length = 50)
+    @Column(name = "product_id", nullable = false, length = 255)
     private String productId;
 
     @Column(name = "display_order")

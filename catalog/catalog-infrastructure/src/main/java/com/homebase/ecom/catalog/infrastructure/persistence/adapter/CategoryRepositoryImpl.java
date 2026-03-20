@@ -5,20 +5,19 @@ import com.homebase.ecom.catalog.repository.CategoryRepository;
 import com.homebase.ecom.catalog.infrastructure.persistence.entity.CategoryEntity;
 import com.homebase.ecom.catalog.infrastructure.persistence.mapper.CatalogMapper;
 import com.homebase.ecom.catalog.infrastructure.persistence.repository.CategoryJpaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
 public class CategoryRepositoryImpl implements CategoryRepository {
 
-    @Autowired
-    private CategoryJpaRepository jpaRepository;
+    private final CategoryJpaRepository jpaRepository;
+    private final CatalogMapper mapper;
 
-    @Autowired
-    private CatalogMapper mapper;
+    public CategoryRepositoryImpl(CategoryJpaRepository jpaRepository, CatalogMapper mapper) {
+        this.jpaRepository = jpaRepository;
+        this.mapper = mapper;
+    }
 
     @Override
     public Optional<Category> findById(String id) {

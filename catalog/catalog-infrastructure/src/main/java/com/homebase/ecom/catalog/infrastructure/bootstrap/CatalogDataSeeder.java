@@ -4,14 +4,12 @@ import com.homebase.ecom.catalog.model.Collection;
 import com.homebase.ecom.catalog.model.CollectionType;
 import com.homebase.ecom.catalog.repository.CollectionRepository;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Bootstraps the database with example Dynamic Collections.
- * Moved to infrastructure as it is a data-loading adapter.
+ * Wired as @Bean in CatalogConfig.
  */
-@Component
 public class CatalogDataSeeder implements CommandLineRunner {
 
     private final CollectionRepository collectionRepository;

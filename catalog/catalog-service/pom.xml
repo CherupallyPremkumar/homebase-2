@@ -65,27 +65,12 @@
         </dependency>
         <dependency>
             <groupId>org.chenile</groupId>
-            <artifactId>chenile-security</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.chenile</groupId>
-            <artifactId>cucumber-sec-utils</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.chenile</groupId>
-            <artifactId>security-interceptor</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.chenile</groupId>
-            <artifactId>cucumber-workflow-utils</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.chenile</groupId>
             <artifactId>service-registry-delegate</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -99,9 +84,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.dasniko</groupId>
-            <artifactId>testcontainers-keycloak</artifactId>
-            <version>3.4.0</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

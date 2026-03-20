@@ -62,8 +62,10 @@
     </where>
     GROUP BY p.id, p.name, p.short_description, p.brand, p.slug,
              c.name, c.slug, pm_img.cdn_url, pm_img.thumbnail_url
-    <if test="minPrice != null">HAVING MIN(o.selling_price) >= #{minPrice}</if>
-    <if test="maxPrice != null">HAVING MAX(o.selling_price) &lt;= #{maxPrice}</if>
+    <trim prefix="HAVING" prefixOverrides="AND">
+        <if test="minPrice != null">AND MIN(o.selling_price) >= #{minPrice}</if>
+        <if test="maxPrice != null">AND MAX(o.selling_price) &lt;= #{maxPrice}</if>
+    </trim>
     ${orderby} ${pagination}
 </select>
 
@@ -116,6 +118,10 @@
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 
 <!-- Featured products (e.g. most reviewed, on sale) -->
+<select id="featuredProducts-count" resultType="int">
+    SELECT count(DISTINCT p.id) FROM products p WHERE p."stateId" = 'PUBLISHED'
+</select>
+
 <select id="featuredProducts" resultType="map">
     SELECT
         p.id as "productId",
@@ -228,19 +234,22 @@
 </select>
 
 <select id="priceRanges" resultType="map">
-    SELECT
-        CASE
-            WHEN MIN(o.selling_price) &lt; 500 THEN 'Under 500'
-            WHEN MIN(o.selling_price) &lt; 1000 THEN '500 - 1000'
-            WHEN MIN(o.selling_price) &lt; 5000 THEN '1000 - 5000'
-            WHEN MIN(o.selling_price) &lt; 10000 THEN '5000 - 10000'
-            ELSE 'Above 10000'
-        END as "priceRange",
-        COUNT(DISTINCT p.id) as "productCount"
-    FROM products p
-    JOIN offers o ON o.product_id = p.id AND o."stateId" = 'ACTIVE'
-    WHERE p."stateId" = 'PUBLISHED'
-    GROUP BY "priceRange"
+    SELECT t."priceRange", COUNT(*) as "productCount" FROM (
+        SELECT
+            p.id,
+            CASE
+                WHEN MIN(o.selling_price) &lt; 500 THEN 'Under 500'
+                WHEN MIN(o.selling_price) &lt; 1000 THEN '500 - 1000'
+                WHEN MIN(o.selling_price) &lt; 5000 THEN '1000 - 5000'
+                WHEN MIN(o.selling_price) &lt; 10000 THEN '5000 - 10000'
+                ELSE 'Above 10000'
+            END as "priceRange"
+        FROM products p
+        JOIN offers o ON o.product_id = p.id AND o."stateId" = 'ACTIVE'
+        WHERE p."stateId" = 'PUBLISHED'
+        GROUP BY p.id
+    ) t
+    GROUP BY t."priceRange"
 </select>
 
 </mapper>

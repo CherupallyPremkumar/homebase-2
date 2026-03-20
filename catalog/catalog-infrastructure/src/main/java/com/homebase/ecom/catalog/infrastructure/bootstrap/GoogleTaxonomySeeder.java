@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
@@ -17,9 +16,8 @@ import java.util.Map;
 
 /**
  * Bootstraps categories from Google Product Taxonomy.
- * Moved to infrastructure as it is a data-loading adapter.
+ * Wired as @Bean in CatalogConfig.
  */
-@Component
 @Order(1)
 public class GoogleTaxonomySeeder implements CommandLineRunner {
 

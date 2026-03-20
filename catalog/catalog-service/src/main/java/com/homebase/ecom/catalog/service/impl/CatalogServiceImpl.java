@@ -9,12 +9,10 @@ import com.homebase.ecom.catalog.repository.CategoryProductMappingRepository;
 import com.homebase.ecom.catalog.port.client.ProductDataPort;
 import com.homebase.ecom.catalog.port.client.ProductSnapshot;
 import com.homebase.ecom.shared.event.ProductPublishedEvent;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 import java.math.BigDecimal;
 
-@Service
 public class CatalogServiceImpl implements CatalogService {
 
     private final CatalogItemRepository catalogItemRepository;
