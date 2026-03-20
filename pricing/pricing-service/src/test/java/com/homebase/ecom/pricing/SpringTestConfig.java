@@ -19,12 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Configuration
 @PropertySource("classpath:com/homebase/ecom/pricing/TestService.properties")
 @SpringBootApplication(scanBasePackages = {
-    "org.chenile.configuration",
-    "org.chenile.service.registry.configuration",
-    "com.homebase.ecom.pricing.service.configuration",
-    "com.homebase.ecom.pricing.infrastructure",
-    "com.homebase.ecom.pricing.bdd",
-    "org.chenile.configuration.security"
+    "org.chenile.**",
+    "com.homebase.ecom.pricing.**"
 })
 @EnableJpaRepositories(basePackages = { "org.chenile.service.registry.configuration.dao" })
 @EntityScan(basePackages = { "org.chenile.service.registry.model" })

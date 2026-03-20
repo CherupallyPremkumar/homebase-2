@@ -16,7 +16,15 @@ chenile:
       base:
         realm: ${KEYCLOAK_REALM:tenant0}
 
+pubsub:
+  topic:
+    separator: "."
+
 spring:
+  main:
+    allow-bean-definition-overriding: true
+  kafka:
+    bootstrap-server: localhost:9092
   banner:
     location: classpath:banner.txt
   jackson:

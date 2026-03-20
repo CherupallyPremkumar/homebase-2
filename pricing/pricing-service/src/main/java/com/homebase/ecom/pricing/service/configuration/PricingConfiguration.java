@@ -98,6 +98,16 @@ public class PricingConfiguration {
     }
 
     @Bean
+    ValidateSellerMinPriceCommand validateSellerMinPriceCommand(PricingPolicyValidator v) {
+        return new ValidateSellerMinPriceCommand(v);
+    }
+
+    @Bean
+    ApplySegmentPricingCommand applySegmentPricingCommand(CustomerTierPort customerTierPort) {
+        return new ApplySegmentPricingCommand(customerTierPort);
+    }
+
+    @Bean
     RulesEngineDiscountCommand rulesEngineDiscountCommand(PolicyEvaluationPort policyEvaluationPort) {
         return new RulesEngineDiscountCommand(policyEvaluationPort);
     }
@@ -121,6 +131,11 @@ public class PricingConfiguration {
     @Bean
     CalculateTaxCommand calculateTaxCommand(TaxCalculationPort taxCalculationPort) {
         return new CalculateTaxCommand(taxCalculationPort);
+    }
+
+    @Bean
+    CalculateTCSCommand calculateTCSCommand(PricingPolicyValidator v) {
+        return new CalculateTCSCommand(v);
     }
 
     @Bean
