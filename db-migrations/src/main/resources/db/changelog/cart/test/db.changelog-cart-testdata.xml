@@ -17,8 +17,8 @@
         <insert tableName="cart">
             <column name="id" value="cart-1"/>
             <column name="customer_id" value="user-1"/>
-            <column name="stateid" value="ACTIVE"/>
-            <column name="flowid" value="cart-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="cart-flow"/>
             <column name="subtotal" valueNumeric="149900"/>
             <column name="currency" value="INR"/>
             <column name="created_time" valueDate="2026-01-10T10:00:00"/>
@@ -29,8 +29,8 @@
         <insert tableName="cart">
             <column name="id" value="cart-2"/>
             <column name="customer_id" value="user-2"/>
-            <column name="stateid" value="ACTIVE"/>
-            <column name="flowid" value="cart-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="cart-flow"/>
             <column name="subtotal" valueNumeric="239700"/>
             <column name="currency" value="INR"/>
             <column name="created_time" valueDate="2026-01-12T10:00:00"/>
@@ -42,8 +42,8 @@
         <insert tableName="cart">
             <column name="id" value="cart-3"/>
             <column name="customer_id" value="user-3"/>
-            <column name="stateid" value="CHECKOUT_INITIATED"/>
-            <column name="flowid" value="cart-flow"/>
+            <column name="state_id" value="CHECKOUT_INITIATED"/>
+            <column name="flow_id" value="cart-flow"/>
             <column name="subtotal" valueNumeric="420000"/>
             <column name="currency" value="INR"/>
             <column name="created_time" valueDate="2026-01-08T10:00:00"/>
@@ -55,8 +55,8 @@
         <insert tableName="cart">
             <column name="id" value="cart-4"/>
             <column name="customer_id" value="user-1"/>
-            <column name="stateid" value="CHECKOUT_COMPLETED"/>
-            <column name="flowid" value="cart-flow"/>
+            <column name="state_id" value="CHECKOUT_COMPLETED"/>
+            <column name="flow_id" value="cart-flow"/>
             <column name="subtotal" valueNumeric="320000"/>
             <column name="currency" value="INR"/>
             <column name="created_time" valueDate="2025-12-01T10:00:00"/>
@@ -68,8 +68,8 @@
         <insert tableName="cart">
             <column name="id" value="cart-5"/>
             <column name="customer_id" value="user-1"/>
-            <column name="stateid" value="ABANDONED"/>
-            <column name="flowid" value="cart-flow"/>
+            <column name="state_id" value="ABANDONED"/>
+            <column name="flow_id" value="cart-flow"/>
             <column name="subtotal" valueNumeric="80000"/>
             <column name="currency" value="INR"/>
             <column name="created_time" valueDate="2025-12-20T10:00:00"/>
@@ -79,8 +79,8 @@
         <insert tableName="cart">
             <column name="id" value="cart-6"/>
             <column name="customer_id" value="user-3"/>
-            <column name="stateid" value="ABANDONED"/>
-            <column name="flowid" value="cart-flow"/>
+            <column name="state_id" value="ABANDONED"/>
+            <column name="flow_id" value="cart-flow"/>
             <column name="subtotal" valueNumeric="35000"/>
             <column name="currency" value="INR"/>
             <column name="created_time" valueDate="2025-12-22T10:00:00"/>
@@ -92,8 +92,8 @@
         <insert tableName="cart">
             <column name="id" value="cart-7"/>
             <column name="customer_id" value="user-2"/>
-            <column name="stateid" value="EXPIRED"/>
-            <column name="flowid" value="cart-flow"/>
+            <column name="state_id" value="EXPIRED"/>
+            <column name="flow_id" value="cart-flow"/>
             <column name="subtotal" valueNumeric="60000"/>
             <column name="currency" value="INR"/>
             <column name="expires_at" valueDate="2025-12-31T23:59:59"/>
@@ -106,8 +106,8 @@
         <insert tableName="cart">
             <column name="id" value="cart-8"/>
             <column name="customer_id" value="user-2"/>
-            <column name="stateid" value="MERGED"/>
-            <column name="flowid" value="cart-flow"/>
+            <column name="state_id" value="MERGED"/>
+            <column name="flow_id" value="cart-flow"/>
             <column name="subtotal" valueNumeric="15000"/>
             <column name="currency" value="INR"/>
             <column name="created_time" valueDate="2025-11-15T10:00:00"/>
