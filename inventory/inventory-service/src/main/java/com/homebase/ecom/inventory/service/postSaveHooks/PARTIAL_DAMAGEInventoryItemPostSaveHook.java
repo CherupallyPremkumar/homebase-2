@@ -40,8 +40,11 @@ public class PARTIAL_DAMAGEInventoryItemPostSaveHook implements PostSaveHook<Inv
                     damagedQty, inventory.getDamagePercentage(), Boolean.TRUE.equals(severe));
             try {
                 String body = objectMapper.writeValueAsString(event);
-                chenilePub.publish(KafkaTopics.INVENTORY_EVENTS, body,
-                        Map.of("key", inventory.getProductId(), "eventType", DamageDetectedEvent.EVENT_TYPE));
+                String key = inventory.getProductId() != null ? inventory.getProductId() : inventory.getId();
+                Map<String, Object> headers = new java.util.HashMap<>();
+                headers.put("key", key);
+                headers.put("eventType", DamageDetectedEvent.EVENT_TYPE);
+                chenilePub.publish(KafkaTopics.INVENTORY_EVENTS, body, headers);
             } catch (JacksonException e) {
                 log.error("Failed to serialize DamageDetectedEvent for productId={}", inventory.getProductId(), e);
                 return;

@@ -40,7 +40,7 @@ public class IN_WAREHOUSEInventoryItemPostSaveHook implements PostSaveHook<Inven
             try {
                 String body = objectMapper.writeValueAsString(event);
                 chenilePub.publish(KafkaTopics.INVENTORY_EVENTS, body,
-                        Map.of("key", inventory.getProductId(), "eventType", LowStockAlertEvent.EVENT_TYPE));
+                        Map.of("key", inventory.getProductId() != null ? inventory.getProductId() : inventory.getId(), "eventType", LowStockAlertEvent.EVENT_TYPE));
             } catch (JacksonException e) {
                 log.error("Failed to serialize LowStockAlertEvent for productId={}", inventory.getProductId(), e);
                 return;

@@ -39,7 +39,7 @@ public class STOCK_REJECTEDInventoryItemPostSaveHook implements PostSaveHook<Inv
         try {
             String body = objectMapper.writeValueAsString(event);
             chenilePub.publish(KafkaTopics.INVENTORY_EVENTS, body,
-                    Map.of("key", inventory.getProductId(), "eventType", StockRejectedEvent.EVENT_TYPE));
+                    Map.of("key", inventory.getProductId() != null ? inventory.getProductId() : inventory.getId(), "eventType", StockRejectedEvent.EVENT_TYPE));
         } catch (JacksonException e) {
             log.error("Failed to serialize StockRejectedEvent for productId={}", inventory.getProductId(), e);
             return;

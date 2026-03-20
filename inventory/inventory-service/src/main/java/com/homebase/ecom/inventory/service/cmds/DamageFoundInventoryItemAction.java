@@ -12,7 +12,6 @@ import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.inventory.dto.DamageFoundInventoryPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
 import java.util.List;
@@ -25,8 +24,12 @@ public class DamageFoundInventoryItemAction extends AbstractSTMTransitionAction<
 
     private static final Logger log = LoggerFactory.getLogger(DamageFoundInventoryItemAction.class);
 
-    @Autowired
-    private InventoryItemPolicyValidator policyValidator;
+    
+    private final InventoryItemPolicyValidator policyValidator;
+
+    public DamageFoundInventoryItemAction(InventoryItemPolicyValidator policyValidator) {
+        this.policyValidator = policyValidator;
+    }
 
     @Override
     public void transitionTo(InventoryItem inventory,

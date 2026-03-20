@@ -219,7 +219,7 @@ public class InventoryConfiguration {
 
     @Bean
     ReserveStockInventoryItemAction inventoryReserveStockAction() {
-        return new ReserveStockInventoryItemAction();
+        return new ReserveStockInventoryItemAction(inventoryItemPolicyValidator());
     }
 
     @Bean
@@ -254,7 +254,7 @@ public class InventoryConfiguration {
 
     @Bean
     AllocateToWarehouseInventoryItemAction inventoryAllocateToWarehouseAction() {
-        return new AllocateToWarehouseInventoryItemAction();
+        return new AllocateToWarehouseInventoryItemAction(inventoryItemPolicyValidator());
     }
 
     @Bean
@@ -284,17 +284,17 @@ public class InventoryConfiguration {
 
     @Bean
     ApproveStockInventoryItemAction inventoryApproveStockAction() {
-        return new ApproveStockInventoryItemAction();
+        return new ApproveStockInventoryItemAction(inventoryItemPolicyValidator());
     }
 
     @Bean
     RejectStockInventoryItemAction inventoryRejectStockAction() {
-        return new RejectStockInventoryItemAction();
+        return new RejectStockInventoryItemAction(inventoryItemPolicyValidator());
     }
 
     @Bean
     DamageFoundInventoryItemAction inventoryDamageFoundAction() {
-        return new DamageFoundInventoryItemAction();
+        return new DamageFoundInventoryItemAction(inventoryItemPolicyValidator());
     }
 
     @Bean

@@ -37,7 +37,7 @@ public class OUT_OF_STOCKInventoryItemPostSaveHook implements PostSaveHook<Inven
         try {
             String body = objectMapper.writeValueAsString(event);
             chenilePub.publish(KafkaTopics.INVENTORY_EVENTS, body,
-                    Map.of("key", inventory.getProductId(), "eventType", StockDepletedEvent.EVENT_TYPE));
+                    Map.of("key", inventory.getProductId() != null ? inventory.getProductId() : inventory.getId(), "eventType", StockDepletedEvent.EVENT_TYPE));
         } catch (JacksonException e) {
             log.error("Failed to serialize StockDepletedEvent for productId={}", inventory.getProductId(), e);
             return;

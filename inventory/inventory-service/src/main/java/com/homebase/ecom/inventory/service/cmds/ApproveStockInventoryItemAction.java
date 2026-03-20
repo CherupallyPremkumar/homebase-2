@@ -9,7 +9,6 @@ import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.inventory.dto.ApproveStockInventoryPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * STM action to mark stock as approved after warehouse inspection.
@@ -20,8 +19,12 @@ public class ApproveStockInventoryItemAction extends AbstractSTMTransitionAction
 
     private static final Logger log = LoggerFactory.getLogger(ApproveStockInventoryItemAction.class);
 
-    @Autowired
-    private InventoryItemPolicyValidator policyValidator;
+    
+    private final InventoryItemPolicyValidator policyValidator;
+
+    public ApproveStockInventoryItemAction(InventoryItemPolicyValidator policyValidator) {
+        this.policyValidator = policyValidator;
+    }
 
     @Override
     public void transitionTo(InventoryItem inventory,

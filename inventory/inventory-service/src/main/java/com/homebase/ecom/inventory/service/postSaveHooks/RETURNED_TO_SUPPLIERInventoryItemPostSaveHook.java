@@ -38,7 +38,7 @@ public class RETURNED_TO_SUPPLIERInventoryItemPostSaveHook implements PostSaveHo
         try {
             String body = objectMapper.writeValueAsString(event);
             chenilePub.publish(KafkaTopics.INVENTORY_EVENTS, body,
-                    Map.of("key", inventory.getProductId(), "eventType", StockReturnedToSupplierEvent.EVENT_TYPE));
+                    Map.of("key", inventory.getProductId() != null ? inventory.getProductId() : inventory.getId(), "eventType", StockReturnedToSupplierEvent.EVENT_TYPE));
         } catch (JacksonException e) {
             log.error("Failed to serialize StockReturnedToSupplierEvent for productId={}", inventory.getProductId(), e);
             return;

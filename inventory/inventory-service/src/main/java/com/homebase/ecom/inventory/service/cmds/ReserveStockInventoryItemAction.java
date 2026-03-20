@@ -9,7 +9,6 @@ import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.inventory.dto.ReserveStockInventoryPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * STM action for reserving stock against an order.
@@ -20,8 +19,12 @@ public class ReserveStockInventoryItemAction extends AbstractSTMTransitionAction
 
     private static final Logger log = LoggerFactory.getLogger(ReserveStockInventoryItemAction.class);
 
-    @Autowired
-    private InventoryItemPolicyValidator policyValidator;
+    
+    private final InventoryItemPolicyValidator policyValidator;
+
+    public ReserveStockInventoryItemAction(InventoryItemPolicyValidator policyValidator) {
+        this.policyValidator = policyValidator;
+    }
 
     @Override
     public void transitionTo(InventoryItem inventory, ReserveStockInventoryPayload payload, State startState,

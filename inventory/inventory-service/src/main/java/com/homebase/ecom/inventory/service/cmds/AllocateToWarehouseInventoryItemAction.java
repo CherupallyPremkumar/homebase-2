@@ -9,7 +9,6 @@ import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import com.homebase.ecom.inventory.dto.AllocateToWarehouseInventoryPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * STM action for allocating approved stock to a warehouse/fulfillment center.
@@ -20,8 +19,12 @@ public class AllocateToWarehouseInventoryItemAction
 
     private static final Logger log = LoggerFactory.getLogger(AllocateToWarehouseInventoryItemAction.class);
 
-    @Autowired
-    private InventoryItemPolicyValidator policyValidator;
+    
+    private final InventoryItemPolicyValidator policyValidator;
+
+    public AllocateToWarehouseInventoryItemAction(InventoryItemPolicyValidator policyValidator) {
+        this.policyValidator = policyValidator;
+    }
 
     @Override
     public void transitionTo(InventoryItem inventory,

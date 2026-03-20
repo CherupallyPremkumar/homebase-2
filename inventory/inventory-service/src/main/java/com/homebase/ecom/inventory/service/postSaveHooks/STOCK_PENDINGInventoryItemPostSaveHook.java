@@ -40,7 +40,7 @@ public class STOCK_PENDINGInventoryItemPostSaveHook implements PostSaveHook<Inve
             try {
                 String body = objectMapper.writeValueAsString(event);
                 chenilePub.publish(KafkaTopics.INVENTORY_EVENTS, body,
-                        Map.of("key", inventory.getProductId(), "eventType", RestockArrivedEvent.EVENT_TYPE));
+                        Map.of("key", inventory.getProductId() != null ? inventory.getProductId() : inventory.getId(), "eventType", RestockArrivedEvent.EVENT_TYPE));
             } catch (JacksonException e) {
                 log.error("Failed to serialize RestockArrivedEvent for productId={}", inventory.getProductId(), e);
                 return;
