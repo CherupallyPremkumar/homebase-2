@@ -44,7 +44,6 @@
     <module>user</module>
     <module>notification</module>
     <module>fulfillment</module>
-    <module>build</module>
     <module>filter-core</module>
     <module>db-migrations</module>
     <module>offer</module>
@@ -55,6 +54,7 @@
     <module>compliance</module>
     <module>supplier-lifecycle</module>
     <module>ui-query</module>
+    <module>build</module>
   </modules>
   <properties>
     <maven.compiler.release>25</maven.compiler.release>

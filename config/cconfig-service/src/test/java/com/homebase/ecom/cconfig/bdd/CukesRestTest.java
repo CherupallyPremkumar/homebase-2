@@ -9,7 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(features = "src/test/resources/features",
-		glue = {"classpath:org/chenile/cconfig/bdd", "classpath:org/chenile/cucumber/rest"},
+		glue = {"classpath:com/homebase/ecom/cconfig/bdd", "classpath:org/chenile/cucumber/rest","classpath:org/chenile/cucumber/rest","classpath:org/chenile/cucumber/security/rest"},
         plugin = {"pretty"}
         )
 @ActiveProfiles("unittest")
