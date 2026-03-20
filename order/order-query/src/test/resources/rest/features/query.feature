@@ -1,4 +1,4 @@
-Feature: Tests the Order Query Service using a REST client. 
+Feature: Tests the Order Query Service using a REST client.
 
 Scenario: Tests out pagination capability
 When I POST a REST request to URL "/q/orders" with payload
@@ -8,30 +8,60 @@ When I POST a REST request to URL "/q/orders" with payload
 		{"name":"createdAt","ascendingOrder": true}
 	],
 	"pageNum": 1,
-	"numRowsInPage": 10
+	"numRowsInPage": 5
 }
 """
 Then the http status code is 200
 And the top level code is 200
-And success is true 
-And the REST response key "numRowsReturned" is "2"
-And the REST response key "list[0].row.id" is "ord-1"
-And the REST response key "list[1].row.id" is "ord-2"
+And success is true
+And the REST response key "numRowsReturned" is "5"
+And the REST response key "list[0].row.id" is "ord-5"
+And the REST response key "list[1].row.id" is "ord-8"
 
-Scenario: Test specific filter query
+Scenario: Test filter by customerId and stateId
 When I POST a REST request to URL "/q/orders" with payload
 """
 {
 	"filters" :{
-		"customerId": "user-1",
+		"customerId": "user-3",
         "stateId": "PAID"
 	}
 }
 """
 Then the http status code is 200
 And the top level code is 200
-And success is true 
+And success is true
 And the REST response key "numRowsReturned" is "1"
+And the REST response key "list[0].row.id" is "ord-3"
+And the REST response key "list[0].row.customerId" is "user-3"
+And the REST response key "list[0].row.stateId" is "PAID"
+
+Scenario: Get order by id
+When I POST a REST request to URL "/q/order" with payload
+"""
+{
+	"filters" :{
+		"id": "ord-1"
+	}
+}
+"""
+Then the http status code is 200
+And success is true
 And the REST response key "list[0].row.id" is "ord-1"
 And the REST response key "list[0].row.customerId" is "user-1"
-And the REST response key "list[0].row.stateId" is "PAID"
+And the REST response key "list[0].row.stateId" is "DELIVERED"
+
+Scenario: Filter by stateId CANCELLED
+When I POST a REST request to URL "/q/orders" with payload
+"""
+{
+	"filters" :{
+		"stateId": "CANCELLED"
+	}
+}
+"""
+Then the http status code is 200
+And success is true
+And the REST response key "numRowsReturned" is "1"
+And the REST response key "list[0].row.id" is "ord-4"
+And the REST response key "list[0].row.stateId" is "CANCELLED"

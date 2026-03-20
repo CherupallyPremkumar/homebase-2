@@ -11,8 +11,8 @@
 				"columnType": "Text",
 				"sortable": true
 			},
-			"userId": {
-				"name": "userId",
+			"customerId": {
+				"name": "customerId",
 				"columnType": "Text",
 				"filterable": true
 			},
@@ -21,11 +21,6 @@
 				"columnType": "Text",
 				"filterable": true,
 				"likeQuery": true
-			},
-			"status": {
-				"name": "status",
-				"filterable": true,
-				"columnType": "Text"
 			},
 			"stateId": {
 				"name": "stateId",
@@ -57,9 +52,34 @@
 				"filterable": true,
 				"columnType": "Text"
 			},
+			"customerId": {
+				"name": "customerId",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"customerEmail": {
+				"name": "customerEmail",
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateId",
+				"columnType": "Text"
+			},
 			"totalAmount": {
 				"name": "totalAmount",
 				"columnType": "Number"
+			},
+			"currency": {
+				"name": "currency",
+				"columnType": "Text"
+			},
+			"orderNumber": {
+				"name": "orderNumber",
+				"columnType": "Text"
+			},
+			"createdAt": {
+				"name": "createdAt",
+				"columnType": "Date"
 			}
 		},
 		"paginated": false

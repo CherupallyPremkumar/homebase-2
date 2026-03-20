@@ -7,36 +7,25 @@ logging:
 spring:
   banner:
     location: classpath:banner.txt
-  devtools:
-    restart:
-      enabled: true
-      additional-exclude: static/**,.h2.server.properties
-    livereload:
-      enabled: false
   jackson:
     serialization:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:mem:demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: demo
-    password: password
+    url: jdbc:h2:mem:demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    username: sa
+    password:
     hikari:
       poolName: Hikari
       auto-commit: false
   h2:
     console:
       enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: none
   liquibase:
-    contexts: dev, faker
-  sql:
-    init:
-      mode: never
-
-  messages:
-    cache-duration: PT1S
-  thymeleaf:
-    cache: false
+    enabled: false
 
 server:
   port: 8000
@@ -45,8 +34,8 @@ server:
       enabled: false
 
 chenile:
-    base:
-        url:
+  base:
+    url:
 
 query:
   defaultTenantId: homebase
@@ -58,6 +47,6 @@ query:
       password: ''
       minimumIdle: '2'
       idleTimeout: '5000'
-      jdbcUrl: jdbc:h2:mem:datalake;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;INIT=RUNSCRIPT FROM 'classpath:schema.sql'
+      jdbcUrl: jdbc:h2:mem:demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
   mapperFiles: classpath*:com/homebase/ecom/query/service/mapper/*.xml
   definitionFiles: classpath*:com/homebase/ecom/query/service/mapper/*.json
