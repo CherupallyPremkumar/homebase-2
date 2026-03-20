@@ -14,6 +14,12 @@ import java.util.List;
 /**
  * Domain model for the return processing saga.
  * Orchestrates across: returnrequest, shipping, inventory, settlement, payment BCs.
+ *
+ * DB columns (return_processing_saga):
+ *   Base: id, created_time, last_modified_time, last_modified_by, tenant, created_by, version
+ *   STM:  state_entry_time, sla_yellow_date, sla_red_date, sla_tending_late, sla_late, flow_id, state_id
+ *   Biz:  return_request_id, order_id, order_item_id, refund_amount, shipment_id,
+ *         settlement_adjustment_id, refund_id, error_message, retry_count
  */
 public class ReturnProcessingSaga extends AbstractExtendedStateEntity
         implements ActivityEnabledStateEntity, ContainsTransientMap {
@@ -29,8 +35,8 @@ public class ReturnProcessingSaga extends AbstractExtendedStateEntity
     private int retryCount;
     private String tenant;
 
-    public TransientMap transientMap = new TransientMap();
-    public List<ReturnProcessingSagaActivityLog> activities = new ArrayList<>();
+    private transient TransientMap transientMap = new TransientMap();
+    private List<ReturnProcessingSagaActivityLog> activities = new ArrayList<>();
 
     public String getReturnRequestId() {
         return returnRequestId;
@@ -104,6 +110,22 @@ public class ReturnProcessingSaga extends AbstractExtendedStateEntity
         this.retryCount = retryCount;
     }
 
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
+    }
+
+    public List<ReturnProcessingSagaActivityLog> getActivities() {
+        return activities;
+    }
+
+    public void setActivities(List<ReturnProcessingSagaActivityLog> activities) {
+        this.activities = activities;
+    }
+
     @Override
     public TransientMap getTransientMap() {
         return this.transientMap;
@@ -116,8 +138,10 @@ public class ReturnProcessingSaga extends AbstractExtendedStateEntity
     @Override
     public Collection<ActivityLog> obtainActivities() {
         Collection<ActivityLog> acts = new ArrayList<>();
-        for (ActivityLog a : activities) {
-            acts.add(a);
+        if (activities != null) {
+            for (ActivityLog a : activities) {
+                acts.add(a);
+            }
         }
         return acts;
     }
@@ -131,7 +155,4 @@ public class ReturnProcessingSaga extends AbstractExtendedStateEntity
         activities.add(activityLog);
         return activityLog;
     }
-
-    public String getTenant() { return tenant; }
-    public void setTenant(String tenant) { this.tenant = tenant; }
 }

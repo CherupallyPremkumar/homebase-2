@@ -200,7 +200,7 @@ When I POST a REST request to URL "/payment" with payload
     "paymentMethod": "UPI"
 }
 """
-Then the REST response status is 400
+Then the http status code is 400
 
 Scenario: Reject payment with unsupported method
 When I POST a REST request to URL "/payment" with payload
@@ -213,4 +213,4 @@ When I POST a REST request to URL "/payment" with payload
     "paymentMethod": "BITCOIN"
 }
 """
-Then the REST response status is 400
+Then the http status code is 400

@@ -43,6 +43,7 @@ public class ReopenSupportAction extends AbstractSTMTransitionAction<SupportTick
         // Add system message about reopening
         TicketMessage reopenMsg = new TicketMessage();
         reopenMsg.setId(UUID.randomUUID().toString());
+        reopenMsg.setSenderId("SYSTEM");
         reopenMsg.setSenderType("SYSTEM");
         reopenMsg.setTimestamp(new Date());
         reopenMsg.setMessage("Ticket reopened (reopen #" + ticket.getReopenCount() + "). Reason: " + payload.getReason());

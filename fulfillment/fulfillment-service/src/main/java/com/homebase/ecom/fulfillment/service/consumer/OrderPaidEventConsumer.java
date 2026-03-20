@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Component;
 
 import com.homebase.ecom.fulfillment.model.FulfillmentSaga;
 import com.homebase.ecom.shared.event.KafkaTopics;
@@ -19,7 +18,6 @@ import java.util.Map;
  * Creates a new FulfillmentSaga entity (entering INITIATED state via STM)
  * and then triggers the reserveInventory event to start the saga.
  */
-@Component
 public class OrderPaidEventConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(OrderPaidEventConsumer.class);

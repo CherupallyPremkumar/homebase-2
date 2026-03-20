@@ -5,26 +5,27 @@ logging:
     org.chenile.*: DEBUG
 
 chenile:
-  query:
-    proxy:
-      enabled: true
-    remote:
-      base-url: http://localhost:8081
+  base:
+    url:
   security:
     client:
       id: authz-servlet
       secret: secret
     keycloak:
-      host: \${KEYCLOAK_HOST:http://localhost:8180}
-      port: \${KEYCLOAK_PORT:8180}
+      host: ${KEYCLOAK_HOST:http://localhost:8180}
+      port: ${KEYCLOAK_PORT:8180}
       base:
-        realm: \${KEYCLOAK_REALM:tenant0}
-  base:
-    url:
+        realm: ${KEYCLOAK_REALM:tenant0}
+
+pubsub:
+  topic:
+    separator: "."
 
 spring:
   main:
     allow-bean-definition-overriding: true
+  kafka:
+    bootstrap-server: localhost:9092
   banner:
     location: classpath:banner.txt
   jackson:
@@ -32,20 +33,23 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:mem:reviewtest;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:review_test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
     username: demo
     password: password
     hikari:
       poolName: Hikari
       auto-commit: false
 
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    contexts: dev, faker
+
   jpa:
     hibernate:
-      ddl-auto: update
-    database-platform: org.hibernate.dialect.H2Dialect
+      ddl-auto: none
 
 server:
+  port: 8000
   error:
     whitelabel:
       enabled: false
-

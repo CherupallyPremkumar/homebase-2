@@ -19,6 +19,9 @@ public class CartItem extends BaseEntity {
     private Money unitPrice = Money.ZERO_INR;
     private Money lineTotal = Money.ZERO_INR;
     private boolean available = true;
+    private boolean savedForLater;
+    private String imageUrl;
+    private Money originalPrice;
     private String tenant;
 
     public String getCartId() {
@@ -99,6 +102,30 @@ public class CartItem extends BaseEntity {
 
     public void setAvailable(boolean available) {
         this.available = available;
+    }
+
+    public boolean isSavedForLater() {
+        return savedForLater;
+    }
+
+    public void setSavedForLater(boolean savedForLater) {
+        this.savedForLater = savedForLater;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public Money getOriginalPrice() {
+        return originalPrice;
+    }
+
+    public void setOriginalPrice(Money originalPrice) {
+        this.originalPrice = originalPrice;
     }
 
     public void recalculateLineTotal() {

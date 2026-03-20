@@ -104,6 +104,11 @@ public class OnboardingSaga extends AbstractExtendedStateEntity
     @Override
     public TransientMap getTransientMap() { return transientMap; }
 
+    public List<ActivityLog> getActivities() { return activities; }
+    public void setActivities(List<ActivityLog> activities) {
+        this.activities = activities != null ? activities : new ArrayList<>();
+    }
+
     @Override
     public Collection<ActivityLog> obtainActivities() {
         return new ArrayList<>(activities);

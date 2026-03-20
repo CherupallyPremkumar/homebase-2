@@ -54,6 +54,16 @@ public class User extends AbstractExtendedStateEntity
     // --- Preferences ---
     private Preferences preferences;
 
+    // --- Extended profile (DB: user-004) ---
+    private String profileImageUrl;
+    private java.time.LocalDate dateOfBirth;
+    private String gender;
+    private boolean emailVerified;
+    private boolean phoneVerified;
+    private String referralCode;
+    private String referredBy;
+    private String customerTier;
+
     // --- Account security ---
     /** Consecutive failed logins. Resets on success. STM locks at configurable threshold. */
     private int loginAttempts;
@@ -206,4 +216,29 @@ public class User extends AbstractExtendedStateEntity
 
     public String getTenant() { return tenant; }
     public void setTenant(String tenant) { this.tenant = tenant; }
+
+    // --- Extended profile getters/setters ---
+    public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
+
+    public java.time.LocalDate getDateOfBirth() { return dateOfBirth; }
+    public void setDateOfBirth(java.time.LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
+
+    public boolean isPhoneVerified() { return phoneVerified; }
+    public void setPhoneVerified(boolean phoneVerified) { this.phoneVerified = phoneVerified; }
+
+    public String getReferralCode() { return referralCode; }
+    public void setReferralCode(String referralCode) { this.referralCode = referralCode; }
+
+    public String getReferredBy() { return referredBy; }
+    public void setReferredBy(String referredBy) { this.referredBy = referredBy; }
+
+    public String getCustomerTier() { return customerTier; }
+    public void setCustomerTier(String customerTier) { this.customerTier = customerTier; }
 }

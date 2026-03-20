@@ -7,8 +7,6 @@ import com.homebase.ecom.cconfig.sdk.CconfigClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +23,6 @@ import java.util.Map;
  *       unsubscribe checks, supported channels, and template requirements.</li>
  * </ul>
  */
-@Component
 public class NotificationPolicyValidator {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationPolicyValidator.class);

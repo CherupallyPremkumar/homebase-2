@@ -4,8 +4,6 @@ import org.chenile.core.context.ChenileExchange;
 import org.chenile.owiz.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import com.homebase.ecom.fulfillment.model.FulfillmentSaga;
 
 import java.util.List;
@@ -15,7 +13,6 @@ import java.util.Map;
  * OWIZ command that validates stock availability for all order items
  * before proceeding with inventory reservation.
  */
-@Component("validateStockAvailability")
 public class ValidateStockAvailability implements Command<ChenileExchange> {
 
     private static final Logger log = LoggerFactory.getLogger(ValidateStockAvailability.class);

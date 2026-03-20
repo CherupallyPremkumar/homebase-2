@@ -35,6 +35,7 @@ public class ResolveSupportAction extends AbstractSTMTransitionAction<SupportTic
         // Add resolution message
         TicketMessage resolveMsg = new TicketMessage();
         resolveMsg.setId(UUID.randomUUID().toString());
+        resolveMsg.setSenderId("SYSTEM");
         resolveMsg.setSenderType("SYSTEM");
         resolveMsg.setTimestamp(now);
         resolveMsg.setMessage("Ticket resolved. Resolution: " + payload.getResolution());

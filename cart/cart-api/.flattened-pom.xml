@@ -10,7 +10,7 @@
   <groupId>com.homebase.ecom.cart</groupId>
   <artifactId>cart-api</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Cart API Model and Interfaces</name>
+  <name>cart-api</name>
   <licenses>
     <license>
       <name>MIT License</name>

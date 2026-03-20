@@ -4,11 +4,9 @@ import com.homebase.ecom.fulfillment.model.FulfillmentSaga;
 import com.homebase.ecom.fulfillment.port.FulfillmentSagaRepository;
 import com.homebase.ecom.fulfillment.infrastructure.persistence.entity.FulfillmentSagaEntity;
 import com.homebase.ecom.fulfillment.infrastructure.persistence.mapper.FulfillmentSagaMapper;
-import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
 public class FulfillmentSagaRepositoryImpl implements FulfillmentSagaRepository {
 
     private final FulfillmentSagaJpaRepository jpaRepository;

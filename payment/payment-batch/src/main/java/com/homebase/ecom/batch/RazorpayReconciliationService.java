@@ -58,7 +58,7 @@ public class RazorpayReconciliationService {
     public List<ReconciliationMismatch> getUnresolvedMismatches(String mismatchType, String orderId,
             String providerTransactionId) {
         List<ReconciliationMismatch> mismatches = mismatchRepository
-                .findByGatewayTypeAndResolvedFalseOrderByCreatedAtDesc("razorpay");
+                .findByGatewayTypeAndResolvedFalseOrderByCreatedTimeDesc("razorpay");
 
         return mismatches.stream()
                 .filter(m -> !StringUtils.hasText(mismatchType) || mismatchType.equalsIgnoreCase(m.getMismatchType()))

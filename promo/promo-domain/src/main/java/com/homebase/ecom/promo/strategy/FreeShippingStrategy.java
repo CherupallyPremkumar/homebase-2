@@ -5,7 +5,6 @@ import com.homebase.ecom.promo.model.PromotionDetail;
 import com.homebase.ecom.promo.model.StrategyType;
 import com.homebase.ecom.shared.Money;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public class FreeShippingStrategy implements DiscountStrategy {
@@ -37,7 +36,7 @@ public class FreeShippingStrategy implements DiscountStrategy {
     @Override
     public Money calculateSavings(CartSnapshot cart) {
         if (!isEligible(cart)) {
-            return new Money(BigDecimal.ZERO, minOrderValue.getCurrency());
+            return Money.zero(minOrderValue.getCurrency());
         }
         return cart.getShippingCost();
     }

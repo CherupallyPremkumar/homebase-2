@@ -5,11 +5,10 @@ import org.chenile.workflow.activities.model.ActivityLog;
 import org.chenile.workflow.model.ContainsTransientMap;
 import org.chenile.workflow.model.TransientMap;
 import org.chenile.jpautils.entity.AbstractJpaStateEntity;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -35,12 +34,10 @@ public class ShippingEntity extends AbstractJpaStateEntity
     @Column(name = "shipping_method")
     private String shippingMethod;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "from_address", columnDefinition = "jsonb")
+    @Column(name = "from_address", columnDefinition = "TEXT")
     private String fromAddress;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "to_address", columnDefinition = "jsonb")
+    @Column(name = "to_address", columnDefinition = "TEXT")
     private String toAddress;
 
     @Column
@@ -64,14 +61,44 @@ public class ShippingEntity extends AbstractJpaStateEntity
     @Column(name = "current_location")
     private String currentLocation;
 
+    @Column
     private String description;
 
+    // ── Fields from migration-003 (Amazon-standard schema) ──
+
+    @Column(name = "shipping_cost", precision = 12, scale = 2)
+    private BigDecimal shippingCost;
+
+    @Column(name = "label_url", length = 500)
+    private String labelUrl;
+
+    @Column(name = "return_label_url", length = 500)
+    private String returnLabelUrl;
+
+    @Column(name = "pod_image_url", length = 500)
+    private String podImageUrl;
+
+    @Column(name = "carrier_tracking_url", length = 500)
+    private String carrierTrackingUrl;
+
+    @Column(name = "package_weight_grams")
+    private Integer packageWeightGrams;
+
+    @Column(name = "package_dimensions_json", columnDefinition = "TEXT")
+    private String packageDimensionsJson;
+
+    @Column(name = "insurance_amount", precision = 12, scale = 2)
+    private BigDecimal insuranceAmount;
+
+    @Column(name = "signature_required")
+    private boolean signatureRequired;
+
     @Transient
-    public TransientMap transientMap = new TransientMap();
+    private TransientMap transientMap = new TransientMap();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "shipping_id")
-    public List<ShippingActivityLogEntity> activities = new ArrayList<>();
+    private List<ShippingActivityLogEntity> activities = new ArrayList<>();
 
     // ── Getters and Setters ──
 
@@ -120,6 +147,33 @@ public class ShippingEntity extends AbstractJpaStateEntity
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
+    public BigDecimal getShippingCost() { return shippingCost; }
+    public void setShippingCost(BigDecimal shippingCost) { this.shippingCost = shippingCost; }
+
+    public String getLabelUrl() { return labelUrl; }
+    public void setLabelUrl(String labelUrl) { this.labelUrl = labelUrl; }
+
+    public String getReturnLabelUrl() { return returnLabelUrl; }
+    public void setReturnLabelUrl(String returnLabelUrl) { this.returnLabelUrl = returnLabelUrl; }
+
+    public String getPodImageUrl() { return podImageUrl; }
+    public void setPodImageUrl(String podImageUrl) { this.podImageUrl = podImageUrl; }
+
+    public String getCarrierTrackingUrl() { return carrierTrackingUrl; }
+    public void setCarrierTrackingUrl(String carrierTrackingUrl) { this.carrierTrackingUrl = carrierTrackingUrl; }
+
+    public Integer getPackageWeightGrams() { return packageWeightGrams; }
+    public void setPackageWeightGrams(Integer packageWeightGrams) { this.packageWeightGrams = packageWeightGrams; }
+
+    public String getPackageDimensionsJson() { return packageDimensionsJson; }
+    public void setPackageDimensionsJson(String packageDimensionsJson) { this.packageDimensionsJson = packageDimensionsJson; }
+
+    public BigDecimal getInsuranceAmount() { return insuranceAmount; }
+    public void setInsuranceAmount(BigDecimal insuranceAmount) { this.insuranceAmount = insuranceAmount; }
+
+    public boolean isSignatureRequired() { return signatureRequired; }
+    public void setSignatureRequired(boolean signatureRequired) { this.signatureRequired = signatureRequired; }
+
     public TransientMap getTransientMap() { return this.transientMap; }
     public void setTransientMap(TransientMap transientMap) { this.transientMap = transientMap; }
 
@@ -138,9 +192,9 @@ public class ShippingEntity extends AbstractJpaStateEntity
     @Override
     public ActivityLog addActivity(String eventId, String comment) {
         ShippingActivityLogEntity activityLog = new ShippingActivityLogEntity();
-        activityLog.activityName = eventId;
-        activityLog.activityComment = comment;
-        activityLog.activitySuccess = true;
+        activityLog.setActivityName(eventId);
+        activityLog.setActivityComment(comment);
+        activityLog.setActivitySuccess(true);
         activities.add(activityLog);
         return activityLog;
     }

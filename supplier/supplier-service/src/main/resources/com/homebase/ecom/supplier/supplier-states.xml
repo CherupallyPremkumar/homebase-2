@@ -6,11 +6,12 @@
   <event-information eventId='reviewSupplier' meta-acls="ADMIN,CATALOG_ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.ReviewSupplierPayload"/>
   <event-information eventId='approveSupplier' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.ApproveSupplierPayload"/>
   <event-information eventId='rejectSupplier' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.RejectSupplierPayload"/>
-  <event-information eventId='resubmitSupplier' meta-acls="SELLER" meta-bodyType="com.homebase.ecom.supplier.dto.ResubmitSupplierPayload"/>
+  <event-information eventId='resubmitSupplier' meta-acls="SUPPLIER,SELLER" meta-bodyType="com.homebase.ecom.supplier.dto.ResubmitSupplierPayload"/>
   <event-information eventId='suspendSupplier' meta-acls="ADMIN,SYSTEM" meta-bodyType="com.homebase.ecom.supplier.dto.SuspendSupplierPayload"/>
   <event-information eventId='terminateSupplier' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.TerminateSupplierPayload"/>
   <event-information eventId='putOnProbation' meta-acls="ADMIN,SYSTEM" meta-bodyType="com.homebase.ecom.supplier.dto.PutOnProbationPayload"/>
   <event-information eventId='reactivateSupplier' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.ReactivateSupplierPayload"/>
+  <event-information eventId='activateSupplier' meta-acls="ADMIN,SYSTEM" meta-bodyType="com.homebase.ecom.supplier.dto.ActivateSupplierPayload"/>
   <event-information eventId='resolveFromProbation' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.ResolveFromProbationPayload"/>
 
   <flow id='supplier-flow' default='true'>
@@ -52,7 +53,10 @@
 
     <manual-state id='APPROVED' meta-mainPath="true"
                   description="Supplier approved, completing onboarding">
-      <entry-action componentName="supplierApprovedEntryAction" />
+      <on eventId='activateSupplier'
+          componentName='supplierActivateSupplierAction'
+          newStateId='ACTIVE'
+          meta-mainPath="true" meta-acls="ADMIN,SYSTEM"/>
     </manual-state>
 
     <!-- ================================================================ -->
@@ -64,7 +68,7 @@
       <on eventId='resubmitSupplier'
           componentName='supplierResubmitSupplierAction'
           newStateId='APPLIED'
-          meta-acls="SELLER"/>
+          meta-acls="SUPPLIER,SELLER"/>
     </manual-state>
 
     <!-- ================================================================ -->
@@ -73,7 +77,6 @@
 
     <manual-state id='ACTIVE' meta-mainPath="true"
                   description="Supplier active and able to list products">
-      <entry-action componentName="supplierActiveAction" />
       <on eventId='suspendSupplier'
           componentName='supplierSuspendSupplierAction'
           newStateId='SUSPENDED'
@@ -94,7 +97,6 @@
 
     <manual-state id='ON_PROBATION'
                   description="Supplier on probation due to poor performance metrics">
-      <entry-action componentName="supplierOnProbationEntryAction" />
       <on eventId='resolveFromProbation'
           componentName='supplierResolveFromProbationAction'
           newStateId='ACTIVE'
@@ -115,7 +117,6 @@
 
     <manual-state id='SUSPENDED'
                   description="Supplier suspended by admin or system">
-      <entry-action componentName="supplierSuspendedAction" />
       <on eventId='reactivateSupplier'
           componentName='supplierReactivateSupplierAction'
           newStateId='ACTIVE'
@@ -132,7 +133,6 @@
 
     <manual-state id='TERMINATED'
                   description="Supplier permanently terminated from platform">
-      <entry-action componentName="supplierTerminatedEntryAction" />
     </manual-state>
 
     <!-- ================================================================ -->

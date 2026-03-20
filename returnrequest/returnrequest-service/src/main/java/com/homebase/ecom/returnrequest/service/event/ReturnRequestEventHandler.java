@@ -4,7 +4,6 @@ import com.homebase.ecom.shared.event.EventEnvelope;
 import com.homebase.ecom.shared.event.OrderDeliveredEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 /**
  * Chenile event handler for return request cross-service events.

@@ -6,11 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
 
 @Repository
-public interface CouponUsageLogJpaRepository extends JpaRepository<CouponUsageLog, UUID>, CouponUsageLogRepository {
-    
+public interface CouponUsageLogJpaRepository extends JpaRepository<CouponUsageLog, String>, CouponUsageLogRepository {
+
     @Override
-    List<CouponUsageLog> findByCouponCodeAndUserId(String couponCode, UUID userId);
+    List<CouponUsageLog> findByCouponCodeAndUserId(String couponCode, String userId);
 }

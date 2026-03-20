@@ -2,6 +2,7 @@ package com.homebase.ecom.shipping.model;
 
 import org.chenile.workflow.activities.model.ActivityEnabledStateEntity;
 import org.chenile.workflow.activities.model.ActivityLog;
+import java.math.BigDecimal;
 import java.util.*;
 import org.chenile.workflow.model.*;
 import org.chenile.utils.entity.model.AbstractExtendedStateEntity;
@@ -9,6 +10,7 @@ import org.chenile.utils.entity.model.AbstractExtendedStateEntity;
 /**
  * Shipping bounded context domain model.
  * Tracks shipment lifecycle from label creation through delivery or return.
+ * Maps to the 'shipments' table (DB source of truth).
  */
 public class Shipping extends AbstractExtendedStateEntity
         implements ActivityEnabledStateEntity,
@@ -23,11 +25,11 @@ public class Shipping extends AbstractExtendedStateEntity
     // Shipping method
     private String shippingMethod; // STANDARD, EXPRESS, OVERNIGHT
 
-    // Addresses (stored as JSON strings)
+    // Addresses (stored as TEXT in DB)
     private String fromAddress;
     private String toAddress;
 
-    // Package details
+    // Package details (legacy columns from migration-001)
     private String weight;
     private String dimensions;
 
@@ -38,9 +40,21 @@ public class Shipping extends AbstractExtendedStateEntity
     private String deliveryInstructions;
     private String currentLocation;
 
-    // Description and general
-    public String description;
+    // Description
+    private String description;
     private String tenant;
+
+    // ── Fields from migration-003 (Amazon-standard schema) ──
+
+    private BigDecimal shippingCost;
+    private String labelUrl;
+    private String returnLabelUrl;
+    private String podImageUrl;
+    private String carrierTrackingUrl;
+    private Integer packageWeightGrams;
+    private String packageDimensionsJson;
+    private BigDecimal insuranceAmount;
+    private boolean signatureRequired;
 
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
@@ -89,6 +103,42 @@ public class Shipping extends AbstractExtendedStateEntity
     public String getCurrentLocation() { return currentLocation; }
     public void setCurrentLocation(String currentLocation) { this.currentLocation = currentLocation; }
 
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
+
+    public BigDecimal getShippingCost() { return shippingCost; }
+    public void setShippingCost(BigDecimal shippingCost) { this.shippingCost = shippingCost; }
+
+    public String getLabelUrl() { return labelUrl; }
+    public void setLabelUrl(String labelUrl) { this.labelUrl = labelUrl; }
+
+    public String getReturnLabelUrl() { return returnLabelUrl; }
+    public void setReturnLabelUrl(String returnLabelUrl) { this.returnLabelUrl = returnLabelUrl; }
+
+    public String getPodImageUrl() { return podImageUrl; }
+    public void setPodImageUrl(String podImageUrl) { this.podImageUrl = podImageUrl; }
+
+    public String getCarrierTrackingUrl() { return carrierTrackingUrl; }
+    public void setCarrierTrackingUrl(String carrierTrackingUrl) { this.carrierTrackingUrl = carrierTrackingUrl; }
+
+    public Integer getPackageWeightGrams() { return packageWeightGrams; }
+    public void setPackageWeightGrams(Integer packageWeightGrams) { this.packageWeightGrams = packageWeightGrams; }
+
+    public String getPackageDimensionsJson() { return packageDimensionsJson; }
+    public void setPackageDimensionsJson(String packageDimensionsJson) { this.packageDimensionsJson = packageDimensionsJson; }
+
+    public BigDecimal getInsuranceAmount() { return insuranceAmount; }
+    public void setInsuranceAmount(BigDecimal insuranceAmount) { this.insuranceAmount = insuranceAmount; }
+
+    public boolean isSignatureRequired() { return signatureRequired; }
+    public void setSignatureRequired(boolean signatureRequired) { this.signatureRequired = signatureRequired; }
+
+    public List<ActivityLog> getActivities() { return activities; }
+    public void setActivities(List<ActivityLog> activities) { this.activities = activities; }
+
     public TransientMap getTransientMap() { return this.transientMap; }
     public void setTransientMap(TransientMap transientMap) { this.transientMap = transientMap; }
 
@@ -106,7 +156,4 @@ public class Shipping extends AbstractExtendedStateEntity
         activities.add(activityLog);
         return activityLog;
     }
-
-    public String getTenant() { return tenant; }
-    public void setTenant(String tenant) { this.tenant = tenant; }
 }

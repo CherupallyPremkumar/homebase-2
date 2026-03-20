@@ -1,24 +1,28 @@
 package com.homebase.ecom.offer.infrastructure.persistence;
 
 import com.homebase.ecom.offer.domain.model.Offer;
-import com.homebase.ecom.offer.domain.port.OfferRepository;
-import org.chenile.utils.entity.service.EntityStore;
+import com.homebase.ecom.offer.infrastructure.persistence.adapter.OfferJpaRepository;
+import com.homebase.ecom.offer.infrastructure.persistence.entity.OfferEntity;
+import com.homebase.ecom.offer.infrastructure.persistence.mapper.OfferMapper;
+import org.chenile.jpautils.store.ChenileJpaEntityStore;
 
-public class ChenileOfferEntityStore implements EntityStore<Offer> {
+/**
+ * Bridges Chenile STM's EntityStore with JPA persistence for Offer.
+ * Uses ChenileJpaEntityStore which properly handles:
+ * - Optimistic locking via @Version (loads existing entity before update)
+ * - ID propagation back to domain model after persist
+ */
+public class ChenileOfferEntityStore extends ChenileJpaEntityStore<Offer, OfferEntity> {
 
-    private final OfferRepository offerRepository;
-
-    public ChenileOfferEntityStore(OfferRepository offerRepository) {
-        this.offerRepository = offerRepository;
-    }
-
-    @Override
-    public void store(Offer offer) {
-        offerRepository.save(offer);
-    }
-
-    @Override
-    public Offer retrieve(String id) {
-        return offerRepository.findById(id).orElse(null);
+    public ChenileOfferEntityStore(OfferJpaRepository repository, OfferMapper mapper) {
+        super(repository,
+                entity -> mapper.toModel(entity),
+                model -> mapper.toEntity(model),
+                (existing, updated) -> {
+                    // Merge updated fields onto existing JPA entity
+                    // Convert updated entity back to domain model, then use mergeEntity
+                    Offer incoming = mapper.toModel(updated);
+                    mapper.mergeEntity(incoming, existing);
+                });
     }
 }

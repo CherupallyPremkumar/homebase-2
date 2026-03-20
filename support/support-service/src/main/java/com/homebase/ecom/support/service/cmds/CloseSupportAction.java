@@ -29,6 +29,7 @@ public class CloseSupportAction extends AbstractSTMTransitionAction<SupportTicke
 
         TicketMessage closeMsg = new TicketMessage();
         closeMsg.setId(UUID.randomUUID().toString());
+        closeMsg.setSenderId("SYSTEM");
         closeMsg.setSenderType("SYSTEM");
         closeMsg.setTimestamp(new Date());
         closeMsg.setMessage("Ticket closed after resolution period.");

@@ -89,7 +89,8 @@ public class SettlementEventHandler {
                 Settlement settlement = new Settlement();
                 settlement.setSupplierId(supplierId);
                 settlement.setOrderId(event.getOrderId());
-                settlement.setOrderAmount(new Money(orderAmount, currency));
+                // Convert BigDecimal amount (assumed paise) to Money
+                settlement.setOrderAmount(Money.of(orderAmount.longValue(), currency));
                 settlement.setCurrency(currency);
                 settlement.setDescription("Settlement for order " + event.getOrderId());
                 settlement.setSettlementPeriodStart(LocalDate.now());
@@ -97,7 +98,7 @@ public class SettlementEventHandler {
 
                 // Create through STM — sets initial state (PENDING) and persists
                 settlementStateEntityService.process(settlement, null, null);
-                log.info("Created settlement for supplier {} from order {}, amount {}",
+                log.info("Created settlement for supplier {} from order {}, amount {} paise",
                         supplierId, event.getOrderId(), orderAmount);
             }
         } catch (RuntimeException e) {
@@ -123,7 +124,8 @@ public class SettlementEventHandler {
                 settlementJpaRepository.findByOrderId(event.getOrderId()).ifPresent(entity -> {
                     Settlement settlement = settlementMapper.toModel(entity);
 
-                    BigDecimal adjustmentAmount = event.getRefundedAmount().negate(); // Deduction
+                    // Refund amount is a deduction (negate)
+                    BigDecimal adjustmentAmount = event.getRefundedAmount().negate();
                     com.homebase.ecom.settlement.model.SettlementAdjustment adjustment =
                             new com.homebase.ecom.settlement.model.SettlementAdjustment(
                                     adjustmentAmount,
@@ -131,13 +133,14 @@ public class SettlementEventHandler {
                                     "SYSTEM");
                     settlement.getAdjustments().add(adjustment);
 
-                    // Recalculate net if already calculated
+                    // Recalculate net if already calculated (amounts in paise)
                     if (settlement.getNetAmount() != null) {
-                        BigDecimal newNet = settlement.getNetAmount().getAmount().add(adjustmentAmount);
-                        settlement.setNetAmount(new Money(newNet, settlement.getCurrency()));
+                        long currentNetPaise = settlement.getNetAmount().getAmount();
+                        long adjustmentPaise = adjustmentAmount.longValue();
+                        settlement.setNetAmount(Money.of(currentNetPaise + adjustmentPaise, settlement.getCurrency()));
                     }
 
-                    log.info("Added refund adjustment {} to settlement {} for order {}",
+                    log.info("Added refund adjustment {} paise to settlement {} for order {}",
                             adjustmentAmount, settlement.getId(), event.getOrderId());
                 });
             } catch (Exception e) {

@@ -16,7 +16,6 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import org.chenile.cucumber.CukesContext;
 import org.chenile.security.KeycloakConnectionDetails;
-import org.chenile.security.test.BaseSecurityTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
@@ -62,9 +61,6 @@ public class CukesSteps {
         headers.put("Authorization", "Bearer " + fetchToken(realm, user, password));
     }
 
-    /**
-     * Spring 7 compatible token fetch (HttpHeaders no longer implements MultiValueMap).
-     */
     private static String fetchToken(String realm, String user, String password) {
         RestTemplate restTemplate = new RestTemplate();
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();

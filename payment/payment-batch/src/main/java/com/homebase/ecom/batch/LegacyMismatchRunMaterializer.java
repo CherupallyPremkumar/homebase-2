@@ -56,7 +56,7 @@ public class LegacyMismatchRunMaterializer {
         run = runRepository.save(run);
 
         List<com.homebase.ecom.payment.domain.ReconciliationMismatch> newMismatches = mismatchRepository
-                .findByResolvedFalseAndCreatedAtAfterOrderByCreatedAtDesc(mismatchesCreatedAfter);
+                .findByResolvedFalseAndCreatedTimeAfterOrderByCreatedTimeDesc(java.util.Date.from(mismatchesCreatedAfter.atZone(java.time.ZoneOffset.UTC).toInstant()));
 
         for (var m : newMismatches) {
             ReconciliationCategory category = ReconciliationCategory.fromLegacyMismatchType(m.getMismatchType());

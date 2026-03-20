@@ -20,13 +20,13 @@
   <!--   MISMATCHES_FOUND     → settlement.adjust (if adjustments needed)     -->
   <!-- ════════════════════════════════════════════════════════════════════════ -->
 
-  <event-information eventId='startProcessing'   meta-acls="SYSTEM,FINANCE"  meta-bodyType="com.homebase.ecom.reconciliation.dto.StartProcessingPayload"/>
-  <event-information eventId='completeMatching'  meta-acls="SYSTEM"          meta-bodyType="com.homebase.ecom.reconciliation.dto.CompleteMatchingPayload"/>
-  <event-information eventId='reviewMismatches'  meta-acls="FINANCE,ADMIN"   meta-bodyType="com.homebase.ecom.reconciliation.dto.ReviewMismatchesPayload"/>
-  <event-information eventId='resolveMismatches' meta-acls="FINANCE,ADMIN"   meta-bodyType="com.homebase.ecom.reconciliation.dto.ResolveMismatchesPayload"/>
-  <event-information eventId='approve'           meta-acls="FINANCE"         meta-bodyType="com.homebase.ecom.reconciliation.dto.ApproveReconciliationPayload"/>
-  <event-information eventId='reject'            meta-acls="FINANCE"         meta-bodyType="com.homebase.ecom.reconciliation.dto.RejectReconciliationPayload"/>
-  <event-information eventId='retry'             meta-acls="SYSTEM,FINANCE"  meta-bodyType="com.homebase.ecom.reconciliation.dto.RetryReconciliationPayload"/>
+  <event-information eventId='startProcessing'   meta-acls="SYSTEM,FINANCE"  meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='completeMatching'  meta-acls="SYSTEM"          meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='reviewMismatches'  meta-acls="FINANCE,ADMIN"   meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='resolveMismatches' meta-acls="FINANCE,ADMIN"   meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='approve'           meta-acls="FINANCE"         meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='reject'            meta-acls="FINANCE"         meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='retry'             meta-acls="SYSTEM,FINANCE"  meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
 
   <flow id='reconciliation-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>

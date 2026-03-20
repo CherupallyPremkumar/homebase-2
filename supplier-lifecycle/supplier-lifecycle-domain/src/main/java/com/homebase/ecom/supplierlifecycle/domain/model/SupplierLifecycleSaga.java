@@ -14,15 +14,19 @@ import org.chenile.workflow.model.TransientMap;
  * Aggregate root for the supplier lifecycle saga.
  * Tracks the progress of cascading effects when a supplier is
  * suspended, blacklisted, or reactivated.
+ *
+ * Inherits from AbstractExtendedStateEntity which provides:
+ *   id, createdTime, lastModifiedTime, lastModifiedBy, createdBy, version (from BaseEntity)
+ *   state (currentState), stateEntryTime, slaTendingLate, slaLate (from AbstractExtendedStateEntity)
  */
 public class SupplierLifecycleSaga extends AbstractExtendedStateEntity
         implements ActivityEnabledStateEntity, ContainsTransientMap {
 
-    private String id;
     private String supplierId;
     private String action; // SUSPEND, BLACKLIST, REACTIVATE
     private String reason;
     private String flowId;
+    private String tenant;
 
     // Progress counters
     private int productsAffected;
@@ -33,15 +37,12 @@ public class SupplierLifecycleSaga extends AbstractExtendedStateEntity
     // Error handling
     private String errorMessage;
     private int retryCount;
-    private String tenant;
 
     // Workflow related
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
 
     // Getters and Setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
 
     public String getSupplierId() { return supplierId; }
     public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
@@ -54,6 +55,9 @@ public class SupplierLifecycleSaga extends AbstractExtendedStateEntity
 
     public String getFlowId() { return flowId; }
     public void setFlowId(String flowId) { this.flowId = flowId; }
+
+    public String getTenant() { return tenant; }
+    public void setTenant(String tenant) { this.tenant = tenant; }
 
     public int getProductsAffected() { return productsAffected; }
     public void setProductsAffected(int productsAffected) { this.productsAffected = productsAffected; }
@@ -73,6 +77,9 @@ public class SupplierLifecycleSaga extends AbstractExtendedStateEntity
     public int getRetryCount() { return retryCount; }
     public void setRetryCount(int retryCount) { this.retryCount = retryCount; }
 
+    public List<ActivityLog> getActivities() { return activities; }
+    public void setActivities(List<ActivityLog> activities) { this.activities = activities; }
+
     @Override
     public TransientMap getTransientMap() { return transientMap; }
 
@@ -90,7 +97,4 @@ public class SupplierLifecycleSaga extends AbstractExtendedStateEntity
         this.activities.add(activityLog);
         return activityLog;
     }
-
-    public String getTenant() { return tenant; }
-    public void setTenant(String tenant) { this.tenant = tenant; }
 }

@@ -4,15 +4,12 @@ import org.chenile.core.context.ChenileExchange;
 import org.chenile.owiz.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import com.homebase.ecom.fulfillment.model.FulfillmentSaga;
 
 /**
  * OWIZ command that calls the notification API to send the shipment notification
  * to the customer.
  */
-@Component("sendCustomerNotification")
 public class SendCustomerNotification implements Command<ChenileExchange> {
 
     private static final Logger log = LoggerFactory.getLogger(SendCustomerNotification.class);

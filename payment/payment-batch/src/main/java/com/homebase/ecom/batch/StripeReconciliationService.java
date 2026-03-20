@@ -61,7 +61,7 @@ public class StripeReconciliationService {
 
     public List<ReconciliationMismatch> getUnresolvedMismatches(String mismatchType, String orderId, String stripeChargeId) {
         // Note: stripeChargeId is a legacy parameter name; schema is now provider_transaction_id.
-        List<ReconciliationMismatch> mismatches = mismatchRepository.findByResolvedFalseOrderByCreatedAtDesc();
+        List<ReconciliationMismatch> mismatches = mismatchRepository.findByResolvedFalseOrderByCreatedTimeDesc();
 
         return mismatches.stream()
                 .filter(m -> !StringUtils.hasText(mismatchType) || mismatchType.equalsIgnoreCase(m.getMismatchType()))

@@ -1,13 +1,13 @@
 Feature: Return Processing Saga
   Tests the complete return processing orchestration saga from return approval
-  through pickup, warehouse receipt, inventory restock, settlement adjustment,
-  refund processing, and customer notification.
-  States: INITIATED -> PICKUP_SCHEDULED -> ITEM_RECEIVED -> INVENTORY_RESTOCKED
-          -> SETTLEMENT_ADJUSTED -> REFUNDED -> COMPLETED
+  through pickup, warehouse receipt, inspection, inventory restock, settlement
+  adjustment, refund processing, and customer notification.
+  States: INITIATED -> PICKUP_SCHEDULED -> ITEM_RECEIVED -> CHECK_ITEM_CONDITION
+          -> INVENTORY_RESTOCKED -> SETTLEMENT_ADJUSTED -> REFUNDED -> COMPLETED
   Also covers: FAILED state and retry flow.
 
 # ======================================================================
-# COMPLETE RETURN PROCESSING FLOW
+# COMPLETE RETURN PROCESSING FLOW (Happy Path)
 # ======================================================================
 
 Background:
@@ -28,148 +28,112 @@ When I POST a REST request to URL "/return-processing" with payload
 }
 """
 Then the REST response contains key "mutatedEntity"
-And store "$.payload.mutatedEntity.id" from response to "sagaId"
+And store "$.payload.mutatedEntity.id" from response to "id"
 And the REST response key "mutatedEntity.currentState.stateId" is "${initialState}"
 
 Scenario: Schedule pickup for returned item (INITIATED -> PICKUP_SCHEDULED)
 Given that "event" equals "schedulePickup"
-When I PATCH a REST request to URL "/return-processing/${sagaId}/${event}" with payload
+When I PATCH a REST request to URL "/return-processing/${id}/${event}" with payload
 """json
 {
     "comment": "Scheduling carrier pickup for return"
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${sagaId}"
+And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "PICKUP_SCHEDULED"
 
 Scenario: Warehouse receives returned item (PICKUP_SCHEDULED -> ITEM_RECEIVED)
 Given that "event" equals "receiveItem"
-When I PATCH a REST request to URL "/return-processing/${sagaId}/${event}" with payload
+When I PATCH a REST request to URL "/return-processing/${id}/${event}" with payload
 """json
 {
     "comment": "Item received and inspected at warehouse"
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${sagaId}"
+And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "ITEM_RECEIVED"
 
-Scenario: Restock inventory with returned item (ITEM_RECEIVED -> INVENTORY_RESTOCKED)
-Given that "event" equals "restockInventory"
-When I PATCH a REST request to URL "/return-processing/${sagaId}/${event}" with payload
+Scenario: Inspect item with GOOD condition (ITEM_RECEIVED -> CHECK_ITEM_CONDITION -> INVENTORY_RESTOCKED)
+Given that "event" equals "inspectItem"
+When I PATCH a REST request to URL "/return-processing/${id}/${event}" with payload
 """json
 {
-    "comment": "Adding returned quantity back to available stock"
+    "comment": "Item inspected at warehouse",
+    "itemCondition": "GOOD",
+    "resellable": true
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${sagaId}"
+And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "INVENTORY_RESTOCKED"
 
 Scenario: Adjust supplier settlement (INVENTORY_RESTOCKED -> SETTLEMENT_ADJUSTED)
 Given that "event" equals "adjustSettlement"
-When I PATCH a REST request to URL "/return-processing/${sagaId}/${event}" with payload
+When I PATCH a REST request to URL "/return-processing/${id}/${event}" with payload
 """json
 {
     "comment": "Deducting returned item from supplier settlement"
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${sagaId}"
+And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "SETTLEMENT_ADJUSTED"
 
 Scenario: Process refund to customer (SETTLEMENT_ADJUSTED -> REFUNDED)
 Given that "event" equals "processRefund"
-When I PATCH a REST request to URL "/return-processing/${sagaId}/${event}" with payload
+When I PATCH a REST request to URL "/return-processing/${id}/${event}" with payload
 """json
 {
     "comment": "Initiating refund to customer"
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${sagaId}"
+And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "REFUNDED"
 
 Scenario: Notify customer of return completion (REFUNDED -> COMPLETED)
 Given that "event" equals "notifyCustomer"
-When I PATCH a REST request to URL "/return-processing/${sagaId}/${event}" with payload
+When I PATCH a REST request to URL "/return-processing/${id}/${event}" with payload
 """json
 {
     "comment": "Sending refund confirmation to customer"
 }
 """
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${sagaId}"
+And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "COMPLETED"
 
 Scenario: Verify completed return processing saga
-When I GET a REST request to URL "/return-processing/${sagaId}"
+When I GET a REST request to URL "/return-processing/${id}"
 Then the REST response contains key "mutatedEntity"
-And the REST response key "mutatedEntity.id" is "${sagaId}"
+And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "COMPLETED"
 And the REST response key "mutatedEntity.returnRequestId" is "RET-001"
 
 # ======================================================================
-# FAILED AT INVENTORY RESTOCK
+# SECOND SAGA: Full happy path (schedule + receive + inspect + restock + settle + refund + notify)
 # ======================================================================
 
-Scenario: Create a second saga for failure testing
+Scenario: Create a second saga for full lifecycle test
 When I POST a REST request to URL "/return-processing" with payload
 """json
 {
-    "returnRequestId": "RET-FAIL-001",
+    "returnRequestId": "RET-002",
     "orderId": "ORD-200",
     "orderItemId": "ITEM-200-A",
-    "refundAmount": 1500,
-    "description": "Return that will fail at restock"
+    "refundAmount": 3500,
+    "description": "Return for full lifecycle test"
 }
 """
 Then the REST response contains key "mutatedEntity"
-And store "$.payload.mutatedEntity.id" from response to "failSagaId"
+And store "$.payload.mutatedEntity.id" from response to "id2"
 And the REST response key "mutatedEntity.currentState.stateId" is "INITIATED"
 
-Scenario: Schedule pickup for fail saga (INITIATED -> PICKUP_SCHEDULED)
+Scenario: Schedule pickup for second saga
 Given that "event" equals "schedulePickup"
-When I PATCH a REST request to URL "/return-processing/${failSagaId}/${event}" with payload
-"""json
-{
-    "comment": "Scheduling pickup"
-}
-"""
-Then the REST response key "mutatedEntity.currentState.stateId" is "PICKUP_SCHEDULED"
-
-Scenario: Receive item for fail saga (PICKUP_SCHEDULED -> ITEM_RECEIVED)
-Given that "event" equals "receiveItem"
-When I PATCH a REST request to URL "/return-processing/${failSagaId}/${event}" with payload
-"""json
-{
-    "comment": "Item received"
-}
-"""
-Then the REST response key "mutatedEntity.currentState.stateId" is "ITEM_RECEIVED"
-
-# ======================================================================
-# SETTLEMENT ADJUSTMENT
-# ======================================================================
-
-Scenario: Create a third saga for settlement testing
-When I POST a REST request to URL "/return-processing" with payload
-"""json
-{
-    "returnRequestId": "RET-SETTLE-001",
-    "orderId": "ORD-300",
-    "orderItemId": "ITEM-300-A",
-    "refundAmount": 3500,
-    "description": "Return for settlement adjustment test"
-}
-"""
-Then the REST response contains key "mutatedEntity"
-And store "$.payload.mutatedEntity.id" from response to "settleSagaId"
-
-Scenario: Progress settlement saga to INVENTORY_RESTOCKED
-Given that "event" equals "schedulePickup"
-When I PATCH a REST request to URL "/return-processing/${settleSagaId}/${event}" with payload
+When I PATCH a REST request to URL "/return-processing/${id2}/${event}" with payload
 """json
 {
     "comment": "Schedule pickup"
@@ -177,9 +141,9 @@ When I PATCH a REST request to URL "/return-processing/${settleSagaId}/${event}"
 """
 Then the REST response key "mutatedEntity.currentState.stateId" is "PICKUP_SCHEDULED"
 
-Scenario: Receive item for settlement saga
+Scenario: Receive item for second saga
 Given that "event" equals "receiveItem"
-When I PATCH a REST request to URL "/return-processing/${settleSagaId}/${event}" with payload
+When I PATCH a REST request to URL "/return-processing/${id2}/${event}" with payload
 """json
 {
     "comment": "Item received"
@@ -187,19 +151,21 @@ When I PATCH a REST request to URL "/return-processing/${settleSagaId}/${event}"
 """
 Then the REST response key "mutatedEntity.currentState.stateId" is "ITEM_RECEIVED"
 
-Scenario: Restock for settlement saga
-Given that "event" equals "restockInventory"
-When I PATCH a REST request to URL "/return-processing/${settleSagaId}/${event}" with payload
+Scenario: Inspect item for second saga with LIKE_NEW condition
+Given that "event" equals "inspectItem"
+When I PATCH a REST request to URL "/return-processing/${id2}/${event}" with payload
 """json
 {
-    "comment": "Restocked"
+    "comment": "Inspecting item",
+    "itemCondition": "LIKE_NEW",
+    "resellable": true
 }
 """
 Then the REST response key "mutatedEntity.currentState.stateId" is "INVENTORY_RESTOCKED"
 
-Scenario: Adjust settlement for the return
+Scenario: Adjust settlement for second saga
 Given that "event" equals "adjustSettlement"
-When I PATCH a REST request to URL "/return-processing/${settleSagaId}/${event}" with payload
+When I PATCH a REST request to URL "/return-processing/${id2}/${event}" with payload
 """json
 {
     "comment": "Adjusting supplier settlement for refund amount 3500"
@@ -207,13 +173,9 @@ When I PATCH a REST request to URL "/return-processing/${settleSagaId}/${event}"
 """
 Then the REST response key "mutatedEntity.currentState.stateId" is "SETTLEMENT_ADJUSTED"
 
-# ======================================================================
-# REFUND PROCESSING
-# ======================================================================
-
-Scenario: Process refund for settlement saga
+Scenario: Process refund for second saga
 Given that "event" equals "processRefund"
-When I PATCH a REST request to URL "/return-processing/${settleSagaId}/${event}" with payload
+When I PATCH a REST request to URL "/return-processing/${id2}/${event}" with payload
 """json
 {
     "comment": "Processing customer refund"
@@ -221,9 +183,9 @@ When I PATCH a REST request to URL "/return-processing/${settleSagaId}/${event}"
 """
 Then the REST response key "mutatedEntity.currentState.stateId" is "REFUNDED"
 
-Scenario: Complete the settlement saga
+Scenario: Complete the second saga
 Given that "event" equals "notifyCustomer"
-When I PATCH a REST request to URL "/return-processing/${settleSagaId}/${event}" with payload
+When I PATCH a REST request to URL "/return-processing/${id2}/${event}" with payload
 """json
 {
     "comment": "Notifying customer of refund"
@@ -237,7 +199,7 @@ Then the REST response key "mutatedEntity.currentState.stateId" is "COMPLETED"
 
 Scenario: Attempt to schedule pickup on completed saga -- should fail
 Given that "event" equals "schedulePickup"
-When I PATCH a REST request to URL "/return-processing/${sagaId}/${event}" with payload
+When I PATCH a REST request to URL "/return-processing/${id}/${event}" with payload
 """json
 {
     "comment": "Trying on completed saga"

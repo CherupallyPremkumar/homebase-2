@@ -42,11 +42,9 @@
           newStateId='INVENTORY_RESERVED'
           meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='fail'
-          componentName='fulfillmentFailAction'
           newStateId='FAILED'
           meta-acls="SYSTEM"/>
       <on eventId='cancel'
-          componentName='fulfillmentCancelAction'
           newStateId='CANCELLING'
           meta-acls="SYSTEM,ADMIN"/>
     </status>
@@ -58,11 +56,9 @@
           newStateId='SHIPMENT_CREATED'
           meta-mainPath="true" meta-acls="SYSTEM,WAREHOUSE"/>
       <on eventId='fail'
-          componentName='fulfillmentFailAction'
           newStateId='FAILED'
           meta-acls="SYSTEM"/>
       <on eventId='cancel'
-          componentName='fulfillmentCancelAction'
           newStateId='CANCELLING'
           meta-acls="SYSTEM,ADMIN"/>
     </status>
@@ -74,11 +70,9 @@
           newStateId='SHIPPED'
           meta-mainPath="true" meta-acls="WAREHOUSE"/>
       <on eventId='fail'
-          componentName='fulfillmentFailAction'
           newStateId='FAILED'
           meta-acls="SYSTEM"/>
       <on eventId='cancel'
-          componentName='fulfillmentCancelAction'
           newStateId='CANCELLING'
           meta-acls="SYSTEM,ADMIN"/>
     </status>
@@ -90,7 +84,6 @@
           newStateId='CUSTOMER_NOTIFIED'
           meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='fail'
-          componentName='fulfillmentFailAction'
           newStateId='FAILED'
           meta-acls="SYSTEM"/>
     </status>
@@ -113,7 +106,6 @@
 
     <status id='CANCELLING' description="Fulfillment being cancelled, compensating saga steps">
       <on eventId='compensate'
-          componentName='fulfillmentCompensateAction'
           newStateId='COMPENSATION_DONE'
           meta-acls="SYSTEM"/>
     </status>
@@ -131,7 +123,6 @@
           newStateId='INITIATED'
           meta-acls="SYSTEM"/>
       <on eventId='compensate'
-          componentName='fulfillmentCompensateAction'
           newStateId='COMPENSATION_DONE'
           meta-acls="SYSTEM"/>
     </status>

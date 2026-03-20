@@ -50,7 +50,7 @@ class ShippingMapperTest {
         assertEquals(1, model.getDeliveryAttempts());
         assertEquals("Leave at door", model.getDeliveryInstructions());
         assertEquals("Mumbai Hub", model.getCurrentLocation());
-        assertEquals("Test shipment", model.description);
+        assertEquals("Test shipment", model.getDescription());
         assertEquals(new State("IN_TRANSIT", "shipping-flow"), model.getCurrentState());
     }
 
@@ -61,10 +61,10 @@ class ShippingMapperTest {
         entity.setCarrier("DHL");
 
         ShippingActivityLogEntity log = new ShippingActivityLogEntity();
-        log.activityName = "createLabel";
-        log.activityComment = "Label created";
-        log.activitySuccess = true;
-        entity.activities = List.of(log);
+        log.setActivityName("createLabel");
+        log.setActivityComment("Label created");
+        log.setActivitySuccess(true);
+        entity.setActivities(List.of(log));
 
         Shipping model = mapper.toModel(entity);
 
@@ -80,7 +80,7 @@ class ShippingMapperTest {
         ShippingEntity entity = new ShippingEntity();
         entity.setId("ship-1");
         entity.setCarrier("DHL");
-        entity.activities = null;
+        entity.setActivities(null);
 
         Shipping model = mapper.toModel(entity);
 
@@ -98,7 +98,7 @@ class ShippingMapperTest {
         Shipping model = mapper.toModel(entity);
 
         assertEquals("", model.getCarrier());
-        assertEquals("", model.description);
+        assertEquals("", model.getDescription());
     }
 
     @Test
@@ -180,11 +180,11 @@ class ShippingMapperTest {
 
         ShippingEntity entity = mapper.toEntity(model);
 
-        assertEquals(1, entity.activities.size());
-        ShippingActivityLogEntity ale = entity.activities.get(0);
-        assertEquals("pickUp", ale.activityName);
-        assertEquals("Picked up from warehouse", ale.activityComment);
-        assertTrue(ale.activitySuccess);
+        assertEquals(1, entity.getActivities().size());
+        ShippingActivityLogEntity ale = entity.getActivities().get(0);
+        assertEquals("pickUp", ale.getActivityName());
+        assertEquals("Picked up from warehouse", ale.getActivityComment());
+        assertTrue(ale.isActivitySuccess());
     }
 
     @Test
@@ -197,7 +197,7 @@ class ShippingMapperTest {
         ShippingEntity entity = mapper.toEntity(model);
 
         assertNotNull(entity);
-        assertTrue(entity.activities.isEmpty());
+        assertTrue(entity.getActivities().isEmpty());
     }
 
     @Test
@@ -257,16 +257,16 @@ class ShippingMapperTest {
         original.setId("ship-1");
         original.setCarrier("DHL");
         ShippingActivityLogEntity log = new ShippingActivityLogEntity();
-        log.activityName = "deliver";
-        log.activityComment = "Delivered successfully";
-        log.activitySuccess = true;
-        original.activities = List.of(log);
+        log.setActivityName("deliver");
+        log.setActivityComment("Delivered successfully");
+        log.setActivitySuccess(true);
+        original.setActivities(List.of(log));
 
         Shipping model = mapper.toModel(original);
         ShippingEntity roundTripped = mapper.toEntity(model);
 
-        assertEquals(1, roundTripped.activities.size());
-        assertEquals("deliver", roundTripped.activities.get(0).activityName);
+        assertEquals(1, roundTripped.getActivities().size());
+        assertEquals("deliver", roundTripped.getActivities().get(0).getActivityName());
     }
 
     @Test
@@ -276,16 +276,16 @@ class ShippingMapperTest {
         entity.setCarrier("DHL");
 
         ShippingActivityLogEntity log1 = new ShippingActivityLogEntity();
-        log1.activityName = "createLabel";
-        log1.activityComment = "Label created";
-        log1.activitySuccess = true;
+        log1.setActivityName("createLabel");
+        log1.setActivityComment("Label created");
+        log1.setActivitySuccess(true);
 
         ShippingActivityLogEntity log2 = new ShippingActivityLogEntity();
-        log2.activityName = "pickUp";
-        log2.activityComment = "Picked up";
-        log2.activitySuccess = true;
+        log2.setActivityName("pickUp");
+        log2.setActivityComment("Picked up");
+        log2.setActivitySuccess(true);
 
-        entity.activities = List.of(log1, log2);
+        entity.setActivities(List.of(log1, log2));
 
         Shipping model = mapper.toModel(entity);
 
@@ -297,7 +297,7 @@ class ShippingMapperTest {
         ShippingEntity entity = new ShippingEntity();
         entity.setId("ship-1");
         entity.setCarrier("DHL");
-        entity.activities = new ArrayList<>();
+        entity.setActivities(new ArrayList<>());
 
         Shipping model = mapper.toModel(entity);
 
@@ -345,7 +345,7 @@ class ShippingMapperTest {
         model.setDeliveryAttempts(1);
         model.setDeliveryInstructions("Leave at door");
         model.setCurrentLocation("Mumbai Hub");
-        model.description = "Test shipment";
+        model.setDescription("Test shipment");
         model.setCurrentState(new State("IN_TRANSIT", "shipping-flow"));
         return model;
     }

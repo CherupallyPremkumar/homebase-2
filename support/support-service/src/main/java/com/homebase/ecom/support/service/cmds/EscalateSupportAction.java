@@ -39,6 +39,10 @@ public class EscalateSupportAction extends AbstractSTMTransitionAction<SupportTi
         }
         // URGENT stays URGENT
 
+        // Mark as escalated with reason
+        ticket.setEscalated(true);
+        ticket.setEscalationReason(payload.getEscalationReason());
+
         // Reassign to senior agent if specified
         if (payload.getEscalateTo() != null && !payload.getEscalateTo().trim().isEmpty()) {
             ticket.setAssignedAgentId(payload.getEscalateTo());
@@ -49,6 +53,7 @@ public class EscalateSupportAction extends AbstractSTMTransitionAction<SupportTi
         // Add system message about escalation
         TicketMessage escalationMsg = new TicketMessage();
         escalationMsg.setId(UUID.randomUUID().toString());
+        escalationMsg.setSenderId("SYSTEM");
         escalationMsg.setSenderType("SYSTEM");
         escalationMsg.setTimestamp(new Date());
         escalationMsg.setMessage("Ticket escalated. Reason: " + payload.getEscalationReason()

@@ -32,7 +32,8 @@ public class ReplySupportAction extends AbstractSTMTransitionAction<SupportTicke
             senderType = (String) ticket.getTransientMap().get("senderType");
         }
         message.setSenderType(senderType != null ? senderType : "AGENT");
-        message.setSenderId(ticket.getAssignedAgentId());
+        String senderId = ticket.getAssignedAgentId();
+        message.setSenderId(senderId != null ? senderId : "UNKNOWN");
         message.setMessage(payload.getMessage());
         message.setTimestamp(new Date());
         ticket.getMessages().add(message);

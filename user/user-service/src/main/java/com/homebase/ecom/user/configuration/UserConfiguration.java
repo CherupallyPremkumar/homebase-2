@@ -15,7 +15,7 @@ import com.homebase.ecom.user.service.cmds.*;
 import com.homebase.ecom.user.service.event.UserEventHandler;
 import com.homebase.ecom.user.service.impl.UserServiceImpl;
 import com.homebase.ecom.user.service.postSaveHooks.*;
-import com.homebase.ecom.user.service.store.UserEntityStore;
+import com.homebase.ecom.user.infrastructure.persistence.ChenileUserEntityStore;
 import com.homebase.ecom.user.service.validator.UserPolicyValidator;
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
@@ -125,8 +125,8 @@ public class UserConfiguration {
         return new UserRepositoryImpl(jpaRepository, mapper);
     }
 
-    @Bean EntityStore<User> userEntityStore(UserRepository userRepository) {
-        return new UserEntityStore(userRepository);
+    @Bean EntityStore<User> userEntityStore(UserJpaRepository jpaRepository, UserMapper mapper) {
+        return new ChenileUserEntityStore(jpaRepository, mapper);
     }
 
     // --- Service ---

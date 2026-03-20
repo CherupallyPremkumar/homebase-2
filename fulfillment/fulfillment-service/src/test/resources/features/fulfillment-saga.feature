@@ -8,8 +8,7 @@ Feature: Order Fulfillment Saga
 # ======================================================================
 
 Background:
-  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
-  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+  When I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
 
 Scenario: Create a new fulfillment saga in INITIATED state
 Given that "flowName" equals "fulfillment-flow"

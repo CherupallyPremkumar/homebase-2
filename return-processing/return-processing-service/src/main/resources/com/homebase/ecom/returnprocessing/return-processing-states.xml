@@ -96,7 +96,7 @@
     -->
     <auto-state id='CHECK_ITEM_CONDITION'
                 componentName='ifAction'
-                condition='itemCondition != null and (itemCondition.equals("GOOD") or itemCondition.equals("LIKE_NEW"))'
+                condition='transientMap.get("itemCondition") != null and (transientMap.get("itemCondition").equals("GOOD") or transientMap.get("itemCondition").equals("LIKE_NEW"))'
                 then='restockable'
                 else='notRestockable'>
       <on eventId='restockable' newStateId='INVENTORY_RESTOCKED'/>

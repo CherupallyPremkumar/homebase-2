@@ -13,9 +13,7 @@ import java.util.List;
 
 /**
  * Domain model for Support Ticket.
- *
- * Fields: id, customerId, orderId, category, priority, subject, description,
- * assignedAgentId, messages, reopenCount, stateId, flowId.
+ * Maps to support_tickets table (DB migration is source of truth).
  */
 public class SupportTicket extends AbstractExtendedStateEntity
         implements ActivityEnabledStateEntity,
@@ -31,10 +29,19 @@ public class SupportTicket extends AbstractExtendedStateEntity
     private Date resolvedAt;
     private int reopenCount = 0;
 
-    /** Flag for auto-state CHECK_SLA — set by scheduled SLA checker */
+    /** Flag for auto-state CHECK_SLA -- set by scheduled SLA checker */
     private boolean slaBreached = false;
-    /** Flag for auto-state CHECK_AUTO_CLOSE — set by scheduled auto-close checker */
+    /** Flag for auto-state CHECK_AUTO_CLOSE -- set by scheduled auto-close checker */
     private boolean autoCloseReady = false;
+
+    // --- Fields from changeset support-004 ---
+    private String channel = "WEB";         // WEB, APP, PHONE, EMAIL, CHAT
+    private String relatedEntityType;       // ORDER, PAYMENT, PRODUCT, etc.
+    private String relatedEntityId;
+    private Integer satisfactionRating;     // 1-5, nullable
+    private String resolutionNotes;
+    private boolean escalated = false;
+    private String escalationReason;
 
     private List<TicketMessage> messages = new ArrayList<>();
     private String tenant;
@@ -42,7 +49,6 @@ public class SupportTicket extends AbstractExtendedStateEntity
     private transient TransientMap transientMap = new TransientMap();
     private List<ActivityLog> activities = new ArrayList<>();
 
-    // --- customerId (replaces userId) ---
     public String getCustomerId() { return customerId; }
     public void setCustomerId(String customerId) { this.customerId = customerId; }
 
@@ -76,10 +82,34 @@ public class SupportTicket extends AbstractExtendedStateEntity
     public boolean isAutoCloseReady() { return autoCloseReady; }
     public void setAutoCloseReady(boolean autoCloseReady) { this.autoCloseReady = autoCloseReady; }
 
+    public String getChannel() { return channel; }
+    public void setChannel(String channel) { this.channel = channel; }
+
+    public String getRelatedEntityType() { return relatedEntityType; }
+    public void setRelatedEntityType(String relatedEntityType) { this.relatedEntityType = relatedEntityType; }
+
+    public String getRelatedEntityId() { return relatedEntityId; }
+    public void setRelatedEntityId(String relatedEntityId) { this.relatedEntityId = relatedEntityId; }
+
+    public Integer getSatisfactionRating() { return satisfactionRating; }
+    public void setSatisfactionRating(Integer satisfactionRating) { this.satisfactionRating = satisfactionRating; }
+
+    public String getResolutionNotes() { return resolutionNotes; }
+    public void setResolutionNotes(String resolutionNotes) { this.resolutionNotes = resolutionNotes; }
+
+    public boolean isEscalated() { return escalated; }
+    public void setEscalated(boolean escalated) { this.escalated = escalated; }
+
+    public String getEscalationReason() { return escalationReason; }
+    public void setEscalationReason(String escalationReason) { this.escalationReason = escalationReason; }
+
     public List<TicketMessage> getMessages() { return messages; }
     public void setMessages(List<TicketMessage> messages) { this.messages = messages; }
 
     public TransientMap getTransientMap() { return this.transientMap; }
+
+    public List<ActivityLog> getActivities() { return activities; }
+    public void setActivities(List<ActivityLog> activities) { this.activities = activities; }
 
     @Override
     public Collection<ActivityLog> obtainActivities() {

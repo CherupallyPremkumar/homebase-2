@@ -31,6 +31,7 @@ public class WaitOnCustomerSupportAction extends AbstractSTMTransitionAction<Sup
 
         TicketMessage msg = new TicketMessage();
         msg.setId(UUID.randomUUID().toString());
+        msg.setSenderId("SYSTEM");
         msg.setSenderType("SYSTEM");
         msg.setTimestamp(new Date());
         msg.setMessage("Ticket placed on hold: " + reason);

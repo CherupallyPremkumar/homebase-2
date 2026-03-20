@@ -16,27 +16,27 @@
     </chain>
 
     <!-- Step 1: Route to optimal warehouse based on customer location and stock -->
-    <command id="routeToWarehouse" componentName="routeToWarehouseCommand">
+    <command id="routeToWarehouse" componentName="routeToWarehouse">
       <attach-to index="1" parentId="reserveInventoryChain"/>
     </command>
 
     <!-- Step 2: Check if order requires split-shipment (items from different warehouses) -->
-    <command id="checkSplitShipment" componentName="checkSplitShipmentCommand">
+    <command id="checkSplitShipment" componentName="checkSplitShipment">
       <attach-to index="2" parentId="reserveInventoryChain"/>
     </command>
 
     <!-- Step 3: Validate stock availability at selected warehouse(s) -->
-    <command id="validateStockAvailability" componentName="validateStockAvailabilityCommand">
+    <command id="validateStockAvailability" componentName="validateStockAvailability">
       <attach-to index="3" parentId="reserveInventoryChain"/>
     </command>
 
     <!-- Step 4: Deduct stock and create reservation records per warehouse -->
-    <command id="deductStockFromWarehouse" componentName="deductStockFromWarehouseCommand">
+    <command id="deductStockFromWarehouse" componentName="deductStockFromWarehouse">
       <attach-to index="4" parentId="reserveInventoryChain"/>
     </command>
 
     <!-- Step 5: Confirm reservation and return reservation IDs -->
-    <command id="confirmReservation" componentName="confirmReservationCommand">
+    <command id="confirmReservation" componentName="confirmReservation">
       <attach-to index="5" parentId="reserveInventoryChain"/>
     </command>
   </flow>
@@ -50,37 +50,37 @@
     </chain>
 
     <!-- Step 1: Validate weight and dimensions for shipping compliance -->
-    <command id="validateWeightDimensions" componentName="validateWeightDimensionsCommand">
+    <command id="validateWeightDimensions" componentName="validateWeightDimensions">
       <attach-to index="1" parentId="createShipmentChain"/>
     </command>
 
     <!-- Step 2: Select carrier based on SLA, cost, and delivery promise -->
-    <command id="selectCarrier" componentName="selectCarrierCommand">
+    <command id="selectCarrier" componentName="selectCarrier">
       <attach-to index="2" parentId="createShipmentChain"/>
     </command>
 
     <!-- Step 3: Verify carrier can meet promised delivery date -->
-    <command id="checkCarrierSLA" componentName="checkCarrierSLACommand">
+    <command id="checkCarrierSLA" componentName="checkCarrierSLA">
       <attach-to index="3" parentId="createShipmentChain"/>
     </command>
 
     <!-- Step 4: Generate pick list for warehouse staff -->
-    <command id="generatePickList" componentName="generatePickListCommand">
+    <command id="generatePickList" componentName="generatePickList">
       <attach-to index="4" parentId="createShipmentChain"/>
     </command>
 
     <!-- Step 5: Generate pack slip with item details and shipping label -->
-    <command id="generatePackSlip" componentName="generatePackSlipCommand">
+    <command id="generatePackSlip" componentName="generatePackSlip">
       <attach-to index="5" parentId="createShipmentChain"/>
     </command>
 
     <!-- Step 6: Generate tracking number from carrier API -->
-    <command id="generateTrackingNumber" componentName="generateTrackingNumberCommand">
+    <command id="generateTrackingNumber" componentName="generateTrackingNumber">
       <attach-to index="6" parentId="createShipmentChain"/>
     </command>
 
     <!-- Step 7: Create shipment record in shipping BC -->
-    <command id="createShipmentRecord" componentName="createShipmentRecordCommand">
+    <command id="createShipmentRecord" componentName="createShipmentRecord">
       <attach-to index="7" parentId="createShipmentChain"/>
     </command>
   </flow>
@@ -94,22 +94,22 @@
     </chain>
 
     <!-- Step 1: Resolve customer channel preference (email, SMS, push, WhatsApp) -->
-    <command id="resolveChannelPreference" componentName="resolveChannelPreferenceCommand">
+    <command id="resolveChannelPreference" componentName="resolveChannelPreference">
       <attach-to index="1" parentId="notifyCustomerChain"/>
     </command>
 
     <!-- Step 2: Prepare shipment notification with tracking link and ETA -->
-    <command id="prepareShipmentNotification" componentName="prepareShipmentNotificationCommand">
+    <command id="prepareShipmentNotification" componentName="prepareShipmentNotification">
       <attach-to index="2" parentId="notifyCustomerChain"/>
     </command>
 
     <!-- Step 3: Dispatch notification via notification BC -->
-    <command id="sendCustomerNotification" componentName="sendCustomerNotificationCommand">
+    <command id="sendCustomerNotification" componentName="sendCustomerNotification">
       <attach-to index="3" parentId="notifyCustomerChain"/>
     </command>
 
     <!-- Step 4: Update notification status in fulfillment record -->
-    <command id="updateNotificationStatus" componentName="updateNotificationStatusCommand">
+    <command id="updateNotificationStatus" componentName="updateNotificationStatus">
       <attach-to index="4" parentId="notifyCustomerChain"/>
     </command>
   </flow>

@@ -5,7 +5,6 @@ import com.homebase.ecom.promo.model.Promotion;
 import com.homebase.ecom.promo.model.PromotionResult;
 import com.homebase.ecom.shared.Money;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 public class JsonPromotionRule extends PromotionRule {
@@ -42,12 +41,12 @@ public class JsonPromotionRule extends PromotionRule {
         // This is a simplified implementation.
         // Real implementation would look at 'actions' and apply them.
         if (actions == null || actions.isEmpty()) {
-            return new Money(BigDecimal.ZERO, cart.getTotalAmount().getCurrency());
+            return Money.zero(cart.getTotalAmount().getCurrency());
         }
 
         // For now, let's just return zero or implement a basic fixed/percent logic if available in actions
         // In a full implementation, we'd have an ActionEvaluator.
-        return new Money(BigDecimal.ZERO, cart.getTotalAmount().getCurrency());
+        return Money.zero(cart.getTotalAmount().getCurrency());
     }
 
     public String toJson() {

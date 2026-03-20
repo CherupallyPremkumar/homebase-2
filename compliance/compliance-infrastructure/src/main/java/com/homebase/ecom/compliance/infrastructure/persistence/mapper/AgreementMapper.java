@@ -66,4 +66,37 @@ public class AgreementMapper {
         }
         return entity;
     }
+
+    /**
+     * Merges incoming domain model fields onto an existing JPA entity.
+     * Only overwrites non-null fields from the source model, preserving
+     * existing values for fields not provided in the update.
+     * Used during STM transitions where only a subset of fields may change.
+     */
+    public void mergeEntity(Agreement source, AgreementEntity target) {
+        if (source == null || target == null) return;
+        if (source.getTitle() != null) target.setTitle(source.getTitle());
+        if (source.getAgreementType() != null) target.setAgreementType(source.getAgreementType());
+        if (source.getVersionLabel() != null) target.setVersionLabel(source.getVersionLabel());
+        if (source.getContentUrl() != null) target.setContentUrl(source.getContentUrl());
+        if (source.getContentHash() != null) target.setContentHash(source.getContentHash());
+        if (source.getSupersededById() != null) target.setSupersededById(source.getSupersededById());
+        if (source.getEffectiveDate() != null) target.setEffectiveDate(source.getEffectiveDate());
+        if (source.getExpiryDate() != null) target.setExpiryDate(source.getExpiryDate());
+        target.setMandatoryAcceptance(source.isMandatoryAcceptance());
+        if (source.getCurrentState() != null) target.setCurrentState(source.getCurrentState());
+        if (source.getStateEntryTime() != null) target.setStateEntryTime(source.getStateEntryTime());
+        if (source.getVersion() != null) target.setVersion(source.getVersion());
+        // Activities are managed by JPA cascade — clear and re-add from source
+        if (source.getActivities() != null) {
+            target.getActivities().clear();
+            for (AgreementActivity a : source.getActivities()) {
+                AgreementActivityEntity ae = new AgreementActivityEntity();
+                ae.setActivityName(a.getName());
+                ae.setActivitySuccess(a.getSuccess());
+                ae.setActivityComment(a.getComment());
+                target.getActivities().add(ae);
+            }
+        }
+    }
 }

@@ -91,12 +91,17 @@ And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "ACTIVE"
 
 Scenario: Add address (ACTIVE -> ACTIVE)
-Given that "comment" equals "Adding home address"
-And that "event" equals "addAddress"
+Given that "event" equals "addAddress"
 When I PATCH a REST request to URL "/user/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "Adding home address",
+    "label": "Home",
+    "line1": "123 Main Street",
+    "city": "Bangalore",
+    "state": "Karnataka",
+    "postalCode": "560001",
+    "country": "IN"
 }
 """
 Then the REST response contains key "mutatedEntity"
@@ -104,12 +109,13 @@ And the REST response key "mutatedEntity.id" is "${id}"
 And the REST response key "mutatedEntity.currentState.stateId" is "ACTIVE"
 
 Scenario: Change password (ACTIVE -> ACTIVE)
-Given that "comment" equals "User changed password"
-And that "event" equals "changePassword"
+Given that "event" equals "changePassword"
 When I PATCH a REST request to URL "/user/${id}/${event}" with payload
 """json
 {
-    "comment": "${comment}"
+    "comment": "User changed password",
+    "oldPassword": "OldPass123!",
+    "newPassword": "NewPass456!"
 }
 """
 Then the REST response contains key "mutatedEntity"

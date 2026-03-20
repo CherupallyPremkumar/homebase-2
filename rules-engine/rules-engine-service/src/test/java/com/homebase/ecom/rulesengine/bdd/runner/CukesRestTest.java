@@ -10,8 +10,7 @@ import org.junit.runner.RunWith;
     glue = {"classpath:com/homebase/ecom/rulesengine/bdd",
         "classpath:com/homebase/ecom/rulesengine/bdd/steps",
         "classpath:org/chenile/cucumber/rest",
-        "classpath:org/chenile/cucumber/workflow",
-        "classpath:org/chenile/cucumber/security/rest"},
+        "classpath:org/chenile/cucumber/workflow"},
     plugin = {"pretty", "html:target/cucumber-reports.html"}
 )
 public class CukesRestTest {

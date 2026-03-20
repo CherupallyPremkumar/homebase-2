@@ -1,13 +1,11 @@
 package com.homebase.ecom.supplierlifecycle.consumer;
 
 import com.homebase.ecom.supplierlifecycle.domain.model.SupplierLifecycleSaga;
-import org.chenile.workflow.service.impl.StateEntityServiceImpl;
+import com.homebase.ecom.supplierlifecycle.service.SupplierLifecycleStateEntityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Component;
-
 import java.util.Map;
 
 /**
@@ -15,18 +13,19 @@ import java.util.Map;
  * state change events. When a supplier transitions to SUSPENDED or BLACKLISTED,
  * it creates a saga with the suspend-flow. When REACTIVATED, it creates a
  * saga with the reactivate-flow. The STM then drives the saga through its steps.
+ *
+ * Wired as a @Bean in SupplierLifecycleConfiguration -- never use @Component.
  */
-@Component
 public class SupplierStateChangeEventConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(SupplierStateChangeEventConsumer.class);
 
     public static final String SUPPLIER_EVENTS_TOPIC = "supplier.events";
 
-    private final StateEntityServiceImpl<SupplierLifecycleSaga> stateEntityService;
+    private final SupplierLifecycleStateEntityService stateEntityService;
 
     public SupplierStateChangeEventConsumer(
-            @Qualifier("_supplierLifecycleStateEntityService_") StateEntityServiceImpl<SupplierLifecycleSaga> stateEntityService) {
+            @Qualifier("_supplierLifecycleStateEntityService_") SupplierLifecycleStateEntityService stateEntityService) {
         this.stateEntityService = stateEntityService;
     }
 

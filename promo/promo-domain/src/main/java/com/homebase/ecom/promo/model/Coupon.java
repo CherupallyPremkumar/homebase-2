@@ -71,13 +71,34 @@ public class Coupon extends AbstractJpaStateEntity
     @Column(name = "usage_per_customer")
     private Integer usagePerCustomer = 1;
 
-    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb", name = "applicable_categories")
-    private List<String> applicableCategories = new ArrayList<>();
+    /**
+     * Comma-separated list of applicable category IDs. DB column: TEXT.
+     */
+    @Column(name = "applicable_categories", columnDefinition = "TEXT")
+    private String applicableCategoriesCsv;
 
-    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb", name = "applicable_products")
-    private List<String> applicableProducts = new ArrayList<>();
+    /**
+     * Comma-separated list of applicable product IDs. DB column: TEXT.
+     */
+    @Column(name = "applicable_products", columnDefinition = "TEXT")
+    private String applicableProductsCsv;
+
+    // --- Amazon-standard columns (promo-004) ---
+
+    @Column(name = "stacking_allowed")
+    private Boolean stackingAllowed = false;
+
+    @Column(name = "auto_apply")
+    private Boolean autoApply = false;
+
+    @Column(name = "target_audience")
+    private String targetAudience = "ALL";
+
+    @Column(name = "target_user_ids", columnDefinition = "TEXT")
+    private String targetUserIds;
+
+    @Column(name = "minimum_items")
+    private Integer minimumItems = 0;
 
     @Transient
     public TransientMap transientMap = new TransientMap();
@@ -122,14 +143,15 @@ public class Coupon extends AbstractJpaStateEntity
     }
 
     public boolean appliesTo(String productId, String categoryId) {
-        if ((applicableProducts == null || applicableProducts.isEmpty()) &&
-                (applicableCategories == null || applicableCategories.isEmpty())) {
+        List<String> products = getApplicableProducts();
+        List<String> categories = getApplicableCategories();
+        if (products.isEmpty() && categories.isEmpty()) {
             return true;
         }
-        if (applicableProducts != null && applicableProducts.contains(productId)) {
+        if (productId != null && products.contains(productId)) {
             return true;
         }
-        if (applicableCategories != null && applicableCategories.contains(categoryId)) {
+        if (categoryId != null && categories.contains(categoryId)) {
             return true;
         }
         return false;
@@ -187,15 +209,47 @@ public class Coupon extends AbstractJpaStateEntity
     public Integer getUsagePerCustomer() { return usagePerCustomer; }
     public void setUsagePerCustomer(Integer usagePerCustomer) { this.usagePerCustomer = usagePerCustomer; }
 
-    public List<String> getApplicableCategories() { return applicableCategories; }
-    public void setApplicableCategories(List<String> applicableCategories) { this.applicableCategories = applicableCategories; }
+    public List<String> getApplicableCategories() {
+        if (applicableCategoriesCsv == null || applicableCategoriesCsv.isBlank()) return new ArrayList<>();
+        return new ArrayList<>(Arrays.asList(applicableCategoriesCsv.split(",")));
+    }
+    public void setApplicableCategories(List<String> applicableCategories) {
+        this.applicableCategoriesCsv = (applicableCategories == null || applicableCategories.isEmpty())
+                ? null : String.join(",", applicableCategories);
+    }
 
-    public List<String> getApplicableProducts() { return applicableProducts; }
-    public void setApplicableProducts(List<String> applicableProducts) { this.applicableProducts = applicableProducts; }
+    public List<String> getApplicableProducts() {
+        if (applicableProductsCsv == null || applicableProductsCsv.isBlank()) return new ArrayList<>();
+        return new ArrayList<>(Arrays.asList(applicableProductsCsv.split(",")));
+    }
+    public void setApplicableProducts(List<String> applicableProducts) {
+        this.applicableProductsCsv = (applicableProducts == null || applicableProducts.isEmpty())
+                ? null : String.join(",", applicableProducts);
+    }
+
+    // --- Amazon-standard field getters/setters ---
+
+    public Boolean getStackingAllowed() { return stackingAllowed; }
+    public void setStackingAllowed(Boolean stackingAllowed) { this.stackingAllowed = stackingAllowed; }
+
+    public Boolean getAutoApply() { return autoApply; }
+    public void setAutoApply(Boolean autoApply) { this.autoApply = autoApply; }
+
+    public String getTargetAudience() { return targetAudience; }
+    public void setTargetAudience(String targetAudience) { this.targetAudience = targetAudience; }
+
+    public String getTargetUserIds() { return targetUserIds; }
+    public void setTargetUserIds(String targetUserIds) { this.targetUserIds = targetUserIds; }
+
+    public Integer getMinimumItems() { return minimumItems; }
+    public void setMinimumItems(Integer minimumItems) { this.minimumItems = minimumItems; }
 
     @Override
     public TransientMap getTransientMap() { return this.transientMap; }
     public void setTransientMap(TransientMap transientMap) { this.transientMap = transientMap; }
+
+    public List<PromoCodeActivityLog> getActivities() { return activities; }
+    public void setActivities(List<PromoCodeActivityLog> activities) { this.activities = activities; }
 
     @Override
     public Collection<ActivityLog> obtainActivities() { return new ArrayList<>(activities); }

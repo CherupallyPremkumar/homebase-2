@@ -11,9 +11,9 @@ public interface OfferJpaRepository extends JpaRepository<OfferEntity, String> {
 
     List<OfferEntity> findByProductId(String productId);
 
-    @Query("SELECT o FROM OfferEntity o WHERE o.productId = :productId AND o.currentState.stateId = 'LIVE'")
+    @Query("SELECT o FROM OfferEntity o WHERE o.productId = :productId AND o.state.stateId = 'LIVE'")
     List<OfferEntity> findLiveOffersByProductId(@Param("productId") String productId);
 
-    @Query("SELECT COUNT(o) FROM OfferEntity o WHERE o.productId = :productId AND o.currentState.stateId IN ('DRAFT','PENDING_APPROVAL','APPROVED','LIVE')")
+    @Query("SELECT COUNT(o) FROM OfferEntity o WHERE o.productId = :productId AND o.state.stateId IN ('DRAFT','PENDING_APPROVAL','APPROVED','LIVE')")
     int countActiveOffersByProductId(@Param("productId") String productId);
 }

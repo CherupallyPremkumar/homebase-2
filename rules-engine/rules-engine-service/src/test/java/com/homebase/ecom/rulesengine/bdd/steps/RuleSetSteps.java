@@ -26,6 +26,13 @@ public class RuleSetSteps {
     @Autowired
     private DecisionService decisionService;
 
+    private void ensureTenantContext() {
+        org.chenile.core.context.ContextContainer ctx = org.chenile.core.context.ContextContainer.CONTEXT_CONTAINER;
+        if (ctx.get(org.chenile.core.context.HeaderUtils.TENANT_ID_KEY) == null) {
+            ctx.put(org.chenile.core.context.HeaderUtils.TENANT_ID_KEY, "homebase");
+        }
+    }
+
     private DecisionDto lastDecision;
     private List<DecisionDto> lastDecisions;
 
@@ -35,6 +42,7 @@ public class RuleSetSteps {
 
     @Given("a policy {string} exists with default effect {string}")
     public void aPolicyExistsWithDefaultEffect(String id, String effect) {
+        ensureTenantContext();
         RuleSet ruleSet = new RuleSet();
         ruleSet.setId(id);
         ruleSet.setName(id);
@@ -46,6 +54,7 @@ public class RuleSetSteps {
 
     @Given("rule {string} with expression {string} and effect {string} is added to {string}")
     public void ruleWithExpressionAndEffectIsAddedTo(String ruleId, String expression, String effect, String ruleSetId) {
+        ensureTenantContext();
         RuleSet ruleSet = ruleSetRepository.findById(ruleSetId)
                 .orElseThrow(() -> new RuntimeException("RuleSet not found: " + ruleSetId));
         Rule rule = new Rule();

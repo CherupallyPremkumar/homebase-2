@@ -1,7 +1,6 @@
 package com.homebase.ecom.returnrequest.infrastructure.persistence.mapper;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +24,25 @@ public class ReturnrequestMapper {
     public Returnrequest toModel(ReturnrequestEntity entity) {
         if (entity == null) return null;
         Returnrequest model = new Returnrequest();
+
+        // Base entity fields
         model.setId(entity.getId());
+        model.setCreatedTime(entity.getCreatedTime());
+        model.setLastModifiedTime(entity.getLastModifiedTime());
+        model.setLastModifiedBy(entity.getLastModifiedBy());
+        model.setCreatedBy(entity.getCreatedBy());
+        model.setVersion(entity.getVersion() != null ? entity.getVersion() : 0L);
+
+        // STM state fields
+        model.setCurrentState(entity.getCurrentState());
+        model.setStateEntryTime(entity.getStateEntryTime());
+        model.setSlaTendingLate(entity.getSlaTendingLate());
+        model.setSlaLate(entity.getSlaLate());
+
+        // Tenant
+        model.setTenant(entity.tenant);
+
+        // Domain fields
         model.orderId = entity.getOrderId();
         model.customerId = entity.getCustomerId();
         model.items = deserializeItems(entity.getItemsJson());
@@ -44,13 +61,18 @@ public class ReturnrequestMapper {
         model.inspectorNotes = entity.getInspectorNotes();
         model.orderDeliveryDate = entity.getOrderDeliveryDate();
         model.orderTotalValue = entity.getOrderTotalValue();
-        model.setCurrentState(entity.getCurrentState());
-        model.setTenant(entity.tenant);
 
+        // Activities
         if (entity.getActivities() != null) {
+            List<ActivityLog> activityLogs = new ArrayList<>();
             for (ReturnrequestActivityLogEntity actEntity : entity.getActivities()) {
-                model.addActivity(actEntity.getName(), actEntity.getComment());
+                ReturnrequestActivityLog actLog = new ReturnrequestActivityLog();
+                actLog.activityName = actEntity.getName();
+                actLog.activityComment = actEntity.getComment();
+                actLog.activitySuccess = actEntity.getSuccess();
+                activityLogs.add(actLog);
             }
+            model.setActivities(activityLogs);
         }
 
         return model;
@@ -59,7 +81,25 @@ public class ReturnrequestMapper {
     public ReturnrequestEntity toEntity(Returnrequest model) {
         if (model == null) return null;
         ReturnrequestEntity entity = new ReturnrequestEntity();
+
+        // Base entity fields
         entity.setId(model.getId());
+        entity.setCreatedTime(model.getCreatedTime());
+        entity.setLastModifiedTime(model.getLastModifiedTime());
+        entity.setLastModifiedBy(model.getLastModifiedBy());
+        entity.setCreatedBy(model.getCreatedBy());
+        entity.setVersion(model.getVersion() != null ? model.getVersion() : 0L);
+
+        // STM state fields
+        entity.setCurrentState(model.getCurrentState());
+        entity.setStateEntryTime(model.getStateEntryTime());
+        entity.setSlaTendingLate(model.getSlaTendingLate());
+        entity.setSlaLate(model.getSlaLate());
+
+        // Tenant
+        entity.tenant = model.getTenant();
+
+        // Domain fields
         entity.setOrderId(model.orderId);
         entity.setCustomerId(model.customerId);
         entity.setItemsJson(serializeItems(model.items));
@@ -78,9 +118,8 @@ public class ReturnrequestMapper {
         entity.setInspectorNotes(model.inspectorNotes);
         entity.setOrderDeliveryDate(model.orderDeliveryDate);
         entity.setOrderTotalValue(model.orderTotalValue);
-        entity.setCurrentState(model.getCurrentState());
-        entity.tenant = model.getTenant();
 
+        // Activities
         if (model.obtainActivities() != null) {
             entity.setActivities(
                 model.obtainActivities().stream()
@@ -90,6 +129,49 @@ public class ReturnrequestMapper {
         }
 
         return entity;
+    }
+
+    /**
+     * Merges updated fields from a new entity into an existing managed JPA entity.
+     * Used by ChenileJpaEntityStore to preserve optimistic locking via @Version.
+     */
+    public void mergeEntity(ReturnrequestEntity existing, ReturnrequestEntity updated) {
+        // STM state (critical)
+        existing.setCurrentState(updated.getCurrentState());
+        existing.setStateEntryTime(updated.getStateEntryTime());
+        existing.setSlaTendingLate(updated.getSlaTendingLate());
+        existing.setSlaLate(updated.getSlaLate());
+
+        // Domain fields
+        existing.setOrderId(updated.getOrderId());
+        existing.setCustomerId(updated.getCustomerId());
+        existing.setItemsJson(updated.getItemsJson());
+        existing.setReason(updated.getReason());
+        existing.setReturnType(updated.getReturnType());
+        existing.setTotalRefundAmount(updated.getTotalRefundAmount());
+        existing.setRestockingFee(updated.getRestockingFee());
+        existing.setDescription(updated.getDescription());
+        existing.setReviewerId(updated.getReviewerId());
+        existing.setReviewNotes(updated.getReviewNotes());
+        existing.setRejectionReason(updated.getRejectionReason());
+        existing.setRejectionComment(updated.getRejectionComment());
+        existing.setWarehouseId(updated.getWarehouseId());
+        existing.setConditionOnReceipt(updated.getConditionOnReceipt());
+        existing.setInspectorId(updated.getInspectorId());
+        existing.setInspectorNotes(updated.getInspectorNotes());
+        existing.setOrderDeliveryDate(updated.getOrderDeliveryDate());
+        existing.setOrderTotalValue(updated.getOrderTotalValue());
+        existing.tenant = updated.tenant;
+
+        // Audit
+        existing.setLastModifiedBy(updated.getLastModifiedBy());
+        existing.setLastModifiedTime(updated.getLastModifiedTime());
+
+        // Activities -- replace collection contents
+        existing.getActivities().clear();
+        if (updated.getActivities() != null) {
+            existing.getActivities().addAll(updated.getActivities());
+        }
     }
 
     private ReturnrequestActivityLogEntity toActivityEntity(ActivityLog activityLog) {

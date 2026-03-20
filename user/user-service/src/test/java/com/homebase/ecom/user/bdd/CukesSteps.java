@@ -61,9 +61,6 @@ public class CukesSteps {
         headers.put("Authorization", "Bearer " + fetchToken(realm, user, password));
     }
 
-    /**
-     * Spring 7 compatible token fetch (HttpHeaders no longer implements MultiValueMap).
-     */
     private static String fetchToken(String realm, String user, String password) {
         RestTemplate restTemplate = new RestTemplate();
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();

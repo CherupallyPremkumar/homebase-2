@@ -1,10 +1,13 @@
 package com.homebase.ecom.onboarding.infrastructure.persistence.mapper;
 
 import com.homebase.ecom.onboarding.model.OnboardingSaga;
+import com.homebase.ecom.onboarding.model.OnboardingSagaActivityLog;
 import com.homebase.ecom.onboarding.model.OnboardingDocument;
 import com.homebase.ecom.onboarding.infrastructure.persistence.entity.OnboardingSagaEntity;
+import com.homebase.ecom.onboarding.infrastructure.persistence.entity.OnboardingSagaActivityLogEntity;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.core.type.TypeReference;
+import org.chenile.workflow.activities.model.ActivityLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,15 +43,53 @@ public class OnboardingSagaMapper {
         // Deserialize training completed modules JSON
         model.setTrainingCompletedModules(deserializeStringList(entity.getTrainingCompletedModulesJson()));
 
-        // STM state
+        // STM state fields
         model.setCurrentState(entity.getCurrentState());
         model.setTenant(entity.tenant);
+
+        // Base entity fields
+        if (entity.getVersion() != null) {
+            model.setVersion(entity.getVersion());
+        }
+        model.setCreatedTime(entity.getCreatedTime());
+        model.setLastModifiedTime(entity.getLastModifiedTime());
+        model.setLastModifiedBy(entity.getLastModifiedBy());
+        model.setCreatedBy(entity.getCreatedBy());
+        model.setStateEntryTime(entity.getStateEntryTime());
+
+        // Map activity logs
+        if (entity.getActivities() != null) {
+            List<ActivityLog> activities = new ArrayList<>();
+            for (OnboardingSagaActivityLogEntity actEntity : entity.getActivities()) {
+                OnboardingSagaActivityLog actModel = new OnboardingSagaActivityLog();
+                actModel.activityName = actEntity.getName();
+                actModel.activityComment = actEntity.getComment();
+                actModel.activitySuccess = actEntity.getSuccess();
+                activities.add(actModel);
+            }
+            model.setActivities(activities);
+        }
+
         return model;
     }
 
     public OnboardingSagaEntity toEntity(OnboardingSaga model) {
         if (model == null) return null;
         OnboardingSagaEntity entity = new OnboardingSagaEntity();
+        mapToEntity(model, entity);
+        return entity;
+    }
+
+    /**
+     * Merges incoming domain model fields onto an existing JPA entity.
+     * Used by STM retrieval strategy to merge incoming payload with persisted entity.
+     */
+    public void mergeEntity(OnboardingSaga model, OnboardingSagaEntity entity) {
+        if (model == null || entity == null) return;
+        mapToEntity(model, entity);
+    }
+
+    private void mapToEntity(OnboardingSaga model, OnboardingSagaEntity entity) {
         entity.setId(model.getId());
         entity.setSupplierId(model.getSupplierId());
         entity.setApplicantName(model.getApplicantName());
@@ -69,7 +110,29 @@ public class OnboardingSagaMapper {
         // STM state
         entity.setCurrentState(model.getCurrentState());
         entity.tenant = model.getTenant();
-        return entity;
+
+        // Base entity fields
+        if (model.getVersion() != null) {
+            entity.setVersion(model.getVersion());
+        }
+        entity.setCreatedTime(model.getCreatedTime());
+        entity.setLastModifiedTime(model.getLastModifiedTime());
+        entity.setLastModifiedBy(model.getLastModifiedBy());
+        entity.setCreatedBy(model.getCreatedBy());
+        entity.setStateEntryTime(model.getStateEntryTime());
+
+        // Map activity logs
+        if (model.getActivities() != null) {
+            List<OnboardingSagaActivityLogEntity> actEntities = new ArrayList<>();
+            for (ActivityLog actModel : model.getActivities()) {
+                OnboardingSagaActivityLogEntity actEntity = new OnboardingSagaActivityLogEntity();
+                actEntity.setActivityName(actModel.getName());
+                actEntity.setActivityComment(actModel.getComment());
+                actEntity.setActivitySuccess(actModel.getSuccess());
+                actEntities.add(actEntity);
+            }
+            entity.setActivities(actEntities);
+        }
     }
 
     // ── JSON helpers ──

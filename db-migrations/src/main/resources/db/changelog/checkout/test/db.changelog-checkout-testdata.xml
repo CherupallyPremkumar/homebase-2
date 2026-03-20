@@ -91,9 +91,9 @@
             <column name="total" valueNumeric="944.00"/>
             <column name="currency" value="INR"/>
             <column name="expires_at" valueDate="2025-12-25T11:00:00"/>
-            <column name="abandoned_at" valueDate="2025-12-25T11:00:00"/>
-            <column name="abandoned_reason" value="SESSION_TIMEOUT"/>
+            <column name="failure_reason" value="Checkout expired — SESSION_TIMEOUT"/>
             <column name="idempotency_key" value="idem-chk-4"/>
+            <column name="cancelled_at" valueDate="2025-12-25T11:00:00"/>
             <column name="state_id" value="EXPIRED"/>
             <column name="flow_id" value="checkout-flow"/>
             <column name="created_time" valueDate="2025-12-25T10:30:00"/>

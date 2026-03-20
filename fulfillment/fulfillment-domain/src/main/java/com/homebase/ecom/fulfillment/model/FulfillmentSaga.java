@@ -27,7 +27,7 @@ public class FulfillmentSaga extends AbstractExtendedStateEntity
     private String tenant;
 
     private transient TransientMap transientMap = new TransientMap();
-    private List<ActivityLog> activities = new ArrayList<>();
+    private List<FulfillmentSagaActivityLog> activities = new ArrayList<>();
 
     public String getOrderId() { return orderId; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
@@ -46,6 +46,9 @@ public class FulfillmentSaga extends AbstractExtendedStateEntity
 
     public int getRetryCount() { return retryCount; }
     public void setRetryCount(int retryCount) { this.retryCount = retryCount; }
+
+    public List<FulfillmentSagaActivityLog> getActivities() { return activities; }
+    public void setActivities(List<FulfillmentSagaActivityLog> activities) { this.activities = activities; }
 
     @Override
     public TransientMap getTransientMap() { return this.transientMap; }

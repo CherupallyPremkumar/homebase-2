@@ -17,6 +17,8 @@
 
     <modules>
         <module>reconciliation-api</module>
+        <module>reconciliation-domain</module>
+        <module>reconciliation-infrastructure</module>
         <module>reconciliation-service</module>
     </modules>
 
@@ -25,6 +27,16 @@
             <dependency>
                 <groupId>com.homebase.ecom.reconciliation</groupId>
                 <artifactId>reconciliation-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.reconciliation</groupId>
+                <artifactId>reconciliation-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.reconciliation</groupId>
+                <artifactId>reconciliation-infrastructure</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

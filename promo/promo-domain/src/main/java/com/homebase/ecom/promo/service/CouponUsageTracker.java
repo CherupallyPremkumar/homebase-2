@@ -24,7 +24,7 @@ public class CouponUsageTracker {
         this.usageLogRepository = usageLogRepository;
     }
 
-    public boolean canApply(String code, UUID userId) {
+    public boolean canApply(String code, String userId) {
         Optional<Coupon> couponOpt = couponRepository.findByCode(code);
         if (couponOpt.isEmpty()) return false;
 
@@ -42,7 +42,7 @@ public class CouponUsageTracker {
         return true;
     }
 
-    public void trackUsage(String code, UUID userId, UUID orderId) {
+    public void trackUsage(String code, String userId, String orderId) {
         Optional<Coupon> couponOpt = couponRepository.findByCode(code);
         if (couponOpt.isPresent()) {
             Coupon coupon = couponOpt.get();
@@ -50,6 +50,7 @@ public class CouponUsageTracker {
             couponRepository.save(coupon);
 
             CouponUsageLog usageLog = new CouponUsageLog();
+            usageLog.setUsageId(UUID.randomUUID().toString());
             usageLog.setCouponCode(code);
             usageLog.setUserId(userId);
             usageLog.setOrderId(orderId);

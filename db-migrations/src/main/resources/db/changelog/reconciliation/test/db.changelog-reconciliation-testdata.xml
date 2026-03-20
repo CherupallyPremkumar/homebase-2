@@ -7,23 +7,30 @@
 
     <!--
         Reconciliation test data — STM states from reconciliation-states.xml:
-        INITIATED, FETCHING_DATA, PROCESSING, CHECK_MISMATCHES,
-        MATCHED, MISMATCHES_FOUND, UNDER_REVIEW, RESOLVED, FAILED
+        CREATED, PROCESSING, CHECK_MISMATCHES, REVIEW_REQUIRED, RESOLVED,
+        APPROVED, COMPLETED, REJECTED, FAILED
+
+        Column names corrected to match db.changelog-reconciliation.xml schema.
     -->
     <changeSet id="reconciliation-test-data" author="homebase-test">
 
-        <!-- batch-1: RESOLVED — March 14 daily batch, all matched -->
+        <!-- batch-1: COMPLETED — March 14 daily batch, all matched -->
         <insert tableName="reconciliation_batches">
             <column name="id" value="recon-1"/>
             <column name="batch_date" valueDate="2026-03-14"/>
-            <column name="gateway_name" value="RAZORPAY"/>
-            <column name="total_gateway_count" valueNumeric="156"/>
-            <column name="total_system_count" valueNumeric="156"/>
+            <column name="period_start" valueDate="2026-03-14T00:00:00"/>
+            <column name="period_end" valueDate="2026-03-14T23:59:59"/>
+            <column name="gateway_type" value="RAZORPAY"/>
+            <column name="reconciliation_method" value="FULL"/>
             <column name="matched_count" valueNumeric="156"/>
             <column name="mismatch_count" valueNumeric="0"/>
+            <column name="auto_resolved_count" valueNumeric="0"/>
+            <column name="unresolved_count" valueNumeric="0"/>
             <column name="total_gateway_amount" valueNumeric="1245680.50"/>
             <column name="total_system_amount" valueNumeric="1245680.50"/>
-            <column name="state_id" value="RESOLVED"/>
+            <column name="variance_amount" valueNumeric="0.00"/>
+            <column name="completed_at" valueDate="2026-03-15T02:15:00"/>
+            <column name="state_id" value="COMPLETED"/>
             <column name="flow_id" value="reconciliation-flow"/>
             <column name="created_time" valueDate="2026-03-15T02:00:00"/>
             <column name="last_modified_time" valueDate="2026-03-15T02:15:00"/>
@@ -31,18 +38,22 @@
             <column name="version" valueNumeric="4"/>
         </insert>
 
-        <!-- batch-2: MISMATCHES_FOUND — March 15 batch has discrepancies -->
+        <!-- batch-2: REVIEW_REQUIRED — March 15 batch has discrepancies -->
         <insert tableName="reconciliation_batches">
             <column name="id" value="recon-2"/>
             <column name="batch_date" valueDate="2026-03-15"/>
-            <column name="gateway_name" value="RAZORPAY"/>
-            <column name="total_gateway_count" valueNumeric="189"/>
-            <column name="total_system_count" valueNumeric="187"/>
+            <column name="period_start" valueDate="2026-03-15T00:00:00"/>
+            <column name="period_end" valueDate="2026-03-15T23:59:59"/>
+            <column name="gateway_type" value="RAZORPAY"/>
+            <column name="reconciliation_method" value="FULL"/>
             <column name="matched_count" valueNumeric="185"/>
             <column name="mismatch_count" valueNumeric="4"/>
+            <column name="auto_resolved_count" valueNumeric="0"/>
+            <column name="unresolved_count" valueNumeric="4"/>
             <column name="total_gateway_amount" valueNumeric="1567890.00"/>
             <column name="total_system_amount" valueNumeric="1564390.00"/>
-            <column name="state_id" value="MISMATCHES_FOUND"/>
+            <column name="variance_amount" valueNumeric="3500.00"/>
+            <column name="state_id" value="REVIEW_REQUIRED"/>
             <column name="flow_id" value="reconciliation-flow"/>
             <column name="created_time" valueDate="2026-03-16T02:00:00"/>
             <column name="last_modified_time" valueDate="2026-03-16T02:20:00"/>
@@ -50,12 +61,15 @@
             <column name="version" valueNumeric="3"/>
         </insert>
 
-        <!-- batch-3: INITIATED — Today's batch not yet processed -->
+        <!-- batch-3: CREATED — Today's batch not yet processed -->
         <insert tableName="reconciliation_batches">
             <column name="id" value="recon-3"/>
             <column name="batch_date" valueDate="2026-03-16"/>
-            <column name="gateway_name" value="CASHFREE"/>
-            <column name="state_id" value="INITIATED"/>
+            <column name="period_start" valueDate="2026-03-16T00:00:00"/>
+            <column name="period_end" valueDate="2026-03-16T23:59:59"/>
+            <column name="gateway_type" value="CASHFREE"/>
+            <column name="reconciliation_method" value="FULL"/>
+            <column name="state_id" value="CREATED"/>
             <column name="flow_id" value="reconciliation-flow"/>
             <column name="created_time" valueDate="2026-03-17T02:00:00"/>
             <column name="last_modified_time" valueDate="2026-03-17T02:00:00"/>
@@ -68,25 +82,26 @@
             <column name="id" value="gtxn-1"/>
             <column name="batch_id" value="recon-1"/>
             <column name="gateway_transaction_id" value="txn_RPay_001"/>
-            <column name="gateway_order_id" value="order_RPay_001"/>
+            <column name="gateway_type" value="RAZORPAY"/>
             <column name="amount" valueNumeric="1568.82"/>
             <column name="currency" value="INR"/>
-            <column name="status" value="captured"/>
+            <column name="gateway_status" value="captured"/>
             <column name="payment_method" value="upi"/>
             <column name="transaction_date" valueDate="2026-03-10T14:32:00"/>
-            <column name="settlement_id_gateway" value="setl_RPay_001"/>
+            <column name="merchant_reference_id" value="order_RPay_001"/>
             <column name="tenant" value="homebase"/>
         </insert>
         <insert tableName="gateway_transactions">
             <column name="id" value="gtxn-2"/>
             <column name="batch_id" value="recon-1"/>
             <column name="gateway_transaction_id" value="txn_RPay_002"/>
-            <column name="gateway_order_id" value="order_RPay_002"/>
+            <column name="gateway_type" value="RAZORPAY"/>
             <column name="amount" valueNumeric="5389.70"/>
             <column name="currency" value="INR"/>
-            <column name="status" value="captured"/>
+            <column name="gateway_status" value="captured"/>
             <column name="payment_method" value="card"/>
             <column name="transaction_date" valueDate="2026-03-11T10:05:00"/>
+            <column name="merchant_reference_id" value="order_RPay_002"/>
             <column name="tenant" value="homebase"/>
         </insert>
 
@@ -98,9 +113,11 @@
             <column name="order_id" value="ord-1"/>
             <column name="amount" valueNumeric="1568.82"/>
             <column name="currency" value="INR"/>
-            <column name="status" value="SUCCEEDED"/>
+            <column name="system_status" value="SUCCEEDED"/>
             <column name="payment_method" value="UPI"/>
             <column name="transaction_date" valueDate="2026-03-10T14:32:00"/>
+            <column name="gateway_payment_id" value="txn_RPay_001"/>
+            <column name="reconciliation_status" value="MATCHED"/>
             <column name="tenant" value="homebase"/>
         </insert>
         <insert tableName="system_transactions">
@@ -110,9 +127,11 @@
             <column name="order_id" value="ord-2"/>
             <column name="amount" valueNumeric="5389.70"/>
             <column name="currency" value="INR"/>
-            <column name="status" value="SUCCEEDED"/>
+            <column name="system_status" value="SUCCEEDED"/>
             <column name="payment_method" value="CARD"/>
             <column name="transaction_date" valueDate="2026-03-11T10:05:00"/>
+            <column name="gateway_payment_id" value="txn_RPay_002"/>
+            <column name="reconciliation_status" value="MATCHED"/>
             <column name="tenant" value="homebase"/>
         </insert>
 
@@ -122,8 +141,11 @@
             <column name="batch_id" value="recon-1"/>
             <column name="gateway_transaction_id" value="gtxn-1"/>
             <column name="system_transaction_id" value="stxn-1"/>
-            <column name="amount" valueNumeric="1568.82"/>
-            <column name="match_type" value="EXACT"/>
+            <column name="gateway_amount" valueNumeric="1568.82"/>
+            <column name="system_amount" valueNumeric="1568.82"/>
+            <column name="match_confidence_pct" valueNumeric="100.00"/>
+            <column name="match_method" value="EXACT"/>
+            <column name="matched_at" valueDate="2026-03-15T02:05:00"/>
             <column name="tenant" value="homebase"/>
         </insert>
 
@@ -136,8 +158,9 @@
             <column name="gateway_amount" valueNumeric="5389.70"/>
             <column name="system_amount" valueNumeric="5389.70"/>
             <column name="mismatch_type" value="MISSING_IN_SYSTEM"/>
-            <column name="status" value="OPEN"/>
-            <column name="notes" value="Gateway shows 2 extra transactions not in our system"/>
+            <column name="severity" value="HIGH"/>
+            <column name="investigation_status" value="OPEN"/>
+            <column name="resolution_notes" value="Gateway shows 2 extra transactions not in our system"/>
             <column name="tenant" value="homebase"/>
         </insert>
 
@@ -145,7 +168,7 @@
         <insert tableName="reconciliation_activity">
             <column name="id" value="ract-1"/>
             <column name="batch_id" value="recon-1"/>
-            <column name="activity_name" value="resolve"/>
+            <column name="activity_name" value="approve"/>
             <column name="activity_success" valueBoolean="true"/>
             <column name="activity_comment" value="All 156 transactions matched — auto-resolved"/>
             <column name="created_time" valueDate="2026-03-15T02:15:00"/>

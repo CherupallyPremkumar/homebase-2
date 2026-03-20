@@ -5,8 +5,6 @@ import com.homebase.ecom.promo.model.PromotionDetail;
 import com.homebase.ecom.promo.model.StrategyType;
 import com.homebase.ecom.shared.Money;
 
-import java.math.BigDecimal;
-
 public class FixedAmountStrategy implements DiscountStrategy {
     private final Money discountAmount;
     private final int minQuantity;
@@ -32,7 +30,7 @@ public class FixedAmountStrategy implements DiscountStrategy {
     @Override
     public Money calculateSavings(CartSnapshot cart) {
         if (!isEligible(cart)) {
-            return new Money(BigDecimal.ZERO, discountAmount.getCurrency());
+            return Money.zero(discountAmount.getCurrency());
         }
         return discountAmount.cap(cart.getTotalAmount());
     }

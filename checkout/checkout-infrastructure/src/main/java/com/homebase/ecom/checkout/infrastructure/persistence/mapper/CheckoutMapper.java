@@ -5,7 +5,6 @@ import com.homebase.ecom.checkout.model.CheckoutItem;
 import com.homebase.ecom.checkout.infrastructure.persistence.entity.CheckoutEntity;
 import com.homebase.ecom.checkout.infrastructure.persistence.entity.CheckoutItemEntity;
 import com.homebase.ecom.shared.Money;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +13,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Component
 public class CheckoutMapper {
 
     public CheckoutEntity toEntity(Checkout model) {
@@ -41,6 +39,13 @@ public class CheckoutMapper {
         entity.description = model.description;
         entity.setCurrentState(model.getCurrentState());
         entity.tenant = model.getTenant();
+
+        // Fields from checkout-003 migration
+        entity.setIdempotencyKey(model.getIdempotencyKey());
+        entity.setPriceLockToken(model.getPriceLockToken());
+        entity.setPaymentSessionId(model.getPaymentSessionId());
+        entity.setCompletedAt(model.getCompletedAt());
+        entity.setCancelledAt(model.getCancelledAt());
 
         if (model.getCouponCodes() != null && !model.getCouponCodes().isEmpty()) {
             entity.setCouponCodes(String.join(",", model.getCouponCodes()));
@@ -80,6 +85,13 @@ public class CheckoutMapper {
         model.setCurrentState(entity.getCurrentState());
         model.setTenant(entity.tenant);
 
+        // Fields from checkout-003 migration
+        model.setIdempotencyKey(entity.getIdempotencyKey());
+        model.setPriceLockToken(entity.getPriceLockToken());
+        model.setPaymentSessionId(entity.getPaymentSessionId());
+        model.setCompletedAt(entity.getCompletedAt());
+        model.setCancelledAt(entity.getCancelledAt());
+
         if (entity.getCouponCodes() != null && !entity.getCouponCodes().isEmpty()) {
             model.setCouponCodes(new ArrayList<>(Arrays.asList(entity.getCouponCodes().split(","))));
         } else {
@@ -116,6 +128,13 @@ public class CheckoutMapper {
         existing.setExpiresAt(updated.getExpiresAt());
         existing.description = updated.description;
         existing.setCurrentState(updated.getCurrentState());
+
+        // Fields from checkout-003 migration
+        existing.setIdempotencyKey(updated.getIdempotencyKey());
+        existing.setPriceLockToken(updated.getPriceLockToken());
+        existing.setPaymentSessionId(updated.getPaymentSessionId());
+        existing.setCompletedAt(updated.getCompletedAt());
+        existing.setCancelledAt(updated.getCancelledAt());
 
         // Merge items
         Map<String, CheckoutItemEntity> existingItemsById = existing.getItems().stream()

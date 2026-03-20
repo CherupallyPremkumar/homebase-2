@@ -22,17 +22,11 @@ spring:
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.H2Dialect
+  kafka:
+    listener:
+      auto-startup: false
 
 server:
   error:
     whitelabel:
       enabled: false
-
-chenile:
-  security:
-    client:
-      id: authz-servlet
-      secret: secret
-    keycloak:
-      host: http://localhost:8180
-      port: 8180

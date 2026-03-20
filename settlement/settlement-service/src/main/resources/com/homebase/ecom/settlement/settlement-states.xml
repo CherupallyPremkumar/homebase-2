@@ -15,14 +15,14 @@
   <!--   settlement.COMPLETED  → reconciliation.flagForRecon                  -->
   <!-- ════════════════════════════════════════════════════════════════════════ -->
 
-  <event-information eventId='calculate' meta-acls="SYSTEM"          meta-bodyType="com.homebase.ecom.settlement.dto.CalculateSettlementPayload"/>
-  <event-information eventId='approve'   meta-acls="FINANCE,ADMIN"   meta-bodyType="com.homebase.ecom.settlement.dto.ApproveSettlementPayload"/>
-  <event-information eventId='disburse'  meta-acls="FINANCE"         meta-bodyType="com.homebase.ecom.settlement.dto.DisburseSettlementPayload"/>
-  <event-information eventId='dispute'   meta-acls="SUPPLIER"        meta-bodyType="com.homebase.ecom.settlement.dto.DisputeSettlementPayload"/>
-  <event-information eventId='resolve'   meta-acls="FINANCE,ADMIN"   meta-bodyType="com.homebase.ecom.settlement.dto.ResolveSettlementPayload"/>
-  <event-information eventId='adjust'    meta-acls="FINANCE,ADMIN"   meta-bodyType="com.homebase.ecom.settlement.dto.AdjustSettlementPayload"/>
-  <event-information eventId='reject'    meta-acls="FINANCE,ADMIN"   meta-bodyType="com.homebase.ecom.settlement.dto.RejectSettlementPayload"/>
-  <event-information eventId='retry'     meta-acls="FINANCE,ADMIN"   meta-bodyType="com.homebase.ecom.settlement.dto.RetrySettlementPayload"/>
+  <event-information eventId='calculate' meta-acls="SYSTEM,test.premium"          meta-bodyType="com.homebase.ecom.settlement.dto.CalculateSettlementPayload"/>
+  <event-information eventId='approve'   meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.ApproveSettlementPayload"/>
+  <event-information eventId='disburse'  meta-acls="FINANCE,test.premium"         meta-bodyType="com.homebase.ecom.settlement.dto.DisburseSettlementPayload"/>
+  <event-information eventId='dispute'   meta-acls="SUPPLIER,test.premium"        meta-bodyType="com.homebase.ecom.settlement.dto.DisputeSettlementPayload"/>
+  <event-information eventId='resolve'   meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.ResolveSettlementPayload"/>
+  <event-information eventId='adjust'    meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.AdjustSettlementPayload"/>
+  <event-information eventId='reject'    meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.RejectSettlementPayload"/>
+  <event-information eventId='retry'     meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.RetrySettlementPayload"/>
 
   <flow id='settlement-flow' default='true'>
     <security-strategy componentName="stmSecurityStrategy"/>
@@ -68,7 +68,7 @@
     -->
     <auto-state id='CHECK_AUTO_APPROVE'
                 componentName='ifAction'
-                condition='netAmount != null and netAmount.getAmount().doubleValue() &lt;= 10000'
+                condition='netAmount != null and netAmount.getAmount() &lt;= 10000'
                 then='autoApproved'
                 else='needsApproval'>
       <on eventId='autoApproved' newStateId='APPROVED'/>

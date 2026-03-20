@@ -42,10 +42,15 @@ public class PercentageDiscountStrategy implements DiscountStrategy {
     @Override
     public Money calculateSavings(CartSnapshot cart) {
         if (!isEligible(cart)) {
-            return new Money(BigDecimal.ZERO, cart.getTotalAmount().getCurrency());
+            return Money.zero(cart.getTotalAmount().getCurrency());
         }
         Money total = cart.getTotalAmount();
-        Money discount = total.multiply(discountPercent.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+        // Calculate discount: amount * percent / 100
+        long discountAmount = BigDecimal.valueOf(total.getAmount())
+                .multiply(discountPercent)
+                .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP)
+                .longValue();
+        Money discount = Money.of(discountAmount, total.getCurrency());
 
         if (maxDiscount != null) {
             return discount.cap(maxDiscount);

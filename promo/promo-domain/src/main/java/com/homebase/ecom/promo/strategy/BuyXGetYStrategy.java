@@ -6,8 +6,6 @@ import com.homebase.ecom.promo.model.PromotionDetail;
 import com.homebase.ecom.promo.model.StrategyType;
 import com.homebase.ecom.shared.Money;
 
-import java.math.BigDecimal;
-
 public class BuyXGetYStrategy implements DiscountStrategy {
     private final int requiredQuantity;
     private final int freeQuantity;
@@ -39,11 +37,11 @@ public class BuyXGetYStrategy implements DiscountStrategy {
     @Override
     public Money calculateSavings(CartSnapshot cart) {
         if (!isEligible(cart)) {
-            String currency = "USD"; // Default
+            String currency = "INR";
             if (cart.getItems() != null && !cart.getItems().isEmpty()) {
                 currency = cart.getItems().get(0).getPrice().getCurrency();
             }
-            return new Money(BigDecimal.ZERO, currency);
+            return Money.zero(currency);
         }
 
         int totalQuantity = cart.getQuantityByCategory(category);
@@ -54,9 +52,9 @@ public class BuyXGetYStrategy implements DiscountStrategy {
         return cart.getItems().stream()
                 .filter(item -> category.equals(item.getCategory()))
                 .map(CartSnapshotItem::getPrice)
-                .sorted((p1, p2) -> p1.getAmount().compareTo(p2.getAmount()))
+                .sorted((p1, p2) -> Long.compare(p1.getAmount(), p2.getAmount()))
                 .limit(eligibleFreeItems)
-                .reduce(new Money(BigDecimal.ZERO, cart.getItems().get(0).getPrice().getCurrency()),
+                .reduce(Money.zero(cart.getItems().get(0).getPrice().getCurrency()),
                         (total, price) -> total.add(price));
     }
 

@@ -46,7 +46,7 @@ public class OrderServiceImpl implements OrderService {
         order.setCustomerId(event.getUserId());
 
         String currency = event.getCurrency() != null ? event.getCurrency() : "INR";
-        BigDecimal totalAmount = event.getTotalAmount() != null ? event.getTotalAmount() : BigDecimal.ZERO;
+        BigDecimal totalAmount = BigDecimal.valueOf(event.getTotalAmount());
         order.setTotalAmount(totalAmount);
         order.setCurrency(currency);
 
@@ -56,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
                 item.setProductId(itemInfo.getProductId());
                 item.setQuantity(itemInfo.getQuantity());
                 item.setProductName(itemInfo.getProductName());
-                BigDecimal unitPrice = itemInfo.getUnitPrice() != null ? itemInfo.getUnitPrice().getAmount() : BigDecimal.ZERO;
+                BigDecimal unitPrice = BigDecimal.valueOf(itemInfo.getUnitPrice());
                 item.setUnitPrice(unitPrice);
                 item.setTotalPrice(unitPrice.multiply(BigDecimal.valueOf(item.getQuantity())));
                 return item;

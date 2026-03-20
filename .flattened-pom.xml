@@ -545,6 +545,16 @@
       </dependency>
       <dependency>
         <groupId>com.homebase.ecom.reconciliation</groupId>
+        <artifactId>reconciliation-domain</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.reconciliation</groupId>
+        <artifactId>reconciliation-infrastructure</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.reconciliation</groupId>
         <artifactId>reconciliation-service</artifactId>
         <version>0.0.1-SNAPSHOT</version>
       </dependency>

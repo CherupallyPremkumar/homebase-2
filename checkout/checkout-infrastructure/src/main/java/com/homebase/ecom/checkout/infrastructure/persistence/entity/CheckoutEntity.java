@@ -68,8 +68,23 @@ public class CheckoutEntity extends AbstractJpaStateEntity {
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
-    @Column(name = "description")
+    @Column(name = "description", length = 2000)
     public String description;
+
+    @Column(name = "idempotency_key")
+    private String idempotencyKey;
+
+    @Column(name = "price_lock_token")
+    private String priceLockToken;
+
+    @Column(name = "payment_session_id")
+    private String paymentSessionId;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
 
     // ── Getters & Setters ──────────────────────────────────────────────
 
@@ -129,4 +144,19 @@ public class CheckoutEntity extends AbstractJpaStateEntity {
 
     public LocalDateTime getExpiresAt() { return expiresAt; }
     public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
+
+    public String getIdempotencyKey() { return idempotencyKey; }
+    public void setIdempotencyKey(String idempotencyKey) { this.idempotencyKey = idempotencyKey; }
+
+    public String getPriceLockToken() { return priceLockToken; }
+    public void setPriceLockToken(String priceLockToken) { this.priceLockToken = priceLockToken; }
+
+    public String getPaymentSessionId() { return paymentSessionId; }
+    public void setPaymentSessionId(String paymentSessionId) { this.paymentSessionId = paymentSessionId; }
+
+    public LocalDateTime getCompletedAt() { return completedAt; }
+    public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+
+    public LocalDateTime getCancelledAt() { return cancelledAt; }
+    public void setCancelledAt(LocalDateTime cancelledAt) { this.cancelledAt = cancelledAt; }
 }

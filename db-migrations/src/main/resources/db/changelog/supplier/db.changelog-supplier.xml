@@ -61,4 +61,13 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="supplier-003-fk-activity" author="homebase">
+        <addForeignKeyConstraint
+            baseTableName="supplier_activity"
+            baseColumnNames="supplier_id"
+            referencedTableName="supplier"
+            referencedColumnNames="id"
+            constraintName="fk_supplier_activity_supplier"/>
+    </changeSet>
+
 </databaseChangeLog>

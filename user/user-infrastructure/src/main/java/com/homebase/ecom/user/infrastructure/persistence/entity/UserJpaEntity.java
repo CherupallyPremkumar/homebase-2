@@ -8,6 +8,7 @@ import org.chenile.workflow.model.ContainsTransientMap;
 import org.chenile.workflow.model.TransientMap;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -59,6 +60,31 @@ public class UserJpaEntity extends AbstractJpaStateEntity implements ActivityEna
 
     @Column(name = "suspend_reason")
     private String suspendReason;
+
+    // --- Extended profile (DB: user-004) ---
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "gender")
+    private String gender;
+
+    @Column(name = "email_verified")
+    private boolean emailVerified;
+
+    @Column(name = "phone_verified")
+    private boolean phoneVerified;
+
+    @Column(name = "referral_code")
+    private String referralCode;
+
+    @Column(name = "referred_by")
+    private String referredBy;
+
+    @Column(name = "customer_tier")
+    private String customerTier;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user", orphanRemoval = true)
     private List<AddressJpaEntity> addresses = new ArrayList<>();
@@ -143,4 +169,29 @@ public class UserJpaEntity extends AbstractJpaStateEntity implements ActivityEna
     // Backward compatibility
     public int getFailedLoginAttempts() { return loginAttempts; }
     public void setFailedLoginAttempts(int f) { this.loginAttempts = f; }
+
+    // --- Extended profile getters/setters ---
+    public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
+
+    public LocalDate getDateOfBirth() { return dateOfBirth; }
+    public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
+
+    public boolean isPhoneVerified() { return phoneVerified; }
+    public void setPhoneVerified(boolean phoneVerified) { this.phoneVerified = phoneVerified; }
+
+    public String getReferralCode() { return referralCode; }
+    public void setReferralCode(String referralCode) { this.referralCode = referralCode; }
+
+    public String getReferredBy() { return referredBy; }
+    public void setReferredBy(String referredBy) { this.referredBy = referredBy; }
+
+    public String getCustomerTier() { return customerTier; }
+    public void setCustomerTier(String customerTier) { this.customerTier = customerTier; }
 }

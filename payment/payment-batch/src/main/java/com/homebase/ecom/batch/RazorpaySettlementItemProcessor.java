@@ -42,12 +42,12 @@ public class RazorpaySettlementItemProcessor implements ItemProcessor<RazorpaySe
         mismatch.setGatewayType("razorpay");
         mismatch.setProviderTransactionId(row.getPaymentId());
         mismatch.setOrderId(dbTx.getOrderId());
-        mismatch.setInternalAmount(dbTx.getAmount() != null ? dbTx.getAmount().getAmount() : null);
+        mismatch.setInternalAmount(dbTx.getAmount() != null ? dbTx.getAmount().toMajorUnits() : null);
         mismatch.setProviderAmount(row.getAmount());
 
         // Scenario 2: Amount Mismatch
-        if (dbTx.getAmount() == null || dbTx.getAmount().getAmount() == null
-                || dbTx.getAmount().getAmount().compareTo(row.getAmount()) != 0) {
+        if (dbTx.getAmount() == null
+                || dbTx.getAmount().toMajorUnits().compareTo(row.getAmount()) != 0) {
             mismatch.setMismatchType("AMOUNT_MISMATCH");
             hasMismatch = true;
         }

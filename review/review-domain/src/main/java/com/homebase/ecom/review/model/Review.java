@@ -28,6 +28,10 @@ public class Review extends AbstractExtendedStateEntity
     private int helpfulCount;
     private int reportCount;
 
+    // Additional metadata (from DB changeset review-003)
+    private String variantId;
+    private String reviewSource;
+
     // Moderation fields
     private String moderatorNotes;
     private String tenant;
@@ -67,8 +71,19 @@ public class Review extends AbstractExtendedStateEntity
     public int getReportCount() { return reportCount; }
     public void setReportCount(int reportCount) { this.reportCount = reportCount; }
 
+    public String getVariantId() { return variantId; }
+    public void setVariantId(String variantId) { this.variantId = variantId; }
+
+    public String getReviewSource() { return reviewSource; }
+    public void setReviewSource(String reviewSource) { this.reviewSource = reviewSource; }
+
     public String getModeratorNotes() { return moderatorNotes; }
     public void setModeratorNotes(String moderatorNotes) { this.moderatorNotes = moderatorNotes; }
+
+    // --- Activity support ---
+
+    public List<ActivityLog> getActivities() { return activities; }
+    public void setActivities(List<ActivityLog> activities) { this.activities = activities; }
 
     // --- Workflow support ---
 

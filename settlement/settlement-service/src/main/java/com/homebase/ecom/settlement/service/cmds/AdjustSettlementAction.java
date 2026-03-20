@@ -19,6 +19,8 @@ import java.math.RoundingMode;
 /**
  * Handles the adjust event (dispute resolution with amount adjustment).
  * Validates adjustment limits and recalculates net amount.
+ *
+ * Adjustment amounts from the payload are in paise (smallest currency unit).
  */
 public class AdjustSettlementAction extends AbstractSTMTransitionAction<Settlement, AdjustSettlementPayload> {
 
@@ -39,21 +41,22 @@ public class AdjustSettlementAction extends AbstractSTMTransitionAction<Settleme
         BigDecimal adjustmentAmount = payload.getAdjustmentAmount();
         String reason = payload.getAdjustmentReason() != null ? payload.getAdjustmentReason() : "Dispute adjustment";
 
-        // Validate adjustment limit
+        // Validate adjustment limit (compares paise values)
         policyValidator.validateAdjustmentLimit(settlement, adjustmentAmount);
 
         // Record the adjustment
         SettlementAdjustment adjustment = new SettlementAdjustment(adjustmentAmount, reason, "FINANCE");
         settlement.getAdjustments().add(adjustment);
 
-        // Recalculate net amount
-        BigDecimal currentNet = settlement.getNetAmount() != null ? settlement.getNetAmount().getAmount() : BigDecimal.ZERO;
-        BigDecimal newNet = currentNet.add(adjustmentAmount).setScale(2, RoundingMode.HALF_UP);
+        // Recalculate net amount in paise
+        long currentNetPaise = settlement.getNetAmount() != null ? settlement.getNetAmount().getAmount() : 0L;
+        long adjustmentPaise = adjustmentAmount.longValue();
+        long newNetPaise = currentNetPaise + adjustmentPaise;
         String currency = settlement.getCurrency() != null ? settlement.getCurrency() : "INR";
-        settlement.setNetAmount(new Money(newNet, currency));
+        settlement.setNetAmount(Money.of(newNetPaise, currency));
 
-        log.info("Settlement {} adjusted by {} for supplier {}. New net: {}. Reason: {}",
-                settlement.getId(), adjustmentAmount, settlement.getSupplierId(), newNet, reason);
+        log.info("Settlement {} adjusted by {} paise for supplier {}. New net: {} paise. Reason: {}",
+                settlement.getId(), adjustmentPaise, settlement.getSupplierId(), newNetPaise, reason);
 
         settlement.getTransientMap().previousPayload = payload;
     }

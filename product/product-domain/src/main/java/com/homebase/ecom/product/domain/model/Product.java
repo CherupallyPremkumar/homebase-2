@@ -27,6 +27,18 @@ public class Product extends AbstractExtendedStateEntity
     private String tenant;
     private TransientMap transientMap = new TransientMap();
 
+    // Amazon-standard fields (product-014)
+    private Integer weightGrams;
+    private String dimensionsJson;
+    private String hsnCode;
+    private String countryOfOrigin;
+    private Integer warrantyMonths;
+    private boolean returnable = true;
+    private Integer returnWindowDays = 7;
+    private java.math.BigDecimal basePrice;
+    private String taxCategory;
+    private boolean active = true;
+
     // Getters and Setters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -87,4 +99,34 @@ public class Product extends AbstractExtendedStateEntity
 
     public String getTenant() { return tenant; }
     public void setTenant(String tenant) { this.tenant = tenant; }
+
+    public Integer getWeightGrams() { return weightGrams; }
+    public void setWeightGrams(Integer weightGrams) { this.weightGrams = weightGrams; }
+
+    public String getDimensionsJson() { return dimensionsJson; }
+    public void setDimensionsJson(String dimensionsJson) { this.dimensionsJson = dimensionsJson; }
+
+    public String getHsnCode() { return hsnCode; }
+    public void setHsnCode(String hsnCode) { this.hsnCode = hsnCode; }
+
+    public String getCountryOfOrigin() { return countryOfOrigin; }
+    public void setCountryOfOrigin(String countryOfOrigin) { this.countryOfOrigin = countryOfOrigin; }
+
+    public Integer getWarrantyMonths() { return warrantyMonths; }
+    public void setWarrantyMonths(Integer warrantyMonths) { this.warrantyMonths = warrantyMonths; }
+
+    public boolean isReturnable() { return returnable; }
+    public void setReturnable(boolean returnable) { this.returnable = returnable; }
+
+    public Integer getReturnWindowDays() { return returnWindowDays; }
+    public void setReturnWindowDays(Integer returnWindowDays) { this.returnWindowDays = returnWindowDays; }
+
+    public java.math.BigDecimal getBasePrice() { return basePrice; }
+    public void setBasePrice(java.math.BigDecimal basePrice) { this.basePrice = basePrice; }
+
+    public String getTaxCategory() { return taxCategory; }
+    public void setTaxCategory(String taxCategory) { this.taxCategory = taxCategory; }
+
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 }

@@ -2,7 +2,6 @@ package com.homebase.ecom.promo.rule;
 
 import com.homebase.ecom.promo.model.CartSnapshot;
 import com.homebase.ecom.promo.model.Operator;
-import com.homebase.ecom.shared.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +41,7 @@ public class ConditionEvaluator {
     }
 
     private boolean evaluateAmountThreshold(Condition condition, CartSnapshot cart) {
-        BigDecimal totalAmount = cart.getTotalAmount().getAmount();
+        long totalAmount = cart.getTotalAmount().getAmount();
         return applyOperator(totalAmount, condition.getOperator(), condition.getValue());
     }
 

@@ -20,7 +20,9 @@ import com.homebase.ecom.shipping.service.cmds.*;
 import com.homebase.ecom.shipping.service.healthcheck.ShippingHealthChecker;
 import com.homebase.ecom.shipping.infrastructure.persistence.ChenileShippingEntityStore;
 import com.homebase.ecom.shipping.infrastructure.persistence.adapter.ShippingJpaRepository;
+import com.homebase.ecom.shipping.infrastructure.persistence.adapter.ShippingRepositoryImpl;
 import com.homebase.ecom.shipping.infrastructure.persistence.mapper.ShippingMapper;
+import com.homebase.ecom.shipping.domain.port.ShippingRepository;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
@@ -250,6 +252,33 @@ public class ShippingConfiguration {
     @Bean
     ReturnShipmentShippingAction shippingReturnShipmentAction() {
         return new ReturnShipmentShippingAction();
+    }
+
+    @Bean
+    HoldAtHubShippingAction shippingHoldAtHubAction() {
+        return new HoldAtHubShippingAction();
+    }
+
+    @Bean
+    ReleaseFromHubShippingAction shippingReleaseFromHubAction() {
+        return new ReleaseFromHubShippingAction();
+    }
+
+    @Bean
+    UpdateAddressShippingAction shippingUpdateAddressAction() {
+        return new UpdateAddressShippingAction();
+    }
+
+    @Bean
+    MarkLostShippingAction shippingMarkLostAction() {
+        return new MarkLostShippingAction();
+    }
+
+    // ── Repository adapter ──
+
+    @Bean
+    ShippingRepository shippingRepository(ShippingJpaRepository jpaRepository, ShippingMapper mapper) {
+        return new ShippingRepositoryImpl(jpaRepository, mapper);
     }
 
     // ── PostSaveHooks (convention: "shipping" + STATE + "PostSaveHook") ──

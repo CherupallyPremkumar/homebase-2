@@ -26,6 +26,7 @@ public class StartWorkSupportAction extends AbstractSTMTransitionAction<SupportT
 
         TicketMessage msg = new TicketMessage();
         msg.setId(UUID.randomUUID().toString());
+        msg.setSenderId("SYSTEM");
         msg.setSenderType("SYSTEM");
         msg.setTimestamp(new Date());
         msg.setMessage("Agent " + ticket.getAssignedAgentId() + " started working on this ticket.");

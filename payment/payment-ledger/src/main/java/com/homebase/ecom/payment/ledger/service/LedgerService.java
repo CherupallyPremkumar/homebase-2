@@ -73,7 +73,7 @@ public class LedgerService {
             entry.setTransactionId(transactionId);
 
             String currency = currencyResolver.resolve().code();
-            entry.setMoney(new Money(req.amount(), currency));
+            entry.setMoney(Money.ofMajor(req.amount().longValue(), currency));
             entryRepository.save(entry);
         }
 

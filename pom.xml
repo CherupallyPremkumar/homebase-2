@@ -594,6 +594,16 @@
             </dependency>
             <dependency>
                 <groupId>com.homebase.ecom.reconciliation</groupId>
+                <artifactId>reconciliation-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.reconciliation</groupId>
+                <artifactId>reconciliation-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.reconciliation</groupId>
                 <artifactId>reconciliation-service</artifactId>
                 <version>${revision}</version>
             </dependency>

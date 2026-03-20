@@ -7,8 +7,6 @@ import com.homebase.ecom.cconfig.sdk.CconfigClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.Map;
 
 /**
@@ -21,7 +19,6 @@ import java.util.Map;
  * - Max reopen count
  * - Escalation thresholds
  */
-@Component
 public class SupportPolicyValidator {
 
     private static final Logger log = LoggerFactory.getLogger(SupportPolicyValidator.class);

@@ -4,14 +4,11 @@ import org.chenile.core.context.ChenileExchange;
 import org.chenile.owiz.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import com.homebase.ecom.fulfillment.model.FulfillmentSaga;
 
 /**
  * OWIZ command that records that the notification was sent successfully.
  */
-@Component("updateNotificationStatus")
 public class UpdateNotificationStatus implements Command<ChenileExchange> {
 
     private static final Logger log = LoggerFactory.getLogger(UpdateNotificationStatus.class);

@@ -47,6 +47,7 @@ public class AssignAgentSupportAction extends AbstractSTMTransitionAction<Suppor
         // Add system message about assignment
         TicketMessage assignMsg = new TicketMessage();
         assignMsg.setId(UUID.randomUUID().toString());
+        assignMsg.setSenderId("SYSTEM");
         assignMsg.setSenderType("SYSTEM");
         assignMsg.setTimestamp(new Date());
         assignMsg.setMessage("Ticket assigned to agent: " + payload.getAgentId());

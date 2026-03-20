@@ -121,7 +121,7 @@ public class PaymentServiceImpl {
         tx.setGatewayTransactionId(gatewayTransactionId);
         tx.setGatewayEventId(gatewayEventId);
         tx.setStatus(PaymentStatus.SUCCEEDED);
-        tx.setAmount(new Money(amount, getDefaultCurrency()));
+        tx.setAmount(Money.ofMajor(amount.longValue(), getDefaultCurrency()));
         paymentTransactionRepository.save(tx);
 
         // Ledger integration (idempotent by transactionId)
@@ -132,7 +132,7 @@ public class PaymentServiceImpl {
         // Publish event - OrderSaga will update order status (after DB commit)
         PaymentSucceededEvent event = new PaymentSucceededEvent(orderId, gatewayTransactionId, LocalDateTime.now());
         if (amount != null) {
-            event.setAmount(new Money(amount, getDefaultCurrency()));
+            event.setAmount(Money.ofMajor(amount.longValue(), getDefaultCurrency()));
         }
         sendAfterCommit(KafkaTopics.PAYMENT_EVENTS, orderId,
                 EventEnvelope.of(PaymentSucceededEvent.EVENT_TYPE, 1, event));
@@ -193,7 +193,7 @@ public class PaymentServiceImpl {
                 refundReason,
                 LocalDateTime.now());
         if (refundedAmount != null) {
-            event.setRefundedMoney(new Money(refundedAmount, getDefaultCurrency()));
+            event.setRefundedMoney(Money.ofMajor(refundedAmount.longValue(), getDefaultCurrency()));
         }
 
         sendAfterCommit(KafkaTopics.PAYMENT_EVENTS, tx.getOrderId(),

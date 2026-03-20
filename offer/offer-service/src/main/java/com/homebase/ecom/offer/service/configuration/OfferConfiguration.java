@@ -53,8 +53,8 @@ public class OfferConfiguration {
     }
 
     @Bean
-    public EntityStore<Offer> offerEntityStore(OfferRepository offerRepository) {
-        return new ChenileOfferEntityStore(offerRepository);
+    public EntityStore<Offer> offerEntityStore(OfferJpaRepository offerJpaRepository, OfferMapper offerMapper) {
+        return new ChenileOfferEntityStore(offerJpaRepository, offerMapper);
     }
 
     // Item 12: Hexagonal ports / adapters

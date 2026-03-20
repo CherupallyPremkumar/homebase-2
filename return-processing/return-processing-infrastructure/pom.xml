@@ -38,5 +38,9 @@
             <groupId>com.homebase.ecom.shared</groupId>
             <artifactId>shared-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.homebase.ecom.build</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
     </dependencies>
 </project>

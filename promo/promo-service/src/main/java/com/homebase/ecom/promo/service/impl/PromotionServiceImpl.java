@@ -77,8 +77,8 @@ public class PromotionServiceImpl implements PromotionService {
 
     @Override
     public boolean validateCoupon(String code) {
-        // userId should ideally come from security context, using a dummy UUID for now
-        UUID dummyUserId = UUID.randomUUID();
+        // userId should ideally come from security context, using a dummy ID for now
+        String dummyUserId = UUID.randomUUID().toString();
         return couponUsageTracker.canApply(code, dummyUserId);
     }
 

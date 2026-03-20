@@ -14,6 +14,9 @@ public class CartItemDto implements Serializable {
     private long unitPrice;
     private long lineTotal;
     private boolean available = true;
+    private boolean savedForLater;
+    private String imageUrl;
+    private Long originalPrice;
 
     public String getProductId() { return productId; }
     public void setProductId(String productId) { this.productId = productId; }
@@ -41,4 +44,13 @@ public class CartItemDto implements Serializable {
 
     public boolean isAvailable() { return available; }
     public void setAvailable(boolean available) { this.available = available; }
+
+    public boolean isSavedForLater() { return savedForLater; }
+    public void setSavedForLater(boolean savedForLater) { this.savedForLater = savedForLater; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public Long getOriginalPrice() { return originalPrice; }
+    public void setOriginalPrice(Long originalPrice) { this.originalPrice = originalPrice; }
 }

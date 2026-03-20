@@ -339,7 +339,6 @@ public class OnboardingConfiguration {
     // ========== Kafka Event Handler (Item 10+14) ==========
 
     @Bean("onboardingEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     OnboardingEventHandler onboardingEventService(
             @Qualifier("_onboardingStateEntityService_") StateEntityServiceImpl<OnboardingSaga> onboardingStateEntityService,
             tools.jackson.databind.ObjectMapper objectMapper) {
