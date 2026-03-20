@@ -13,7 +13,10 @@ When I POST a REST request to URL "/order" with payload
     "description": "Description",
     "customerId": "cust-test2",
     "totalAmount": 1000,
-    "currency": "INR"
+    "currency": "INR",
+    "items": [
+        { "productId": "prod-t2", "productName": "Test Item", "quantity": 2, "unitPrice": 500 }
+    ]
 }
 """
 Then the REST response contains key "mutatedEntity"
