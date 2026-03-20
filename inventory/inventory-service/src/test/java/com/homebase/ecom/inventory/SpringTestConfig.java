@@ -19,7 +19,7 @@ import java.util.Map;
     "com.homebase.ecom.inventory.**"
 })
 @EnableJpaRepositories(basePackages = {
-    "com.homebase.ecom.inventory.infrastructure.persistence.repository",
+    "com.homebase.ecom.inventory.infrastructure.persistence.adapter",
     "org.chenile.service.registry.configuration.dao"
 })
 @EntityScan(basePackages = {
