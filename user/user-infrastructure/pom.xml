@@ -47,5 +47,16 @@
             <artifactId>currency-interceptor</artifactId>
             <version>${revision}</version>
         </dependency>
+        <!-- Notification service client for cross-BC notification dispatch -->
+        <dependency>
+            <groupId>com.homebase.ecom.notification</groupId>
+            <artifactId>notification-client</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- Spring Web for RestClient (Keycloak Admin API calls) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
     </dependencies>
 </project>

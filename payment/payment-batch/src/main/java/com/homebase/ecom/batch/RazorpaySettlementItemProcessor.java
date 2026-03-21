@@ -1,9 +1,9 @@
 package com.homebase.ecom.batch;
 
 import com.homebase.ecom.batch.dto.RazorpaySettlementRow;
-import com.homebase.ecom.payment.domain.PaymentTransaction;
-import com.homebase.ecom.payment.domain.ReconciliationMismatch;
-import com.homebase.ecom.payment.repository.PaymentTransactionRepository;
+import com.homebase.ecom.payment.infrastructure.persistence.entity.PaymentTransaction;
+import com.homebase.ecom.payment.infrastructure.persistence.entity.ReconciliationMismatch;
+import com.homebase.ecom.payment.infrastructure.persistence.repository.PaymentTransactionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.infrastructure.item.ItemProcessor;

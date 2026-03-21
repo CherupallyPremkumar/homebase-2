@@ -1,19 +1,12 @@
 package com.homebase.ecom.inventory.service.postSaveHooks;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
-import com.homebase.ecom.shared.event.DamageDetectedEvent;
-import com.homebase.ecom.shared.event.KafkaTopics;
-import org.chenile.pubsub.ChenilePub;
+import com.homebase.ecom.inventory.domain.port.InventoryEventPublisherPort;
 import org.chenile.stm.State;
 import org.chenile.workflow.model.TransientMap;
 import org.chenile.workflow.service.stmcmds.PostSaveHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Map;
 
 /**
  * Post save hook for PARTIAL_DAMAGE state.
@@ -23,32 +16,18 @@ public class PARTIAL_DAMAGEInventoryItemPostSaveHook implements PostSaveHook<Inv
 
     private static final Logger log = LoggerFactory.getLogger(PARTIAL_DAMAGEInventoryItemPostSaveHook.class);
 
-    @Autowired(required = false)
-    private ChenilePub chenilePub;
+    private final InventoryEventPublisherPort eventPublisher;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    public PARTIAL_DAMAGEInventoryItemPostSaveHook(InventoryEventPublisherPort eventPublisher) {
+        this.eventPublisher = eventPublisher;
+    }
 
     @Override
     public void execute(State startState, State endState, InventoryItem inventory, TransientMap map) {
-        if (chenilePub == null) return;
-
         Integer damagedQty = (Integer) map.get("damagedQuantity");
         Boolean severe = (Boolean) map.get("severeDamage");
         if (damagedQty != null) {
-            DamageDetectedEvent event = new DamageDetectedEvent(inventory.getId(), inventory.getProductId(),
-                    damagedQty, inventory.getDamagePercentage(), Boolean.TRUE.equals(severe));
-            try {
-                String body = objectMapper.writeValueAsString(event);
-                String key = inventory.getProductId() != null ? inventory.getProductId() : inventory.getId();
-                Map<String, Object> headers = new java.util.HashMap<>();
-                headers.put("key", key);
-                headers.put("eventType", DamageDetectedEvent.EVENT_TYPE);
-                chenilePub.publish(KafkaTopics.INVENTORY_EVENTS, body, headers);
-            } catch (JacksonException e) {
-                log.error("Failed to serialize DamageDetectedEvent for productId={}", inventory.getProductId(), e);
-                return;
-            }
+            eventPublisher.publishDamageDetected(inventory, damagedQty, Boolean.TRUE.equals(severe));
             log.info("Published DamageDetectedEvent for productId={}, damagedQty={}, severe={}",
                     inventory.getProductId(), damagedQty, severe);
         }

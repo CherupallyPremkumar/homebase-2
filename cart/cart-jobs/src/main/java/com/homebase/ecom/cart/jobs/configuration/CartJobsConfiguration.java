@@ -20,7 +20,7 @@ public class CartJobsConfiguration {
 
     @Bean
     public CartQueryPort cartQueryPort(
-            @Qualifier("cartSearchServiceClient") SearchService cartSearchService) {
+            @Qualifier("cartSearchServiceProxy") SearchService cartSearchService) {
         return new CartQueryAdapter(cartSearchService);
     }
 

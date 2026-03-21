@@ -5,6 +5,8 @@ logging:
     # org.chenile.*: DEBUG      # Only enable for debugging
 
 spring:
+  main:
+    allow-bean-definition-overriding: true
   application:
     name: ${APP_NAME:homebase-service}
   banner:
@@ -21,7 +23,7 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     url: ${DB_URL:jdbc:postgresql://localhost:5432/ecommerce_db}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:}  # Load from AWS SSM in production
+    password: ${DB_PASSWORD:password}
     hikari:
       poolName: Hikari
       auto-commit: false
@@ -32,7 +34,7 @@ spring:
       max-lifetime: 1800000
   jpa:
     hibernate:
-      ddl-auto: validate  # IMPORTANT: Use 'validate' for production!
+      ddl-auto: validate  # Liquibase handles schema, Hibernate validates
     show-sql: false
     properties:
       hibernate:
@@ -217,7 +219,7 @@ query:
       maximumPoolSize: '20'
       type: com.zaxxer.hikari.HikariDataSource
       username: ${DB_USERNAME:postgres}
-      password: ${DB_PASSWORD:}
+      password: ${DB_PASSWORD:password}
       minimumIdle: '5'
       idleTimeout: '600000'
       jdbcUrl: ${DB_URL:jdbc:postgresql://localhost:5432/ecommerce_db}

@@ -51,6 +51,10 @@ public class OrderPaidEventConsumer {
         } catch (Exception e) {
             log.error("Failed to create fulfillment saga for order: {}", orderId, e);
             // TODO: Publish failure event or send to dead-letter topic for retry
+            // Re-throw so Spring Kafka's DefaultErrorHandler routes to DLT after retries
+            // (configured in KafkaErrorHandlerConfig with exponential backoff)
+            throw new RuntimeException(
+                    "Fulfillment saga creation failed for order: " + orderId, e);
         }
     }
 }

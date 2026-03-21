@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
+import com.homebase.ecom.order.port.OrderEventPublisherPort;
 import com.homebase.ecom.order.service.postSaveHooks.*;
 import com.homebase.ecom.order.service.event.OrderEventHandler;
 import com.homebase.ecom.order.service.validator.OrderPolicyValidator;
@@ -234,12 +235,12 @@ public class OrderConfiguration {
     // PostSaveHooks — convention: "order" + STATE_ID + "PostSaveHook"
     // ════════════════════════════════════════════════════════════════════════
 
-    @Bean CREATEDOrderPostSaveHook orderCREATEDPostSaveHook() { return new CREATEDOrderPostSaveHook(); }
-    @Bean PAIDOrderPostSaveHook orderPAIDPostSaveHook() { return new PAIDOrderPostSaveHook(); }
-    @Bean CANCELLEDOrderPostSaveHook orderCANCELLEDPostSaveHook() { return new CANCELLEDOrderPostSaveHook(); }
-    @Bean DELIVEREDOrderPostSaveHook orderDELIVEREDPostSaveHook() { return new DELIVEREDOrderPostSaveHook(); }
-    @Bean SHIPPEDOrderPostSaveHook orderSHIPPEDPostSaveHook() { return new SHIPPEDOrderPostSaveHook(); }
-    @Bean COMPLETEDOrderPostSaveHook orderCOMPLETEDPostSaveHook() { return new COMPLETEDOrderPostSaveHook(); }
+    @Bean CREATEDOrderPostSaveHook orderCREATEDPostSaveHook(OrderEventPublisherPort eventPublisher) { return new CREATEDOrderPostSaveHook(eventPublisher); }
+    @Bean PAIDOrderPostSaveHook orderPAIDPostSaveHook(OrderEventPublisherPort eventPublisher) { return new PAIDOrderPostSaveHook(eventPublisher); }
+    @Bean CANCELLEDOrderPostSaveHook orderCANCELLEDPostSaveHook(OrderEventPublisherPort eventPublisher) { return new CANCELLEDOrderPostSaveHook(eventPublisher); }
+    @Bean DELIVEREDOrderPostSaveHook orderDELIVEREDPostSaveHook(OrderEventPublisherPort eventPublisher) { return new DELIVEREDOrderPostSaveHook(eventPublisher); }
+    @Bean SHIPPEDOrderPostSaveHook orderSHIPPEDPostSaveHook(OrderEventPublisherPort eventPublisher) { return new SHIPPEDOrderPostSaveHook(eventPublisher); }
+    @Bean COMPLETEDOrderPostSaveHook orderCOMPLETEDPostSaveHook(OrderEventPublisherPort eventPublisher) { return new COMPLETEDOrderPostSaveHook(eventPublisher); }
 
     // ════════════════════════════════════════════════════════════════════════
     // Services, Events, Validators

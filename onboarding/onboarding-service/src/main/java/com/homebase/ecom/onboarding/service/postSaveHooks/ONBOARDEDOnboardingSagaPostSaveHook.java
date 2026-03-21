@@ -17,7 +17,7 @@ public class ONBOARDEDOnboardingSagaPostSaveHook implements PostSaveHook<Onboard
 
     private static final Logger log = LoggerFactory.getLogger(ONBOARDEDOnboardingSagaPostSaveHook.class);
 
-    @Autowired(required = false)
+    @Autowired
     private NotificationPort notificationPort;
 
     @Override

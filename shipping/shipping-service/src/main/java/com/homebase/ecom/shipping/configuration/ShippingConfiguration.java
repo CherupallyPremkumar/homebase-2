@@ -333,7 +333,6 @@ public class ShippingConfiguration {
     // ── Chenile-Kafka Event Handler ──
 
     @Bean("shippingEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     ShippingEventHandler shippingEventService(
             @Qualifier("_shippingStateEntityService_") StateEntityServiceImpl<Shipping> shippingStateEntityService,
             org.chenile.pubsub.ChenilePub chenilePub,

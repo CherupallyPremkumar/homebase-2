@@ -7,7 +7,6 @@ import org.chenile.workflow.model.TransientMap;
 import org.chenile.workflow.service.stmcmds.PostSaveHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Post save hook for APPROVED state.
@@ -16,8 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class APPROVEDOfferPostSaveHook implements PostSaveHook<Offer> {
     private static final Logger log = LoggerFactory.getLogger(APPROVEDOfferPostSaveHook.class);
 
-    @Autowired(required = false)
-    private NotificationPort notificationPort;
+    private final NotificationPort notificationPort;
+
+    public APPROVEDOfferPostSaveHook(NotificationPort notificationPort) {
+        this.notificationPort = notificationPort;
+    }
 
     @Override
     public void execute(State startState, State endState, Offer offer, TransientMap map) {

@@ -27,10 +27,6 @@ import com.homebase.ecom.review.service.postSaveHooks.*;
 import com.homebase.ecom.review.infrastructure.persistence.ChenileReviewEntityStore;
 import com.homebase.ecom.review.infrastructure.persistence.adapter.ReviewJpaRepository;
 import com.homebase.ecom.review.infrastructure.persistence.mapper.ReviewMapper;
-import com.homebase.ecom.review.domain.port.ModerationPort;
-import com.homebase.ecom.review.domain.port.NotificationPort;
-import com.homebase.ecom.review.infrastructure.adapter.LoggingModerationAdapter;
-import com.homebase.ecom.review.infrastructure.adapter.LoggingNotificationAdapter;
 
 /**
  * Full Chenile STM configuration for the Review module.
@@ -322,17 +318,8 @@ public class ReviewConfiguration {
 
     // ================================================================
     // Hexagonal Ports (default adapters)
+    // Wired in ReviewInfrastructureConfiguration (review-infrastructure module)
     // ================================================================
-
-    @Bean
-    ModerationPort moderationPort() {
-        return new LoggingModerationAdapter();
-    }
-
-    @Bean
-    NotificationPort notificationPort() {
-        return new LoggingNotificationAdapter();
-    }
 
     // ================================================================
     // Kafka Event Handler (conditional on Kafka being available)

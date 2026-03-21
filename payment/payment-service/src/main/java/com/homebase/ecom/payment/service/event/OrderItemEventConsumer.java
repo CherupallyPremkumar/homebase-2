@@ -1,7 +1,7 @@
 package com.homebase.ecom.payment.service.event;
 
-import com.homebase.ecom.payment.domain.PaymentTransaction;
-import com.homebase.ecom.payment.repository.PaymentTransactionRepository;
+import com.homebase.ecom.payment.infrastructure.persistence.entity.PaymentTransaction;
+import com.homebase.ecom.payment.infrastructure.persistence.repository.PaymentTransactionRepository;
 import com.homebase.ecom.payment.service.impl.PaymentServiceImpl;
 import com.homebase.ecom.shared.event.KafkaTopics;
 import com.homebase.ecom.shared.event.OrderItemRefundRequestedEvent;
@@ -9,12 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Service;
 
 /**
  * Consumer for item-level events to trigger payment operations like refunds.
+ * Wired as @Bean in PaymentConfiguration.
  */
-@Service
 public class OrderItemEventConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(OrderItemEventConsumer.class);

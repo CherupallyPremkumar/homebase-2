@@ -23,7 +23,7 @@ public class ResolveChargebackAction extends AbstractSTMTransitionAction<Payment
 
         // Set chargebackWon on the entity for the OGNL auto-state to evaluate
         if (payload != null) {
-            payment.getTransientMap().put("chargebackWon", payload.isChargebackWon());
+            payment.setChargebackWon(payload.isChargebackWon());
         }
 
         log.info("Chargeback resolved for paymentId={}, orderId={}, merchantWon={}",

@@ -15,8 +15,8 @@ import java.util.Map;
  * Pattern: Fan-out — one external event may affect N carts.
  * Each affected cart gets its own event on cart.events topic.
  *
- * The cart-service @ChenilePubSub controller picks up these events
- * and routes them through the STM via processById.
+ * The cart-service @ChenilePubSub(subscribeTopic="cart.events") controller picks up
+ * these events and routes them through the STM via processById.
  */
 public abstract class AbstractCartEventTranslator {
 
@@ -29,8 +29,8 @@ public abstract class AbstractCartEventTranslator {
     }
 
     /**
-     * Publishes a cart STM event to cart.events topic.
-     * The Chenile event handler in cart-service picks this up
+     * Publishes a cart STM command to cart.commands topic.
+     * The Chenile @ChenilePubSub handler in cart-service picks this up
      * and calls processById(cartId, eventId, payload).
      */
     protected void publishCartEvent(String cartId, String eventId, String payload) {

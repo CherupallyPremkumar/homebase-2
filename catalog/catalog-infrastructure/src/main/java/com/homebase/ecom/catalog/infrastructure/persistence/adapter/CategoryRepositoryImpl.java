@@ -4,17 +4,17 @@ import com.homebase.ecom.catalog.model.Category;
 import com.homebase.ecom.catalog.repository.CategoryRepository;
 import com.homebase.ecom.catalog.infrastructure.persistence.entity.CategoryEntity;
 import com.homebase.ecom.catalog.infrastructure.persistence.mapper.CatalogMapper;
-import com.homebase.ecom.catalog.infrastructure.persistence.repository.CategoryJpaRepository;
+import com.homebase.ecom.catalog.infrastructure.persistence.repository.CatalogCategoryJpaRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class CategoryRepositoryImpl implements CategoryRepository {
 
-    private final CategoryJpaRepository jpaRepository;
+    private final CatalogCategoryJpaRepository jpaRepository;
     private final CatalogMapper mapper;
 
-    public CategoryRepositoryImpl(CategoryJpaRepository jpaRepository, CatalogMapper mapper) {
+    public CategoryRepositoryImpl(CatalogCategoryJpaRepository jpaRepository, CatalogMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
     }

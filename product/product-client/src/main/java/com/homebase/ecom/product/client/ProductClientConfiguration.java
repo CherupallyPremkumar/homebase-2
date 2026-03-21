@@ -15,7 +15,7 @@ public class ProductClientConfiguration {
             "_productStateEntityService_",
             null,
             ProxyBuilder.ProxyMode.COMPUTE_DYNAMICALLY,
-            null
+            "http://localhost:8080"
         );
     }
 
@@ -26,7 +26,7 @@ public class ProductClientConfiguration {
             "searchService",
             null,
             ProxyBuilder.ProxyMode.COMPUTE_DYNAMICALLY,
-            null
+            "http://localhost:8080"
         );
     }
 }

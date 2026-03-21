@@ -1,14 +1,14 @@
 package com.homebase.ecom.batch;
 
-import com.homebase.ecom.payment.domain.ReconciliationCategory;
-import com.homebase.ecom.payment.domain.ReconciliationItem;
-import com.homebase.ecom.payment.domain.ReconciliationItemStatus;
-import com.homebase.ecom.payment.domain.ReconciliationRun;
-import com.homebase.ecom.payment.domain.ReconciliationRunStatus;
-import com.homebase.ecom.payment.domain.ReconciliationSeverity;
-import com.homebase.ecom.payment.repository.ReconciliationItemRepository;
-import com.homebase.ecom.payment.repository.ReconciliationMismatchRepository;
-import com.homebase.ecom.payment.repository.ReconciliationRunRepository;
+import com.homebase.ecom.payment.infrastructure.enums.ReconciliationCategory;
+import com.homebase.ecom.payment.infrastructure.enums.ReconciliationItemStatus;
+import com.homebase.ecom.payment.infrastructure.enums.ReconciliationRunStatus;
+import com.homebase.ecom.payment.infrastructure.enums.ReconciliationSeverity;
+import com.homebase.ecom.payment.infrastructure.persistence.entity.ReconciliationItem;
+import com.homebase.ecom.payment.infrastructure.persistence.entity.ReconciliationRun;
+import com.homebase.ecom.payment.infrastructure.persistence.repository.ReconciliationItemRepository;
+import com.homebase.ecom.payment.infrastructure.persistence.repository.ReconciliationMismatchRepository;
+import com.homebase.ecom.payment.infrastructure.persistence.repository.ReconciliationRunRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,7 +55,7 @@ public class LegacyMismatchRunMaterializer {
         run.setStatus(ReconciliationRunStatus.STARTED);
         run = runRepository.save(run);
 
-        List<com.homebase.ecom.payment.domain.ReconciliationMismatch> newMismatches = mismatchRepository
+        List<com.homebase.ecom.payment.infrastructure.persistence.entity.ReconciliationMismatch> newMismatches = mismatchRepository
                 .findByResolvedFalseAndCreatedTimeAfterOrderByCreatedTimeDesc(java.util.Date.from(mismatchesCreatedAfter.atZone(java.time.ZoneOffset.UTC).toInstant()));
 
         for (var m : newMismatches) {

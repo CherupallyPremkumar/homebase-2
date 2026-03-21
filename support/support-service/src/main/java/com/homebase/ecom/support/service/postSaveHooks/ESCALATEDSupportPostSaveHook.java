@@ -1,9 +1,8 @@
 package com.homebase.ecom.support.service.postSaveHooks;
 
 import com.homebase.ecom.support.domain.port.NotificationPort;
+import com.homebase.ecom.support.domain.port.SupportEventPublisherPort;
 import com.homebase.ecom.support.model.SupportTicket;
-import com.homebase.ecom.shared.event.KafkaTopics;
-import org.chenile.pubsub.ChenilePub;
 import org.chenile.stm.State;
 import org.chenile.workflow.model.TransientMap;
 import org.chenile.workflow.service.stmcmds.PostSaveHook;
@@ -11,22 +10,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Map;
-
 /**
- * Post Save Hook for the ESCALATED state — TicketEscalatedHook.
+ * Post Save Hook for the ESCALATED state -- TicketEscalatedHook.
  * Notifies supervisor about escalation.
- * Publishes TICKET_ESCALATED to support.events.
+ * Publishes TICKET_ESCALATED via domain port.
  */
 public class ESCALATEDSupportPostSaveHook implements PostSaveHook<SupportTicket> {
 
     private static final Logger log = LoggerFactory.getLogger(ESCALATEDSupportPostSaveHook.class);
 
-    @Autowired(required = false)
+    @Autowired
     private NotificationPort notificationPort;
 
-    @Autowired(required = false)
-    private ChenilePub chenilePub;
+    @Autowired
+    private SupportEventPublisherPort supportEventPublisherPort;
 
     @Override
     public void execute(State startState, State endState, SupportTicket ticket, TransientMap map) {
@@ -43,18 +40,9 @@ public class ESCALATEDSupportPostSaveHook implements PostSaveHook<SupportTicket>
                     ticket.getId(), ticket.getSubject(), ticket.getPriority(), escalationReason);
         }
 
-        // Publish TICKET_ESCALATED event
-        if (chenilePub != null) {
-            try {
-                String body = "{\"ticketId\":\"" + ticket.getId()
-                        + "\",\"customerId\":\"" + ticket.getCustomerId()
-                        + "\",\"priority\":\"" + ticket.getPriority()
-                        + "\",\"eventType\":\"TICKET_ESCALATED\"}";
-                chenilePub.publish(KafkaTopics.SUPPORT_EVENTS, body,
-                        Map.of("key", ticket.getId(), "eventType", "TICKET_ESCALATED"));
-            } catch (Exception e) {
-                log.error("Failed to publish TICKET_ESCALATED for ticket {}", ticket.getId(), e);
-            }
+        // Publish TICKET_ESCALATED event via domain port
+        if (supportEventPublisherPort != null) {
+            supportEventPublisherPort.publishTicketEscalated(ticket);
         }
 
         map.put("eventType", "TICKET_ESCALATED");

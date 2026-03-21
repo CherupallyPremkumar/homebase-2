@@ -14,7 +14,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.homebase.ecom.order.service.event.OrderEventPublisher;
+import com.homebase.ecom.order.port.OrderEventPublisherPort;
 
 /**
  * Spring Boot test configuration for Order BDD tests.
@@ -69,7 +69,8 @@ public class SpringTestConfig {
     }
 
     @Bean
-    public OrderEventPublisher orderEventPublisher() {
-        return Mockito.mock(OrderEventPublisher.class);
+    @org.springframework.context.annotation.Primary
+    public OrderEventPublisherPort testOrderEventPublisherPort() {
+        return Mockito.mock(OrderEventPublisherPort.class);
     }
 }

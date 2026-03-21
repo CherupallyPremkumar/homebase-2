@@ -17,7 +17,9 @@
   <!--   payment.SETTLED           → settlement.calculate                     -->
   <!-- ════════════════════════════════════════════════════════════════════════ -->
 
+  <event-information eventId='create'                meta-acls="ADMIN,SYSTEM"     meta-bodyType="com.homebase.ecom.payment.dto.InitiatePaymentPayload"/>
   <event-information eventId='process'              meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.ProcessPaymentPayload"/>
+  <event-information eventId='initiateCod'          meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.InitiateCodPayload"/>
   <event-information eventId='requestAuthentication' meta-acls="SYSTEM"          meta-bodyType="com.homebase.ecom.payment.dto.RequestAuthenticationPayload"/>
   <event-information eventId='completeAuthentication' meta-acls="SYSTEM,CUSTOMER" meta-bodyType="com.homebase.ecom.payment.dto.CompleteAuthenticationPayload"/>
   <event-information eventId='failAuthentication'   meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.FailAuthenticationPayload"/>
@@ -29,7 +31,7 @@
   <event-information eventId='settle'               meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.SettlePaymentPayload"/>
   <event-information eventId='initiateRefund'       meta-acls="ADMIN,SYSTEM"     meta-bodyType="com.homebase.ecom.payment.dto.InitiateRefundPayload"/>
   <event-information eventId='processRefund'        meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.ProcessRefundPayload"/>
-  <event-information eventId='completeRefund'       meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.ProcessRefundPayload"/>
+  <event-information eventId='completeRefund'       meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.CompleteRefundPayload"/>
   <event-information eventId='failRefund'           meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.FailRefundPayload"/>
   <event-information eventId='initiateChargeback'   meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.payment.dto.InitiateChargebackPayload"/>
   <event-information eventId='resolveChargeback'    meta-acls="ADMIN"            meta-bodyType="com.homebase.ecom.payment.dto.ResolveChargebackPayload"/>
@@ -51,6 +53,10 @@
           componentName='paymentProcessAction'
           newStateId='PROCESSING'
           meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='initiateCod'
+          componentName='paymentInitiateCodAction'
+          newStateId='COD_PENDING'
+          meta-acls="SYSTEM"/>
     </manual-state>
 
     <!-- Payment submitted to gateway, awaiting response -->
@@ -79,7 +85,6 @@
     <!-- Gateway requires additional customer authentication (3DS, OTP)      -->
     <!-- ════════════════════════════════════════════════════════════════════ -->
 
-    <!-- Awaiting customer to complete 3DS/OTP challenge -->
     <manual-state id='AWAITING_AUTHENTICATION'
                   description="Awaiting 3DS/OTP authentication from customer">
       <on eventId='completeAuthentication'
@@ -98,7 +103,6 @@
 
     <!-- ════════════════════════════════════════════════════════════════════ -->
     <!-- PAYMENT TIMEOUT                                                     -->
-    <!-- Gateway did not respond within SLA — auto-check if retryable        -->
     <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <manual-state id='TIMED_OUT'
@@ -117,7 +121,6 @@
     <!-- SUCCESS → SETTLEMENT                                                -->
     <!-- ════════════════════════════════════════════════════════════════════ -->
 
-    <!-- Payment confirmed by gateway -->
     <manual-state id='SUCCEEDED' meta-mainPath="true"
                   description="Payment succeeded, awaiting settlement">
       <on eventId='settle'
@@ -134,7 +137,6 @@
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <!-- Payment settled — funds transferred to platform -->
     <manual-state id='SETTLED' meta-mainPath="true"
                   description="Payment settled, funds transferred">
       <on eventId='initiateRefund'
@@ -165,7 +167,6 @@
 
     <!--
       OGNL auto-state: CHECK_RETRY
-      After retry attempt, check if max retries (3) exceeded.
       retryCount >= 3 → ABANDONED (give up)
       else → RETRY (queue for re-submission)
     -->
@@ -178,7 +179,6 @@
       <on eventId='canRetry' newStateId='RETRY'/>
     </auto-state>
 
-    <!-- Retry state: payment will be re-submitted to gateway -->
     <manual-state id='RETRY'
                   description="Payment retry queued">
       <on eventId='process'
@@ -187,14 +187,12 @@
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <!-- Terminal: payment abandoned after max retries -->
     <manual-state id='ABANDONED'
                   description="Payment abandoned after max retries or manual abandonment">
     </manual-state>
 
     <!-- ════════════════════════════════════════════════════════════════════ -->
     <!-- COD (CASH ON DELIVERY) PATH                                         -->
-    <!-- Order delivered first, carrier collects cash, then confirms          -->
     <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <manual-state id='COD_PENDING'
@@ -209,7 +207,6 @@
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <!-- COD collection failed (customer refused, not home, etc.) -->
     <manual-state id='COD_FAILED'
                   description="COD collection failed at delivery">
       <on eventId='retry'
@@ -223,7 +220,10 @@
     </manual-state>
 
     <!-- ════════════════════════════════════════════════════════════════════ -->
-    <!-- REFUND PATH: REFUND_INITIATED → REFUND_PROCESSING → REFUNDED       -->
+    <!-- REFUND PATH: with partial refund support                            -->
+    <!-- REFUND_INITIATED → REFUND_PROCESSING → CHECK_REFUND_TYPE            -->
+    <!--   → fullRefund → REFUNDED (terminal)                                -->
+    <!--   → partialRefund → PARTIALLY_REFUNDED (allows more refunds)        -->
     <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <manual-state id='REFUND_INITIATED'
@@ -238,7 +238,7 @@
                   description="Refund being processed by gateway">
       <on eventId='completeRefund'
           componentName='paymentCompleteRefundAction'
-          newStateId='REFUNDED'
+          newStateId='CHECK_REFUND_TYPE'
           meta-acls="SYSTEM"/>
       <on eventId='failRefund'
           componentName='paymentFailRefundAction'
@@ -246,14 +246,40 @@
           meta-acls="SYSTEM"/>
     </manual-state>
 
-    <!-- Terminal: refund completed -->
+    <!--
+      OGNL auto-state: CHECK_REFUND_TYPE
+      Checks if refundAmount >= original amount (full refund) or partial.
+      Uses Payment.isFullRefund() method via OGNL property access.
+    -->
+    <auto-state id='CHECK_REFUND_TYPE'
+                componentName='ifAction'
+                condition='fullRefund == true'
+                then='fullRefund'
+                else='partialRefund'>
+      <on eventId='fullRefund' newStateId='REFUNDED'/>
+      <on eventId='partialRefund' newStateId='PARTIALLY_REFUNDED'/>
+    </auto-state>
+
+    <!-- Terminal: full refund completed -->
     <manual-state id='REFUNDED'
-                  description="Refund completed successfully">
+                  description="Full refund completed successfully">
+    </manual-state>
+
+    <!-- Partial refund: allows additional refunds or chargebacks -->
+    <manual-state id='PARTIALLY_REFUNDED'
+                  description="Partial refund completed, additional refunds possible">
+      <on eventId='initiateRefund'
+          componentName='paymentInitiateRefundAction'
+          newStateId='REFUND_INITIATED'
+          meta-acls="ADMIN,SYSTEM"/>
+      <on eventId='initiateChargeback'
+          componentName='paymentInitiateChargebackAction'
+          newStateId='CHARGEBACK_INITIATED'
+          meta-acls="SYSTEM"/>
     </manual-state>
 
     <!-- ════════════════════════════════════════════════════════════════════ -->
     <!-- CHARGEBACK / DISPUTE PATH                                           -->
-    <!-- Card network initiates chargeback — platform must respond           -->
     <!-- ════════════════════════════════════════════════════════════════════ -->
 
     <manual-state id='CHARGEBACK_INITIATED'
@@ -266,7 +292,6 @@
 
     <!--
       OGNL auto-state: CHECK_CHARGEBACK_OUTCOME
-      After admin submits evidence, check resolution.
       chargebackWon == true → SETTLED (merchant won, funds restored)
       else → REFUNDED (merchant lost, funds returned to customer)
     -->

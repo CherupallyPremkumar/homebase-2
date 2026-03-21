@@ -17,7 +17,7 @@ public class EDIT_REQUESTEDReviewPostSaveHook implements PostSaveHook<Review> {
 
     private static final Logger log = LoggerFactory.getLogger(EDIT_REQUESTEDReviewPostSaveHook.class);
 
-    @Autowired(required = false)
+    @Autowired
     private NotificationPort notificationPort;
 
     @Override

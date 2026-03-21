@@ -28,6 +28,7 @@ import org.chenile.stm.ognl.OgnlScriptingStrategy;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
+import com.homebase.ecom.settlement.domain.port.SettlementEventPublisherPort;
 import com.homebase.ecom.settlement.service.postSaveHooks.*;
 import com.homebase.ecom.settlement.service.validator.SettlementPolicyValidator;
 
@@ -268,13 +269,15 @@ public class SettlementConfiguration {
     }
 
     @Bean
-    APPROVEDSettlementPostSaveHook settlementAPPROVEDPostSaveHook() {
-        return new APPROVEDSettlementPostSaveHook();
+    APPROVEDSettlementPostSaveHook settlementAPPROVEDPostSaveHook(
+            NotificationPort notificationPort, SettlementEventPublisherPort eventPublisher) {
+        return new APPROVEDSettlementPostSaveHook(notificationPort, eventPublisher);
     }
 
     @Bean
-    DISBURSEDSettlementPostSaveHook settlementDISBURSEDPostSaveHook() {
-        return new DISBURSEDSettlementPostSaveHook();
+    DISBURSEDSettlementPostSaveHook settlementDISBURSEDPostSaveHook(
+            NotificationPort notificationPort, SettlementEventPublisherPort eventPublisher) {
+        return new DISBURSEDSettlementPostSaveHook(notificationPort, eventPublisher);
     }
 
     @Bean
@@ -283,8 +286,9 @@ public class SettlementConfiguration {
     }
 
     @Bean
-    DISPUTEDSettlementPostSaveHook settlementDISPUTEDPostSaveHook() {
-        return new DISPUTEDSettlementPostSaveHook();
+    DISPUTEDSettlementPostSaveHook settlementDISPUTEDPostSaveHook(
+            SettlementEventPublisherPort eventPublisher) {
+        return new DISPUTEDSettlementPostSaveHook(eventPublisher);
     }
 
     @Bean
@@ -331,7 +335,6 @@ public class SettlementConfiguration {
     // ═══════════════════════════════════════════════════════════════════════
 
     @Bean("settlementEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     SettlementEventHandler settlementEventService(
             @Qualifier("_settlementStateEntityService_") HmStateEntityServiceImpl<Settlement> settlementStateEntityService,
             SettlementJpaRepository settlementJpaRepository,

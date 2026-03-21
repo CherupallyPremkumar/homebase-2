@@ -1,9 +1,9 @@
 package com.homebase.ecom.cart.service.cmds;
 
-import com.homebase.ecom.cart.domain.model.PricingResult;
-import com.homebase.ecom.cart.domain.port.InventoryCheckPort;
-import com.homebase.ecom.cart.domain.port.PricingPort;
-import com.homebase.ecom.cart.domain.port.ProductCheckPort;
+import com.homebase.ecom.cart.port.response.PricingResult;
+import com.homebase.ecom.cart.port.InventoryCheckPort;
+import com.homebase.ecom.cart.port.PricingPort;
+import com.homebase.ecom.cart.port.ProductCheckPort;
 import com.homebase.ecom.cart.model.Cart;
 import com.homebase.ecom.cart.service.validator.CartPolicyValidator;
 import com.homebase.ecom.shared.Money;

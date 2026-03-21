@@ -15,6 +15,10 @@
 	<name>cart-service</name>
 
 	<dependencies>
+        <dependency>
+            <groupId>com.homebase.ecom.cart</groupId>
+            <artifactId>cart-domain</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>com.homebase.ecom.cart</groupId>
 			<artifactId>cart-api</artifactId>
@@ -77,14 +81,6 @@
             <artifactId>cucumber-workflow-utils</artifactId>
             <scope>test</scope>
         </dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>chenile-kafka</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.chenile</groupId>
-			<artifactId>service-registry-delegate</artifactId>
-		</dependency>
         <dependency>
             <groupId>com.homebase.ecom</groupId>
             <artifactId>cart-query-service</artifactId>
@@ -93,11 +89,6 @@
             <groupId>org.chenile</groupId>
             <artifactId>chenile-query-service</artifactId>
         </dependency>
-		<dependency>
-			<groupId>com.homebase.ecom.cart</groupId>
-			<artifactId>cart-infrastructure</artifactId>
-			<version>${revision}</version>
-		</dependency>
 			<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>cucumber-sec-utils</artifactId>
@@ -120,6 +111,13 @@
 			<groupId>com.homebase.ecom</groupId>
 			<artifactId>db-migrations</artifactId>
 			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.cart</groupId>
+			<artifactId>cart-infrastructure</artifactId>
+			<version>${revision}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

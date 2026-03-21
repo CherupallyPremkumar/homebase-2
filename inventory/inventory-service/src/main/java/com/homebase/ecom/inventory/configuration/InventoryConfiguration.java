@@ -30,6 +30,7 @@ import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
 import com.homebase.ecom.inventory.service.postSaveHooks.*;
 import com.homebase.ecom.inventory.service.validator.InventoryItemPolicyValidator;
+import com.homebase.ecom.inventory.domain.port.InventoryEventPublisherPort;
 import com.homebase.ecom.inventory.domain.port.InventoryPolicyPort;
 import com.homebase.ecom.inventory.infrastructure.adapter.InventoryPolicyDecisionAdapter;
 
@@ -323,43 +324,51 @@ public class InventoryConfiguration {
     }
 
     @Bean
-    DAMAGED_AT_WAREHOUSEInventoryItemPostSaveHook inventoryDAMAGED_AT_WAREHOUSEPostSaveHook() {
-        return new DAMAGED_AT_WAREHOUSEInventoryItemPostSaveHook();
+    DAMAGED_AT_WAREHOUSEInventoryItemPostSaveHook inventoryDAMAGED_AT_WAREHOUSEPostSaveHook(
+            InventoryEventPublisherPort eventPublisher) {
+        return new DAMAGED_AT_WAREHOUSEInventoryItemPostSaveHook(eventPublisher);
     }
 
     @Bean
-    STOCK_PENDINGInventoryItemPostSaveHook inventorySTOCK_PENDINGPostSaveHook() {
-        return new STOCK_PENDINGInventoryItemPostSaveHook();
+    STOCK_PENDINGInventoryItemPostSaveHook inventorySTOCK_PENDINGPostSaveHook(
+            InventoryEventPublisherPort eventPublisher) {
+        return new STOCK_PENDINGInventoryItemPostSaveHook(eventPublisher);
     }
 
     @Bean
-    IN_WAREHOUSEInventoryItemPostSaveHook inventoryIN_WAREHOUSEPostSaveHook() {
-        return new IN_WAREHOUSEInventoryItemPostSaveHook();
+    IN_WAREHOUSEInventoryItemPostSaveHook inventoryIN_WAREHOUSEPostSaveHook(
+            InventoryEventPublisherPort eventPublisher) {
+        return new IN_WAREHOUSEInventoryItemPostSaveHook(eventPublisher);
     }
 
     @Bean
-    RETURNED_TO_SUPPLIERInventoryItemPostSaveHook inventoryRETURNED_TO_SUPPLIERPostSaveHook() {
-        return new RETURNED_TO_SUPPLIERInventoryItemPostSaveHook();
+    RETURNED_TO_SUPPLIERInventoryItemPostSaveHook inventoryRETURNED_TO_SUPPLIERPostSaveHook(
+            InventoryEventPublisherPort eventPublisher) {
+        return new RETURNED_TO_SUPPLIERInventoryItemPostSaveHook(eventPublisher);
     }
 
     @Bean
-    OUT_OF_STOCKInventoryItemPostSaveHook inventoryOUT_OF_STOCKPostSaveHook() {
-        return new OUT_OF_STOCKInventoryItemPostSaveHook();
+    OUT_OF_STOCKInventoryItemPostSaveHook inventoryOUT_OF_STOCKPostSaveHook(
+            InventoryEventPublisherPort eventPublisher) {
+        return new OUT_OF_STOCKInventoryItemPostSaveHook(eventPublisher);
     }
 
     @Bean
-    STOCK_REJECTEDInventoryItemPostSaveHook inventorySTOCK_REJECTEDPostSaveHook() {
-        return new STOCK_REJECTEDInventoryItemPostSaveHook();
+    STOCK_REJECTEDInventoryItemPostSaveHook inventorySTOCK_REJECTEDPostSaveHook(
+            InventoryEventPublisherPort eventPublisher) {
+        return new STOCK_REJECTEDInventoryItemPostSaveHook(eventPublisher);
     }
 
     @Bean
-    DISCARDEDInventoryItemPostSaveHook inventoryDISCARDEDPostSaveHook() {
-        return new DISCARDEDInventoryItemPostSaveHook();
+    DISCARDEDInventoryItemPostSaveHook inventoryDISCARDEDPostSaveHook(
+            InventoryEventPublisherPort eventPublisher) {
+        return new DISCARDEDInventoryItemPostSaveHook(eventPublisher);
     }
 
     @Bean
-    PARTIAL_DAMAGEInventoryItemPostSaveHook inventoryPARTIAL_DAMAGEPostSaveHook() {
-        return new PARTIAL_DAMAGEInventoryItemPostSaveHook();
+    PARTIAL_DAMAGEInventoryItemPostSaveHook inventoryPARTIAL_DAMAGEPostSaveHook(
+            InventoryEventPublisherPort eventPublisher) {
+        return new PARTIAL_DAMAGEInventoryItemPostSaveHook(eventPublisher);
     }
 
 
@@ -382,8 +391,12 @@ public class InventoryConfiguration {
         return new InventoryItemPolicyValidator();
     }
 
+    @Bean
+    com.homebase.ecom.inventory.service.InventoryService inventoryService() {
+        return new com.homebase.ecom.inventory.service.impl.InventoryServiceImpl();
+    }
+
     @Bean("inventoryEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     InventoryEventHandler inventoryEventService(
             com.homebase.ecom.inventory.service.InventoryService inventoryService,
             InventoryItemQueryAdapter inventoryItemQueryAdapter,

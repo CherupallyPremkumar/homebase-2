@@ -1,31 +1,28 @@
 package com.homebase.ecom.cart.configuration;
 
 import org.chenile.core.context.ChenileExchange;
-import org.chenile.pubsub.ChenilePub;
 import org.chenile.stm.*;
-import tools.jackson.databind.ObjectMapper;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.impl.*;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.param.MinimalPayload;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
-import org.chenile.workflow.service.impl.StateEntityServiceImpl;
-import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.cart.model.Cart;
 import com.homebase.ecom.cart.service.cmds.*;
 import com.homebase.ecom.cart.service.impl.CartServiceImpl;
-import com.homebase.ecom.cart.infrastructure.mapper.CartDtoMapper;
+import com.homebase.ecom.cart.service.mapper.CartDtoMapper;
 import com.homebase.ecom.cart.service.healthcheck.CartHealthChecker;
-import com.homebase.ecom.cart.infrastructure.persistence.ChenileCartEntityStore;
-import com.homebase.ecom.cart.infrastructure.persistence.repository.CartJpaRepository;
-import com.homebase.ecom.cart.infrastructure.persistence.mapper.CartMapper;
+import com.homebase.ecom.cart.repository.CartRepository;
+import com.homebase.ecom.cart.port.CartEventPublisherPort;
+import com.homebase.ecom.cart.port.ConfigPort;
+import com.homebase.ecom.cart.service.handler.CartExternalEventHandler;
 import com.homebase.ecom.cart.service.validator.CartPolicyValidator;
+import tools.jackson.databind.ObjectMapper;
 import com.homebase.ecom.cart.service.postSaveHooks.*;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.workflow.service.activities.ActivityChecker;
@@ -76,8 +73,15 @@ public class CartConfiguration {
     }
 
     @Bean
-    EntityStore<Cart> cartEntityStore(CartJpaRepository repository, CartMapper mapper) {
-        return new ChenileCartEntityStore(repository, mapper);
+    CartDtoMapper cartDtoMapper() {
+        return new CartDtoMapper();
+    }
+
+    @Bean
+    CartExternalEventHandler cartExternalEventHandler(
+            CartExternalEventHandler.CartQueryPort cartQueryPort,
+            ObjectMapper objectMapper) {
+        return new CartExternalEventHandler(cartQueryPort, objectMapper);
     }
 
     @Bean
@@ -85,8 +89,9 @@ public class CartConfiguration {
             @Qualifier("cartEntityStm") STM<Cart> stm,
             @Qualifier("cartActionsInfoProvider") STMActionsInfoProvider cartInfoProvider,
             @Qualifier("cartEntityStore") EntityStore<Cart> entityStore,
-            CartDtoMapper cartDtoMapper) {
-        return new CartServiceImpl(stm, cartInfoProvider, entityStore, cartDtoMapper);
+            CartDtoMapper cartDtoMapper,
+            CartExternalEventHandler externalEventHandler) {
+        return new CartServiceImpl(stm, cartInfoProvider, entityStore, cartDtoMapper, externalEventHandler);
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -294,8 +299,8 @@ public class CartConfiguration {
     // ═══════════════════════════════════════════════════════════════════
 
     @Bean
-    CartPolicyValidator cartPolicyValidator() {
-        return new CartPolicyValidator();
+    CartPolicyValidator cartPolicyValidator(ConfigPort configPort) {
+        return new CartPolicyValidator(configPort);
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -308,28 +313,28 @@ public class CartConfiguration {
     }
 
     @Bean
-    CHECKOUT_INITIATEDCartPostSaveHook cartCHECKOUT_INITIATEDPostSaveHook(ChenilePub chenilePub, ObjectMapper objectMapper) {
-        return new CHECKOUT_INITIATEDCartPostSaveHook(chenilePub, objectMapper);
+    CHECKOUT_INITIATEDCartPostSaveHook cartCHECKOUT_INITIATEDPostSaveHook(CartEventPublisherPort eventPublisher) {
+        return new CHECKOUT_INITIATEDCartPostSaveHook(eventPublisher);
     }
 
     @Bean
-    CHECKOUT_COMPLETEDCartPostSaveHook cartCHECKOUT_COMPLETEDPostSaveHook(ChenilePub chenilePub, ObjectMapper objectMapper) {
-        return new CHECKOUT_COMPLETEDCartPostSaveHook(chenilePub, objectMapper);
+    CHECKOUT_COMPLETEDCartPostSaveHook cartCHECKOUT_COMPLETEDPostSaveHook(CartEventPublisherPort eventPublisher) {
+        return new CHECKOUT_COMPLETEDCartPostSaveHook(eventPublisher);
     }
 
     @Bean
-    ABANDONEDCartPostSaveHook cartABANDONEDPostSaveHook(ChenilePub chenilePub, ObjectMapper objectMapper) {
-        return new ABANDONEDCartPostSaveHook(chenilePub, objectMapper);
+    ABANDONEDCartPostSaveHook cartABANDONEDPostSaveHook(CartEventPublisherPort eventPublisher) {
+        return new ABANDONEDCartPostSaveHook(eventPublisher);
     }
 
     @Bean
-    EXPIREDCartPostSaveHook cartEXPIREDPostSaveHook(ChenilePub chenilePub, ObjectMapper objectMapper) {
-        return new EXPIREDCartPostSaveHook(chenilePub, objectMapper);
+    EXPIREDCartPostSaveHook cartEXPIREDPostSaveHook(CartEventPublisherPort eventPublisher) {
+        return new EXPIREDCartPostSaveHook(eventPublisher);
     }
 
     @Bean
-    MERGEDCartPostSaveHook cartMERGEDPostSaveHook(ChenilePub chenilePub, ObjectMapper objectMapper) {
-        return new MERGEDCartPostSaveHook(chenilePub, objectMapper);
+    MERGEDCartPostSaveHook cartMERGEDPostSaveHook(CartEventPublisherPort eventPublisher) {
+        return new MERGEDCartPostSaveHook(eventPublisher);
     }
 
     // ═══════════════════════════════════════════════════════════════════

@@ -92,6 +92,13 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.homebase.ecom.checkout</groupId>
+            <artifactId>checkout-infrastructure</artifactId>
+            <version>${revision}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
         <!-- Port interfaces are in checkout-domain. Real adapters (calling
              cart-client, pricing-client, etc.) live in checkout-infrastructure
              and are wired only in checkout-app (runtime). Tests use stub ports. -->

@@ -17,7 +17,7 @@ public class REJECTEDReviewPostSaveHook implements PostSaveHook<Review> {
 
     private static final Logger log = LoggerFactory.getLogger(REJECTEDReviewPostSaveHook.class);
 
-    @Autowired(required = false)
+    @Autowired
     private NotificationPort notificationPort;
 
     @Override

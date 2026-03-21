@@ -1,20 +1,18 @@
 package com.homebase.ecom.payment.service.impl;
 
-import com.homebase.ecom.payment.domain.WebhookEvent;
+import com.homebase.ecom.payment.infrastructure.persistence.entity.WebhookEvent;
+import com.homebase.ecom.payment.infrastructure.persistence.repository.WebhookEventRepository;
 import com.homebase.ecom.payment.gateway.GatewayEvent;
 import com.homebase.ecom.payment.gateway.WebhookProcessor;
 import com.homebase.ecom.payment.gateway.WebhookProcessorFactory;
-import com.homebase.ecom.payment.repository.WebhookEventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-@Service
 public class WebhookServiceImpl {
 
     private static final Logger log = LoggerFactory.getLogger(WebhookServiceImpl.class);

@@ -16,7 +16,7 @@ public class ReturnRequestClientConfiguration {
             "_returnrequestStateEntityService_",
             null,
             ProxyBuilder.ProxyMode.COMPUTE_DYNAMICALLY,
-            null
+            "http://localhost:8080"
         );
     }
 }

@@ -22,8 +22,6 @@ import com.homebase.ecom.returnrequest.service.healthcheck.ReturnrequestHealthCh
 import com.homebase.ecom.returnrequest.infrastructure.persistence.ChenileReturnrequestEntityStore;
 import com.homebase.ecom.returnrequest.infrastructure.persistence.adapter.ReturnrequestJpaRepository;
 import com.homebase.ecom.returnrequest.infrastructure.persistence.mapper.ReturnrequestMapper;
-import com.homebase.ecom.returnrequest.infrastructure.adapter.*;
-import com.homebase.ecom.returnrequest.domain.port.*;
 import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.stm.State;
 import org.chenile.workflow.service.activities.ActivityChecker;
@@ -274,26 +272,14 @@ public class ReturnrequestConfiguration {
 
     // ================================================================
     // Hexagonal Ports / Adapters
+    // Wired in ReturnrequestInfrastructureConfiguration (returnrequest-infrastructure module)
     // ================================================================
-
-    @Bean RefundPort refundPort() {
-        return new RefundAdapter();
-    }
-
-    @Bean InventoryPort returnrequestInventoryPort() {
-        return new InventoryAdapter();
-    }
-
-    @Bean NotificationPort returnrequestNotificationPort() {
-        return new NotificationAdapter();
-    }
 
     // ================================================================
     // Chenile-Kafka Event Handler (Item 10, 14)
     // ================================================================
 
     @Bean("returnrequestEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     ReturnRequestEventHandler returnrequestEventService() {
         return new ReturnRequestEventHandler();
     }

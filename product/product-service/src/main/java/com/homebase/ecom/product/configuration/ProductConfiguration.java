@@ -77,7 +77,8 @@ public class ProductConfiguration {
     @Bean ProductRepositoryImpl productRepository(ProductJpaRepository r, ProductMapper m) {
         return new ProductRepositoryImpl(r, m);
     }
-    @Bean CategoryRepositoryImpl categoryRepository(CategoryJpaRepository r, CategoryMapper m) {
+    @Bean("productCategoryRepository")
+    CategoryRepository productCategoryRepository(CategoryJpaRepository r, CategoryMapper m) {
         return new CategoryRepositoryImpl(r, m);
     }
     @Bean AttributeRepositoryImpl attributeRepository(AttributeJpaRepository r, AttributeMapper m) {
@@ -282,13 +283,13 @@ public class ProductConfiguration {
     }
 
     @Bean("productEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     com.homebase.ecom.product.service.event.ProductEventHandler productEventService(
             @Qualifier("_productStateEntityService_") StateEntityServiceImpl<Product> productStateEntityService,
+            com.homebase.ecom.product.domain.port.ProductRepository productRepository,
             org.chenile.pubsub.ChenilePub chenilePub,
             tools.jackson.databind.ObjectMapper objectMapper) {
         return new com.homebase.ecom.product.service.event.ProductEventHandler(
-                productStateEntityService, chenilePub, objectMapper);
+                productStateEntityService, productRepository, chenilePub, objectMapper);
     }
 
     @Bean
@@ -347,7 +348,7 @@ public class ProductConfiguration {
     }
 
     @Bean
-    public TaxonomyService taxonomyService(CategoryRepository categoryRepository, AttributeRepository attributeRepository) {
+    public TaxonomyService taxonomyService(@Qualifier("productCategoryRepository") CategoryRepository categoryRepository, AttributeRepository attributeRepository) {
         return new TaxonomyServiceImpl(categoryRepository, attributeRepository);
     }
 

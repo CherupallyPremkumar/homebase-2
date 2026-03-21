@@ -21,7 +21,7 @@ public class REJECTEDReturnrequestPostSaveHook implements PostSaveHook<Returnreq
     @Autowired
     private ReturnRequestEventPublisher eventPublisher;
 
-    @Autowired(required = false)
+    @Autowired
     private NotificationPort notificationPort;
 
     @Override

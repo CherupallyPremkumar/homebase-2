@@ -9,8 +9,6 @@ import org.chenile.stm.model.Transition;
 import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 /**
  * STM action for initiating a payment.
  * Validates amount limits and payment method via PolicyValidator,
@@ -20,8 +18,11 @@ public class InitiatePaymentAction extends AbstractSTMTransitionAction<Payment, 
 
     private static final Logger log = LoggerFactory.getLogger(InitiatePaymentAction.class);
 
-    @Autowired
-    private PaymentPolicyValidator policyValidator;
+    private final PaymentPolicyValidator policyValidator;
+
+    public InitiatePaymentAction(PaymentPolicyValidator policyValidator) {
+        this.policyValidator = policyValidator;
+    }
 
     @Override
     public void transitionTo(Payment payment, InitiatePaymentPayload payload, State startState,

@@ -28,7 +28,7 @@ public class RazorpaySettlementDownloader {
     @Value("${razorpay.key.secret}")
     private String keySecret;
 
-    public String downloadLatestSettlementCsv() {
+    public String downloadLatestSettlementCsv() throws org.json.JSONException {
         log.info("Downloading latest Razorpay payments via API...");
         String filePath = "razorpay-settlement-latest.csv";
 

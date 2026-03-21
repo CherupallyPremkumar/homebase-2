@@ -1,13 +1,12 @@
 package com.homebase.ecom.order.service.postSaveHooks;
 
 import com.homebase.ecom.order.model.Order;
-import com.homebase.ecom.order.service.event.OrderEventPublisher;
+import com.homebase.ecom.order.port.OrderEventPublisherPort;
 import org.chenile.stm.State;
 import org.chenile.workflow.model.TransientMap;
 import org.chenile.workflow.service.stmcmds.PostSaveHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * PostSaveHook for PAID state.
@@ -17,12 +16,15 @@ public class PAIDOrderPostSaveHook implements PostSaveHook<Order> {
 
     private static final Logger log = LoggerFactory.getLogger(PAIDOrderPostSaveHook.class);
 
-    @Autowired
-    private OrderEventPublisher orderEventPublisher;
+    private final OrderEventPublisherPort eventPublisher;
+
+    public PAIDOrderPostSaveHook(OrderEventPublisherPort eventPublisher) {
+        this.eventPublisher = eventPublisher;
+    }
 
     @Override
     public void execute(State startState, State endState, Order order, TransientMap map) {
-        log.info("Publishing ORDER_PAID event for order: {}", order.getId());
-        orderEventPublisher.publishOrderPaid(order.getId(), order.getCustomerId());
+        log.info("Order {} entered PAID state, publishing event", order.getId());
+        eventPublisher.publishOrderPaid(order);
     }
 }

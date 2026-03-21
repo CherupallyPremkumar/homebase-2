@@ -35,9 +35,10 @@ public class KafkaErrorHandlerConfig {
      * Publishes failed records to the dead letter topic after retries are exhausted.
      * The DLT topic name follows Spring Kafka convention: {@code {original-topic}.DLT}.
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Bean
     public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(
-            KafkaOperations<Object, Object> kafkaOperations) {
+            KafkaOperations kafkaOperations) {
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaOperations);
         return recoverer;
     }

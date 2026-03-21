@@ -20,6 +20,8 @@
         <module>checkout-infrastructure</module>
         <module>checkout-api</module>
         <module>checkout-service</module>
+        <module>checkout-invm</module>
+        <module>checkout-kafka</module>
         <module>checkout-app</module>
         <module>checkout-client</module>
     </modules>
@@ -44,6 +46,16 @@
             <dependency>
                 <groupId>com.homebase.ecom.checkout</groupId>
                 <artifactId>checkout-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.checkout</groupId>
+                <artifactId>checkout-invm</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.checkout</groupId>
+                <artifactId>checkout-kafka</artifactId>
                 <version>${revision}</version>
             </dependency>
         </dependencies>

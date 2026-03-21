@@ -1,0 +1,230 @@
+logging:
+  level:
+    ROOT: INFO
+    # org.hibernate.SQL: DEBUG  # Only enable for debugging, not production
+    # org.chenile.*: DEBUG      # Only enable for debugging
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: ${APP_NAME:homebase-service}
+  banner:
+    location: classpath:banner.txt
+  devtools:
+    restart:
+      enabled: false  # Disabled for production
+    livereload:
+      enabled: false
+  jackson:
+    serialization:
+      indent-output: false  # false for production
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/ecommerce_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+    hikari:
+      poolName: Hikari
+      auto-commit: false
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  jpa:
+    hibernate:
+      ddl-auto: none  # TODO: switch to validate after fixing long→BigDecimal in cart/checkout entities
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+  h2:
+    console:
+      enabled: false  # Disabled for production
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    contexts: ${SPRING_PROFILES_ACTIVE:dev},faker
+    enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/homebase}
+  messages:
+    cache-duration: PT1H
+  thymeleaf:
+    cache: true  # Enabled for production
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-server: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      group-id: homebase-service
+      properties:
+        spring.json.trusted.packages: com.homebase.ecom.*
+
+kafka:
+  dlq:
+    max-retries: 3
+    initial-interval-ms: 1000
+    multiplier: 2.0
+
+# Chenile Security — Keycloak connection for OAuth2 + STM ACL
+chenile:
+  security:
+    keycloak:
+      host: ${KEYCLOAK_HOST:http://localhost:8180}
+      port: ${KEYCLOAK_PORT:8180}
+      base:
+        realm: ${KEYCLOAK_REALM:homebase}
+    client:
+      id: ${KEYCLOAK_CLIENT_ID:homebase-backend}
+      secret: ${KEYCLOAK_CLIENT_SECRET:change-me}
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+# OpenAPI / Swagger UI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  show-actuator: false
+
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      cart-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      pricing-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+      inventory-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+      shipping-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+      payment-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+      order-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+      promo-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+  retry:
+    instances:
+      default:
+        maxAttempts: 3
+        waitDuration: 500ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+
+# Spring Boot Actuator for Observability
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,circuitbreakers
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0  # 100% in dev, reduce in prod
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+
+# Service URLs (configure via environment variables in production)
+cart.service.url: ${CART_SERVICE_URL:http://localhost:8080}
+pricing.service.url: ${PRICING_SERVICE_URL:http://localhost:8081}
+inventory.service.url: ${INVENTORY_SERVICE_URL:http://localhost:8082}
+shipping.service.url: ${SHIPPING_SERVICE_URL:http://localhost:8083}
+payment.service.url: ${PAYMENT_SERVICE_URL:http://localhost:8084}
+order.service.url: ${ORDER_SERVICE_URL:http://localhost:8085}
+promo.service.url: ${PROMO_SERVICE_URL:http://localhost:8086}
+
+query:
+  jpa:
+    hibernate:
+      show_sql: 'false'
+      ddl-auto: validate
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: 'false'
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  defaultTenantId: homebase
+  datasource's:
+    homebase:
+      maximumPoolSize: '20'
+      type: com.zaxxer.hikari.HikariDataSource
+      username: ${DB_USERNAME:postgres}
+      password: ${DB_PASSWORD:password}
+      minimumIdle: '5'
+      idleTimeout: '600000'
+      jdbcUrl: ${DB_URL:jdbc:postgresql://localhost:5432/ecommerce_db}
+      driverClassName: org.postgresql.Driver
+  mapperFiles: classpath*:com/homebase/ecom/query/service/mapper/*.xml
+  definitionFiles: classpath*:com/homebase/ecom/query/service/mapper/*.json
+

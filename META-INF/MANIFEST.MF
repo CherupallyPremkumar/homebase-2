@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-Created-By: Maven JAR Plugin 3.4.2
-Build-Jdk-Spec: 17
-Implementation-Title: Chenile HTTP related libraries
-Implementation-Version: 2.1.12
-

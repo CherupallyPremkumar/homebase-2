@@ -17,7 +17,7 @@ public class ASSIGNEDSupportPostSaveHook implements PostSaveHook<SupportTicket> 
 
     private static final Logger log = LoggerFactory.getLogger(ASSIGNEDSupportPostSaveHook.class);
 
-    @Autowired(required = false)
+    @Autowired
     private NotificationPort notificationPort;
 
     @Override

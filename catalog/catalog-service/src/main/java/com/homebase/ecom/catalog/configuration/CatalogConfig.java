@@ -1,5 +1,6 @@
 package com.homebase.ecom.catalog.configuration;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import com.homebase.ecom.catalog.infrastructure.persistence.adapter.CatalogItemRepositoryImpl;
 import com.homebase.ecom.catalog.infrastructure.persistence.adapter.CategoryProductMappingRepositoryImpl;
 import com.homebase.ecom.catalog.infrastructure.persistence.adapter.CategoryRepositoryImpl;
@@ -7,12 +8,10 @@ import com.homebase.ecom.catalog.infrastructure.persistence.adapter.CollectionPr
 import com.homebase.ecom.catalog.infrastructure.persistence.adapter.CollectionRepositoryImpl;
 import com.homebase.ecom.catalog.infrastructure.persistence.mapper.CatalogMapper;
 import com.homebase.ecom.catalog.infrastructure.persistence.repository.CatalogItemJpaRepository;
-import com.homebase.ecom.catalog.infrastructure.persistence.repository.CategoryJpaRepository;
+import com.homebase.ecom.catalog.infrastructure.persistence.repository.CatalogCategoryJpaRepository;
 import com.homebase.ecom.catalog.infrastructure.persistence.repository.CategoryProductMappingJpaRepository;
 import com.homebase.ecom.catalog.infrastructure.persistence.repository.CollectionJpaRepository;
 import com.homebase.ecom.catalog.infrastructure.persistence.repository.CollectionProductMappingJpaRepository;
-import com.homebase.ecom.catalog.infrastructure.integration.ProductServiceAdapter;
-import com.homebase.ecom.catalog.infrastructure.integration.OfferServiceAdapter;
 import com.homebase.ecom.catalog.port.in.CatalogService;
 import com.homebase.ecom.catalog.port.in.UpdateCatalogUseCase;
 import com.homebase.ecom.catalog.port.in.EvaluateDynamicCollectionUseCase;
@@ -34,9 +33,6 @@ import com.homebase.ecom.catalog.service.impl.CategoryServiceImpl;
 import com.homebase.ecom.catalog.service.impl.CollectionServiceImpl;
 import com.homebase.ecom.catalog.service.impl.DynamicCollectionProjectorImpl;
 import com.homebase.ecom.cconfig.sdk.CconfigClient;
-import com.homebase.ecom.offer.api.OfferService;
-import com.homebase.ecom.product.api.ProductService;
-import org.chenile.query.service.SearchService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -62,8 +58,8 @@ public class CatalogConfig {
         return new CatalogItemRepositoryImpl(jpaRepo, mapper);
     }
 
-    @Bean
-    public CategoryRepository categoryRepository(CategoryJpaRepository jpaRepo, CatalogMapper mapper) {
+    @Bean("catalogCategoryRepository")
+    public CategoryRepository catalogCategoryRepository(CatalogCategoryJpaRepository jpaRepo, CatalogMapper mapper) {
         return new CategoryRepositoryImpl(jpaRepo, mapper);
     }
 
@@ -97,17 +93,7 @@ public class CatalogConfig {
     }
 
     // ── Driven Port Adapters (sync calls to other bounded contexts) ──
-
-    @Bean
-    public ProductDataPort productDataPort(ProductService productService,
-                                            SearchService productSearchService) {
-        return new ProductServiceAdapter(productService, productSearchService);
-    }
-
-    @Bean
-    public OfferDataPort offerDataPort(OfferService offerService) {
-        return new OfferServiceAdapter(offerService);
-    }
+    // Wired in CatalogInfrastructureConfiguration (catalog-infrastructure module)
 
     // ── Application Services (use case implementations) ───────────────
 
@@ -121,7 +107,7 @@ public class CatalogConfig {
     }
 
     @Bean
-    public CategoryService categoryService(CategoryRepository categoryRepository,
+    public CategoryService categoryService(@Qualifier("catalogCategoryRepository") CategoryRepository categoryRepository,
                                             CatalogPolicyValidator policyValidator) {
         return new CategoryServiceImpl(categoryRepository, policyValidator);
     }

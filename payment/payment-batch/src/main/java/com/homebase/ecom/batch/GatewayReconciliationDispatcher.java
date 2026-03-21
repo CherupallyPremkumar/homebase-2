@@ -1,7 +1,7 @@
 package com.homebase.ecom.batch;
 
-import com.homebase.ecom.payment.domain.ReconciliationMismatch;
-import com.homebase.ecom.payment.repository.ReconciliationMismatchRepository;
+import com.homebase.ecom.payment.infrastructure.persistence.entity.ReconciliationMismatch;
+import com.homebase.ecom.payment.infrastructure.persistence.repository.ReconciliationMismatchRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;

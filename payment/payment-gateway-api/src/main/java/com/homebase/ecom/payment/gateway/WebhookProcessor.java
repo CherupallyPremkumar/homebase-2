@@ -1,7 +1,5 @@
 package com.homebase.ecom.payment.gateway;
 
-import com.homebase.ecom.payment.domain.WebhookEvent;
-
 /**
  * Interface for processing webhooks from payment gateways.
  */

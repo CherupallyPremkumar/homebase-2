@@ -19,10 +19,10 @@ public class REFUND_INITIATEDReturnrequestPostSaveHook implements PostSaveHook<R
 
     private static final Logger log = LoggerFactory.getLogger(REFUND_INITIATEDReturnrequestPostSaveHook.class);
 
-    @Autowired(required = false)
+    @Autowired
     private RefundPort refundPort;
 
-    @Autowired(required = false)
+    @Autowired
     private NotificationPort notificationPort;
 
     @Autowired

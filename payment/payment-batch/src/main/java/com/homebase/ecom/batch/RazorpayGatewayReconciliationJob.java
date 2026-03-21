@@ -1,6 +1,6 @@
 package com.homebase.ecom.batch;
 
-import com.homebase.ecom.payment.domain.ReconciliationMismatch;
+import com.homebase.ecom.payment.infrastructure.persistence.entity.ReconciliationMismatch;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

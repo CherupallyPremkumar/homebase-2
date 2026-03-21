@@ -9,4 +9,6 @@ public interface CartRepository {
     Cart save(Cart cart);
 
     void deleteById(String id);
+
+    Optional<Cart> findActiveCartByCustomerId(String customerId);
 }

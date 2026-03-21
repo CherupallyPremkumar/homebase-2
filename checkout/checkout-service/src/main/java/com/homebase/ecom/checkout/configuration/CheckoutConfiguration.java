@@ -20,11 +20,11 @@ import org.chenile.workflow.api.WorkflowRegistry;
 import com.homebase.ecom.checkout.domain.port.*;
 import com.homebase.ecom.checkout.model.Checkout;
 import com.homebase.ecom.checkout.service.cmds.*;
+import com.homebase.ecom.checkout.service.handler.CheckoutExternalEventHandler;
+import com.homebase.ecom.checkout.service.impl.CheckoutServiceImpl;
+import com.homebase.ecom.checkout.service.postSaveHooks.*;
 import com.homebase.ecom.checkout.service.saga.*;
-import com.homebase.ecom.checkout.infrastructure.persistence.ChenileCheckoutEntityStore;
-import com.homebase.ecom.checkout.infrastructure.persistence.repository.CheckoutJpaRepository;
-import com.homebase.ecom.checkout.infrastructure.persistence.mapper.CheckoutMapper;
-
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Checkout module Spring configuration.
@@ -80,21 +80,12 @@ public class CheckoutConfiguration {
     }
 
     @Bean
-    CheckoutMapper checkoutMapper() {
-        return new CheckoutMapper();
-    }
-
-    @Bean
-    EntityStore<Checkout> checkoutEntityStore(CheckoutJpaRepository repository, CheckoutMapper mapper) {
-        return new ChenileCheckoutEntityStore(repository, mapper);
-    }
-
-    @Bean
     StateEntityServiceImpl<Checkout> _checkoutStateEntityService_(
             @Qualifier("checkoutEntityStm") STM<Checkout> stm,
             @Qualifier("checkoutActionsInfoProvider") STMActionsInfoProvider checkoutInfoProvider,
-            @Qualifier("checkoutEntityStore") EntityStore<Checkout> entityStore) {
-        return new HmStateEntityServiceImpl<>(stm, checkoutInfoProvider, entityStore);
+            @Qualifier("checkoutEntityStore") EntityStore<Checkout> entityStore,
+            CheckoutExternalEventHandler checkoutExternalEventHandler) {
+        return new CheckoutServiceImpl(stm, checkoutInfoProvider, entityStore, checkoutExternalEventHandler);
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -289,6 +280,45 @@ public class CheckoutConfiguration {
     @Bean
     InitiatePaymentCommand initiatePaymentCommand(PaymentInitiationPort paymentInitiationPort) {
         return new InitiatePaymentCommand(paymentInitiationPort);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Post-Save Hooks (publish domain events on state entry)
+    // Bean names follow STM convention: {prefix}{STATE}PostSaveHook
+    // ═══════════════════════════════════════════════════════════════════
+
+    @Bean
+    COMPLETEDCheckoutPostSaveHook checkoutCOMPLETEDPostSaveHook(CheckoutEventPublisherPort eventPublisher) {
+        return new COMPLETEDCheckoutPostSaveHook(eventPublisher);
+    }
+
+    @Bean
+    CANCELLEDCheckoutPostSaveHook checkoutCANCELLEDPostSaveHook(CheckoutEventPublisherPort eventPublisher) {
+        return new CANCELLEDCheckoutPostSaveHook(eventPublisher);
+    }
+
+    @Bean
+    COMPENSATEDCheckoutPostSaveHook checkoutCOMPENSATEDPostSaveHook(CheckoutEventPublisherPort eventPublisher) {
+        return new COMPENSATEDCheckoutPostSaveHook(eventPublisher);
+    }
+
+    @Bean
+    PAYMENT_FAILEDCheckoutPostSaveHook checkoutPAYMENT_FAILEDPostSaveHook(CheckoutEventPublisherPort eventPublisher) {
+        return new PAYMENT_FAILEDCheckoutPostSaveHook(eventPublisher);
+    }
+
+    @Bean
+    EXPIREDCheckoutPostSaveHook checkoutEXPIREDPostSaveHook(CheckoutEventPublisherPort eventPublisher) {
+        return new EXPIREDCheckoutPostSaveHook(eventPublisher);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // External Event Handler (cross-BC event consumption)
+    // ═══════════════════════════════════════════════════════════════════
+
+    @Bean
+    CheckoutExternalEventHandler checkoutExternalEventHandler(ObjectMapper objectMapper) {
+        return new CheckoutExternalEventHandler(objectMapper);
     }
 
     // ═══════════════════════════════════════════════════════════════════

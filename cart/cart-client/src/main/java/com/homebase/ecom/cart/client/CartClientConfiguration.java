@@ -11,9 +11,10 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Cart client configuration following the Chenile process-delegate pattern.
  *
- * Creates two beans:
- * 1. cartServiceProxy — raw Chenile Proxy for CartService (low-level)
- * 2. cartManagerClient — typed business delegate with domain methods (recommended)
+ * Creates three proxy beans for cross-BC consumption:
+ * 1. cartServiceProxy — command side (STM mutations)
+ * 2. cartSearchServiceProxy — query side (CQRS reads)
+ * 3. cartManagerClient — typed business delegate with domain methods (recommended)
  */
 @Configuration
 public class CartClientConfiguration {
@@ -25,7 +26,7 @@ public class CartClientConfiguration {
             "_cartStateEntityService_",
             null,
             ProxyBuilder.ProxyMode.COMPUTE_DYNAMICALLY,
-            null
+            "http://localhost:8080"
         );
     }
 
@@ -35,13 +36,13 @@ public class CartClientConfiguration {
     }
 
     @Bean
-    public SearchService cartSearchServiceClient(ProxyBuilder proxyBuilder) {
+    public SearchService cartSearchServiceProxy(ProxyBuilder proxyBuilder) {
         return proxyBuilder.buildProxy(
             SearchService.class,
             "searchService",
             null,
             ProxyBuilder.ProxyMode.COMPUTE_DYNAMICALLY,
-            null
+            "http://localhost:8080"
         );
     }
 }

@@ -9,8 +9,6 @@ import org.chenile.stm.model.Transition;
 import org.chenile.workflow.service.stmcmds.AbstractSTMTransitionAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 /**
  * STM action for retrying a failed payment.
  * Increments retry count; the CHECK_RETRY auto-state evaluates
@@ -20,8 +18,11 @@ public class RetryPaymentAction extends AbstractSTMTransitionAction<Payment, Ret
 
     private static final Logger log = LoggerFactory.getLogger(RetryPaymentAction.class);
 
-    @Autowired
-    private PaymentPolicyValidator policyValidator;
+    private final PaymentPolicyValidator policyValidator;
+
+    public RetryPaymentAction(PaymentPolicyValidator policyValidator) {
+        this.policyValidator = policyValidator;
+    }
 
     @Override
     public void transitionTo(Payment payment, RetryPaymentPayload payload, State startState,

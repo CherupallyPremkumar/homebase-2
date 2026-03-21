@@ -21,7 +21,6 @@ import java.util.Map;
  * Thin orchestrator — all mutations go through STM processById.
  * No direct save() calls; EntityStore handles persistence.
  */
-@Service
 public class InventoryServiceImpl implements InventoryService {
 
     private static final Logger log = LoggerFactory.getLogger(InventoryServiceImpl.class);

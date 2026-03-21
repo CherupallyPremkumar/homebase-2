@@ -14,7 +14,7 @@ public class PaymentClientConfiguration {
             "_paymentStateEntityService_",
             null,
             ProxyBuilder.ProxyMode.COMPUTE_DYNAMICALLY,
-            null
+            "http://localhost:8080"
         );
     }
 }

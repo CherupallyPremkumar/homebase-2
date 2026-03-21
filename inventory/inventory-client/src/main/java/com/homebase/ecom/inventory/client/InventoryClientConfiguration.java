@@ -15,7 +15,7 @@ public class InventoryClientConfiguration {
             "_inventoryStateEntityService_",
             null,
             ProxyBuilder.ProxyMode.COMPUTE_DYNAMICALLY,
-            null
+            "http://localhost:8080"
         );
     }
 
@@ -26,7 +26,7 @@ public class InventoryClientConfiguration {
             "searchService",
             null,
             ProxyBuilder.ProxyMode.COMPUTE_DYNAMICALLY,
-            null
+            "http://localhost:8080"
         );
     }
 }

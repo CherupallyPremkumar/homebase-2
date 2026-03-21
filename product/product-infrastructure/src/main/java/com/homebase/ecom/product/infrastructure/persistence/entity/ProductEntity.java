@@ -14,6 +14,9 @@ import java.util.*;
 public class ProductEntity extends AbstractJpaStateEntity 
         implements ActivityEnabledStateEntity, ContainsTransientMap {
 
+    @Column(name = "supplier_id")
+    private String supplierId;
+
     @Column(name = "name")
     private String name;
 
@@ -94,6 +97,9 @@ public class ProductEntity extends AbstractJpaStateEntity
     private TransientMap transientMap = new TransientMap();
 
     // Getters and Setters
+    public String getSupplierId() { return supplierId; }
+    public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 

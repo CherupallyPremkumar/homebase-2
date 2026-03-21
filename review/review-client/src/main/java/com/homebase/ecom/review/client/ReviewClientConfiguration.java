@@ -14,7 +14,7 @@ public class ReviewClientConfiguration {
             "_reviewStateEntityService_",
             null,
             ProxyBuilder.ProxyMode.COMPUTE_DYNAMICALLY,
-            null
+            "http://localhost:8080"
         );
     }
 }

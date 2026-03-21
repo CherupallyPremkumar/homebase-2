@@ -35,6 +35,7 @@ import com.homebase.ecom.notification.service.cmds.*;
 import com.homebase.ecom.notification.service.event.NotificationEventHandler;
 import com.homebase.ecom.notification.service.healthcheck.NotificationHealthChecker;
 import com.homebase.ecom.notification.service.validator.NotificationPolicyValidator;
+import com.homebase.ecom.notification.domain.port.NotificationEventPublisherPort;
 import com.homebase.ecom.notification.service.postSaveHooks.*;
 
 /**
@@ -308,8 +309,9 @@ public class NotificationConfiguration {
     }
 
     @Bean
-    SENTNotificationPostSaveHook notificationSENTPostSaveHook() {
-        return new SENTNotificationPostSaveHook();
+    SENTNotificationPostSaveHook notificationSENTPostSaveHook(
+            NotificationEventPublisherPort eventPublisher) {
+        return new SENTNotificationPostSaveHook(eventPublisher);
     }
 
     @Bean
@@ -318,8 +320,9 @@ public class NotificationConfiguration {
     }
 
     @Bean
-    FAILEDNotificationPostSaveHook notificationFAILEDPostSaveHook() {
-        return new FAILEDNotificationPostSaveHook();
+    FAILEDNotificationPostSaveHook notificationFAILEDPostSaveHook(
+            NotificationEventPublisherPort eventPublisher) {
+        return new FAILEDNotificationPostSaveHook(eventPublisher);
     }
 
     @Bean
@@ -328,8 +331,9 @@ public class NotificationConfiguration {
     }
 
     @Bean
-    BOUNCEDNotificationPostSaveHook notificationBOUNCEDPostSaveHook() {
-        return new BOUNCEDNotificationPostSaveHook();
+    BOUNCEDNotificationPostSaveHook notificationBOUNCEDPostSaveHook(
+            NotificationEventPublisherPort eventPublisher) {
+        return new BOUNCEDNotificationPostSaveHook(eventPublisher);
     }
 
     @Bean
@@ -353,7 +357,6 @@ public class NotificationConfiguration {
     // ═══════════════════════════════════════════════════════════════════════
 
     @Bean("notificationEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     NotificationEventHandler notificationEventService(
             @Qualifier("_notificationStateEntityService_") StateEntityServiceImpl<Notification> notificationStateEntityService,
             org.chenile.pubsub.ChenilePub chenilePub,

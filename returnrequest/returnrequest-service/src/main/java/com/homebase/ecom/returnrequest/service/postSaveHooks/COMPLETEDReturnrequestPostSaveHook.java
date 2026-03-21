@@ -19,10 +19,10 @@ public class COMPLETEDReturnrequestPostSaveHook implements PostSaveHook<Returnre
 
     private static final Logger log = LoggerFactory.getLogger(COMPLETEDReturnrequestPostSaveHook.class);
 
-    @Autowired(required = false)
+    @Autowired
     private InventoryPort inventoryPort;
 
-    @Autowired(required = false)
+    @Autowired
     private NotificationPort notificationPort;
 
     @Autowired

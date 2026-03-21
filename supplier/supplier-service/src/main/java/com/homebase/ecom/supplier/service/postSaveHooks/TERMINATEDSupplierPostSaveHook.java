@@ -21,10 +21,10 @@ public class TERMINATEDSupplierPostSaveHook implements PostSaveHook<Supplier> {
 
     private static final Logger log = LoggerFactory.getLogger(TERMINATEDSupplierPostSaveHook.class);
 
-    @Autowired(required = false)
+    @Autowired
     private SupplierEventPublisher supplierEventPublisher;
 
-    @Autowired(required = false)
+    @Autowired
     private NotificationPort notificationPort;
 
     @Override

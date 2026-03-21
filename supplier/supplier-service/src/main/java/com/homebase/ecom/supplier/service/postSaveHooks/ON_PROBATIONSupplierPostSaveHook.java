@@ -18,7 +18,7 @@ public class ON_PROBATIONSupplierPostSaveHook implements PostSaveHook<Supplier> 
 
     private static final Logger log = LoggerFactory.getLogger(ON_PROBATIONSupplierPostSaveHook.class);
 
-    @Autowired(required = false)
+    @Autowired
     private NotificationPort notificationPort;
 
     @Override

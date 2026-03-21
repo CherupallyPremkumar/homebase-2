@@ -21,7 +21,7 @@ public class APPROVEDReturnrequestPostSaveHook implements PostSaveHook<Returnreq
     @Autowired
     private ReturnRequestEventPublisher eventPublisher;
 
-    @Autowired(required = false)
+    @Autowired
     private NotificationPort notificationPort;
 
     @Override

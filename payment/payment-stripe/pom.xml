@@ -17,7 +17,7 @@
     <dependencies>
         <dependency>
             <groupId>com.homebase.ecom</groupId>
-            <artifactId>payment-common</artifactId>
+            <artifactId>payment-infrastructure</artifactId>
         </dependency>
         <dependency>
             <groupId>com.homebase.ecom</groupId>

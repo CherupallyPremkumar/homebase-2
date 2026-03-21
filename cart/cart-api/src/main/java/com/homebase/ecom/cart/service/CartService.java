@@ -17,4 +17,10 @@ public interface CartService {
     CartDto getActiveCartForCustomer(String customerId);
 
     CartDto proceedById(String cartId, String eventId, Object payload);
+
+    /**
+     * Handles incoming cross-BC events (checkout, inventory, product, promo).
+     * Parses the event, identifies affected carts, and triggers STM transitions.
+     */
+    void onExternalEvent(String eventPayload);
 }

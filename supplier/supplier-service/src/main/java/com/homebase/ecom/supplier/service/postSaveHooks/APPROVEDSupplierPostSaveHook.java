@@ -22,10 +22,10 @@ public class APPROVEDSupplierPostSaveHook implements PostSaveHook<Supplier> {
 
     private static final Logger log = LoggerFactory.getLogger(APPROVEDSupplierPostSaveHook.class);
 
-    @Autowired(required = false)
+    @Autowired
     private SupplierEventPublisher supplierEventPublisher;
 
-    @Autowired(required = false)
+    @Autowired
     private NotificationPort notificationPort;
 
     @Override

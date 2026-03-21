@@ -17,7 +17,7 @@ public class UNDER_MODERATIONReviewPostSaveHook implements PostSaveHook<Review> 
 
     private static final Logger log = LoggerFactory.getLogger(UNDER_MODERATIONReviewPostSaveHook.class);
 
-    @Autowired(required = false)
+    @Autowired
     private NotificationPort notificationPort;
 
     @Override

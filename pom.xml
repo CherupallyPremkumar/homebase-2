@@ -40,7 +40,6 @@
 
         <!-- Layer 1: Config (depended on by most modules for cconfig validation) -->
         <module>config</module>
-
         <!-- Layer 2: Domain modules (independent bounded contexts) -->
         <module>user</module>
         <module>product</module>

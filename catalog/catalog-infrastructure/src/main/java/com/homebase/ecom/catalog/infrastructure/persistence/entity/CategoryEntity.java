@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 /**
  * CategoryEntity - JPA Entity for Persistence
  */
-@Entity
+@Entity(name = "CatalogCategoryEntity")
 @Table(name = "catalog_categories")
 public class CategoryEntity extends BaseJpaEntity {
 

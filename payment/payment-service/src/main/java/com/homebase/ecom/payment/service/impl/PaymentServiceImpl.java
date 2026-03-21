@@ -1,13 +1,13 @@
 package com.homebase.ecom.payment.service.impl;
 
-import com.homebase.ecom.payment.domain.PaymentStatus;
-import com.homebase.ecom.payment.domain.PaymentTransaction;
-import com.homebase.ecom.payment.domain.RefundRequestStatus;
+import com.homebase.ecom.payment.infrastructure.enums.PaymentStatus;
+import com.homebase.ecom.payment.infrastructure.persistence.entity.PaymentTransaction;
+import com.homebase.ecom.payment.infrastructure.enums.RefundRequestStatus;
+import com.homebase.ecom.payment.infrastructure.persistence.repository.PaymentTransactionRepository;
+import com.homebase.ecom.payment.infrastructure.persistence.repository.RefundRequestRepository;
 import com.homebase.ecom.payment.dto.CheckoutSessionRequest;
 import com.homebase.ecom.payment.dto.CheckoutSessionResponse;
 import com.homebase.ecom.payment.gateway.PaymentGatewayFactory;
-import com.homebase.ecom.payment.repository.PaymentTransactionRepository;
-import com.homebase.ecom.payment.repository.RefundRequestRepository;
 import com.homebase.ecom.payment.ledger.service.LedgerService;
 import com.homebase.ecom.shared.event.EventEnvelope;
 import com.homebase.ecom.shared.Money;
@@ -20,7 +20,6 @@ import com.homebase.ecom.shared.event.PaymentSessionExpiredEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -29,7 +28,6 @@ import com.homebase.ecom.cconfig.sdk.CconfigClient;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Service
 public class PaymentServiceImpl {
 
     private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.class);

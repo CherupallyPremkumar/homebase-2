@@ -2,11 +2,7 @@ package com.homebase.ecom.offer.service.configuration;
 
 import com.homebase.ecom.offer.api.OfferService;
 import com.homebase.ecom.offer.domain.model.Offer;
-import com.homebase.ecom.offer.domain.port.NotificationPort;
 import com.homebase.ecom.offer.domain.port.OfferRepository;
-import com.homebase.ecom.offer.domain.port.PricingPort;
-import com.homebase.ecom.offer.infrastructure.adapter.NotificationAdapter;
-import com.homebase.ecom.offer.infrastructure.adapter.PricingAdapter;
 import com.homebase.ecom.offer.infrastructure.persistence.ChenileOfferEntityStore;
 import com.homebase.ecom.offer.infrastructure.persistence.adapter.OfferJpaRepository;
 import com.homebase.ecom.offer.infrastructure.persistence.adapter.OfferRepositoryImpl;
@@ -14,6 +10,9 @@ import com.homebase.ecom.offer.infrastructure.persistence.mapper.OfferMapper;
 import com.homebase.ecom.offer.service.cmds.*;
 import com.homebase.ecom.offer.service.event.OfferEventHandler;
 import com.homebase.ecom.offer.service.impl.OfferServiceImpl;
+import com.homebase.ecom.offer.domain.port.NotificationPort;
+import com.homebase.ecom.offer.domain.port.OfferEventPublisherPort;
+import com.homebase.ecom.offer.domain.port.PricingPort;
 import com.homebase.ecom.offer.service.postSaveHooks.*;
 import com.homebase.ecom.offer.service.validator.OfferPolicyValidator;
 import org.chenile.stm.*;
@@ -58,15 +57,7 @@ public class OfferConfiguration {
     }
 
     // Item 12: Hexagonal ports / adapters
-    @Bean
-    public PricingPort pricingPort() {
-        return new PricingAdapter();
-    }
-
-    @Bean
-    public NotificationPort notificationPort() {
-        return new NotificationAdapter();
-    }
+    // Wired in OfferInfrastructureConfiguration (offer-infrastructure module)
 
     // ════════════════════════════════════════════════════════════════════════
     // STM Infrastructure
@@ -246,18 +237,23 @@ public class OfferConfiguration {
     }
 
     @Bean
-    APPROVEDOfferPostSaveHook offerAPPROVEDPostSaveHook() {
-        return new APPROVEDOfferPostSaveHook();
+    APPROVEDOfferPostSaveHook offerAPPROVEDPostSaveHook(
+            @org.springframework.beans.factory.annotation.Autowired(required = false) NotificationPort notificationPort) {
+        return new APPROVEDOfferPostSaveHook(notificationPort);
     }
 
     @Bean
-    LIVEOfferPostSaveHook offerLIVEPostSaveHook() {
-        return new LIVEOfferPostSaveHook();
+    LIVEOfferPostSaveHook offerLIVEPostSaveHook(
+            @org.springframework.beans.factory.annotation.Autowired(required = false) PricingPort pricingPort,
+            OfferEventPublisherPort eventPublisher) {
+        return new LIVEOfferPostSaveHook(pricingPort, eventPublisher);
     }
 
     @Bean
-    EXPIREDOfferPostSaveHook offerEXPIREDPostSaveHook() {
-        return new EXPIREDOfferPostSaveHook();
+    EXPIREDOfferPostSaveHook offerEXPIREDPostSaveHook(
+            @org.springframework.beans.factory.annotation.Autowired(required = false) PricingPort pricingPort,
+            OfferEventPublisherPort eventPublisher) {
+        return new EXPIREDOfferPostSaveHook(pricingPort, eventPublisher);
     }
 
     @Bean
@@ -266,13 +262,17 @@ public class OfferConfiguration {
     }
 
     @Bean
-    REJECTEDOfferPostSaveHook offerREJECTEDPostSaveHook() {
-        return new REJECTEDOfferPostSaveHook();
+    REJECTEDOfferPostSaveHook offerREJECTEDPostSaveHook(
+            @org.springframework.beans.factory.annotation.Autowired(required = false) NotificationPort notificationPort) {
+        return new REJECTEDOfferPostSaveHook(notificationPort);
     }
 
     @Bean
-    SUSPENDEDOfferPostSaveHook offerSUSPENDEDPostSaveHook() {
-        return new SUSPENDEDOfferPostSaveHook();
+    SUSPENDEDOfferPostSaveHook offerSUSPENDEDPostSaveHook(
+            @org.springframework.beans.factory.annotation.Autowired(required = false) NotificationPort notificationPort,
+            @org.springframework.beans.factory.annotation.Autowired(required = false) PricingPort pricingPort,
+            OfferEventPublisherPort eventPublisher) {
+        return new SUSPENDEDOfferPostSaveHook(notificationPort, pricingPort, eventPublisher);
     }
 
     // ════════════════════════════════════════════════════════════════════════
@@ -310,7 +310,6 @@ public class OfferConfiguration {
     // ════════════════════════════════════════════════════════════════════════
 
     @Bean("offerEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     OfferEventHandler offerEventService(
             OfferRepository offerRepository,
             @Qualifier("_offerStateEntityService_") StateEntityServiceImpl<Offer> offerStateEntityService,

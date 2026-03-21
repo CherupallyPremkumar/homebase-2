@@ -286,7 +286,6 @@ public class SupportConfiguration {
     // Chenile-Kafka Event Handler
 
     @Bean("supportEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     SupportEventHandler supportEventService(
             @Qualifier("_supportStateEntityService_") StateEntityServiceImpl<SupportTicket> supportStateEntityService,
             org.chenile.pubsub.ChenilePub chenilePub,

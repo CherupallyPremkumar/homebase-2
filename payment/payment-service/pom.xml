@@ -15,6 +15,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.homebase.ecom</groupId>
+            <artifactId>payment-infrastructure</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.homebase.ecom.shared</groupId>
             <artifactId>shared-api</artifactId>
         </dependency>
@@ -57,6 +61,11 @@
         <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>chenile-security</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>security-interceptor</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

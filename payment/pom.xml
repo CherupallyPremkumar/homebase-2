@@ -16,7 +16,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>payment-common</module>
+        <module>payment-api</module>
+        <module>payment-domain</module>
+        <module>payment-infrastructure</module>
         <module>payment-gateway-api</module>
         <module>payment-stripe</module>
         <module>payment-razorpay</module>
@@ -28,17 +30,25 @@
         <module>payment-query</module>
     </modules>
 
-
     <properties>
         <razorpay.version>${revision}</razorpay.version>
     </properties>
 
-    
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>com.homebase.ecom</groupId>
-                <artifactId>payment-common</artifactId>
+                <artifactId>payment-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>payment-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom</groupId>
+                <artifactId>payment-infrastructure</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
@@ -74,5 +84,3 @@
         </dependencies>
     </dependencyManagement>
 </project>
-
-

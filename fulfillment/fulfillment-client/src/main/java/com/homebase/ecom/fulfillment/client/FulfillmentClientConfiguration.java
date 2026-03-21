@@ -14,7 +14,7 @@ public class FulfillmentClientConfiguration {
             "_fulfillmentStateEntityService_",
             null,
             ProxyBuilder.ProxyMode.COMPUTE_DYNAMICALLY,
-            null
+            "http://localhost:8080"
         );
     }
 }

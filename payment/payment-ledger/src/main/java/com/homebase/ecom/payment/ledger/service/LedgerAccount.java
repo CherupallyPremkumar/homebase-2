@@ -1,4 +1,4 @@
-package com.homebase.ecom.payment.domain;
+package com.homebase.ecom.payment.ledger.service;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;

@@ -3,6 +3,7 @@ package com.homebase.ecom.product.service.event;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import com.homebase.ecom.product.domain.model.Product;
+import com.homebase.ecom.product.domain.port.ProductRepository;
 import com.homebase.ecom.shared.event.EventEnvelope;
 import com.homebase.ecom.shared.event.KafkaTopics;
 import com.homebase.ecom.shared.event.ProductArchivedEvent;
@@ -24,6 +25,7 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,14 +46,17 @@ public class ProductEventHandler {
     private static final Logger log = LoggerFactory.getLogger(ProductEventHandler.class);
 
     private final StateEntityServiceImpl<Product> productStateEntityService;
+    private final ProductRepository productRepository;
     private final ChenilePub chenilePub;
     private final ObjectMapper objectMapper;
 
     public ProductEventHandler(
             @Qualifier("_productStateEntityService_") StateEntityServiceImpl<Product> productStateEntityService,
+            ProductRepository productRepository,
             ChenilePub chenilePub,
             ObjectMapper objectMapper) {
         this.productStateEntityService = productStateEntityService;
+        this.productRepository = productRepository;
         this.chenilePub = chenilePub;
         this.objectMapper = objectMapper;
     }
@@ -100,16 +105,64 @@ public class ProductEventHandler {
         }
     }
 
+    @Transactional
     private void onSupplierSuspended(SupplierSuspendedEvent event) {
         log.info("SupplierSuspendedEvent — supplierId={}, reason={}",
                 event.getSupplierId(), event.getReason());
         // TODO: query all PUBLISHED products by supplierId, disable each via STM
+        List<Product> publishedProducts = productRepository.findBySupplierIdAndStateId(
+                event.getSupplierId(), "PUBLISHED");
+        log.info("Found {} PUBLISHED products for suspended supplier {}",
+                publishedProducts.size(), event.getSupplierId());
+
+        for (Product product : publishedProducts) {
+            try {
+                Map<String, Object> payload = new HashMap<>();
+                payload.put("disableReason", "Supplier suspended: " + event.getReason());
+                productStateEntityService.processById(product.getId(), "disableProduct", payload);
+                log.info("Product {} disabled due to supplier {} suspension.",
+                        product.getId(), event.getSupplierId());
+            } catch (RuntimeException e) {
+                log.warn("Idempotency: product {} already disabled (possible replay). Skipping. Detail: {}",
+                        product.getId(), e.getMessage());
+            } catch (Exception e) {
+                log.error("Failed to disable product {} for suspended supplier {}.",
+                        product.getId(), event.getSupplierId(), e);
+            }
+        }
     }
 
+    @Transactional
     private void onSupplierBlacklisted(SupplierBlacklistedEvent event) {
         log.warn("SupplierBlacklistedEvent — supplierId={}, reason={}",
                 event.getSupplierId(), event.getReason());
         // TODO: query all products by supplierId, discontinue each via STM
+        List<Product> supplierProducts = productRepository.findBySupplierId(event.getSupplierId());
+        log.info("Found {} products for blacklisted supplier {}",
+                supplierProducts.size(), event.getSupplierId());
+
+        for (Product product : supplierProducts) {
+            String currentState = product.getCurrentState() != null
+                    ? product.getCurrentState().getStateId() : null;
+            // Skip products already in terminal states
+            if ("DISCONTINUED".equals(currentState) || "RECALLED".equals(currentState)) {
+                log.debug("Product {} already in state {}, skipping.", product.getId(), currentState);
+                continue;
+            }
+            try {
+                Map<String, Object> payload = new HashMap<>();
+                payload.put("discontinueReason", "Supplier blacklisted: " + event.getReason());
+                productStateEntityService.processById(product.getId(), "discontinueProduct", payload);
+                log.info("Product {} discontinued due to supplier {} blacklisting.",
+                        product.getId(), event.getSupplierId());
+            } catch (RuntimeException e) {
+                log.warn("Idempotency: product {} already discontinued (possible replay). Skipping. Detail: {}",
+                        product.getId(), e.getMessage());
+            } catch (Exception e) {
+                log.error("Failed to discontinue product {} for blacklisted supplier {}.",
+                        product.getId(), event.getSupplierId(), e);
+            }
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════

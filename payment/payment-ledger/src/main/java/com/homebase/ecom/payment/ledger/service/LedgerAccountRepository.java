@@ -1,12 +1,9 @@
-package com.homebase.ecom.payment.repository;
+package com.homebase.ecom.payment.ledger.service;
 
-import com.homebase.ecom.payment.domain.LedgerAccount;
+import com.homebase.ecom.payment.ledger.service.LedgerAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 
-@Repository
 public interface LedgerAccountRepository extends JpaRepository<LedgerAccount, String> {
 
     Optional<LedgerAccount> findByName(String name);

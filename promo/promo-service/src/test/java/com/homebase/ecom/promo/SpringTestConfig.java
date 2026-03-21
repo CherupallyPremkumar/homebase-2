@@ -1,7 +1,9 @@
 package com.homebase.ecom.promo;
 
+import com.homebase.ecom.promo.port.PromoEventPublisherPort;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ActiveProfiles;
@@ -15,4 +17,21 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @ActiveProfiles("unittest")
 public class SpringTestConfig {
 
+    /**
+     * Stub PromoEventPublisherPort for unit tests — no-op, does not publish to Kafka.
+     */
+    @Bean
+    PromoEventPublisherPort promoEventPublisherPort() {
+        return new PromoEventPublisherPort() {
+            @Override
+            public void publishPromoActivated(com.homebase.ecom.promo.model.Coupon coupon) {
+                // no-op in tests
+            }
+
+            @Override
+            public void publishPromoExpired(com.homebase.ecom.promo.model.Coupon coupon) {
+                // no-op in tests
+            }
+        };
+    }
 }

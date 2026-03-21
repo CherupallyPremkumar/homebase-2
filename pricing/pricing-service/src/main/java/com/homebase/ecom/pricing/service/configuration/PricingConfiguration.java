@@ -12,10 +12,10 @@ import com.homebase.ecom.pricing.domain.port.PriceLockPort;
 import com.homebase.ecom.pricing.domain.port.TaxCalculationPort;
 import com.homebase.ecom.pricing.domain.service.IHashCalculator;
 import com.homebase.ecom.pricing.domain.service.ILockTokenGenerator;
+import com.homebase.ecom.pricing.infrastructure.integration.TaxCalculationAdapter;
 import com.homebase.ecom.pricing.service.PricingPolicyValidator;
 import com.homebase.ecom.pricing.service.PricingServiceImpl;
 import com.homebase.ecom.pricing.service.command.*;
-import com.homebase.ecom.shared.Money;
 import org.chenile.owiz.OrchExecutor;
 import org.chenile.owiz.config.impl.XmlOrchConfigurator;
 import org.chenile.owiz.impl.OrchExecutorImpl;
@@ -26,13 +26,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Pricing service layer configuration.
  * Wires OWIZ pipeline, commands, and service implementation.
- * Only references domain ports/interfaces — never infrastructure classes.
- * Stub adapters provided here as fallbacks via @ConditionalOnMissingBean.
+ * Port adapters are provided by PricingInfrastructureConfiguration.
+ * TaxCalculationPort is wired here because it needs PricingPolicyValidator.
  */
 @Configuration
 public class PricingConfiguration {
@@ -144,40 +143,22 @@ public class PricingConfiguration {
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // Stub Adapters — fallbacks when real modules aren't deployed
-    // Replaced by real adapters from PricingInfrastructureConfiguration
+    // Tax Calculation Adapter
+    // Wired here because it needs PricingPolicyValidator (service-layer bean).
+    // Other port adapters are wired in PricingInfrastructureConfiguration.
     // ═══════════════════════════════════════════════════════════════════
 
     @Bean
-    @ConditionalOnMissingBean(PromoValidationPort.class)
-    PromoValidationPort defaultPromoValidationPort() {
-        return (code, cartTotal, userId) ->
-                PromoValidationPort.CouponResult.invalid(code, "Promo service not available");
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(CustomerTierPort.class)
-    CustomerTierPort defaultCustomerTierPort() {
-        return userId -> "REGULAR";
-    }
-
-    /**
-     * Stub: Offer module not yet connected.
-     * Returns empty — ResolveBasePricesCommand falls back to cart snapshot basePrice.
-     * Replace with real OfferPriceAdapter in infrastructure when Offer module is ready.
-     */
-    @Bean
-    @ConditionalOnMissingBean(OfferPricePort.class)
-    OfferPricePort defaultOfferPricePort() {
-        return (variantId, sellerId, currency) -> Optional.empty();
-    }
-
-    @Bean
     @ConditionalOnMissingBean(TaxCalculationPort.class)
-    TaxCalculationPort defaultTaxCalculationPort(PricingPolicyValidator v) {
-        return (taxableAmount, region, category) ->
-                Money.of(Math.round((double) taxableAmount.getAmount() * v.getDefaultGstRate() / 100), taxableAmount.getCurrency());
+    TaxCalculationPort pricingTaxCalculationPort(PricingPolicyValidator v) {
+        return new TaxCalculationAdapter(v::getGstRate);
     }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // DecisionService Fallback
+    // Safety net when rules-engine-client is not loaded (e.g., unit tests).
+    // In production, RulesEngineClientConfiguration provides the real bean.
+    // ═══════════════════════════════════════════════════════════════════
 
     @Bean
     @ConditionalOnMissingBean(DecisionService.class)

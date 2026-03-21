@@ -1,7 +1,7 @@
 package com.homebase.ecom.batch;
 
 import com.homebase.ecom.batch.dto.RazorpaySettlementRow;
-import com.homebase.ecom.payment.domain.ReconciliationMismatch;
+import com.homebase.ecom.payment.infrastructure.persistence.entity.ReconciliationMismatch;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;

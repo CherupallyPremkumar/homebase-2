@@ -16,7 +16,7 @@ import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.payment.domain.model.Payment;
 import com.homebase.ecom.payment.infrastructure.persistence.mapper.PaymentMapper;
-import com.homebase.ecom.payment.infrastructure.persistence.adapter.PaymentJpaRepository;
+import com.homebase.ecom.payment.infrastructure.persistence.repository.PaymentJpaRepository;
 import com.homebase.ecom.payment.infrastructure.persistence.adapter.PaymentQueryAdapter;
 import com.homebase.ecom.payment.infrastructure.persistence.ChenilePaymentEntityStore;
 import com.homebase.ecom.payment.service.cmds.*;
@@ -205,6 +205,11 @@ public class PaymentConfiguration {
     // Convention: "payment" + eventId + "Action"
 
     @Bean
+    InitiatePaymentAction paymentCreateAction(PaymentPolicyValidator paymentPolicyValidator) {
+        return new InitiatePaymentAction(paymentPolicyValidator);
+    }
+
+    @Bean
     ProcessPaymentAction paymentProcessAction() {
         return new ProcessPaymentAction();
     }
@@ -220,8 +225,8 @@ public class PaymentConfiguration {
     }
 
     @Bean
-    RetryPaymentAction paymentRetryAction() {
-        return new RetryPaymentAction();
+    RetryPaymentAction paymentRetryAction(PaymentPolicyValidator paymentPolicyValidator) {
+        return new RetryPaymentAction(paymentPolicyValidator);
     }
 
     @Bean
@@ -289,42 +294,54 @@ public class PaymentConfiguration {
         return new CollectCodAction();
     }
 
+    @Bean
+    InitiateCodAction paymentInitiateCodAction() {
+        return new InitiateCodAction();
+    }
+
     // ── PostSaveHooks ──────────────────────────────────────────────────────
     // Convention: "payment" + STATE_ID + "PostSaveHook"
 
     @Bean
-    SUCCEEDEDPaymentPostSaveHook paymentSUCCEEDEDPostSaveHook() {
-        return new SUCCEEDEDPaymentPostSaveHook();
+    SUCCEEDEDPaymentPostSaveHook paymentSUCCEEDEDPostSaveHook(
+            com.homebase.ecom.payment.domain.port.PaymentEventPublisherPort eventPublisher) {
+        return new SUCCEEDEDPaymentPostSaveHook(eventPublisher);
     }
 
     @Bean
-    FAILEDPaymentPostSaveHook paymentFAILEDPostSaveHook() {
-        return new FAILEDPaymentPostSaveHook();
+    FAILEDPaymentPostSaveHook paymentFAILEDPostSaveHook(
+            com.homebase.ecom.payment.domain.port.PaymentEventPublisherPort eventPublisher,
+            @Autowired(required = false) com.homebase.ecom.payment.domain.port.NotificationPort notificationPort) {
+        return new FAILEDPaymentPostSaveHook(eventPublisher, notificationPort);
     }
 
     @Bean
-    REFUNDEDPaymentPostSaveHook paymentREFUNDEDPostSaveHook() {
-        return new REFUNDEDPaymentPostSaveHook();
+    REFUNDEDPaymentPostSaveHook paymentREFUNDEDPostSaveHook(
+            com.homebase.ecom.payment.domain.port.PaymentEventPublisherPort eventPublisher,
+            @Autowired(required = false) com.homebase.ecom.payment.domain.port.NotificationPort notificationPort) {
+        return new REFUNDEDPaymentPostSaveHook(eventPublisher, notificationPort);
     }
 
     @Bean
-    ABANDONEDPaymentPostSaveHook paymentABANDONEDPostSaveHook() {
-        return new ABANDONEDPaymentPostSaveHook();
+    ABANDONEDPaymentPostSaveHook paymentABANDONEDPostSaveHook(
+            com.homebase.ecom.payment.domain.port.PaymentEventPublisherPort eventPublisher) {
+        return new ABANDONEDPaymentPostSaveHook(eventPublisher);
     }
 
     // ── Hexagonal Port Adapters ───────────────────────────────────────────
 
-    @Bean
+    @Bean("paymentNotificationPort")
     @org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean(com.homebase.ecom.payment.domain.port.NotificationPort.class)
-    com.homebase.ecom.payment.domain.port.NotificationPort notificationPort() {
+    com.homebase.ecom.payment.domain.port.NotificationPort paymentNotificationPort() {
         return new com.homebase.ecom.payment.infrastructure.adapter.LoggingNotificationAdapter();
     }
 
     // ── Policy Validator ───────────────────────────────────────────────────
 
     @Bean
-    PaymentPolicyValidator paymentPolicyValidator() {
-        return new PaymentPolicyValidator();
+    PaymentPolicyValidator paymentPolicyValidator(
+            @Autowired(required = false) com.homebase.ecom.cconfig.sdk.CconfigClient cconfigClient) {
+        return new PaymentPolicyValidator(cconfigClient);
     }
 
     // ── ACL: Event authorities supplier ────────────────────────────────────
@@ -339,7 +356,6 @@ public class PaymentConfiguration {
     // ── Kafka Event Handler ────────────────────────────────────────────────
 
     @Bean("paymentEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     PaymentEventHandler paymentEventService(
             PaymentQueryAdapter paymentQueryAdapter,
             @Qualifier("_paymentStateEntityService_") StateEntityServiceImpl<Payment> paymentStateEntityService,

@@ -15,7 +15,7 @@ import java.util.Base64;
 
 @SpringBootApplication
 @ComponentScan(basePackages = { "com.homebase.ecom",
-		"org.chenile","org.chenile.service.registry.configuration","com.homebase.ecom.cconfig.configuration" })
+		"org.chenile","org.chenile.service.registry.configuration","com.homebase.ecom.cconfig.configuration" ,"com.homebase.ecom.pricing.infrastructure.configuration"})
 @EntityScan(basePackages = { "com.homebase.ecom", "org.chenile.service.registry.model","com.homebase.ecom.cconfig.model" })
 @EnableJpaRepositories(basePackages = { "com.homebase.ecom", "org.chenile.service.registry.configuration.dao","com.homebase.ecom.cconfig.configuration.dao" })
 @EnableTransactionManagement
@@ -23,7 +23,9 @@ public class BuildApplication extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
 		decodeBase64EnvVarsToFiles();
-		SpringApplication.run(BuildApplication.class, args);
+		SpringApplication app = new SpringApplication(BuildApplication.class);
+		app.setAllowBeanDefinitionOverriding(true);
+		app.run(args);
 	}
 
 	private static void decodeBase64EnvVarsToFiles() {

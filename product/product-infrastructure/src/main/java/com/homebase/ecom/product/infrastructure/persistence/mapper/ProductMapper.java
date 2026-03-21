@@ -30,6 +30,7 @@ public class ProductMapper {
         product.setSlug(entity.getSlug());
         product.setMetaTitle(entity.getMetaTitle());
         product.setMetaDescription(entity.getMetaDescription());
+        product.setSupplierId(entity.getSupplierId());
         product.setTags(entity.getTags() != null ? new ArrayList<>(entity.getTags()) : new ArrayList<>());
         product.setCurrentState(entity.getCurrentState());
         product.setTenant(entity.tenant);
@@ -93,6 +94,7 @@ public class ProductMapper {
         entity.setSlug(model.getSlug());
         entity.setMetaTitle(model.getMetaTitle());
         entity.setMetaDescription(model.getMetaDescription());
+        entity.setSupplierId(model.getSupplierId());
         entity.setTags(model.getTags() != null ? new ArrayList<>(model.getTags()) : new ArrayList<>());
         entity.setCurrentState(model.getCurrentState());
         entity.tenant = model.getTenant();
@@ -241,6 +243,7 @@ public class ProductMapper {
     public ProductEntity mergeEntity(Product incoming, ProductEntity existing) {
         if (incoming == null || existing == null) return existing;
 
+        if (incoming.getSupplierId() != null) existing.setSupplierId(incoming.getSupplierId());
         if (incoming.getName() != null) existing.setName(incoming.getName());
         if (incoming.getDescription() != null) existing.setDescription(incoming.getDescription());
         if (incoming.getShortDescription() != null) existing.setShortDescription(incoming.getShortDescription());

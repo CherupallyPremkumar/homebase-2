@@ -1,13 +1,8 @@
 package com.homebase.ecom.user.configuration;
 
 import com.homebase.ecom.user.domain.model.User;
-import com.homebase.ecom.user.domain.port.IdentityProviderPort;
-import com.homebase.ecom.user.domain.port.NotificationPort;
 import com.homebase.ecom.user.domain.port.UserEventPublisher;
 import com.homebase.ecom.user.domain.port.UserRepository;
-import com.homebase.ecom.user.infrastructure.adapter.IdentityProviderAdapter;
-import com.homebase.ecom.user.infrastructure.adapter.NotificationAdapter;
-import com.homebase.ecom.user.infrastructure.event.UserEventPublisherImpl;
 import com.homebase.ecom.user.infrastructure.persistence.adapter.UserJpaRepository;
 import com.homebase.ecom.user.infrastructure.persistence.adapter.UserRepositoryImpl;
 import com.homebase.ecom.user.infrastructure.persistence.mapper.UserMapper;
@@ -31,7 +26,6 @@ import org.chenile.workflow.service.activities.AreActivitiesComplete;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -51,21 +45,7 @@ public class UserConfiguration {
     public static final String PREFIX = "user";
 
     // --- Hexagonal Ports (Outbound) ---
-
-    @Bean
-    public UserEventPublisher userEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-        return new UserEventPublisherImpl(applicationEventPublisher);
-    }
-
-    @Bean
-    public IdentityProviderPort identityProviderPort() {
-        return new IdentityProviderAdapter();
-    }
-
-    @Bean
-    public NotificationPort notificationPort() {
-        return new NotificationAdapter();
-    }
+    // Wired in UserInfrastructureConfiguration (user-infrastructure module)
 
     // --- STM Infrastructure ---
 
@@ -293,7 +273,6 @@ public class UserConfiguration {
     // --- Kafka Event Handler (minimal consumer) ---
 
     @Bean("userEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     UserEventHandler userEventService() {
         return new UserEventHandler();
     }

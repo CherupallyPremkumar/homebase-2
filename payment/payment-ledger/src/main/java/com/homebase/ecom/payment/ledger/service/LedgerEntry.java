@@ -1,4 +1,4 @@
-package com.homebase.ecom.payment.domain;
+package com.homebase.ecom.payment.ledger.service;
 
 import com.homebase.ecom.shared.Money;
 import jakarta.persistence.*;

@@ -3,6 +3,7 @@ package com.homebase.ecom.promo.configuration;
 import com.homebase.ecom.promo.model.Coupon;
 import com.homebase.ecom.promo.service.cmds.*;
 import com.homebase.ecom.promo.service.event.PromoEventHandler;
+import com.homebase.ecom.promo.port.PromoEventPublisherPort;
 import com.homebase.ecom.promo.service.postSaveHooks.*;
 import com.homebase.ecom.promo.service.store.PromoEntityStore;
 import com.homebase.ecom.promo.service.validator.PromoPolicyValidator;
@@ -207,8 +208,8 @@ public class PromoConfiguration {
     }
 
     @Bean
-    ACTIVEPromoPostSaveHook promoACTIVEPostSaveHook() {
-        return new ACTIVEPromoPostSaveHook();
+    ACTIVEPromoPostSaveHook promoACTIVEPostSaveHook(PromoEventPublisherPort promoEventPublisherPort) {
+        return new ACTIVEPromoPostSaveHook(promoEventPublisherPort);
     }
 
     @Bean
@@ -217,8 +218,8 @@ public class PromoConfiguration {
     }
 
     @Bean
-    EXPIREDPromoPostSaveHook promoEXPIREDPostSaveHook() {
-        return new EXPIREDPromoPostSaveHook();
+    EXPIREDPromoPostSaveHook promoEXPIREDPostSaveHook(PromoEventPublisherPort promoEventPublisherPort) {
+        return new EXPIREDPromoPostSaveHook(promoEventPublisherPort);
     }
 
     @Bean
@@ -267,7 +268,6 @@ public class PromoConfiguration {
     // ===================== Kafka Event Handler (Item 10, 14) =====================
 
     @Bean("promoEventService")
-    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(org.chenile.pubsub.ChenilePub.class)
     PromoEventHandler promoEventService(
             @Qualifier("_promoStateEntityService_") StateEntityServiceImpl<Coupon> promoStateEntityService,
             tools.jackson.databind.ObjectMapper objectMapper) {

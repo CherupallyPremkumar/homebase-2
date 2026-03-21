@@ -1,19 +1,13 @@
 package com.homebase.ecom.settlement.service.postSaveHooks;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 import com.homebase.ecom.settlement.model.Settlement;
 import com.homebase.ecom.settlement.domain.port.NotificationPort;
-import com.homebase.ecom.shared.event.KafkaTopics;
-import org.chenile.pubsub.ChenilePub;
+import com.homebase.ecom.settlement.domain.port.SettlementEventPublisherPort;
 import org.chenile.stm.State;
 import org.chenile.workflow.model.TransientMap;
 import org.chenile.workflow.service.stmcmds.PostSaveHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Map;
 
 /**
  * Post-save hook for APPROVED state.
@@ -23,14 +17,14 @@ public class APPROVEDSettlementPostSaveHook implements PostSaveHook<Settlement> 
 
     private static final Logger log = LoggerFactory.getLogger(APPROVEDSettlementPostSaveHook.class);
 
-    @Autowired(required = false)
-    private NotificationPort notificationPort;
+    private final NotificationPort notificationPort;
+    private final SettlementEventPublisherPort eventPublisher;
 
-    @Autowired(required = false)
-    private ChenilePub chenilePub;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    public APPROVEDSettlementPostSaveHook(NotificationPort notificationPort,
+                                           SettlementEventPublisherPort eventPublisher) {
+        this.notificationPort = notificationPort;
+        this.eventPublisher = eventPublisher;
+    }
 
     @Override
     public void execute(State startState, State endState, Settlement settlement, TransientMap map) {
@@ -43,20 +37,7 @@ public class APPROVEDSettlementPostSaveHook implements PostSaveHook<Settlement> 
         }
 
         // Publish SETTLEMENT_CALCULATED event to Kafka
-        if (chenilePub != null) {
-            try {
-                SettlementStateChangeEvent event = new SettlementStateChangeEvent(
-                        settlement.getId(),
-                        settlement.getSupplierId(),
-                        startState != null ? startState.getStateId() : null,
-                        "APPROVED",
-                        "Settlement calculated and approved. Net: " + settlement.getNetAmount());
-                String body = objectMapper.writeValueAsString(event);
-                chenilePub.publish(KafkaTopics.SETTLEMENT_EVENTS, body,
-                        Map.of("key", settlement.getId(), "eventType", "SETTLEMENT_CALCULATED"));
-            } catch (JacksonException e) {
-                log.error("Failed to publish SETTLEMENT_CALCULATED event for settlement {}", settlement.getId(), e);
-            }
-        }
+        String fromState = startState != null ? startState.getStateId() : null;
+        eventPublisher.publishSettlementApproved(settlement, fromState);
     }
 }

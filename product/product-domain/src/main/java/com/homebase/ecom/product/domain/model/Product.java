@@ -24,6 +24,7 @@ public class Product extends AbstractExtendedStateEntity
     private List<ProductMedia> media = new ArrayList<>();
     private List<Variant> variants = new ArrayList<>();
     private List<ProductActivityLog> activities = new ArrayList<>();
+    private String supplierId;
     private String tenant;
     private TransientMap transientMap = new TransientMap();
 
@@ -96,6 +97,9 @@ public class Product extends AbstractExtendedStateEntity
         activities.add(log);
         return log;
     }
+
+    public String getSupplierId() { return supplierId; }
+    public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
 
     public String getTenant() { return tenant; }
     public void setTenant(String tenant) { this.tenant = tenant; }

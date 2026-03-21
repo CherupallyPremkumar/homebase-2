@@ -24,6 +24,8 @@
     <module>cart-api</module>
     <module>cart-domain</module>
     <module>cart-infrastructure</module>
+    <module>cart-invm</module>
+    <module>cart-kafka</module>
     <module>cart-service</module>
     <module>cart-query</module>
     <module>cart-jobs</module>
@@ -58,6 +60,16 @@
       <dependency>
         <groupId>com.homebase.ecom.cart</groupId>
         <artifactId>cart-infrastructure</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.cart</groupId>
+        <artifactId>cart-invm</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.cart</groupId>
+        <artifactId>cart-kafka</artifactId>
         <version>${revision}</version>
       </dependency>
       <dependency>

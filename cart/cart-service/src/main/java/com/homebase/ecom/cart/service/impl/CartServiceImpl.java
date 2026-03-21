@@ -2,7 +2,8 @@ package com.homebase.ecom.cart.service.impl;
 
 import com.homebase.ecom.cart.dto.CartDto;
 import com.homebase.ecom.cart.dto.CreateCartPayload;
-import com.homebase.ecom.cart.infrastructure.mapper.CartDtoMapper;
+import com.homebase.ecom.cart.service.mapper.CartDtoMapper;
+import com.homebase.ecom.cart.service.handler.CartExternalEventHandler;
 import com.homebase.ecom.cart.model.Cart;
 import com.homebase.ecom.cart.service.CartService;
 import org.chenile.stm.STM;
@@ -14,11 +15,14 @@ import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 public class CartServiceImpl extends HmStateEntityServiceImpl<Cart> implements CartService {
 
     private final CartDtoMapper cartDtoMapper;
+    private final CartExternalEventHandler externalEventHandler;
 
     public CartServiceImpl(STM<Cart> stm, STMActionsInfoProvider stmActionsInfoProvider,
-                           EntityStore<Cart> entityStore, CartDtoMapper cartDtoMapper) {
+                           EntityStore<Cart> entityStore, CartDtoMapper cartDtoMapper,
+                           CartExternalEventHandler externalEventHandler) {
         super(stm, stmActionsInfoProvider, entityStore);
         this.cartDtoMapper = cartDtoMapper;
+        this.externalEventHandler = externalEventHandler;
     }
 
     @Override
@@ -41,6 +45,11 @@ public class CartServiceImpl extends HmStateEntityServiceImpl<Cart> implements C
     public CartDto getActiveCartForCustomer(String customerId) {
         // TODO: query entity store for active cart by customerId
         return null;
+    }
+
+    @Override
+    public void onExternalEvent(String eventPayload) {
+        externalEventHandler.handle(eventPayload, this);
     }
 
     @Override

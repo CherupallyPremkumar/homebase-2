@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Currency;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,9 +47,38 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         if (amount.getCurrency().equals(targetCurrency)) return amount;
 
         BigDecimal rate = getRate(amount.getCurrency(), targetCurrency);
-        long convertedAmount = BigDecimal.valueOf(amount.getAmount()).multiply(rate).longValue();
 
         // TODO: Rounding and scale based on target currency metadata
+        // Rates are defined in major units (e.g., 1 USD = 83.21 INR).
+        // Money stores amounts in smallest currency units (paise, cents, yen).
+        // To convert correctly across currencies with different fraction digits:
+        //   result_smallest = (source_smallest / source_divisor) * rate * target_divisor
+        // This ensures JPY (0 decimals), BHD (3 decimals), INR/USD (2 decimals) all convert correctly.
+        int sourceFractionDigits = getDefaultFractionDigits(amount.getCurrency());
+        int targetFractionDigits = getDefaultFractionDigits(targetCurrency);
+
+        BigDecimal sourceDivisor = BigDecimal.TEN.pow(sourceFractionDigits);
+        BigDecimal targetDivisor = BigDecimal.TEN.pow(targetFractionDigits);
+
+        // Convert: source smallest units → major units → target major units → target smallest units
+        long convertedAmount = BigDecimal.valueOf(amount.getAmount())
+                .multiply(rate)
+                .multiply(targetDivisor)
+                .divide(sourceDivisor, 0, RoundingMode.HALF_UP)
+                .longValueExact();
+
         return Money.of(convertedAmount, targetCurrency);
+    }
+
+    /**
+     * Returns the ISO 4217 default fraction digits for the given currency code.
+     * Falls back to 2 for unknown currencies.
+     */
+    private int getDefaultFractionDigits(String currencyCode) {
+        try {
+            return Currency.getInstance(currencyCode).getDefaultFractionDigits();
+        } catch (IllegalArgumentException e) {
+            return 2; // safe default
+        }
     }
 }
