@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <modules>
+        <module>demo-order-api</module>
+        <module>demo-order-domain</module>
+        <module>demo-order-infrastructure</module>
+        <module>demo-order-invm</module>
+        <module>demo-order-kafka</module>
+        <module>demo-order-service</module>
+        <module>demo-order-client</module>
+        <module>demo-order-app</module>
+    </modules>
+    <parent>
+        <groupId>com.homebase.ecom</groupId>
+        <artifactId>homebase-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.homebase.ecom.demoorder</groupId>
+    <artifactId>demo-order-parent</artifactId>
+    <name>demo-order-parent</name>
+    <description>Demo Order module — hexagonal architecture with separate submodules</description>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.homebase.ecom.demoorder</groupId>
+                <artifactId>demo-order-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.demoorder</groupId>
+                <artifactId>demo-order-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.demoorder</groupId>
+                <artifactId>demo-order-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.demoorder</groupId>
+                <artifactId>demo-order-invm</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.demoorder</groupId>
+                <artifactId>demo-order-kafka</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.demoorder</groupId>
+                <artifactId>demo-order-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.demoorder</groupId>
+                <artifactId>demo-order-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.demoorder</groupId>
+                <artifactId>demo-order-app</artifactId>
+                <version>${revision}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

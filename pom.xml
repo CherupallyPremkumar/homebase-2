@@ -77,6 +77,10 @@
         <!-- Layer 5: Cross-module UI queries -->
         <module>ui-query</module>
 
+        <!-- Demo/test modules -->
+        <module>demo-order</module>
+        <module>demo-notification</module>
+
         <!-- Layer 6: Final deployable (aggregates everything) -->
         <module>build</module>
     </modules>
