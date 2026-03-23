@@ -11,7 +11,7 @@
         Uses preConditions so this is safe to run alongside production changelogs.
     -->
 
-    <!-- Inventory Item: raw SQL to preserve camelCase "stateId"/"flowId" column names -->
+    <!-- Inventory Item: raw SQL to preserve camelCase state_id/flow_id column names -->
     <changeSet id="inventory-query-test-inventory-item" author="homebase-test">
         <preConditions onFail="MARK_RAN">
             <not><tableExists tableName="inventory_item"/></not>
@@ -37,8 +37,8 @@
                 status VARCHAR(50) DEFAULT 'AVAILABLE',
                 last_sale_at TIMESTAMP,
                 last_restock_at TIMESTAMP,
-                "stateId" VARCHAR(100),
-                "flowId" VARCHAR(100),
+                state_id VARCHAR(100),
+                flow_id VARCHAR(100),
                 version BIGINT DEFAULT 0,
                 created_time TIMESTAMP,
                 last_modified_time TIMESTAMP,

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from notification-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='create' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.notification.dto.CreateNotificationPayload"/>
+  <event-information eventId='queue' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.notification.dto.QueueNotificationPayload"/>
+  <event-information eventId='send' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.notification.dto.SendNotificationPayload"/>
+  <event-information eventId='markDelivered' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.notification.dto.MarkDeliveredNotificationPayload"/>
+  <event-information eventId='fail' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.notification.dto.FailNotificationPayload"/>
+  <event-information eventId='retry' meta-acls="SYSTEM,ADMIN" meta-bodyType="com.homebase.ecom.notification.dto.RetryNotificationPayload"/>
+  <event-information eventId='markBounced' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.notification.dto.MarkBouncedNotificationPayload"/>
+  <event-information eventId='unsubscribe' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.notification.dto.UnsubscribeNotificationPayload"/>
+
+  <flow id='notification-flow' default='true'>
+
+    <manual-state id='CREATED' initialState='true' meta-mainPath="true"
+                  description="Notification created, pending validation and queueing">
+      <on eventId='queue' newStateId='QUEUED' meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='QUEUED' meta-mainPath="true"
+                  description="Notification validated and queued for sending">
+      <on eventId='send' newStateId='SENDING' meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='SENDING' meta-mainPath="true"
+                  description="Notification being dispatched via channel adapter">
+      <on eventId='markDelivered' newStateId='SENT' meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='SENT' meta-mainPath="true"
+                  description="Notification successfully sent to recipient">
+      <on eventId='markDelivered' newStateId='DELIVERED' meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='DELIVERED' meta-mainPath="true"
+                  description="Notification confirmed delivered to recipient"/>
+
+    <manual-state id='FAILED'
+                  description="Notification delivery failed">
+      <on eventId='retry' newStateId='RETRY' meta-acls="SYSTEM,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='RETRY'
+                  description="Notification queued for retry delivery">
+      <on eventId='send' newStateId='SENDING' meta-acls="SYSTEM"/>
+      <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='BOUNCED'
+                  description="Notification permanently failed, all retries exhausted"/>
+
+    <manual-state id='UNSUBSCRIBED'
+                  description="Customer unsubscribed from notification channel"/>
+
+  </flow>
+</states>

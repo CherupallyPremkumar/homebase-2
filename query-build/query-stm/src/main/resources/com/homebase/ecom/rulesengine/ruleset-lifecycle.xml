@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from rules-engine-service. No componentName/conditions. -->
+<states>
+
+  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
+
+  <event-information eventId='submit'     meta-acls="ADMIN,POLICY_ADMIN"   meta-bodyType="com.homebase.ecom.rulesengine.api.dto.RuleSetEventPayload"/>
+  <event-information eventId='approve'    meta-acls="ADMIN"                meta-bodyType="com.homebase.ecom.rulesengine.api.dto.RuleSetEventPayload"/>
+  <event-information eventId='revert'     meta-acls="ADMIN,POLICY_ADMIN"   meta-bodyType="com.homebase.ecom.rulesengine.api.dto.RuleSetEventPayload"/>
+  <event-information eventId='activate'   meta-acls="ADMIN"                meta-bodyType="com.homebase.ecom.rulesengine.api.dto.RuleSetEventPayload"/>
+  <event-information eventId='deprecate'  meta-acls="ADMIN"                meta-bodyType="com.homebase.ecom.rulesengine.api.dto.RuleSetEventPayload"/>
+  <event-information eventId='deactivate' meta-acls="ADMIN"                meta-bodyType="com.homebase.ecom.rulesengine.api.dto.RuleSetEventPayload"/>
+
+  <flow id='ruleSet-flow' default='true'>
+
+    <status id='DRAFT' initialState='true' meta-mainPath="true"
+            description="New rule set, not yet submitted">
+      <on eventId='submit' newStateId='REVIEW' meta-mainPath="true" meta-acls="ADMIN,POLICY_ADMIN"/>
+      <on eventId='activate' newStateId='ACTIVE' meta-acls="ADMIN"/>
+    </status>
+
+    <status id='REVIEW' meta-mainPath="true"
+            description="Rule set under review">
+      <on eventId='approve' newStateId='ACTIVE' meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='revert' newStateId='DRAFT' meta-acls="ADMIN,POLICY_ADMIN"/>
+    </status>
+
+    <status id='ACTIVE' meta-mainPath="true"
+            description="Rule set is active and being enforced">
+      <on eventId='deprecate' newStateId='DEPRECATED' meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='deactivate' newStateId='DRAFT' meta-acls="ADMIN"/>
+    </status>
+
+    <status id='DEPRECATED'
+            description="Rule set is deprecated and no longer enforced">
+      <on eventId='activate' newStateId='ACTIVE' meta-acls="ADMIN"/>
+    </status>
+
+  </flow>
+</states>

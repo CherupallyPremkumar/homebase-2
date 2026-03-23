@@ -6,7 +6,7 @@ import com.homebase.ecom.support.infrastructure.persistence.entity.SupportTicket
 import com.homebase.ecom.support.infrastructure.persistence.entity.TicketMessageEntity;
 import com.homebase.ecom.support.infrastructure.persistence.mapper.SupportTicketMapper;
 import com.homebase.ecom.support.model.SupportTicket;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -1,0 +1,7 @@
+# Dev environment overlay
+# Usage: cd docker && docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+services:
+  keycloak:
+    command: start-dev --import-realm
+    volumes:
+      - ./keycloak/dev/homebase-realm.json:/opt/keycloak/data/import/homebase-realm.json

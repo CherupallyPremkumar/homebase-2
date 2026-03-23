@@ -4,7 +4,7 @@ import com.homebase.ecom.user.domain.model.User;
 import com.homebase.ecom.user.infrastructure.persistence.adapter.UserJpaRepository;
 import com.homebase.ecom.user.infrastructure.persistence.entity.UserJpaEntity;
 import com.homebase.ecom.user.infrastructure.persistence.mapper.UserMapper;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 /**
  * Bridges Chenile STM's EntityStore with JPA persistence for User.

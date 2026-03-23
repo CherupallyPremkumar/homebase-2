@@ -6,7 +6,7 @@ import org.chenile.stm.STM;
 import org.chenile.stm.impl.STMActionsInfoProvider;
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.dto.StateEntityServiceResponse;
-import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
+import com.homebase.ecom.core.workflow.HmStateEntityServiceImpl;
 
 /**
  * Custom state entity service for RuleSet.

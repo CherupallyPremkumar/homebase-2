@@ -1,0 +1,17 @@
+{
+    "policies": {
+        "gst": {
+            "defaultGstRate": 18,
+            "gstRateByCategory": {
+                "ELECTRONICS": 18,
+                "CLOTHING": 5,
+                "FOOD": 0,
+                "LUXURY": 28
+            }
+        },
+        "tcs": {
+            "tcsRatePercent": 1.0,
+            "tcsThresholdInr": 5000000
+        }
+    }
+}

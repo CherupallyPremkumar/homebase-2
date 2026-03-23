@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from inventory-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='inspectStock' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.InspectStockInventoryPayload"/>
+  <event-information eventId='approveStock' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.ApproveStockInventoryPayload"/>
+  <event-information eventId='rejectStock' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.RejectStockInventoryPayload"/>
+  <event-information eventId='damageFound' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.DamageFoundInventoryPayload"/>
+  <event-information eventId='allocateToWarehouse' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.AllocateToWarehouseInventoryPayload"/>
+  <event-information eventId='reserveStock' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.inventory.dto.ReserveStockInventoryPayload"/>
+  <event-information eventId='releaseReservedStock' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.inventory.dto.ReleaseReservedStockInventoryPayload"/>
+  <event-information eventId='soldAllReserved' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.inventory.dto.SoldAllReservedInventoryPayload"/>
+  <event-information eventId='sellAllStock' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.inventory.dto.SellAllStockInventoryPayload"/>
+  <event-information eventId='returnStock' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.inventory.dto.ReturnStockInventoryPayload"/>
+  <event-information eventId='returnDamaged' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.ReturnDamagedInventoryPayload"/>
+  <event-information eventId='restockArrive' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.inventory.dto.RestockArriveInventoryPayload"/>
+  <event-information eventId='repairDamageds' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.RepairDamagedsInventoryPayload"/>
+  <event-information eventId='discardDamaged' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.DiscardDamagedInventoryPayload"/>
+  <event-information eventId='returnToSupplier' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.ReturnToSupplierInventoryPayload"/>
+  <event-information eventId='repairDamaged' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.RepairDamagedInventoryPayload"/>
+  <event-information eventId='returnCompleted' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.ReturnCompletedInventoryPayload"/>
+  <event-information eventId='returnRejectedStock' meta-acls="WAREHOUSE" meta-bodyType="com.homebase.ecom.inventory.dto.ReturnRejectedStockInventoryPayload"/>
+
+  <flow id='inventory-flow' default='true'>
+
+    <manual-state id='STOCK_PENDING' initialState='true' meta-mainPath="true"
+                  description="Shipment received at dock, awaiting quality check">
+      <on eventId='inspectStock' newStateId='STOCK_INSPECTION' meta-mainPath="true" meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='STOCK_INSPECTION' meta-mainPath="true"
+                  description="Quality check in progress">
+      <on eventId='approveStock' newStateId='STOCK_APPROVED' meta-mainPath="true" meta-acls="WAREHOUSE"/>
+      <on eventId='rejectStock' newStateId='STOCK_REJECTED' meta-acls="WAREHOUSE"/>
+      <on eventId='damageFound' newStateId='PARTIAL_DAMAGE' meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='STOCK_APPROVED' meta-mainPath="true"
+                  description="QC passed, ready for warehouse putaway">
+      <on eventId='allocateToWarehouse' newStateId='IN_WAREHOUSE' meta-mainPath="true" meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='IN_WAREHOUSE' meta-mainPath="true"
+                  description="Stock stowed in warehouse, available for orders">
+      <on eventId='reserveStock' newStateId='IN_WAREHOUSE' meta-acls="SYSTEM"/>
+      <on eventId='releaseReservedStock' newStateId='IN_WAREHOUSE' meta-acls="SYSTEM"/>
+      <on eventId='soldAllReserved' newStateId='IN_WAREHOUSE' meta-acls="SYSTEM"/>
+      <on eventId='sellAllStock' newStateId='OUT_OF_STOCK' meta-acls="SYSTEM"/>
+      <on eventId='returnStock' newStateId='IN_WAREHOUSE' meta-acls="SYSTEM"/>
+      <on eventId='returnDamaged' newStateId='DAMAGED_AT_WAREHOUSE' meta-acls="WAREHOUSE"/>
+      <on eventId='discardDamaged' newStateId='IN_WAREHOUSE' meta-acls="WAREHOUSE"/>
+      <on eventId='repairDamaged' newStateId='IN_WAREHOUSE' meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='OUT_OF_STOCK'
+                  description="All inventory depleted, awaiting replenishment">
+      <on eventId='restockArrive' newStateId='STOCK_PENDING' meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='returnStock' newStateId='IN_WAREHOUSE' meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='PARTIAL_DAMAGE'
+                  description="Damage found during inbound inspection">
+      <on eventId='repairDamageds' newStateId='STOCK_APPROVED' meta-acls="WAREHOUSE"/>
+      <on eventId='discardDamaged' newStateId='STOCK_APPROVED' meta-acls="WAREHOUSE"/>
+      <on eventId='returnToSupplier' newStateId='RETURN_TO_SUPPLIER' meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='DAMAGED_AT_WAREHOUSE'
+                  description="Damage discovered while stowed in warehouse">
+      <on eventId='repairDamaged' newStateId='IN_WAREHOUSE' meta-acls="WAREHOUSE"/>
+      <on eventId='discardDamaged' newStateId='DISCARDED' meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='RETURN_TO_SUPPLIER'
+                  description="Stock in transit back to supplier">
+      <on eventId='returnCompleted' newStateId='RETURNED_TO_SUPPLIER' meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='RETURNED_TO_SUPPLIER'
+                  description="Supplier acknowledged return, payment adjusted"/>
+
+    <manual-state id='STOCK_REJECTED'
+                  description="Stock failed QC, awaiting return to supplier">
+      <on eventId='returnRejectedStock' newStateId='RETURN_TO_SUPPLIER' meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='DISCARDED' description="All stock written off"/>
+
+  </flow>
+</states>

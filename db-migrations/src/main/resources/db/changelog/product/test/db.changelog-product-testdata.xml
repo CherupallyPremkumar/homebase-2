@@ -259,31 +259,31 @@
         <insert tableName="category_attributes"><column name="category_id" value="cat-home"/><column name="attribute_id" value="attr-weight"/></insert>
 
         <!-- ============================================================ -->
-        <!-- PRODUCTS (8 across 5 states) — raw SQL for "stateId"/"flowId" quoting -->
+        <!-- PRODUCTS (8 across 5 states) — raw SQL for state_id/flow_id quoting -->
         <!-- ============================================================ -->
         <sql>
-            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, meta_title, meta_description, "stateId", "flowId", created_by, tenant, created_time)
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, meta_title, meta_description, state_id, flow_id, created_by, tenant, created_time)
             VALUES ('prod-1', 'Wireless Headphones', 'Premium wireless headphones with noise cancellation and 30hr battery life', 'Noise-cancelling headphones', 'SoundMax', 'cat-audio', 'wireless-headphones', 'Best Wireless Headphones', 'Buy premium wireless headphones', 'PUBLISHED', 'product-flow', 'admin', 'homebase', TIMESTAMP '2025-01-10 10:00:00');
 
-            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, state_id, flow_id, created_by, tenant, created_time)
             VALUES ('prod-2', 'Cotton T-Shirt', 'Comfortable 100% cotton t-shirt available in multiple sizes', 'Cotton t-shirt', 'BasicWear', 'cat-apparel', 'cotton-tshirt', 'PUBLISHED', 'product-flow', 'admin', 'homebase', TIMESTAMP '2025-01-11 10:00:00');
 
-            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, state_id, flow_id, created_by, tenant, created_time)
             VALUES ('prod-3', 'Stainless Steel Blender', 'High-power stainless steel kitchen blender with 5 speeds', 'Kitchen blender', 'HomeChef', 'cat-home', 'ss-blender', 'UNDER_REVIEW', 'product-flow', 'seller1', 'homebase', TIMESTAMP '2025-02-01 11:00:00');
 
-            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, state_id, flow_id, created_by, tenant, created_time)
             VALUES ('prod-4', 'Smartphone X200', 'Latest smartphone with 6.7 inch OLED display', 'Flagship smartphone', 'TechBrand', 'cat-phones', 'smartphone-x200', 'DRAFT', 'product-flow', 'seller2', 'homebase', TIMESTAMP '2025-02-15 09:00:00');
 
-            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, state_id, flow_id, created_by, tenant, created_time)
             VALUES ('prod-5', 'Bluetooth Speaker', 'Portable bluetooth speaker with waterproof design', 'Portable speaker', 'SoundMax', 'cat-audio', 'bluetooth-speaker', 'PUBLISHED', 'product-flow', 'admin', 'homebase', TIMESTAMP '2025-01-20 10:00:00');
 
-            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, state_id, flow_id, created_by, tenant, created_time)
             VALUES ('prod-6', 'Yoga Mat', 'Premium non-slip yoga mat for home workouts', 'Yoga mat', 'FitLife', 'cat-home', 'yoga-mat', 'UNDER_REVIEW', 'product-flow', 'seller3', 'homebase', TIMESTAMP '2025-03-01 14:00:00');
 
-            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, state_id, flow_id, created_by, tenant, created_time)
             VALUES ('prod-7', 'Desk Lamp', 'LED desk lamp with adjustable brightness', 'LED desk lamp', 'HomeChef', 'cat-home', 'desk-lamp', 'DISABLED', 'product-flow', 'admin', 'homebase', TIMESTAMP '2025-01-05 10:00:00');
 
-            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, "stateId", "flowId", created_by, tenant, created_time)
+            INSERT INTO products (id, name, description, short_description, brand, category_id, slug, state_id, flow_id, created_by, tenant, created_time)
             VALUES ('prod-8', 'Running Shoes', 'Lightweight running shoes for daily training', 'Running shoes', 'FitLife', 'cat-apparel', 'running-shoes', 'DISCONTINUED', 'product-flow', 'admin', 'homebase', TIMESTAMP '2024-11-01 10:00:00');
         </sql>
 
@@ -448,21 +448,27 @@
         <!-- ============================================================ -->
         <insert tableName="product_activity_log">
             <column name="id" value="act-1a"/><column name="product_id" value="prod-1"/><column name="activity_name" value="CREATE"/><column name="activity_comment" value="Product created"/><column name="activity_success" valueBoolean="true"/><column name="created_time" valueDate="2025-01-10T10:00:00"/><column name="created_by" value="admin"/>
+        <column name="tenant" value="homebase"/>
         </insert>
         <insert tableName="product_activity_log">
             <column name="id" value="act-1b"/><column name="product_id" value="prod-1"/><column name="activity_name" value="SUBMIT_FOR_REVIEW"/><column name="activity_comment" value="Submitted for quality review"/><column name="activity_success" valueBoolean="true"/><column name="created_time" valueDate="2025-01-11T09:00:00"/><column name="created_by" value="admin"/>
+        <column name="tenant" value="homebase"/>
         </insert>
         <insert tableName="product_activity_log">
             <column name="id" value="act-1c"/><column name="product_id" value="prod-1"/><column name="activity_name" value="APPROVE"/><column name="activity_comment" value="Approved and published"/><column name="activity_success" valueBoolean="true"/><column name="created_time" valueDate="2025-01-12T14:00:00"/><column name="created_by" value="reviewer1"/>
+        <column name="tenant" value="homebase"/>
         </insert>
         <insert tableName="product_activity_log">
             <column name="id" value="act-3a"/><column name="product_id" value="prod-3"/><column name="activity_name" value="CREATE"/><column name="activity_comment" value="New blender listing"/><column name="activity_success" valueBoolean="true"/><column name="created_time" valueDate="2025-02-01T11:00:00"/><column name="created_by" value="seller1"/>
+        <column name="tenant" value="homebase"/>
         </insert>
         <insert tableName="product_activity_log">
             <column name="id" value="act-3b"/><column name="product_id" value="prod-3"/><column name="activity_name" value="SUBMIT_FOR_REVIEW"/><column name="activity_comment" value="Ready for review"/><column name="activity_success" valueBoolean="true"/><column name="created_time" valueDate="2025-02-02T08:00:00"/><column name="created_by" value="seller1"/>
+        <column name="tenant" value="homebase"/>
         </insert>
         <insert tableName="product_activity_log">
             <column name="id" value="act-7a"/><column name="product_id" value="prod-7"/><column name="activity_name" value="DISABLE"/><column name="activity_comment" value="Temporarily disabled for stock issues"/><column name="activity_success" valueBoolean="true"/><column name="created_time" valueDate="2025-03-01T16:00:00"/><column name="created_by" value="admin"/>
+        <column name="tenant" value="homebase"/>
         </insert>
 
         <!-- ============================================================ -->

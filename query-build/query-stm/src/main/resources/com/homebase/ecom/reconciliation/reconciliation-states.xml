@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from reconciliation-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='startProcessing'   meta-acls="SYSTEM,FINANCE"  meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='completeMatching'  meta-acls="SYSTEM"          meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='reviewMismatches'  meta-acls="FINANCE,ADMIN"   meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='resolveMismatches' meta-acls="FINANCE,ADMIN"   meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='approve'           meta-acls="FINANCE"         meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='reject'            meta-acls="FINANCE"         meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='retry'             meta-acls="SYSTEM,FINANCE"  meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+
+  <flow id='reconciliation-flow' default='true'>
+
+    <manual-state id='CREATED' initialState='true' meta-mainPath="true"
+                  description="Reconciliation batch created, awaiting processing">
+      <on eventId='startProcessing' newStateId='PROCESSING' meta-mainPath="true" meta-acls="SYSTEM,FINANCE"/>
+    </manual-state>
+
+    <manual-state id='PROCESSING' meta-mainPath="true"
+                  description="Reconciliation batch processing — matching transactions">
+      <on eventId='completeMatching' newStateId='REVIEW_REQUIRED' meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='REVIEW_REQUIRED'
+                  description="Mismatches found, awaiting finance review">
+      <on eventId='resolveMismatches' newStateId='RESOLVED' meta-acls="FINANCE,ADMIN"/>
+      <on eventId='reject' newStateId='REJECTED' meta-acls="FINANCE"/>
+    </manual-state>
+
+    <manual-state id='RESOLVED'
+                  description="Mismatches resolved, awaiting approval">
+      <on eventId='approve' newStateId='APPROVED' meta-mainPath="true" meta-acls="FINANCE"/>
+    </manual-state>
+
+    <manual-state id='APPROVED' meta-mainPath="true"
+                  description="Reconciliation batch approved">
+      <on eventId='approve' newStateId='COMPLETED' meta-mainPath="true" meta-acls="FINANCE"/>
+    </manual-state>
+
+    <manual-state id='COMPLETED' meta-mainPath="true"
+                  description="Reconciliation batch completed and archived"/>
+
+    <manual-state id='REJECTED'
+                  description="Reconciliation batch rejected, needs re-processing">
+      <on eventId='retry' newStateId='CREATED' meta-acls="SYSTEM,FINANCE"/>
+    </manual-state>
+
+    <manual-state id='FAILED'
+                  description="Reconciliation batch processing failed">
+      <on eventId='retry' newStateId='CREATED' meta-acls="SYSTEM,FINANCE"/>
+    </manual-state>
+
+  </flow>
+</states>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from user-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='register' meta-acls="PUBLIC" meta-bodyType="com.homebase.ecom.user.dto.RegisterUserPayload"/>
+  <event-information eventId='verifyEmail' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.user.dto.VerifyEmailUserPayload"/>
+  <event-information eventId='activate' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.user.dto.ActivateAccountUserPayload"/>
+  <event-information eventId='suspend' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.user.dto.SuspendAccountUserPayload"/>
+  <event-information eventId='deactivate' meta-acls="CUSTOMER,ADMIN" meta-bodyType="com.homebase.ecom.user.dto.DeactivateAccountUserPayload"/>
+  <event-information eventId='updateProfile' meta-acls="CUSTOMER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='submitKyc' meta-acls="CUSTOMER,SELLER" meta-bodyType="com.homebase.ecom.user.dto.SubmitKycUserPayload"/>
+  <event-information eventId='verifyKyc' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.user.dto.VerifyKycUserPayload"/>
+  <event-information eventId='addAddress' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.user.domain.model.Address"/>
+  <event-information eventId='removeAddress' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.user.dto.RemoveAddressPayload"/>
+  <event-information eventId='changePassword' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.user.dto.ChangePasswordPayload"/>
+  <event-information eventId='lockAccount' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.user.dto.LockAccountUserPayload"/>
+  <event-information eventId='unlockAccount' meta-acls="ADMIN,SYSTEM" meta-bodyType="com.homebase.ecom.user.dto.UnlockAccountUserPayload"/>
+  <event-information eventId='reinstateUser' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.user.dto.ReinstateUserPayload"/>
+  <event-information eventId='resendVerification' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.user.dto.ResendVerificationEmailUserPayload"/>
+
+  <flow id='user-flow' default='true'>
+
+    <manual-state id='REGISTERED' initialState='true' meta-mainPath="true"
+                  description="User just registered, awaiting email verification">
+      <on eventId='verifyEmail' newStateId='EMAIL_VERIFIED' meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='resendVerification' meta-acls="CUSTOMER"/>
+      <on eventId='deactivate' newStateId='DEACTIVATED' meta-acls="CUSTOMER,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='EMAIL_VERIFIED' meta-mainPath="true"
+                  description="Email verified, awaiting activation">
+      <on eventId='activate' newStateId='ACTIVE' meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='deactivate' newStateId='DEACTIVATED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='ACTIVE' meta-mainPath="true"
+                  description="Fully active user">
+      <on eventId='updateProfile' meta-acls="CUSTOMER"/>
+      <on eventId='changePassword' meta-acls="CUSTOMER"/>
+      <on eventId='addAddress' meta-acls="CUSTOMER"/>
+      <on eventId='removeAddress' meta-acls="CUSTOMER"/>
+      <on eventId='submitKyc' newStateId='KYC_PENDING' meta-acls="CUSTOMER,SELLER"/>
+      <on eventId='lockAccount' newStateId='LOCKED' meta-acls="SYSTEM"/>
+      <on eventId='suspend' newStateId='SUSPENDED' meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='deactivate' newStateId='DEACTIVATED' meta-acls="CUSTOMER,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='KYC_PENDING'
+                  description="KYC documents submitted, awaiting verification">
+      <on eventId='verifyKyc' newStateId='KYC_VERIFIED' meta-acls="ADMIN"/>
+      <on eventId='suspend' newStateId='SUSPENDED' meta-acls="ADMIN"/>
+      <on eventId='deactivate' newStateId='DEACTIVATED' meta-acls="CUSTOMER,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='KYC_VERIFIED'
+                  description="KYC verified by admin">
+      <on eventId='updateProfile' meta-acls="CUSTOMER"/>
+      <on eventId='addAddress' meta-acls="CUSTOMER"/>
+      <on eventId='removeAddress' meta-acls="CUSTOMER"/>
+      <on eventId='suspend' newStateId='SUSPENDED' meta-acls="ADMIN"/>
+      <on eventId='deactivate' newStateId='DEACTIVATED' meta-acls="CUSTOMER,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='LOCKED'
+                  description="Locked after failed login attempts">
+      <on eventId='unlockAccount' newStateId='ACTIVE' meta-acls="ADMIN,SYSTEM"/>
+      <on eventId='deactivate' newStateId='DEACTIVATED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='SUSPENDED' meta-mainPath="true"
+                  description="Suspended by admin for policy violation">
+      <on eventId='reinstateUser' newStateId='ACTIVE' meta-acls="ADMIN"/>
+      <on eventId='deactivate' newStateId='DEACTIVATED' meta-mainPath="true" meta-acls="CUSTOMER,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='DEACTIVATED' meta-mainPath="true"
+                  description="Account deactivated (soft-deleted)"/>
+
+  </flow>
+</states>

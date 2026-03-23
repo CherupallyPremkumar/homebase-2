@@ -18,7 +18,7 @@
             <artifactId>offer-domain</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.homebase.ecom.build</groupId>
+            <groupId>com.homebase.ecom</groupId>
             <artifactId>core</artifactId>
             <version>${revision}</version>
         </dependency>

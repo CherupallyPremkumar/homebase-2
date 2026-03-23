@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from offer-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='submit' meta-acls="SELLER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='approve' meta-acls="CATALOG_ADMIN,ADMIN" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='reject' meta-acls="CATALOG_ADMIN,ADMIN" meta-bodyType="com.homebase.ecom.offer.service.cmds.RejectOfferPayload"/>
+  <event-information eventId='goLive' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='expire' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='suspend' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.offer.service.cmds.SuspendOfferPayload"/>
+  <event-information eventId='archive' meta-acls="ADMIN,SELLER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='resubmit' meta-acls="SELLER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='resume' meta-acls="ADMIN" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+
+  <flow id='offer-flow' default='true'>
+
+    <manual-state id='DRAFT' initialState='true' meta-mainPath="true"
+                  description="Offer created by seller, not yet submitted for approval">
+      <on eventId='submit' newStateId='PENDING_APPROVAL' meta-mainPath="true" meta-acls="SELLER"/>
+    </manual-state>
+
+    <manual-state id='PENDING_APPROVAL' meta-mainPath="true"
+                  description="Offer submitted, awaiting catalog admin approval">
+      <on eventId='approve' newStateId='APPROVED' meta-mainPath="true" meta-acls="CATALOG_ADMIN,ADMIN"/>
+      <on eventId='reject' newStateId='REJECTED' meta-acls="CATALOG_ADMIN,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='APPROVED' meta-mainPath="true"
+                  description="Offer approved, ready to go live">
+      <on eventId='goLive' newStateId='LIVE' meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='LIVE' meta-mainPath="true"
+                  description="Offer is live and visible to customers">
+      <on eventId='expire' newStateId='EXPIRED' meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='suspend' newStateId='SUSPENDED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='EXPIRED' meta-mainPath="true"
+                  description="Offer expired, no longer active">
+      <on eventId='archive' newStateId='ARCHIVED' meta-mainPath="true" meta-acls="ADMIN,SELLER"/>
+    </manual-state>
+
+    <manual-state id='ARCHIVED' description="Offer archived, historical record only"/>
+
+    <manual-state id='REJECTED' description="Offer rejected by catalog admin">
+      <on eventId='resubmit' newStateId='PENDING_APPROVAL' meta-acls="SELLER"/>
+    </manual-state>
+
+    <manual-state id='SUSPENDED' description="Offer suspended from live state">
+      <on eventId='resume' newStateId='LIVE' meta-acls="ADMIN"/>
+      <on eventId='expire' newStateId='EXPIRED' meta-acls="SYSTEM"/>
+    </manual-state>
+
+  </flow>
+</states>

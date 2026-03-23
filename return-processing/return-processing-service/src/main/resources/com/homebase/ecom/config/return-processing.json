@@ -1,0 +1,17 @@
+{
+    "policies": {
+        "inspection": {
+            "maxInspectionDays": 3,
+            "requirePhotographicEvidence": true,
+            "autoPassConditions": ["SEALED", "UNOPENED"]
+        },
+        "restock": {
+            "autoRestockOnPass": true,
+            "requireQualityCheckBeforeRestock": true
+        },
+        "refund": {
+            "refundProcessingDays": 5,
+            "deductReturnShippingCost": false
+        }
+    }
+}

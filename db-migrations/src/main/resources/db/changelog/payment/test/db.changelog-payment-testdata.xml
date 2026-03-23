@@ -235,6 +235,7 @@
             <column name="event_id" value="process"/>
             <column name="comment" value="UPI payment initiated via Razorpay"/>
             <column name="success" valueBoolean="true"/>
+        <column name="tenant" value="homebase"/>
         </insert>
         <insert tableName="payment_activity_log">
             <column name="id" valueNumeric="2"/>
@@ -242,6 +243,7 @@
             <column name="event_id" value="process"/>
             <column name="comment" value="Card declined: insufficient funds"/>
             <column name="success" valueBoolean="false"/>
+        <column name="tenant" value="homebase"/>
         </insert>
 
     </changeSet>

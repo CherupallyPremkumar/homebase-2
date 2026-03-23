@@ -19,7 +19,7 @@
                 name VARCHAR(255), description VARCHAR(2000), short_description VARCHAR(500),
                 brand VARCHAR(255), category_id VARCHAR(255), slug VARCHAR(300),
                 meta_title VARCHAR(200), meta_description VARCHAR(500),
-                "stateId" VARCHAR(100), "flowId" VARCHAR(100),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
                 version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
                 created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255),
                 state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
@@ -207,8 +207,8 @@
                 fulfillment_type VARCHAR(20) DEFAULT 'MERCHANT',
                 shipping_cost NUMERIC(10,2) DEFAULT 0,
                 delivery_days INT,
-                "stateId" VARCHAR(100),
-                "flowId" VARCHAR(100),
+                state_id VARCHAR(100),
+                flow_id VARCHAR(100),
                 state_entry_time TIMESTAMP,
                 sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
                 sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0,
@@ -238,7 +238,7 @@
                 last_sale_at TIMESTAMP, last_restock_at TIMESTAMP,
                 version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
                 created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255),
-                "stateId" VARCHAR(100), "flowId" VARCHAR(100),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
                 state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
                 sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0,
                 test_entity BOOLEAN DEFAULT FALSE, description VARCHAR(255)
@@ -285,7 +285,7 @@
                 description VARCHAR(2000), item_count INT DEFAULT 0,
                 shipping_address TEXT,
                 state_id VARCHAR(255),
-                "stateId" VARCHAR(100), "flowId" VARCHAR(100),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
                 created_time TIMESTAMP, updated_time TIMESTAMP,
                 state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
                 sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0
@@ -326,7 +326,7 @@
                 delivery_attempts INT DEFAULT 0, current_location VARCHAR(255),
                 description VARCHAR(500),
                 estimated_delivery_date TIMESTAMP, actual_delivery_date TIMESTAMP,
-                "stateId" VARCHAR(100), "flowId" VARCHAR(100),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
                 state_id VARCHAR(50), flow_id VARCHAR(50),
                 state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
                 sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0
@@ -348,7 +348,7 @@
                 created_by VARCHAR(255), last_modified_by VARCHAR(255),
                 tenant VARCHAR(255), version BIGINT DEFAULT 0,
                 test_entity BOOLEAN DEFAULT FALSE,
-                "stateId" VARCHAR(100), "flowId" VARCHAR(100),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
                 state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
                 sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0,
                 user_id VARCHAR(255), phone_number VARCHAR(20),
@@ -395,7 +395,7 @@
                 test_entity BOOLEAN DEFAULT FALSE,
                 state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
                 sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0,
-                "flowId" VARCHAR(100), "stateId" VARCHAR(100),
+                flow_id VARCHAR(100), state_id VARCHAR(100),
                 quantity INT DEFAULT 1, refund_amount NUMERIC(10,2), return_type VARCHAR(50)
             )
         </sql>

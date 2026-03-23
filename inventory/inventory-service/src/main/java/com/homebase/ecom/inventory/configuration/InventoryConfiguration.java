@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.service.impl.StateEntityServiceImpl;
-import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
+import com.homebase.ecom.core.workflow.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import com.homebase.ecom.inventory.domain.model.InventoryItem;
 import com.homebase.ecom.inventory.infrastructure.persistence.mapper.InventoryItemMapper;

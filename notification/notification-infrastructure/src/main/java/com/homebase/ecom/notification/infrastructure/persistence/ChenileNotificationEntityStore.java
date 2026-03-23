@@ -4,7 +4,7 @@ import com.homebase.ecom.notification.domain.model.Notification;
 import com.homebase.ecom.notification.infrastructure.persistence.adapter.NotificationJpaRepository;
 import com.homebase.ecom.notification.infrastructure.persistence.entity.NotificationEntity;
 import com.homebase.ecom.notification.infrastructure.persistence.mapper.NotificationMapper;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 public class ChenileNotificationEntityStore extends ChenileJpaEntityStore<Notification, NotificationEntity> {
 

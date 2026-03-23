@@ -21,7 +21,8 @@ import java.util.UUID;
  * <p>The correlation ID is also echoed back in the response header so downstream
  * callers can correlate their logs.
  */
-public class CorrelationIdFilter extends OncePerRequestFilter {
+public class
+CorrelationIdFilter extends OncePerRequestFilter {
 
     public static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
     public static final String CORRELATION_ID_MDC_KEY = "correlationId";

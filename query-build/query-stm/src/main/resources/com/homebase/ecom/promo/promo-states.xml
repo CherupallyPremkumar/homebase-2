@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from promo-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='schedule' meta-acls="MARKETING,ADMIN" meta-bodyType="com.homebase.ecom.promo.dto.SchedulePromoPayload"/>
+  <event-information eventId='activate' meta-acls="SYSTEM,ADMIN" meta-bodyType="com.homebase.ecom.promo.dto.ActivatePromoPayload"/>
+  <event-information eventId='expire' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.promo.dto.ExpirePromoPayload"/>
+  <event-information eventId='pause' meta-acls="MARKETING,ADMIN" meta-bodyType="com.homebase.ecom.promo.dto.PausePromoPayload"/>
+  <event-information eventId='resume' meta-acls="MARKETING,ADMIN" meta-bodyType="com.homebase.ecom.promo.dto.ResumePromoPayload"/>
+  <event-information eventId='cancel' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.promo.dto.CancelPromoPayload"/>
+  <event-information eventId='archive' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.promo.dto.ArchivePromoPayload"/>
+  <event-information eventId='incrementUsage' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.promo.dto.IncrementUsagePayload"/>
+
+  <flow id='promo-flow' default='true'>
+
+    <manual-state id='DRAFT' initialState='true' meta-mainPath="true"
+                  description="Promo created, pending review and scheduling">
+      <on eventId='schedule' newStateId='SCHEDULED' meta-mainPath="true" meta-acls="MARKETING,ADMIN"/>
+      <on eventId='cancel' newStateId='CANCELLED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='SCHEDULED' meta-mainPath="true"
+                  description="Promo scheduled, awaiting start date">
+      <on eventId='activate' newStateId='ACTIVE' meta-mainPath="true" meta-acls="SYSTEM,ADMIN"/>
+      <on eventId='cancel' newStateId='CANCELLED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='ACTIVE' meta-mainPath="true"
+                  description="Promo live and applicable to orders">
+      <on eventId='incrementUsage' newStateId='ACTIVE' meta-acls="SYSTEM"/>
+      <on eventId='expire' newStateId='EXPIRED' meta-acls="SYSTEM"/>
+      <on eventId='pause' newStateId='PAUSED' meta-acls="MARKETING,ADMIN"/>
+      <on eventId='cancel' newStateId='CANCELLED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='PAUSED'
+                  description="Promo temporarily paused by marketing/admin">
+      <on eventId='resume' newStateId='ACTIVE' meta-mainPath="true" meta-acls="MARKETING,ADMIN"/>
+      <on eventId='cancel' newStateId='CANCELLED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='EXPIRED' meta-mainPath="true"
+                  description="Promo expired (date or usage limit)">
+      <on eventId='archive' newStateId='ARCHIVED' meta-mainPath="true" meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='CANCELLED'
+                  description="Promo cancelled by admin">
+      <on eventId='archive' newStateId='ARCHIVED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='ARCHIVED' description="Promo archived for historical records"/>
+
+  </flow>
+</states>

@@ -14,31 +14,31 @@
     <changeSet id="inventory-query-test-data" author="homebase-test">
 
         <!-- ============================================================ -->
-        <!-- INVENTORY ITEMS — raw SQL for "stateId"/"flowId" quoting     -->
+        <!-- INVENTORY ITEMS — raw SQL for state_id/flow_id quoting     -->
         <!-- ============================================================ -->
         <sql>
-            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, state_id, flow_id, tenant)
             VALUES ('inv-1', 'SKU-WH-001', 'B001', 'prod-1', 'var-1', 100, 80, 15, 0, 5, 10, 'AVAILABLE', 'FC-CHENNAI', 'IN_WAREHOUSE', 'inventory-flow', 'tenant0');
 
-            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, state_id, flow_id, tenant)
             VALUES ('inv-2', 'SKU-TS-001', 'B002', 'prod-2', 'var-2', 50, 50, 0, 50, 0, 10, 'AVAILABLE', 'FC-MUMBAI', 'STOCK_PENDING', 'inventory-flow', 'tenant0');
 
-            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, state_id, flow_id, tenant)
             VALUES ('inv-3', 'SKU-BL-001', 'B003', 'prod-3', 'var-3', 0, 0, 0, 0, 0, 10, 'OUT_OF_STOCK', 'FC-BANGALORE', 'OUT_OF_STOCK', 'inventory-flow', 'tenant0');
 
-            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, state_id, flow_id, tenant)
             VALUES ('inv-4', 'SKU-WH-002', 'B004', 'prod-1', 'var-4', 200, 5, 0, 0, 0, 20, 'LOW_STOCK', 'FC-CHENNAI', 'IN_WAREHOUSE', 'inventory-flow', 'tenant0');
 
-            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, state_id, flow_id, tenant)
             VALUES ('inv-5', 'SKU-SP-001', 'B005', 'prod-4', 'var-5', 30, 0, 0, 0, 30, 10, 'AVAILABLE', 'FC-MUMBAI', 'DAMAGED_AT_WAREHOUSE', 'inventory-flow', 'tenant0');
 
-            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, state_id, flow_id, tenant)
             VALUES ('inv-6', 'SKU-BT-001', 'B006', 'prod-5', 'var-6', 500, 450, 50, 0, 0, 20, 'AVAILABLE', 'FC-BANGALORE', 'IN_WAREHOUSE', 'inventory-flow', 'tenant0');
 
-            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, state_id, flow_id, tenant)
             VALUES ('inv-7', 'SKU-YM-001', 'B007', 'prod-6', 'var-7', 75, 75, 0, 0, 0, 15, 'AVAILABLE', 'FC-CHENNAI', 'STOCK_APPROVED', 'inventory-flow', 'tenant0');
 
-            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, asin, product_id, variant_id, quantity, available_quantity, reserved_quantity, inbound_quantity, damaged_quantity, low_stock_threshold, status, primary_fc, state_id, flow_id, tenant)
             VALUES ('inv-8', 'SKU-DL-001', 'B008', 'prod-7', 'var-8', 0, 0, 0, 0, 0, 10, 'AVAILABLE', 'FC-MUMBAI', 'DISCARDED', 'inventory-flow', 'tenant0');
         </sql>
 

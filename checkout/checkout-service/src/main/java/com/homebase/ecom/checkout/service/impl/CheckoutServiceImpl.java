@@ -5,7 +5,7 @@ import com.homebase.ecom.checkout.service.handler.CheckoutExternalEventHandler;
 import org.chenile.stm.STM;
 import org.chenile.stm.impl.STMActionsInfoProvider;
 import org.chenile.utils.entity.service.EntityStore;
-import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
+import com.homebase.ecom.core.workflow.HmStateEntityServiceImpl;
 
 /**
  * Checkout service implementation extending Chenile's HmStateEntityServiceImpl.

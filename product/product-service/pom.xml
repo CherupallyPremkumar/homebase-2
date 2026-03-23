@@ -28,7 +28,7 @@
 			<artifactId>product-infrastructure</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.homebase.ecom.build</groupId>
+			<groupId>com.homebase.ecom</groupId>
 			<artifactId>core</artifactId>
 		</dependency>
 	

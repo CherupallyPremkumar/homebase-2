@@ -4,7 +4,7 @@ import com.homebase.ecom.supplier.model.Supplier;
 import com.homebase.ecom.supplier.infrastructure.persistence.adapter.SupplierJpaRepository;
 import com.homebase.ecom.supplier.infrastructure.persistence.entity.SupplierEntity;
 import com.homebase.ecom.supplier.infrastructure.persistence.mapper.SupplierMapper;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 /**
  * Bridges Chenile STM's EntityStore with JPA persistence for Supplier.

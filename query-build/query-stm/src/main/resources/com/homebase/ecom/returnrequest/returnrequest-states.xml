@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from returnrequest-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='reviewReturn'   meta-acls="SUPPORT,ADMIN"    meta-bodyType="com.homebase.ecom.returnrequest.dto.ReviewReturnReturnrequestPayload"/>
+  <event-information eventId='approveReturn'  meta-acls="SUPPORT,ADMIN"    meta-bodyType="com.homebase.ecom.returnrequest.dto.ApproveReturnReturnrequestPayload"/>
+  <event-information eventId='rejectReturn'   meta-acls="SUPPORT,ADMIN"    meta-bodyType="com.homebase.ecom.returnrequest.dto.RejectReturnReturnrequestPayload"/>
+  <event-information eventId='partialApprove' meta-acls="SUPPORT,ADMIN"    meta-bodyType="com.homebase.ecom.returnrequest.dto.PartialApproveReturnrequestPayload"/>
+  <event-information eventId='receiveItem'    meta-acls="WAREHOUSE"        meta-bodyType="com.homebase.ecom.returnrequest.dto.ReceiveItemReturnrequestPayload"/>
+  <event-information eventId='inspectItem'    meta-acls="WAREHOUSE"        meta-bodyType="com.homebase.ecom.returnrequest.dto.InspectItemReturnrequestPayload"/>
+  <event-information eventId='initiateRefund' meta-acls="SYSTEM,FINANCE"   meta-bodyType="com.homebase.ecom.returnrequest.dto.InitiateRefundReturnrequestPayload"/>
+  <event-information eventId='completeReturn' meta-acls="SYSTEM"           meta-bodyType="com.homebase.ecom.returnrequest.dto.CompleteReturnPayload"/>
+  <event-information eventId='escalate'       meta-acls="CUSTOMER,SUPPORT" meta-bodyType="com.homebase.ecom.returnrequest.dto.EscalateReturnPayload"/>
+
+  <flow id='return-request-flow' default='true'>
+
+    <manual-state id='REQUESTED' initialState='true' meta-mainPath="true"
+                  description="Return requested by customer, pending auto-approve check">
+      <on eventId='reviewReturn' newStateId='UNDER_REVIEW' meta-mainPath="true" meta-acls="SUPPORT,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='UNDER_REVIEW' meta-mainPath="true"
+                  description="Return under review by support team">
+      <on eventId='approveReturn' newStateId='APPROVED' meta-mainPath="true" meta-acls="SUPPORT,ADMIN"/>
+      <on eventId='rejectReturn' newStateId='REJECTED' meta-acls="SUPPORT,ADMIN"/>
+      <on eventId='partialApprove' newStateId='PARTIALLY_APPROVED' meta-acls="SUPPORT,ADMIN"/>
+      <on eventId='escalate' newStateId='ESCALATED' meta-acls="CUSTOMER,SUPPORT"/>
+    </manual-state>
+
+    <manual-state id='ESCALATED'
+                  description="Return escalated to senior support for resolution">
+      <on eventId='approveReturn' newStateId='APPROVED' meta-acls="SUPPORT,ADMIN"/>
+      <on eventId='rejectReturn' newStateId='REJECTED' meta-acls="SUPPORT,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='APPROVED' meta-mainPath="true"
+                  description="Return approved, awaiting item receipt at warehouse">
+      <on eventId='receiveItem' newStateId='ITEM_RECEIVED' meta-mainPath="true" meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='PARTIALLY_APPROVED'
+                  description="Return partially approved, some items accepted">
+      <on eventId='receiveItem' newStateId='ITEM_RECEIVED' meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='ITEM_RECEIVED' meta-mainPath="true"
+                  description="Item received at warehouse, awaiting inspection">
+      <on eventId='inspectItem' newStateId='INSPECTED' meta-mainPath="true" meta-acls="WAREHOUSE"/>
+    </manual-state>
+
+    <manual-state id='INSPECTED' meta-mainPath="true"
+                  description="Item inspected, ready for refund processing">
+      <on eventId='initiateRefund' newStateId='REFUND_INITIATED' meta-mainPath="true" meta-acls="SYSTEM,FINANCE"/>
+    </manual-state>
+
+    <manual-state id='REFUND_INITIATED' meta-mainPath="true"
+                  description="Refund initiated, awaiting payment processing completion">
+      <on eventId='completeReturn' newStateId='COMPLETED' meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='COMPLETED' meta-mainPath="true"
+                  description="Return completed, refund processed and inventory updated"/>
+
+    <manual-state id='REJECTED'
+                  description="Return request rejected"/>
+
+  </flow>
+</states>

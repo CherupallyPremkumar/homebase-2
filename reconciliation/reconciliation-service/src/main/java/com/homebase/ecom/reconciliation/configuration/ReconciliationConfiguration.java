@@ -25,7 +25,7 @@ import org.chenile.workflow.api.WorkflowRegistry;
 import org.chenile.workflow.param.MinimalPayload;
 import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
-import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
+import com.homebase.ecom.core.workflow.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 
 import org.springframework.beans.factory.annotation.Qualifier;

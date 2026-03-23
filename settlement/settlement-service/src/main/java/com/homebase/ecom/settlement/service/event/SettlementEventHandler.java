@@ -9,7 +9,7 @@ import com.homebase.ecom.shared.Money;
 import com.homebase.ecom.shared.CurrencyResolver;
 import com.homebase.ecom.shared.event.*;
 import org.chenile.pubsub.ChenilePub;
-import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
+import com.homebase.ecom.core.workflow.HmStateEntityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;

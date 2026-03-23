@@ -13,16 +13,16 @@
     <changeSet id="ui-query-test-data" author="homebase-test">
 
         <!-- ============================================================ -->
-        <!-- SUPPLIERS (uses table "supplier", column "stateId")          -->
+        <!-- SUPPLIERS (uses table "supplier", column state_id)          -->
         <!-- ============================================================ -->
         <sql>
-            INSERT INTO supplier (id, name, description, email, status, created_at, updated_at, "stateId", "flowId", tenant)
+            INSERT INTO supplier (id, name, description, email, status, created_at, updated_at, state_id, flow_id, tenant)
             VALUES ('seller-1', 'TechWorld Electronics', 'Premium electronics seller', 'seller1@example.com', 'ACTIVE', NOW(), NOW(), 'ACTIVE', 'supplier-flow', 'homebase');
 
-            INSERT INTO supplier (id, name, description, email, status, created_at, updated_at, "stateId", "flowId", tenant)
+            INSERT INTO supplier (id, name, description, email, status, created_at, updated_at, state_id, flow_id, tenant)
             VALUES ('seller-2', 'Fashion Hub', 'Apparel and accessories', 'seller2@example.com', 'ACTIVE', NOW(), NOW(), 'ACTIVE', 'supplier-flow', 'homebase');
 
-            INSERT INTO supplier (id, name, description, email, status, created_at, updated_at, "stateId", "flowId", tenant)
+            INSERT INTO supplier (id, name, description, email, status, created_at, updated_at, state_id, flow_id, tenant)
             VALUES ('seller-3', 'HomeGoods Plus', 'Home and kitchen products', 'seller3@example.com', 'ACTIVE', NOW(), NOW(), 'ACTIVE', 'supplier-flow', 'homebase');
         </sql>
 
@@ -31,33 +31,33 @@
         <!-- ============================================================ -->
         <sql>
             -- Headphones Black: in stock
-            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, state_id, flow_id, tenant)
             VALUES ('inv-1a', 'WH-BLK-001', 'prod-1', 'var-1a', 50, 45, 5, 10, 'AVAILABLE', 'AVAILABLE', 'inventory-flow', 'homebase');
 
             -- Headphones White: low stock
-            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, state_id, flow_id, tenant)
             VALUES ('inv-1b', 'WH-WHT-001', 'prod-1', 'var-1b', 12, 8, 4, 10, 'AVAILABLE', 'AVAILABLE', 'inventory-flow', 'homebase');
 
             -- T-Shirt variants: various stock levels
-            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, state_id, flow_id, tenant)
             VALUES ('inv-2a', 'TS-BLK-S', 'prod-2', 'var-2a', 100, 95, 5, 20, 'AVAILABLE', 'AVAILABLE', 'inventory-flow', 'homebase');
 
-            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, state_id, flow_id, tenant)
             VALUES ('inv-2b', 'TS-BLK-M', 'prod-2', 'var-2b', 200, 180, 20, 20, 'AVAILABLE', 'AVAILABLE', 'inventory-flow', 'homebase');
 
-            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, state_id, flow_id, tenant)
             VALUES ('inv-2c', 'TS-BLK-L', 'prod-2', 'var-2c', 5, 3, 2, 20, 'AVAILABLE', 'AVAILABLE', 'inventory-flow', 'homebase');
 
             -- T-Shirt white M: out of stock
-            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, state_id, flow_id, tenant)
             VALUES ('inv-2d', 'TS-WHT-M', 'prod-2', 'var-2d', 0, 0, 0, 20, 'OUT_OF_STOCK', 'OUT_OF_STOCK', 'inventory-flow', 'homebase');
 
             -- Speaker Red: good stock
-            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, state_id, flow_id, tenant)
             VALUES ('inv-5a', 'BS-RED-001', 'prod-5', 'var-5a', 75, 70, 5, 15, 'AVAILABLE', 'AVAILABLE', 'inventory-flow', 'homebase');
 
             -- Speaker Blue: out of stock
-            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, "stateId", "flowId", tenant)
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, state_id, flow_id, tenant)
             VALUES ('inv-5b', 'BS-BLU-001', 'prod-5', 'var-5b', 0, 0, 0, 15, 'OUT_OF_STOCK', 'OUT_OF_STOCK', 'inventory-flow', 'homebase');
         </sql>
 
@@ -126,19 +126,19 @@
         <!-- ORDERS + ORDER ITEMS                                         -->
         <!-- ============================================================ -->
         <sql>
-            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, "stateId", "flowId")
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id)
             VALUES ('ord-1', 'HB-2025-0001', 'cust-1', 3098.00, 557.64, 0.00, 0.00, 3655.64, 'INR', 2, TIMESTAMP '2025-02-10 14:30:00', TIMESTAMP '2025-02-12 10:00:00', 'DELIVERED', 'order-flow');
 
-            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, "stateId", "flowId")
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id)
             VALUES ('ord-2', 'HB-2025-0002', 'cust-2', 2499.00, 449.82, 50.00, 250.00, 2748.82, 'INR', 1, TIMESTAMP '2025-02-15 09:00:00', TIMESTAMP '2025-02-15 09:00:00', 'CONFIRMED', 'order-flow');
 
-            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, "stateId", "flowId")
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id)
             VALUES ('ord-3', 'HB-2025-0003', 'cust-1', 1999.00, 359.82, 0.00, 0.00, 2358.82, 'INR', 1, TIMESTAMP '2025-03-01 16:00:00', TIMESTAMP '2025-03-02 08:00:00', 'SHIPPED', 'order-flow');
 
-            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, "stateId", "flowId")
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id)
             VALUES ('ord-4', 'HB-2025-0004', 'cust-3', 599.00, 107.82, 0.00, 0.00, 706.82, 'INR', 1, TIMESTAMP '2025-03-05 11:00:00', TIMESTAMP '2025-03-05 11:00:00', 'CANCELLED', 'order-flow');
 
-            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, "stateId", "flowId")
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id)
             VALUES ('ord-5', 'HB-2025-0005', 'cust-4', 4998.00, 899.64, 0.00, 500.00, 5397.64, 'INR', 2, TIMESTAMP '2025-03-10 13:00:00', TIMESTAMP '2025-03-10 13:00:00', 'CONFIRMED', 'order-flow');
         </sql>
 
@@ -184,10 +184,10 @@
         <!-- SHIPMENTS                                                    -->
         <!-- ============================================================ -->
         <sql>
-            INSERT INTO shipments (id, order_id, carrier, tracking_number, tracking_url, shipped_at, estimated_delivery, status, created_at, "stateId", "flowId")
+            INSERT INTO shipments (id, order_id, carrier, tracking_number, tracking_url, shipped_at, estimated_delivery, status, created_at, state_id, flow_id)
             VALUES ('ship-1', 'ord-1', 'HOMEBASE-LOGISTICS', 'HBL-TRK-001', 'https://track.homebase.com/HBL-TRK-001', TIMESTAMP '2025-02-11 08:00:00', TIMESTAMP '2025-02-14 18:00:00', 'DELIVERED', TIMESTAMP '2025-02-11 08:00:00', 'DELIVERED', 'shipping-flow');
 
-            INSERT INTO shipments (id, order_id, carrier, tracking_number, status, created_at, estimated_delivery, "stateId", "flowId")
+            INSERT INTO shipments (id, order_id, carrier, tracking_number, status, created_at, estimated_delivery, state_id, flow_id)
             VALUES ('ship-3', 'ord-3', 'HOMEBASE-LOGISTICS', 'HBL-TRK-003', 'SHIPPED', TIMESTAMP '2025-03-02 08:00:00', TIMESTAMP '2025-03-05 18:00:00', 'IN_TRANSIT', 'shipping-flow');
         </sql>
 
@@ -241,10 +241,10 @@
         <!-- RETURN REQUESTS (table "returnrequest")                      -->
         <!-- ============================================================ -->
         <sql>
-            INSERT INTO returnrequest (id, order_id, order_item_id, reason, description, created_time, last_modified_time, created_by, tenant, "stateId", "flowId", quantity, refund_amount, return_type)
+            INSERT INTO returnrequest (id, order_id, order_item_id, reason, description, created_time, last_modified_time, created_by, tenant, state_id, flow_id, quantity, refund_amount, return_type)
             VALUES ('ret-1', 'ord-1', 'oi-1b', 'Wrong size', 'Received wrong size, need exchange', TIMESTAMP '2025-02-13 10:00:00', TIMESTAMP '2025-02-13 10:00:00', 'cust-1', 'homebase', 'APPROVED', 'returnrequest-flow', 1, 599.00, 'EXCHANGE');
 
-            INSERT INTO returnrequest (id, order_id, order_item_id, reason, description, created_time, last_modified_time, created_by, tenant, "stateId", "flowId", quantity, refund_amount, return_type)
+            INSERT INTO returnrequest (id, order_id, order_item_id, reason, description, created_time, last_modified_time, created_by, tenant, state_id, flow_id, quantity, refund_amount, return_type)
             VALUES ('ret-2', 'ord-1', 'oi-1a', 'Defective product', 'Left speaker not working', TIMESTAMP '2025-02-14 09:00:00', TIMESTAMP '2025-02-14 09:00:00', 'cust-1', 'homebase', 'REQUESTED', 'returnrequest-flow', 1, 2499.00, 'REFUND');
         </sql>
 

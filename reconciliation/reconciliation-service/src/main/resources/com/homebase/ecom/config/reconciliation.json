@@ -1,0 +1,14 @@
+{
+    "policies": {
+        "matching": {
+            "toleranceAmountInr": 10.0,
+            "autoReconcileEnabled": true,
+            "reconcilePeriodDays": 30,
+            "maxMismatchesPerBatch": 1000
+        },
+        "alerting": {
+            "alertOnMismatchAboveInr": 1000.0,
+            "requireManualReviewAboveInr": 5000.0
+        }
+    }
+}

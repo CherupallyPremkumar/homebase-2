@@ -4,7 +4,7 @@ import com.homebase.ecom.order.model.Order;
 import com.homebase.ecom.order.infrastructure.persistence.adapter.OrderJpaRepository;
 import com.homebase.ecom.order.infrastructure.persistence.entity.OrderEntity;
 import com.homebase.ecom.order.infrastructure.persistence.mapper.OrderMapper;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 /**
  * Bridges Chenile STM's EntityStore with JPA persistence for Order.

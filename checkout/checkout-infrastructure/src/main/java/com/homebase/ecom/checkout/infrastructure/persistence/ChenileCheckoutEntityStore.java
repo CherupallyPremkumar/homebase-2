@@ -4,7 +4,7 @@ import com.homebase.ecom.checkout.model.Checkout;
 import com.homebase.ecom.checkout.infrastructure.persistence.entity.CheckoutEntity;
 import com.homebase.ecom.checkout.infrastructure.persistence.repository.CheckoutJpaRepository;
 import com.homebase.ecom.checkout.infrastructure.persistence.mapper.CheckoutMapper;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 public class ChenileCheckoutEntityStore extends ChenileJpaEntityStore<Checkout, CheckoutEntity> {
 

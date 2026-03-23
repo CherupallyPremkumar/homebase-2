@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from checkout-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='create'         meta-acls="CUSTOMER,SYSTEM" meta-bodyType="com.homebase.ecom.checkout.dto.InitiateCheckoutPayload"/>
+  <event-information eventId='process'        meta-acls="SYSTEM"          meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='paymentSuccess' meta-acls="SYSTEM"          meta-bodyType="com.homebase.ecom.checkout.dto.PaymentResultPayload"/>
+  <event-information eventId='paymentFailed'  meta-acls="SYSTEM"          meta-bodyType="com.homebase.ecom.checkout.dto.PaymentResultPayload"/>
+  <event-information eventId='retryPayment'   meta-acls="CUSTOMER"        meta-bodyType="com.homebase.ecom.checkout.dto.RetryPaymentPayload"/>
+  <event-information eventId='cancel'         meta-acls="CUSTOMER,SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='compensate'     meta-acls="SYSTEM"          meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='expire'         meta-acls="SYSTEM"          meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+
+  <flow id='checkout-flow' default='true'>
+
+    <manual-state id='INITIATED' initialState='true' meta-mainPath="true"
+                  description="Checkout created, awaiting saga processing">
+      <on eventId='process' newStateId='AWAITING_PAYMENT' meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='cancel' newStateId='CANCELLED' meta-acls="CUSTOMER,SYSTEM"/>
+      <on eventId='expire' newStateId='EXPIRED' meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='AWAITING_PAYMENT' meta-mainPath="true"
+                  description="Saga steps done, payment initiated, awaiting callback">
+      <on eventId='paymentSuccess' newStateId='COMPLETED' meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='paymentFailed' newStateId='PAYMENT_FAILED' meta-acls="SYSTEM"/>
+      <on eventId='cancel' newStateId='CANCELLED' meta-acls="CUSTOMER,SYSTEM"/>
+      <on eventId='expire' newStateId='EXPIRED' meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='COMPLETED' meta-mainPath="true"
+                  description="Checkout completed successfully, order confirmed"/>
+
+    <manual-state id='PAYMENT_FAILED'
+                  description="Payment failed, customer can retry or cancel">
+      <on eventId='retryPayment' newStateId='AWAITING_PAYMENT' meta-acls="CUSTOMER"/>
+      <on eventId='compensate' newStateId='COMPENSATED' meta-acls="SYSTEM"/>
+      <on eventId='cancel' newStateId='CANCELLED' meta-acls="CUSTOMER,SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='CANCELLED'
+                  description="Checkout cancelled, resources released">
+      <on eventId='compensate' newStateId='COMPENSATED' meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='EXPIRED'
+                  description="Checkout expired due to timeout">
+      <on eventId='compensate' newStateId='COMPENSATED' meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='COMPENSATED'
+                  description="All saga compensations completed, cart restored"/>
+
+  </flow>
+</states>

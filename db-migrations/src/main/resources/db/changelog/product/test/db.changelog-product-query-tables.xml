@@ -11,7 +11,7 @@
         Uses preConditions so this is safe to run alongside production changelogs.
     -->
 
-    <!-- Products: raw SQL to preserve camelCase "stateId"/"flowId" column names -->
+    <!-- Products: raw SQL to preserve camelCase state_id/flow_id column names -->
     <changeSet id="product-query-test-products" author="homebase-test">
         <preConditions onFail="MARK_RAN">
             <not><tableExists tableName="products"/></not>
@@ -27,8 +27,8 @@
                 slug VARCHAR(300),
                 meta_title VARCHAR(200),
                 meta_description VARCHAR(500),
-                "stateId" VARCHAR(100),
-                "flowId" VARCHAR(100),
+                state_id VARCHAR(100),
+                flow_id VARCHAR(100),
                 version BIGINT DEFAULT 0,
                 created_time TIMESTAMP,
                 last_modified_time TIMESTAMP,

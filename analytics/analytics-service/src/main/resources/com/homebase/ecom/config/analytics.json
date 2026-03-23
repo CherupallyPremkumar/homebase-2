@@ -1,0 +1,9 @@
+{
+    "policies": {
+        "aggregation": {
+            "dailySummaryHourUtc": 2,
+            "retentionDays": 365,
+            "maxExportRows": 100000
+        }
+    }
+}

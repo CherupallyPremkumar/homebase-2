@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from settlement-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='calculate' meta-acls="SYSTEM,test.premium"          meta-bodyType="com.homebase.ecom.settlement.dto.CalculateSettlementPayload"/>
+  <event-information eventId='approve'   meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.ApproveSettlementPayload"/>
+  <event-information eventId='disburse'  meta-acls="FINANCE,test.premium"         meta-bodyType="com.homebase.ecom.settlement.dto.DisburseSettlementPayload"/>
+  <event-information eventId='dispute'   meta-acls="SUPPLIER,test.premium"        meta-bodyType="com.homebase.ecom.settlement.dto.DisputeSettlementPayload"/>
+  <event-information eventId='resolve'   meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.ResolveSettlementPayload"/>
+  <event-information eventId='adjust'    meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.AdjustSettlementPayload"/>
+  <event-information eventId='reject'    meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.RejectSettlementPayload"/>
+  <event-information eventId='retry'     meta-acls="FINANCE,ADMIN,test.premium"   meta-bodyType="com.homebase.ecom.settlement.dto.RetrySettlementPayload"/>
+
+  <flow id='settlement-flow' default='true'>
+
+    <manual-state id='PENDING' initialState='true' meta-mainPath="true"
+                  description="Settlement created, awaiting calculation trigger">
+      <on eventId='calculate' newStateId='CALCULATING' meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='CALCULATING' meta-mainPath="true"
+                  description="Settlement amounts being calculated">
+      <on eventId='calculate' newStateId='CALCULATED' meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='CALCULATED' meta-mainPath="true"
+                  description="Settlement calculated, pending approval routing">
+      <on eventId='approve' newStateId='APPROVED' meta-mainPath="true" meta-acls="FINANCE,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='PENDING_APPROVAL'
+                  description="Settlement requires manual finance approval (above threshold)">
+      <on eventId='approve' newStateId='APPROVED' meta-mainPath="true" meta-acls="FINANCE,ADMIN"/>
+      <on eventId='reject' newStateId='REJECTED' meta-acls="FINANCE,ADMIN"/>
+      <on eventId='dispute' newStateId='DISPUTED' meta-acls="SUPPLIER"/>
+    </manual-state>
+
+    <manual-state id='APPROVED' meta-mainPath="true"
+                  description="Settlement approved, ready for disbursement">
+      <on eventId='disburse' newStateId='DISBURSED' meta-mainPath="true" meta-acls="FINANCE"/>
+      <on eventId='dispute' newStateId='DISPUTED' meta-acls="SUPPLIER"/>
+    </manual-state>
+
+    <manual-state id='DISBURSED' meta-mainPath="true"
+                  description="Settlement disbursed to supplier, awaiting completion">
+      <on eventId='approve' newStateId='COMPLETED' meta-mainPath="true" meta-acls="FINANCE,ADMIN"/>
+      <on eventId='dispute' newStateId='DISPUTED' meta-acls="SUPPLIER"/>
+    </manual-state>
+
+    <manual-state id='COMPLETED' meta-mainPath="true"
+                  description="Settlement fully completed and reconciled"/>
+
+    <manual-state id='DISPUTED'
+                  description="Settlement disputed by supplier, awaiting resolution">
+      <on eventId='resolve' newStateId='APPROVED' meta-acls="FINANCE,ADMIN"/>
+      <on eventId='adjust' newStateId='APPROVED' meta-acls="FINANCE,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='REJECTED'
+                  description="Settlement rejected by finance, needs recalculation">
+      <on eventId='calculate' newStateId='CALCULATING' meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='FAILED'
+                  description="Settlement processing failed, can be retried">
+      <on eventId='retry' newStateId='PENDING' meta-acls="FINANCE,ADMIN"/>
+    </manual-state>
+
+  </flow>
+</states>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from review-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='submitReview' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.review.dto.SubmitReviewPayload"/>
+  <event-information eventId='moderateReview' meta-acls="MODERATOR,ADMIN" meta-bodyType="com.homebase.ecom.review.dto.ModerateReviewPayload"/>
+  <event-information eventId='publishReview' meta-acls="MODERATOR,ADMIN" meta-bodyType="com.homebase.ecom.review.dto.PublishReviewPayload"/>
+  <event-information eventId='rejectReview' meta-acls="MODERATOR,ADMIN" meta-bodyType="com.homebase.ecom.review.dto.RejectReviewPayload"/>
+  <event-information eventId='flagReview' meta-acls="CUSTOMER,SYSTEM" meta-bodyType="com.homebase.ecom.review.dto.FlagReviewPayload"/>
+  <event-information eventId='requestEdit' meta-acls="MODERATOR,ADMIN" meta-bodyType="com.homebase.ecom.review.dto.RequestEditPayload"/>
+  <event-information eventId='resubmitReview' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.review.dto.ResubmitReviewPayload"/>
+  <event-information eventId='archiveReview' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.review.dto.ArchiveReviewPayload"/>
+  <event-information eventId='markHelpful' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.review.dto.MarkHelpfulPayload"/>
+  <event-information eventId='reportReview' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.review.dto.ReportReviewPayload"/>
+
+  <flow id='review-flow' default='true'>
+
+    <manual-state id='SUBMITTED' initialState='true' meta-mainPath="true"
+                  description="Review submitted by customer, pending auto-publish check">
+      <on eventId='submitReview' newStateId='UNDER_MODERATION' meta-mainPath="true" meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <manual-state id='UNDER_MODERATION' meta-mainPath="true"
+                  description="Review awaiting moderator review">
+      <on eventId='publishReview' newStateId='PUBLISHED' meta-mainPath="true" meta-acls="MODERATOR,ADMIN"/>
+      <on eventId='rejectReview' newStateId='REJECTED' meta-acls="MODERATOR,ADMIN"/>
+      <on eventId='requestEdit' newStateId='EDIT_REQUESTED' meta-acls="MODERATOR,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='PUBLISHED' meta-mainPath="true"
+                  description="Review published and visible to customers">
+      <on eventId='markHelpful' newStateId='PUBLISHED' meta-acls="CUSTOMER"/>
+      <on eventId='reportReview' newStateId='PUBLISHED' meta-acls="CUSTOMER"/>
+      <on eventId='flagReview' newStateId='FLAGGED' meta-acls="CUSTOMER,SYSTEM"/>
+      <on eventId='archiveReview' newStateId='ARCHIVED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='FLAGGED'
+                  description="Review flagged, sent back to moderation queue">
+      <on eventId='moderateReview' newStateId='UNDER_MODERATION' meta-acls="MODERATOR,ADMIN"/>
+      <on eventId='publishReview' newStateId='PUBLISHED' meta-acls="MODERATOR,ADMIN"/>
+      <on eventId='rejectReview' newStateId='REJECTED' meta-acls="MODERATOR,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='EDIT_REQUESTED'
+                  description="Moderator requested edits from the reviewer">
+      <on eventId='resubmitReview' newStateId='UNDER_MODERATION' meta-acls="CUSTOMER"/>
+    </manual-state>
+
+    <manual-state id='REJECTED'
+                  description="Review rejected by moderator"/>
+
+    <manual-state id='ARCHIVED'
+                  description="Review archived and no longer visible"/>
+
+  </flow>
+</states>

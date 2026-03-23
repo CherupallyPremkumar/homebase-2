@@ -4,7 +4,7 @@ import com.homebase.ecom.onboarding.model.OnboardingSaga;
 import com.homebase.ecom.onboarding.infrastructure.persistence.adapter.OnboardingSagaJpaRepository;
 import com.homebase.ecom.onboarding.infrastructure.persistence.entity.OnboardingSagaEntity;
 import com.homebase.ecom.onboarding.infrastructure.persistence.mapper.OnboardingSagaMapper;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 public class ChenileOnboardingSagaEntityStore extends ChenileJpaEntityStore<OnboardingSaga, OnboardingSagaEntity> {
 

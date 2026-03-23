@@ -1,0 +1,14 @@
+{
+    "settings": {
+        "currency": {
+            "default": "INR",
+            "allowed": [
+                "INR",
+                "USD",
+                "GBP",
+                "EUR",
+                "JPY"
+            ]
+        }
+    }
+}

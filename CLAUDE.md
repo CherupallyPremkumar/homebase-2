@@ -84,7 +84,7 @@ Multiple Claude agents work on this codebase simultaneously. Follow these rules 
 - **One agent per bounded context at a time.** If memory shows another agent is working on `order`, don't touch `order`.
 - **Save a memory** when you START working on a module: `project_{bc}_in_progress.md` with date and what you're doing.
 - **Delete the in-progress memory** when you finish.
-- **Shared files require extra care:** `db-migrations/`, `build/build-package/pom.xml`, root `pom.xml` — always read latest before editing.
+- **Shared files require extra care:** `db-migrations/`, `root-build/build-package/pom.xml`, root `pom.xml` — always read latest before editing.
 
 ### Safe Parallel Work Zones
 These module groups are independent — agents can work on them simultaneously:
@@ -106,7 +106,7 @@ Cross-group dependencies (be careful):
 
 ### Build Verification
 - After making changes, run `mvn install -pl {bc}/{bc}-service -am` — must compile
-- After adding DB migrations, run full build: `cd build && make build`
+- After adding DB migrations, run full build: `cd root-build && make build`
 - Never commit code that breaks `mvn compile` on any module
 
 ## STM State Machine Inventory — 23 Flows
@@ -261,7 +261,7 @@ All OWIZ chains use Chenile's `org.chenile.owiz.impl.Chain` with `<command>` ste
 
 ## Project Overview
 
-HomeBase is a Java 25 multi-module Maven ecommerce platform built on the **Chenile framework** (`chenile-parent:2.1.12`). It runs as a **mini-monolith** — all bounded contexts compile into a single deployable JAR (`build/build-package`), but each context is structured as if it were an independent microservice.
+HomeBase is a Java 25 multi-module Maven ecommerce platform built on the **Chenile framework** (`chenile-parent:2.1.12`). It runs as a **mini-monolith** — all bounded contexts compile into a single deployable JAR (`root-build/build-package`), but each context is structured as if it were an independent microservice.
 
 **IMPORTANT: Read `gemini.md` at project root for the full architecture rules document before making any structural changes.**
 
@@ -269,13 +269,13 @@ HomeBase is a Java 25 multi-module Maven ecommerce platform built on the **Cheni
 
 ```bash
 # Full build (from repo root)
-cd build && make build            # or: mvn -Drevision=0.0.1-SNAPSHOT install
+cd root-build && make build            # or: mvn -Drevision=0.0.1-SNAPSHOT install
 
 # Build a single module (e.g., catalog)
 mvn install -pl catalog/catalog-service -am
 
 # Run the monolith locally (port 8080)
-cd build && make run              # or: mvn spring-boot:run -pl build/build-package
+cd root-build && make run              # or: mvn spring-boot:run -pl root-build/build-package
 
 # Run tests for a single module
 mvn test -pl catalog/catalog-service
@@ -284,7 +284,7 @@ mvn test -pl catalog/catalog-service
 mvn -DperformIt=true install -pl catalog/catalog-service -am
 
 # Infrastructure (PostgreSQL, Redis, Kafka, Keycloak)
-docker compose up -d
+cd docker && docker compose up -d
 ```
 
 ## Test Framework
@@ -811,9 +811,9 @@ Each bounded context (`cart`, `catalog`, `order`, `user`, etc.) follows hexagona
 - `shared/shared-api` — common DTOs and interfaces used across BCs
 - `shared/shared-security` — Keycloak JWT + CORS auto-configuration
 - `filter-core/currency-interceptor` — request-scoped currency resolution via `ContextContainer`; domain accesses currency through a `CurrencyResolver` port, never directly
-- `build/core` — shared core utilities
-- `build/build-package` — the deployable monolith JAR aggregating all service modules
-- `build/build-configurations` — Spring configuration for the monolith
+- `core` — shared core utilities
+- `root-build/build-package` — the deployable monolith JAR aggregating all service modules
+- `root-build/build-configurations` — Spring configuration for the monolith
 - `db-migrations` — Liquibase changelogs for all schemas (organized by BC under `db/changelog/{bc}/`)
 
 ### Infrastructure Stack

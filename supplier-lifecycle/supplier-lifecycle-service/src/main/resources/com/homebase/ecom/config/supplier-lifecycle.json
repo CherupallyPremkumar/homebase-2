@@ -1,0 +1,15 @@
+{
+    "policies": {
+        "suspension": {
+            "gracePeriodDays": 7,
+            "requireReasonForSuspension": true,
+            "autoSuspendOnLowRating": true,
+            "autoSuspendRatingThreshold": 2.0
+        },
+        "reactivation": {
+            "requireApprovalForReactivation": true,
+            "minDaysBetweenReactivations": 30,
+            "requirePerformanceImprovement": true
+        }
+    }
+}

@@ -4,7 +4,7 @@ import com.homebase.ecom.review.model.Review;
 import com.homebase.ecom.review.infrastructure.persistence.adapter.ReviewJpaRepository;
 import com.homebase.ecom.review.infrastructure.persistence.entity.ReviewEntity;
 import com.homebase.ecom.review.infrastructure.persistence.mapper.ReviewMapper;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 public class ChenileReviewEntityStore extends ChenileJpaEntityStore<Review, ReviewEntity> {
 

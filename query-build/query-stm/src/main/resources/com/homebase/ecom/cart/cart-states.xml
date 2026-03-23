@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from cart-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='create' meta-acls="CUSTOMER,SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='addItem' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.cart.dto.AddItemCartPayload"/>
+  <event-information eventId='removeItem' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.cart.dto.RemoveItemCartPayload"/>
+  <event-information eventId='updateQuantity' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.cart.dto.UpdateQuantityCartPayload"/>
+  <event-information eventId='applyCoupon' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.cart.dto.ApplyCouponCartPayload"/>
+  <event-information eventId='removeCoupon' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.cart.dto.RemoveCouponCartPayload"/>
+  <event-information eventId='initiateCheckout' meta-acls="CUSTOMER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='cancelCheckout' meta-acls="CUSTOMER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='completeCheckout' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.cart.dto.CompleteCheckoutCartPayload"/>
+  <event-information eventId='abandon' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='expire' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='reactivate' meta-acls="CUSTOMER" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='merge' meta-acls="CUSTOMER" meta-bodyType="com.homebase.ecom.cart.dto.MergeCartPayload"/>
+  <event-information eventId='markMerged' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='flagUnavailable' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.cart.dto.FlagUnavailableCartPayload"/>
+  <event-information eventId='refreshPricing' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='expireCoupon' meta-acls="SYSTEM" meta-bodyType="com.homebase.ecom.cart.dto.ExpireCouponCartPayload"/>
+
+  <flow id='cart-flow' default='true'>
+
+    <manual-state id='ACTIVE' initialState='true' meta-mainPath="true"
+                  description="Cart created, user shopping — adding/removing items">
+      <on eventId='addItem' newStateId='ACTIVE' meta-acls="CUSTOMER"/>
+      <on eventId='removeItem' newStateId='ACTIVE' meta-acls="CUSTOMER"/>
+      <on eventId='updateQuantity' newStateId='ACTIVE' meta-acls="CUSTOMER"/>
+      <on eventId='applyCoupon' newStateId='ACTIVE' meta-acls="CUSTOMER"/>
+      <on eventId='removeCoupon' newStateId='ACTIVE' meta-acls="CUSTOMER"/>
+      <on eventId='merge' newStateId='ACTIVE' meta-acls="CUSTOMER"/>
+      <on eventId='initiateCheckout' newStateId='CHECKOUT_INITIATED' meta-mainPath="true" meta-acls="CUSTOMER"/>
+      <on eventId='abandon' newStateId='ABANDONED' meta-acls="SYSTEM"/>
+      <on eventId='expire' newStateId='EXPIRED' meta-acls="SYSTEM"/>
+      <on eventId='markMerged' newStateId='MERGED' meta-acls="SYSTEM"/>
+      <on eventId='flagUnavailable' newStateId='ACTIVE' meta-acls="SYSTEM"/>
+      <on eventId='refreshPricing' newStateId='ACTIVE' meta-acls="SYSTEM"/>
+      <on eventId='expireCoupon' newStateId='ACTIVE' meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='CHECKOUT_INITIATED' meta-mainPath="true"
+                  description="Checkout initiated, inventory reserved, awaiting checkout completion">
+      <on eventId='completeCheckout' newStateId='CHECKOUT_COMPLETED' meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='cancelCheckout' newStateId='ACTIVE' meta-acls="CUSTOMER"/>
+      <on eventId='abandon' newStateId='ABANDONED' meta-acls="SYSTEM"/>
+      <on eventId='expire' newStateId='EXPIRED' meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='CHECKOUT_COMPLETED' meta-mainPath="true"
+                  description="Checkout completed, order created from cart"/>
+
+    <manual-state id='ABANDONED'
+                  description="Cart abandoned by user or system timeout">
+      <on eventId='reactivate' newStateId='ACTIVE' meta-acls="CUSTOMER"/>
+      <on eventId='expire' newStateId='EXPIRED' meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='EXPIRED'
+                  description="Cart expired due to inactivity or TTL"/>
+
+    <manual-state id='MERGED'
+                  description="Cart merged into another user cart after login"/>
+
+  </flow>
+</states>

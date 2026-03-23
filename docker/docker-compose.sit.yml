@@ -1,0 +1,10 @@
+# SIT environment overlay
+# Usage: cd docker && docker compose -f docker-compose.yml -f docker-compose.sit.yml up -d
+
+services:
+  keycloak:
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-sit-admin-change-me}
+    volumes:
+      - ./keycloak/sit/homebase-realm.json:/opt/keycloak/data/import/homebase-realm.json

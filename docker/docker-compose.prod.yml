@@ -1,0 +1,29 @@
+# Production environment overlay
+# Usage: cd docker && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  postgres:
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+  keycloak-db:
+    environment:
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+
+  keycloak:
+    command: start --import-realm --hostname=${KEYCLOAK_HOSTNAME}
+    environment:
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      KC_PROXY: edge
+    volumes:
+      - ./keycloak/prod/homebase-realm.json:/opt/keycloak/data/import/homebase-realm.json
+
+  kafka:
+    environment:
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+
+  redis:
+    command: redis-server --requirepass ${REDIS_PASSWORD}

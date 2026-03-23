@@ -24,6 +24,7 @@
     <module>shared</module>
     <module>filter-core</module>
     <module>db-migrations</module>
+    <module>core</module>
     <module>config</module>
     <module>user</module>
     <module>product</module>
@@ -54,7 +55,8 @@
     <module>return-processing</module>
     <module>supplier-lifecycle</module>
     <module>ui-query</module>
-    <module>build</module>
+    <module>query-build</module>
+    <module>root-build</module>
   </modules>
   <properties>
     <maven.compiler.release>25</maven.compiler.release>
@@ -109,7 +111,7 @@
         <version>0.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>com.homebase.ecom.build</groupId>
+        <groupId>com.homebase.ecom</groupId>
         <artifactId>core</artifactId>
         <version>0.0.1-SNAPSHOT</version>
       </dependency>

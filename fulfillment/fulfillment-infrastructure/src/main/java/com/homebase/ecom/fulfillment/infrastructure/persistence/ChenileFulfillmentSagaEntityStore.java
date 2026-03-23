@@ -4,7 +4,7 @@ import com.homebase.ecom.fulfillment.model.FulfillmentSaga;
 import com.homebase.ecom.fulfillment.infrastructure.persistence.adapter.FulfillmentSagaJpaRepository;
 import com.homebase.ecom.fulfillment.infrastructure.persistence.entity.FulfillmentSagaEntity;
 import com.homebase.ecom.fulfillment.infrastructure.persistence.mapper.FulfillmentSagaMapper;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 public class ChenileFulfillmentSagaEntityStore extends ChenileJpaEntityStore<FulfillmentSaga, FulfillmentSagaEntity> {
 

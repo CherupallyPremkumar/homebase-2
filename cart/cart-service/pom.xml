@@ -23,6 +23,11 @@
 			<groupId>com.homebase.ecom.cart</groupId>
 			<artifactId>cart-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.checkout</groupId>
+			<artifactId>checkout-api</artifactId>
+			<version>${revision}</version>
+		</dependency>
         <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>chenile-proxy</artifactId>
@@ -30,6 +35,11 @@
 		<dependency>
 			<groupId>org.chenile</groupId>
             <artifactId>workflow-service</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>core</artifactId>
+			<version>${revision}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.homebase.ecom.cart</groupId>
@@ -136,12 +146,12 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>com.homebase.ecom.build</groupId>
-                                    <artifactId>query-build</artifactId>
+                                    <groupId>com.homebase.ecom.query</groupId>
+                                    <artifactId>query-build-package</artifactId>
                                     <version>${revision}</version>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/test-dependencies</outputDirectory>
-                                    <destFileName>query-build.jar</destFileName>
+                                    <destFileName>query-build-package.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

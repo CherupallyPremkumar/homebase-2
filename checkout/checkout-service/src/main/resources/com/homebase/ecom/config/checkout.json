@@ -1,0 +1,37 @@
+{
+    "policies": {
+        "order": {
+            "minOrderValueInr": 500.0,
+            "maxOrderValueInr": 500000.0,
+            "maxItemsPerOrder": 50
+        },
+        "payment": {
+            "holdMinutes": 30,
+            "allowedPaymentMethods": [
+                "UPI",
+                "NETBANKING",
+                "CREDIT_CARD",
+                "DEBIT_CARD",
+                "WALLET"
+            ]
+        },
+        "address": {
+            "requirePincode": true,
+            "requirePhone": true
+        }
+    },
+    "rules": {
+        "shipping": {
+            "flatRateInr": 50.0,
+            "freeShippingMinInr": 3000.0
+        },
+        "tax": {
+            "defaultGstPercent": 5.0,
+            "luxuryGstPercent": 12.0,
+            "luxuryPriceThresholdInr": 5000.0
+        },
+        "inventory": {
+            "reservationHoldMinutes": 30
+        }
+    }
+}

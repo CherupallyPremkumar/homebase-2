@@ -1,0 +1,2230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ==================================================================
+         MASTER TEST DATA — ONE CLEAN CHANGELOG FOR ALL HOMEBASE TABLES
+         Replaces all individual per-module test data files.
+         All IDs are stable UUIDs for cross-referencing between tables.
+         ================================================================== -->
+
+    <!-- ================================================================== -->
+    <!-- 1. WAREHOUSES (no FK dependencies)                                 -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-warehouses" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM warehouses WHERE id = 'wh-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="warehouses">
+            <column name="id" value="wh-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="warehouse_code" value="BLR-FC-01"/>
+            <column name="warehouse_name" value="Bangalore Fulfillment Center"/>
+            <column name="warehouse_type" value="FULFILLMENT_CENTER"/>
+            <column name="address_line1" value="Plot 42, Electronic City Phase 2"/>
+            <column name="city" value="Bangalore"/>
+            <column name="state" value="Karnataka"/>
+            <column name="pincode" value="560100"/>
+            <column name="country" value="IN"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="is_returns_center" valueBoolean="false"/>
+            <column name="max_capacity_units" valueNumeric="50000"/>
+            <column name="current_utilization_pct" valueNumeric="62.50"/>
+        </insert>
+
+        <insert tableName="warehouses">
+            <column name="id" value="wh-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="warehouse_code" value="MUM-FC-01"/>
+            <column name="warehouse_name" value="Mumbai Fulfillment Center"/>
+            <column name="warehouse_type" value="FULFILLMENT_CENTER"/>
+            <column name="address_line1" value="JNPT Road, Uran"/>
+            <column name="city" value="Mumbai"/>
+            <column name="state" value="Maharashtra"/>
+            <column name="pincode" value="400702"/>
+            <column name="country" value="IN"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="is_returns_center" valueBoolean="true"/>
+            <column name="max_capacity_units" valueNumeric="80000"/>
+            <column name="current_utilization_pct" valueNumeric="45.00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 2. CATEGORIES (no FK dependencies)                                 -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-categories" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM categories WHERE id = 'cat-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="categories">
+            <column name="id" value="cat-001"/>
+            <column name="name" value="Electronics"/>
+            <column name="slug" value="electronics"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-002"/>
+            <column name="name" value="Kitchen Appliances"/>
+            <column name="slug" value="kitchen-appliances"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-003"/>
+            <column name="name" value="Smartphones"/>
+            <column name="slug" value="smartphones"/>
+            <column name="parent_id" value="cat-001"/>
+            <column name="path" value="cat-001/cat-003"/>
+            <column name="depth" valueNumeric="1"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-004"/>
+            <column name="name" value="Laptops"/>
+            <column name="slug" value="laptops"/>
+            <column name="parent_id" value="cat-001"/>
+            <column name="path" value="cat-001/cat-004"/>
+            <column name="depth" valueNumeric="1"/>
+            <column name="display_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-005"/>
+            <column name="name" value="Home Furniture"/>
+            <column name="slug" value="home-furniture"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 3. BRANDS (no FK dependencies)                                     -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-brands" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM brands WHERE id = 'brand-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="brands">
+            <column name="id" value="brand-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="TechPro"/>
+            <column name="slug" value="techpro"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="brands">
+            <column name="id" value="brand-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="KitchenMaster"/>
+            <column name="slug" value="kitchenmaster"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="brands">
+            <column name="id" value="brand-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="FurniCraft"/>
+            <column name="slug" value="furnicraft"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 4. USER PROFILES (5 users — admin, 2 customers, supplier, agent)   -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-users" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM user_profiles WHERE id = 'user-admin-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="user_profiles">
+            <column name="id" value="user-admin-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-01-01T09:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T09:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="user-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2025-01-01T09:00:00"/>
+            <column name="keycloak_id" value="kc-admin-001"/>
+            <column name="email" value="admin@homebase.in"/>
+            <column name="first_name" value="Platform"/>
+            <column name="last_name" value="Admin"/>
+            <column name="phone" value="+919900000001"/>
+            <column name="role" value="ADMIN"/>
+            <column name="email_verified" valueBoolean="true"/>
+            <column name="phone_verified" valueBoolean="true"/>
+            <column name="customer_tier" value="REGULAR"/>
+        </insert>
+
+        <insert tableName="user_profiles">
+            <column name="id" value="user-cust-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-01-10T12:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-10T12:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="user-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2025-01-10T12:00:00"/>
+            <column name="keycloak_id" value="kc-cust-001"/>
+            <column name="email" value="ravi.kumar@example.com"/>
+            <column name="first_name" value="Ravi"/>
+            <column name="last_name" value="Kumar"/>
+            <column name="phone" value="+919900000002"/>
+            <column name="role" value="CUSTOMER"/>
+            <column name="email_verified" valueBoolean="true"/>
+            <column name="phone_verified" valueBoolean="true"/>
+            <column name="customer_tier" value="PREMIUM"/>
+        </insert>
+
+        <insert tableName="user_profiles">
+            <column name="id" value="user-cust-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-01-12T14:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-12T14:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="user-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2025-01-12T14:00:00"/>
+            <column name="keycloak_id" value="kc-cust-002"/>
+            <column name="email" value="priya.sharma@example.com"/>
+            <column name="first_name" value="Priya"/>
+            <column name="last_name" value="Sharma"/>
+            <column name="phone" value="+919900000003"/>
+            <column name="role" value="CUSTOMER"/>
+            <column name="email_verified" valueBoolean="true"/>
+            <column name="phone_verified" valueBoolean="false"/>
+            <column name="customer_tier" value="REGULAR"/>
+        </insert>
+
+        <insert tableName="user_profiles">
+            <column name="id" value="user-supplier-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-01-05T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-05T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="user-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2025-01-05T10:00:00"/>
+            <column name="keycloak_id" value="kc-supplier-001"/>
+            <column name="email" value="supplier@techzone.in"/>
+            <column name="first_name" value="Vikram"/>
+            <column name="last_name" value="Electronics"/>
+            <column name="phone" value="+919900000004"/>
+            <column name="role" value="SUPPLIER"/>
+            <column name="email_verified" valueBoolean="true"/>
+            <column name="phone_verified" valueBoolean="true"/>
+            <column name="customer_tier" value="REGULAR"/>
+        </insert>
+
+        <insert tableName="user_profiles">
+            <column name="id" value="user-agent-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-01-08T08:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-08T08:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="user-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2025-01-08T08:00:00"/>
+            <column name="keycloak_id" value="kc-agent-001"/>
+            <column name="email" value="support.agent@homebase.in"/>
+            <column name="first_name" value="Anita"/>
+            <column name="last_name" value="Support"/>
+            <column name="phone" value="+919900000005"/>
+            <column name="role" value="SUPPORT_AGENT"/>
+            <column name="email_verified" valueBoolean="true"/>
+            <column name="phone_verified" valueBoolean="true"/>
+            <column name="customer_tier" value="REGULAR"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 5. USER ADDRESSES                                                  -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-user-addresses" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM user_address WHERE id = 'addr-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="user_address">
+            <column name="id" value="addr-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-01-10T12:05:00"/>
+            <column name="last_modified_time" valueDate="2025-01-10T12:05:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="user_id" value="user-cust-001"/>
+            <column name="label" value="Home"/>
+            <column name="line1" value="12, MG Road, Indiranagar"/>
+            <column name="city" value="Bangalore"/>
+            <column name="state" value="Karnataka"/>
+            <column name="postal_code" value="560038"/>
+            <column name="country" value="IN"/>
+            <column name="is_default" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="user_address">
+            <column name="id" value="addr-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-002"/>
+            <column name="created_time" valueDate="2025-01-12T14:05:00"/>
+            <column name="last_modified_time" valueDate="2025-01-12T14:05:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="user_id" value="user-cust-002"/>
+            <column name="label" value="Home"/>
+            <column name="line1" value="45, Bandra West"/>
+            <column name="city" value="Mumbai"/>
+            <column name="state" value="Maharashtra"/>
+            <column name="postal_code" value="400050"/>
+            <column name="country" value="IN"/>
+            <column name="is_default" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 6. SUPPLIERS (3 suppliers)                                         -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-suppliers" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM supplier WHERE id = 'sup-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="supplier">
+            <column name="id" value="sup-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-05T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-05T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="supplier-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2025-01-05T10:00:00"/>
+            <column name="user_id" value="user-supplier-001"/>
+            <column name="business_name" value="TechZone India Pvt Ltd"/>
+            <column name="business_type" value="PRIVATE_LIMITED"/>
+            <column name="tax_id" value="29ABCDE1234F1Z5"/>
+            <column name="contact_email" value="supplier@techzone.in"/>
+            <column name="contact_phone" value="+919900000004"/>
+            <column name="rating" valueNumeric="4.5"/>
+            <column name="total_orders" valueNumeric="150"/>
+            <column name="total_returns" valueNumeric="5"/>
+            <column name="fulfillment_rate" valueNumeric="98.5"/>
+            <column name="commission_rate" valueNumeric="12.0"/>
+        </insert>
+
+        <insert tableName="supplier">
+            <column name="id" value="sup-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-06T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-06T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="supplier-flow"/>
+            <column name="state_id" value="APPROVED"/>
+            <column name="state_entry_time" valueDate="2025-01-06T10:00:00"/>
+            <column name="business_name" value="KitchenWorld Enterprises"/>
+            <column name="business_type" value="PARTNERSHIP"/>
+            <column name="tax_id" value="27FGHIJ5678K2Z3"/>
+            <column name="contact_email" value="sales@kitchenworld.in"/>
+            <column name="contact_phone" value="+919900000006"/>
+            <column name="rating" valueNumeric="4.2"/>
+            <column name="total_orders" valueNumeric="80"/>
+            <column name="total_returns" valueNumeric="3"/>
+            <column name="fulfillment_rate" valueNumeric="96.0"/>
+            <column name="commission_rate" valueNumeric="15.0"/>
+        </insert>
+
+        <insert tableName="supplier">
+            <column name="id" value="sup-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-07T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-07T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="supplier-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2025-01-07T10:00:00"/>
+            <column name="business_name" value="FurniHome Solutions"/>
+            <column name="business_type" value="SOLE_PROPRIETORSHIP"/>
+            <column name="tax_id" value="33KLMNO9012P3Z7"/>
+            <column name="contact_email" value="info@furnihome.in"/>
+            <column name="contact_phone" value="+919900000007"/>
+            <column name="rating" valueNumeric="4.7"/>
+            <column name="total_orders" valueNumeric="200"/>
+            <column name="total_returns" valueNumeric="8"/>
+            <column name="fulfillment_rate" valueNumeric="99.0"/>
+            <column name="commission_rate" valueNumeric="10.0"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 7. PRODUCTS (5 products in various states)                         -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-products" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM products WHERE id = 'prod-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="products">
+            <column name="id" value="prod-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="sup-001"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="product-flow"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="state_entry_time" valueDate="2025-01-16T10:00:00"/>
+            <column name="name" value="TechPro Smartphone X1"/>
+            <column name="description" value="Flagship smartphone with 6.7 inch AMOLED display, 128GB storage"/>
+            <column name="brand" value="TechPro"/>
+            <column name="category_id" value="cat-003"/>
+            <column name="slug" value="techpro-smartphone-x1"/>
+            <column name="base_price" valueNumeric="24999.00"/>
+            <column name="hsn_code" value="85171290"/>
+            <column name="country_of_origin" value="India"/>
+            <column name="weight_grams" valueNumeric="185"/>
+            <column name="is_returnable" valueBoolean="true"/>
+            <column name="return_window_days" valueNumeric="7"/>
+            <column name="tax_category" value="ELECTRONICS"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="published_at" valueDate="2025-01-16T10:00:00"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" value="prod-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="sup-001"/>
+            <column name="created_time" valueDate="2025-01-15T11:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T11:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="product-flow"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="state_entry_time" valueDate="2025-01-16T11:00:00"/>
+            <column name="name" value="TechPro Laptop Pro 15"/>
+            <column name="description" value="15.6 inch laptop, Intel i7, 16GB RAM, 512GB SSD"/>
+            <column name="brand" value="TechPro"/>
+            <column name="category_id" value="cat-004"/>
+            <column name="slug" value="techpro-laptop-pro-15"/>
+            <column name="base_price" valueNumeric="74999.00"/>
+            <column name="hsn_code" value="84713010"/>
+            <column name="country_of_origin" value="India"/>
+            <column name="weight_grams" valueNumeric="1800"/>
+            <column name="is_returnable" valueBoolean="true"/>
+            <column name="return_window_days" valueNumeric="10"/>
+            <column name="tax_category" value="ELECTRONICS"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="published_at" valueDate="2025-01-16T11:00:00"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" value="prod-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="sup-002"/>
+            <column name="created_time" valueDate="2025-01-15T12:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T12:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="product-flow"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="state_entry_time" valueDate="2025-01-16T12:00:00"/>
+            <column name="name" value="KitchenMaster Mixer Grinder 750W"/>
+            <column name="description" value="Heavy-duty mixer grinder with 3 jars, 750 watts motor"/>
+            <column name="brand" value="KitchenMaster"/>
+            <column name="category_id" value="cat-002"/>
+            <column name="slug" value="kitchenmaster-mixer-grinder-750w"/>
+            <column name="base_price" valueNumeric="3999.00"/>
+            <column name="hsn_code" value="85094010"/>
+            <column name="country_of_origin" value="India"/>
+            <column name="weight_grams" valueNumeric="3500"/>
+            <column name="is_returnable" valueBoolean="true"/>
+            <column name="return_window_days" valueNumeric="7"/>
+            <column name="tax_category" value="APPLIANCES"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="published_at" valueDate="2025-01-16T12:00:00"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" value="prod-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="sup-003"/>
+            <column name="created_time" valueDate="2025-01-15T13:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T13:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="product-flow"/>
+            <column name="state_id" value="DRAFT"/>
+            <column name="state_entry_time" valueDate="2025-01-15T13:00:00"/>
+            <column name="name" value="FurniCraft Ergonomic Office Chair"/>
+            <column name="description" value="Adjustable ergonomic office chair with lumbar support"/>
+            <column name="brand" value="FurniCraft"/>
+            <column name="category_id" value="cat-005"/>
+            <column name="slug" value="furnicraft-ergonomic-office-chair"/>
+            <column name="base_price" valueNumeric="12999.00"/>
+            <column name="country_of_origin" value="India"/>
+            <column name="weight_grams" valueNumeric="14000"/>
+            <column name="is_returnable" valueBoolean="true"/>
+            <column name="return_window_days" valueNumeric="7"/>
+            <column name="tax_category" value="FURNITURE"/>
+            <column name="is_active" valueBoolean="false"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" value="prod-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="sup-001"/>
+            <column name="created_time" valueDate="2025-01-15T14:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T14:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="product-flow"/>
+            <column name="state_id" value="UNDER_REVIEW"/>
+            <column name="state_entry_time" valueDate="2025-01-15T14:00:00"/>
+            <column name="name" value="TechPro Wireless Earbuds ANC"/>
+            <column name="description" value="True wireless earbuds with active noise cancellation"/>
+            <column name="brand" value="TechPro"/>
+            <column name="category_id" value="cat-001"/>
+            <column name="slug" value="techpro-wireless-earbuds-anc"/>
+            <column name="base_price" valueNumeric="4999.00"/>
+            <column name="hsn_code" value="85183000"/>
+            <column name="country_of_origin" value="India"/>
+            <column name="weight_grams" valueNumeric="55"/>
+            <column name="is_returnable" valueBoolean="true"/>
+            <column name="return_window_days" valueNumeric="7"/>
+            <column name="tax_category" value="ELECTRONICS"/>
+            <column name="is_active" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 8. PRODUCT VARIANTS                                                -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-product-variants" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM product_variants WHERE id = 'var-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="product_variants">
+            <column name="id" value="var-001"/>
+            <column name="product_id" value="prod-001"/>
+            <column name="sku" value="TP-X1-BLK-128"/>
+        </insert>
+        <insert tableName="product_variants">
+            <column name="id" value="var-002"/>
+            <column name="product_id" value="prod-001"/>
+            <column name="sku" value="TP-X1-WHT-128"/>
+        </insert>
+        <insert tableName="product_variants">
+            <column name="id" value="var-003"/>
+            <column name="product_id" value="prod-002"/>
+            <column name="sku" value="TP-LP15-SLV-16"/>
+        </insert>
+        <insert tableName="product_variants">
+            <column name="id" value="var-004"/>
+            <column name="product_id" value="prod-003"/>
+            <column name="sku" value="KM-MG750-RED"/>
+        </insert>
+        <insert tableName="product_variants">
+            <column name="id" value="var-005"/>
+            <column name="product_id" value="prod-005"/>
+            <column name="sku" value="TP-EB-ANC-BLK"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 9. INVENTORY ITEMS (5 items for each product)                      -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-inventory" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM inventory_item WHERE id = 'inv-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/>
+            <column name="state_id" value="IN_WAREHOUSE"/>
+            <column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="TP-X1-BLK-128"/>
+            <column name="product_id" value="prod-001"/>
+            <column name="variant_id" value="var-001"/>
+            <column name="quantity" valueNumeric="500"/>
+            <column name="available_quantity" valueNumeric="480"/>
+            <column name="reserved_quantity" valueNumeric="20"/>
+            <column name="damaged_quantity" valueNumeric="0"/>
+            <column name="primary_fc" value="wh-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="low_stock_threshold" valueNumeric="50"/>
+            <column name="out_of_stock_threshold" valueNumeric="0"/>
+            <column name="cost_price" valueNumeric="18000.00"/>
+        </insert>
+
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/>
+            <column name="state_id" value="IN_WAREHOUSE"/>
+            <column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="TP-X1-WHT-128"/>
+            <column name="product_id" value="prod-001"/>
+            <column name="variant_id" value="var-002"/>
+            <column name="quantity" valueNumeric="300"/>
+            <column name="available_quantity" valueNumeric="295"/>
+            <column name="reserved_quantity" valueNumeric="5"/>
+            <column name="damaged_quantity" valueNumeric="0"/>
+            <column name="primary_fc" value="wh-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="low_stock_threshold" valueNumeric="30"/>
+            <column name="out_of_stock_threshold" valueNumeric="0"/>
+            <column name="cost_price" valueNumeric="18000.00"/>
+        </insert>
+
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/>
+            <column name="state_id" value="IN_WAREHOUSE"/>
+            <column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="TP-LP15-SLV-16"/>
+            <column name="product_id" value="prod-002"/>
+            <column name="variant_id" value="var-003"/>
+            <column name="quantity" valueNumeric="120"/>
+            <column name="available_quantity" valueNumeric="115"/>
+            <column name="reserved_quantity" valueNumeric="5"/>
+            <column name="damaged_quantity" valueNumeric="0"/>
+            <column name="primary_fc" value="wh-002"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="low_stock_threshold" valueNumeric="20"/>
+            <column name="out_of_stock_threshold" valueNumeric="0"/>
+            <column name="cost_price" valueNumeric="55000.00"/>
+        </insert>
+
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/>
+            <column name="state_id" value="IN_WAREHOUSE"/>
+            <column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="KM-MG750-RED"/>
+            <column name="product_id" value="prod-003"/>
+            <column name="variant_id" value="var-004"/>
+            <column name="quantity" valueNumeric="800"/>
+            <column name="available_quantity" valueNumeric="790"/>
+            <column name="reserved_quantity" valueNumeric="10"/>
+            <column name="damaged_quantity" valueNumeric="0"/>
+            <column name="primary_fc" value="wh-002"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="low_stock_threshold" valueNumeric="100"/>
+            <column name="out_of_stock_threshold" valueNumeric="0"/>
+            <column name="cost_price" valueNumeric="2200.00"/>
+        </insert>
+
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/>
+            <column name="state_id" value="OUT_OF_STOCK"/>
+            <column name="state_entry_time" valueDate="2025-02-10T10:00:00"/>
+            <column name="sku" value="TP-EB-ANC-BLK"/>
+            <column name="product_id" value="prod-005"/>
+            <column name="variant_id" value="var-005"/>
+            <column name="quantity" valueNumeric="0"/>
+            <column name="available_quantity" valueNumeric="0"/>
+            <column name="reserved_quantity" valueNumeric="0"/>
+            <column name="damaged_quantity" valueNumeric="0"/>
+            <column name="primary_fc" value="wh-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="low_stock_threshold" valueNumeric="25"/>
+            <column name="out_of_stock_threshold" valueNumeric="0"/>
+            <column name="cost_price" valueNumeric="2800.00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 10. OFFERS (3 offers — LIVE, APPROVED, EXPIRED)                    -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-offers" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM offer WHERE id = 'offer-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="offer">
+            <column name="id" value="offer-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="sup-001"/>
+            <column name="created_time" valueDate="2025-01-16T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-16T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="offer-flow"/>
+            <column name="state_id" value="LIVE"/>
+            <column name="state_entry_time" valueDate="2025-01-17T10:00:00"/>
+            <column name="product_id" value="prod-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="variant_id" value="var-001"/>
+            <column name="sku" value="TP-X1-BLK-128"/>
+            <column name="title" value="TechPro X1 Black 128GB"/>
+            <column name="offer_price" valueNumeric="23999.00"/>
+            <column name="mrp" valueNumeric="24999.00"/>
+            <column name="original_price" valueNumeric="24999.00"/>
+            <column name="discount_percent" valueNumeric="4.00"/>
+            <column name="stock_quantity" valueNumeric="480"/>
+            <column name="buy_box_winner" valueBoolean="true"/>
+            <column name="buy_box_score" valueNumeric="92.50"/>
+            <column name="fulfillment_type" value="MERCHANT"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="currency" value="INR"/>
+        </insert>
+
+        <insert tableName="offer">
+            <column name="id" value="offer-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="sup-001"/>
+            <column name="created_time" valueDate="2025-01-16T11:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-16T11:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="offer-flow"/>
+            <column name="state_id" value="LIVE"/>
+            <column name="state_entry_time" valueDate="2025-01-17T11:00:00"/>
+            <column name="product_id" value="prod-002"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="variant_id" value="var-003"/>
+            <column name="sku" value="TP-LP15-SLV-16"/>
+            <column name="title" value="TechPro Laptop Pro 15 Silver"/>
+            <column name="offer_price" valueNumeric="69999.00"/>
+            <column name="mrp" valueNumeric="74999.00"/>
+            <column name="original_price" valueNumeric="74999.00"/>
+            <column name="discount_percent" valueNumeric="6.67"/>
+            <column name="stock_quantity" valueNumeric="115"/>
+            <column name="buy_box_winner" valueBoolean="true"/>
+            <column name="buy_box_score" valueNumeric="88.00"/>
+            <column name="fulfillment_type" value="MERCHANT"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="currency" value="INR"/>
+        </insert>
+
+        <insert tableName="offer">
+            <column name="id" value="offer-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="sup-002"/>
+            <column name="created_time" valueDate="2025-01-16T12:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-16T12:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="offer-flow"/>
+            <column name="state_id" value="APPROVED"/>
+            <column name="state_entry_time" valueDate="2025-01-17T12:00:00"/>
+            <column name="product_id" value="prod-003"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="variant_id" value="var-004"/>
+            <column name="sku" value="KM-MG750-RED"/>
+            <column name="title" value="KitchenMaster Mixer Grinder 750W Red"/>
+            <column name="offer_price" valueNumeric="3499.00"/>
+            <column name="mrp" valueNumeric="3999.00"/>
+            <column name="original_price" valueNumeric="3999.00"/>
+            <column name="discount_percent" valueNumeric="12.50"/>
+            <column name="stock_quantity" valueNumeric="790"/>
+            <column name="buy_box_winner" valueBoolean="false"/>
+            <column name="buy_box_score" valueNumeric="75.00"/>
+            <column name="fulfillment_type" value="MERCHANT"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="currency" value="INR"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 11. CARTS (3 carts — ACTIVE, CHECKOUT_INITIATED, ABANDONED)        -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-carts" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM cart WHERE id = 'cart-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="cart">
+            <column name="id" value="cart-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-02-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-01T10:30:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="cart-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2025-02-01T10:00:00"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="subtotal" valueNumeric="93998.00"/>
+            <column name="total" valueNumeric="93998.00"/>
+            <column name="currency" value="INR"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+        </insert>
+
+        <insert tableName="cart">
+            <column name="id" value="cart-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-002"/>
+            <column name="created_time" valueDate="2025-02-01T11:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-01T11:15:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="cart-flow"/>
+            <column name="state_id" value="CHECKOUT_INITIATED"/>
+            <column name="state_entry_time" valueDate="2025-02-01T11:15:00"/>
+            <column name="customer_id" value="user-cust-002"/>
+            <column name="subtotal" valueNumeric="3499.00"/>
+            <column name="total" valueNumeric="3499.00"/>
+            <column name="currency" value="INR"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+        </insert>
+
+        <insert tableName="cart">
+            <column name="id" value="cart-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-01-20T09:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-25T09:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="cart-flow"/>
+            <column name="state_id" value="ABANDONED"/>
+            <column name="state_entry_time" valueDate="2025-01-25T09:00:00"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="subtotal" valueNumeric="4999.00"/>
+            <column name="total" valueNumeric="4999.00"/>
+            <column name="currency" value="INR"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 12. CART ITEMS (6 items across carts)                              -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-cart-items" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM cart_item WHERE id = 'ci-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="cart_item">
+            <column name="id" value="ci-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-02-01T10:05:00"/>
+            <column name="last_modified_time" valueDate="2025-02-01T10:05:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="cart_id" value="cart-001"/>
+            <column name="product_id" value="prod-001"/>
+            <column name="variant_id" value="var-001"/>
+            <column name="sku" value="TP-X1-BLK-128"/>
+            <column name="product_name" value="TechPro Smartphone X1"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="23999.00"/>
+            <column name="line_total" valueNumeric="23999.00"/>
+            <column name="available" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="cart_item">
+            <column name="id" value="ci-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-02-01T10:10:00"/>
+            <column name="last_modified_time" valueDate="2025-02-01T10:10:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="cart_id" value="cart-001"/>
+            <column name="product_id" value="prod-002"/>
+            <column name="variant_id" value="var-003"/>
+            <column name="sku" value="TP-LP15-SLV-16"/>
+            <column name="product_name" value="TechPro Laptop Pro 15"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="69999.00"/>
+            <column name="line_total" valueNumeric="69999.00"/>
+            <column name="available" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="cart_item">
+            <column name="id" value="ci-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-002"/>
+            <column name="created_time" valueDate="2025-02-01T11:05:00"/>
+            <column name="last_modified_time" valueDate="2025-02-01T11:05:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="cart_id" value="cart-002"/>
+            <column name="product_id" value="prod-003"/>
+            <column name="variant_id" value="var-004"/>
+            <column name="sku" value="KM-MG750-RED"/>
+            <column name="product_name" value="KitchenMaster Mixer Grinder 750W"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="3499.00"/>
+            <column name="line_total" valueNumeric="3499.00"/>
+            <column name="available" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="cart_item">
+            <column name="id" value="ci-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-01-20T09:05:00"/>
+            <column name="last_modified_time" valueDate="2025-01-20T09:05:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="cart_id" value="cart-003"/>
+            <column name="product_id" value="prod-005"/>
+            <column name="variant_id" value="var-005"/>
+            <column name="sku" value="TP-EB-ANC-BLK"/>
+            <column name="product_name" value="TechPro Wireless Earbuds ANC"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="4999.00"/>
+            <column name="line_total" valueNumeric="4999.00"/>
+            <column name="available" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 13. ORDERS (5 orders in various states)                            -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-orders" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM orders WHERE id = 'ord-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="orders">
+            <column name="id" value="ord-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-02-05T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-05T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="order-flow"/>
+            <column name="state_id" value="DELIVERED"/>
+            <column name="state_entry_time" valueDate="2025-02-10T14:00:00"/>
+            <column name="order_number" value="HB-2025-000001"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="subtotal" valueNumeric="23999.00"/>
+            <column name="tax_amount" valueNumeric="4320.00"/>
+            <column name="shipping_amount" valueNumeric="0.00"/>
+            <column name="total_amount" valueNumeric="28319.00"/>
+            <column name="currency" value="INR"/>
+            <column name="item_count" valueNumeric="1"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+            <column name="paid_at" valueDate="2025-02-05T10:05:00"/>
+            <column name="shipped_at" valueDate="2025-02-06T09:00:00"/>
+            <column name="delivered_at" valueDate="2025-02-10T14:00:00"/>
+        </insert>
+
+        <insert tableName="orders">
+            <column name="id" value="ord-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-02-12T11:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-12T11:05:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="order-flow"/>
+            <column name="state_id" value="PAID"/>
+            <column name="state_entry_time" valueDate="2025-02-12T11:05:00"/>
+            <column name="order_number" value="HB-2025-000002"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="subtotal" valueNumeric="69999.00"/>
+            <column name="tax_amount" valueNumeric="12600.00"/>
+            <column name="shipping_amount" valueNumeric="0.00"/>
+            <column name="total_amount" valueNumeric="82599.00"/>
+            <column name="currency" value="INR"/>
+            <column name="item_count" valueNumeric="1"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+            <column name="paid_at" valueDate="2025-02-12T11:05:00"/>
+        </insert>
+
+        <insert tableName="orders">
+            <column name="id" value="ord-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-002"/>
+            <column name="created_time" valueDate="2025-02-14T09:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-15T09:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="order-flow"/>
+            <column name="state_id" value="SHIPPED"/>
+            <column name="state_entry_time" valueDate="2025-02-15T09:00:00"/>
+            <column name="order_number" value="HB-2025-000003"/>
+            <column name="customer_id" value="user-cust-002"/>
+            <column name="subtotal" valueNumeric="3499.00"/>
+            <column name="tax_amount" valueNumeric="630.00"/>
+            <column name="shipping_amount" valueNumeric="49.00"/>
+            <column name="total_amount" valueNumeric="4178.00"/>
+            <column name="currency" value="INR"/>
+            <column name="item_count" valueNumeric="1"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+            <column name="paid_at" valueDate="2025-02-14T09:05:00"/>
+            <column name="shipped_at" valueDate="2025-02-15T09:00:00"/>
+            <column name="tracking_number" value="DELHIVERY-123456789"/>
+            <column name="carrier" value="Delhivery"/>
+        </insert>
+
+        <insert tableName="orders">
+            <column name="id" value="ord-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-002"/>
+            <column name="created_time" valueDate="2025-02-18T15:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-18T15:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="order-flow"/>
+            <column name="state_id" value="CREATED"/>
+            <column name="state_entry_time" valueDate="2025-02-18T15:00:00"/>
+            <column name="order_number" value="HB-2025-000004"/>
+            <column name="customer_id" value="user-cust-002"/>
+            <column name="subtotal" valueNumeric="23999.00"/>
+            <column name="tax_amount" valueNumeric="4320.00"/>
+            <column name="shipping_amount" valueNumeric="0.00"/>
+            <column name="total_amount" valueNumeric="28319.00"/>
+            <column name="currency" value="INR"/>
+            <column name="item_count" valueNumeric="1"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+        </insert>
+
+        <insert tableName="orders">
+            <column name="id" value="ord-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-01-28T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-29T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="order-flow"/>
+            <column name="state_id" value="CANCELLED"/>
+            <column name="state_entry_time" valueDate="2025-01-29T10:00:00"/>
+            <column name="order_number" value="HB-2025-000005"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="subtotal" valueNumeric="4999.00"/>
+            <column name="tax_amount" valueNumeric="900.00"/>
+            <column name="shipping_amount" valueNumeric="49.00"/>
+            <column name="total_amount" valueNumeric="5948.00"/>
+            <column name="currency" value="INR"/>
+            <column name="item_count" valueNumeric="1"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+            <column name="cancel_reason" value="Customer changed mind"/>
+            <column name="cancelled_at" valueDate="2025-01-29T10:00:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 14. ORDER ITEMS                                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-order-items" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM order_items WHERE id = 'oi-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="order_items">
+            <column name="id" value="oi-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-02-05T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-05T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="order_id" value="ord-001"/>
+            <column name="product_id" value="prod-001"/>
+            <column name="variant_id" value="var-001"/>
+            <column name="sku" value="TP-X1-BLK-128"/>
+            <column name="product_name" value="TechPro Smartphone X1"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="23999.00"/>
+            <column name="total_price" valueNumeric="23999.00"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="tax_amount" valueNumeric="4320.00"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+            <column name="hsn_code" value="85171290"/>
+        </insert>
+
+        <insert tableName="order_items">
+            <column name="id" value="oi-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-02-12T11:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-12T11:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="order_id" value="ord-002"/>
+            <column name="product_id" value="prod-002"/>
+            <column name="variant_id" value="var-003"/>
+            <column name="sku" value="TP-LP15-SLV-16"/>
+            <column name="product_name" value="TechPro Laptop Pro 15"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="69999.00"/>
+            <column name="total_price" valueNumeric="69999.00"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="tax_amount" valueNumeric="12600.00"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+            <column name="hsn_code" value="84713010"/>
+        </insert>
+
+        <insert tableName="order_items">
+            <column name="id" value="oi-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-002"/>
+            <column name="created_time" valueDate="2025-02-14T09:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-14T09:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="order_id" value="ord-003"/>
+            <column name="product_id" value="prod-003"/>
+            <column name="variant_id" value="var-004"/>
+            <column name="sku" value="KM-MG750-RED"/>
+            <column name="product_name" value="KitchenMaster Mixer Grinder 750W"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="3499.00"/>
+            <column name="total_price" valueNumeric="3499.00"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="tax_amount" valueNumeric="630.00"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+            <column name="hsn_code" value="85094010"/>
+        </insert>
+
+        <insert tableName="order_items">
+            <column name="id" value="oi-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-002"/>
+            <column name="created_time" valueDate="2025-02-18T15:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-18T15:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="order_id" value="ord-004"/>
+            <column name="product_id" value="prod-001"/>
+            <column name="variant_id" value="var-002"/>
+            <column name="sku" value="TP-X1-WHT-128"/>
+            <column name="product_name" value="TechPro Smartphone X1 White"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="23999.00"/>
+            <column name="total_price" valueNumeric="23999.00"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="tax_amount" valueNumeric="4320.00"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+            <column name="hsn_code" value="85171290"/>
+        </insert>
+
+        <insert tableName="order_items">
+            <column name="id" value="oi-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-01-28T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-28T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="order_id" value="ord-005"/>
+            <column name="product_id" value="prod-005"/>
+            <column name="variant_id" value="var-005"/>
+            <column name="sku" value="TP-EB-ANC-BLK"/>
+            <column name="product_name" value="TechPro Wireless Earbuds ANC"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="4999.00"/>
+            <column name="total_price" valueNumeric="4999.00"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="tax_amount" valueNumeric="900.00"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+            <column name="hsn_code" value="85183000"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 15. PAYMENTS (3 payments)                                          -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-payments" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM payment WHERE id = 'pay-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="payment">
+            <column name="id" value="pay-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-05T10:02:00"/>
+            <column name="last_modified_time" valueDate="2025-02-05T10:05:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="payment-flow"/>
+            <column name="state_id" value="SUCCEEDED"/>
+            <column name="state_entry_time" valueDate="2025-02-05T10:05:00"/>
+            <column name="order_id" value="ord-001"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="amount" valueNumeric="28319.00"/>
+            <column name="currency" value="INR"/>
+            <column name="payment_method" value="UPI"/>
+            <column name="gateway_name" value="razorpay"/>
+            <column name="gateway_payment_id" value="pay_rpay_001"/>
+            <column name="idempotency_key" value="idem-pay-001"/>
+        </insert>
+
+        <insert tableName="payment">
+            <column name="id" value="pay-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-12T11:02:00"/>
+            <column name="last_modified_time" valueDate="2025-02-12T11:05:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="payment-flow"/>
+            <column name="state_id" value="SUCCEEDED"/>
+            <column name="state_entry_time" valueDate="2025-02-12T11:05:00"/>
+            <column name="order_id" value="ord-002"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="amount" valueNumeric="82599.00"/>
+            <column name="currency" value="INR"/>
+            <column name="payment_method" value="CARD"/>
+            <column name="gateway_name" value="stripe"/>
+            <column name="gateway_payment_id" value="pi_stripe_002"/>
+            <column name="card_last_four" value="4242"/>
+            <column name="card_brand" value="VISA"/>
+            <column name="idempotency_key" value="idem-pay-002"/>
+        </insert>
+
+        <insert tableName="payment">
+            <column name="id" value="pay-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-14T09:02:00"/>
+            <column name="last_modified_time" valueDate="2025-02-14T09:05:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="payment-flow"/>
+            <column name="state_id" value="SUCCEEDED"/>
+            <column name="state_entry_time" valueDate="2025-02-14T09:05:00"/>
+            <column name="order_id" value="ord-003"/>
+            <column name="customer_id" value="user-cust-002"/>
+            <column name="amount" valueNumeric="4178.00"/>
+            <column name="currency" value="INR"/>
+            <column name="payment_method" value="UPI"/>
+            <column name="gateway_name" value="razorpay"/>
+            <column name="gateway_payment_id" value="pay_rpay_003"/>
+            <column name="idempotency_key" value="idem-pay-003"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 16. SHIPMENTS (3 shipments)                                        -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-shipments" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM shipments WHERE id = 'ship-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="shipments">
+            <column name="id" value="ship-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-06T09:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-10T14:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="shipping-flow"/>
+            <column name="state_id" value="DELIVERED"/>
+            <column name="state_entry_time" valueDate="2025-02-10T14:00:00"/>
+            <column name="order_id" value="ord-001"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="tracking_number" value="BLUEDART-987654321"/>
+            <column name="carrier" value="BlueDart"/>
+            <column name="shipping_method" value="EXPRESS"/>
+            <column name="estimated_delivery_date" valueDate="2025-02-09T18:00:00"/>
+            <column name="actual_delivery_date" valueDate="2025-02-10T14:00:00"/>
+            <column name="shipping_cost" valueNumeric="0.00"/>
+        </insert>
+
+        <insert tableName="shipments">
+            <column name="id" value="ship-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-15T09:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-15T09:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="shipping-flow"/>
+            <column name="state_id" value="IN_TRANSIT"/>
+            <column name="state_entry_time" valueDate="2025-02-15T12:00:00"/>
+            <column name="order_id" value="ord-003"/>
+            <column name="customer_id" value="user-cust-002"/>
+            <column name="tracking_number" value="DELHIVERY-123456789"/>
+            <column name="carrier" value="Delhivery"/>
+            <column name="shipping_method" value="STANDARD"/>
+            <column name="estimated_delivery_date" valueDate="2025-02-19T18:00:00"/>
+            <column name="shipping_cost" valueNumeric="49.00"/>
+        </insert>
+
+        <insert tableName="shipments">
+            <column name="id" value="ship-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-12T14:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-12T14:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="shipping-flow"/>
+            <column name="state_id" value="PENDING"/>
+            <column name="state_entry_time" valueDate="2025-02-12T14:00:00"/>
+            <column name="order_id" value="ord-002"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="carrier" value="DTDC"/>
+            <column name="shipping_method" value="STANDARD"/>
+            <column name="estimated_delivery_date" valueDate="2025-02-18T18:00:00"/>
+            <column name="shipping_cost" valueNumeric="0.00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 17. COUPONS / PROMOS (3 coupons)                                   -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-coupons" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM coupon WHERE id = 'coupon-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="coupon">
+            <column name="id" value="coupon-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="promo-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="code" value="WELCOME10"/>
+            <column name="name" value="Welcome 10% Off"/>
+            <column name="description" value="10% discount for new customers"/>
+            <column name="discount_type" value="PERCENTAGE"/>
+            <column name="discount_value" valueNumeric="10.0"/>
+            <column name="min_order_value" valueNumeric="500.0"/>
+            <column name="max_discount_amount" valueNumeric="1000.0"/>
+            <column name="start_date" valueDate="2025-01-01T00:00:00"/>
+            <column name="end_date" valueDate="2025-12-31T23:59:59"/>
+            <column name="usage_limit" valueNumeric="10000"/>
+            <column name="usage_count" valueNumeric="234"/>
+            <column name="usage_per_customer" valueNumeric="1"/>
+            <column name="target_audience" value="ALL"/>
+        </insert>
+
+        <insert tableName="coupon">
+            <column name="id" value="coupon-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-02-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="promo-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2025-02-01T00:00:00"/>
+            <column name="code" value="FLAT500"/>
+            <column name="name" value="Flat 500 Off"/>
+            <column name="description" value="Flat INR 500 off on orders above INR 5000"/>
+            <column name="discount_type" value="FIXED"/>
+            <column name="discount_value" valueNumeric="500.0"/>
+            <column name="min_order_value" valueNumeric="5000.0"/>
+            <column name="start_date" valueDate="2025-02-01T00:00:00"/>
+            <column name="end_date" valueDate="2025-06-30T23:59:59"/>
+            <column name="usage_limit" valueNumeric="5000"/>
+            <column name="usage_count" valueNumeric="89"/>
+            <column name="usage_per_customer" valueNumeric="2"/>
+            <column name="target_audience" value="ALL"/>
+        </insert>
+
+        <insert tableName="coupon">
+            <column name="id" value="coupon-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-31T23:59:59"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="promo-flow"/>
+            <column name="state_id" value="EXPIRED"/>
+            <column name="state_entry_time" valueDate="2025-01-31T23:59:59"/>
+            <column name="code" value="NEWYEAR25"/>
+            <column name="name" value="New Year 25% Off"/>
+            <column name="description" value="New Year sale — 25% off electronics"/>
+            <column name="discount_type" value="PERCENTAGE"/>
+            <column name="discount_value" valueNumeric="25.0"/>
+            <column name="min_order_value" valueNumeric="1000.0"/>
+            <column name="max_discount_amount" valueNumeric="5000.0"/>
+            <column name="start_date" valueDate="2025-01-01T00:00:00"/>
+            <column name="end_date" valueDate="2025-01-31T23:59:59"/>
+            <column name="usage_limit" valueNumeric="2000"/>
+            <column name="usage_count" valueNumeric="1876"/>
+            <column name="usage_per_customer" valueNumeric="1"/>
+            <column name="applicable_categories" value="cat-001"/>
+            <column name="target_audience" value="ALL"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 18. SETTLEMENTS (3 settlements)                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-settlements" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM settlements WHERE id = 'stl-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="settlements">
+            <column name="id" value="stl-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-11T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-11T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="settlement-flow"/>
+            <column name="state_id" value="DISBURSED"/>
+            <column name="state_entry_time" valueDate="2025-02-11T00:00:00"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="order_id" value="ord-001"/>
+            <column name="order_amount" valueNumeric="23999"/>
+            <column name="commission_amount" valueNumeric="2880"/>
+            <column name="platform_fee" valueNumeric="500"/>
+            <column name="net_amount" valueNumeric="20619"/>
+            <column name="currency" value="INR"/>
+            <column name="settlement_number" value="STL-2025-000001"/>
+            <column name="settlement_period_start" valueDate="2025-02-01"/>
+            <column name="settlement_period_end" valueDate="2025-02-15"/>
+        </insert>
+
+        <insert tableName="settlements">
+            <column name="id" value="stl-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-15T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-15T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="settlement-flow"/>
+            <column name="state_id" value="CALCULATED"/>
+            <column name="state_entry_time" valueDate="2025-02-15T00:00:00"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="order_id" value="ord-002"/>
+            <column name="order_amount" valueNumeric="69999"/>
+            <column name="commission_amount" valueNumeric="8400"/>
+            <column name="platform_fee" valueNumeric="500"/>
+            <column name="net_amount" valueNumeric="61099"/>
+            <column name="currency" value="INR"/>
+            <column name="settlement_number" value="STL-2025-000002"/>
+            <column name="settlement_period_start" valueDate="2025-02-01"/>
+            <column name="settlement_period_end" valueDate="2025-02-28"/>
+        </insert>
+
+        <insert tableName="settlements">
+            <column name="id" value="stl-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-16T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-16T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="settlement-flow"/>
+            <column name="state_id" value="PENDING"/>
+            <column name="state_entry_time" valueDate="2025-02-16T00:00:00"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="order_id" value="ord-003"/>
+            <column name="order_amount" valueNumeric="3499"/>
+            <column name="commission_amount" valueNumeric="525"/>
+            <column name="platform_fee" valueNumeric="200"/>
+            <column name="net_amount" valueNumeric="2774"/>
+            <column name="currency" value="INR"/>
+            <column name="settlement_number" value="STL-2025-000003"/>
+            <column name="settlement_period_start" valueDate="2025-02-01"/>
+            <column name="settlement_period_end" valueDate="2025-02-28"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 19. NOTIFICATIONS (3 notifications)                                -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-notifications" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM notifications WHERE id = 'notif-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="notifications">
+            <column name="id" value="notif-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-05T10:06:00"/>
+            <column name="last_modified_time" valueDate="2025-02-05T10:06:30"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="notification-flow"/>
+            <column name="state_id" value="DELIVERED"/>
+            <column name="state_entry_time" valueDate="2025-02-05T10:06:30"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="channel" value="EMAIL"/>
+            <column name="subject" value="Order Confirmed - HB-2025-000001"/>
+            <column name="body" value="Your order HB-2025-000001 has been confirmed. Total: INR 28,319"/>
+            <column name="recipient_address" value="ravi.kumar@example.com"/>
+            <column name="sent_at" valueDate="2025-02-05T10:06:15"/>
+            <column name="delivered_at" valueDate="2025-02-05T10:06:30"/>
+            <column name="reference_type" value="ORDER"/>
+            <column name="reference_id" value="ord-001"/>
+            <column name="priority" value="HIGH"/>
+        </insert>
+
+        <insert tableName="notifications">
+            <column name="id" value="notif-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-10T14:05:00"/>
+            <column name="last_modified_time" valueDate="2025-02-10T14:05:30"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="notification-flow"/>
+            <column name="state_id" value="SENT"/>
+            <column name="state_entry_time" valueDate="2025-02-10T14:05:15"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="channel" value="SMS"/>
+            <column name="subject" value="Order Delivered"/>
+            <column name="body" value="Your order HB-2025-000001 has been delivered. Rate your experience!"/>
+            <column name="recipient_address" value="+919900000002"/>
+            <column name="sent_at" valueDate="2025-02-10T14:05:15"/>
+            <column name="reference_type" value="ORDER"/>
+            <column name="reference_id" value="ord-001"/>
+            <column name="priority" value="NORMAL"/>
+        </insert>
+
+        <insert tableName="notifications">
+            <column name="id" value="notif-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-15T09:05:00"/>
+            <column name="last_modified_time" valueDate="2025-02-15T09:05:30"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="notification-flow"/>
+            <column name="state_id" value="DELIVERED"/>
+            <column name="state_entry_time" valueDate="2025-02-15T09:05:30"/>
+            <column name="customer_id" value="user-cust-002"/>
+            <column name="channel" value="EMAIL"/>
+            <column name="subject" value="Order Shipped - HB-2025-000003"/>
+            <column name="body" value="Your order has been shipped! Track with: DELHIVERY-123456789"/>
+            <column name="recipient_address" value="priya.sharma@example.com"/>
+            <column name="sent_at" valueDate="2025-02-15T09:05:15"/>
+            <column name="delivered_at" valueDate="2025-02-15T09:05:30"/>
+            <column name="reference_type" value="ORDER"/>
+            <column name="reference_id" value="ord-003"/>
+            <column name="priority" value="HIGH"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 20. PRODUCT REVIEWS (3 reviews)                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-reviews" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM product_reviews WHERE id = 'rev-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="product_reviews">
+            <column name="id" value="rev-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-02-11T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-11T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="review-flow"/>
+            <column name="state_id" value="PUBLISHED"/>
+            <column name="state_entry_time" valueDate="2025-02-11T12:00:00"/>
+            <column name="product_id" value="prod-001"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="order_id" value="ord-001"/>
+            <column name="rating" valueNumeric="5"/>
+            <column name="title" value="Excellent phone!"/>
+            <column name="body" value="Amazing display quality and battery life. Highly recommended."/>
+            <column name="verified_purchase" valueBoolean="true"/>
+            <column name="helpful_count" valueNumeric="12"/>
+            <column name="report_count" valueNumeric="0"/>
+        </insert>
+
+        <insert tableName="product_reviews">
+            <column name="id" value="rev-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-002"/>
+            <column name="created_time" valueDate="2025-02-12T15:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-12T15:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="review-flow"/>
+            <column name="state_id" value="SUBMITTED"/>
+            <column name="state_entry_time" valueDate="2025-02-12T15:00:00"/>
+            <column name="product_id" value="prod-001"/>
+            <column name="customer_id" value="user-cust-002"/>
+            <column name="rating" valueNumeric="4"/>
+            <column name="title" value="Good but pricey"/>
+            <column name="body" value="Great phone but could be cheaper. Camera is outstanding."/>
+            <column name="verified_purchase" valueBoolean="false"/>
+            <column name="helpful_count" valueNumeric="0"/>
+            <column name="report_count" valueNumeric="0"/>
+        </insert>
+
+        <insert tableName="product_reviews">
+            <column name="id" value="rev-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-02-13T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-13T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="review-flow"/>
+            <column name="state_id" value="UNDER_MODERATION"/>
+            <column name="state_entry_time" valueDate="2025-02-13T10:00:00"/>
+            <column name="product_id" value="prod-003"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="rating" valueNumeric="3"/>
+            <column name="title" value="Decent mixer grinder"/>
+            <column name="body" value="Works fine for daily use. The noise level could be lower."/>
+            <column name="verified_purchase" valueBoolean="true"/>
+            <column name="helpful_count" valueNumeric="2"/>
+            <column name="report_count" valueNumeric="0"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 21. SUPPORT TICKETS (2 tickets)                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-support-tickets" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM support_tickets WHERE id = 'ticket-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="support_tickets">
+            <column name="id" value="ticket-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-02-10T16:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-10T16:30:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="support-flow"/>
+            <column name="state_id" value="OPEN"/>
+            <column name="state_entry_time" valueDate="2025-02-10T16:00:00"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="order_id" value="ord-001"/>
+            <column name="subject" value="Delivery was late by 1 day"/>
+            <column name="category" value="DELIVERY"/>
+            <column name="priority" value="MEDIUM"/>
+            <column name="description" value="My order was supposed to arrive on Feb 9 but it arrived on Feb 10. Please investigate."/>
+            <column name="channel" value="WEB"/>
+        </insert>
+
+        <insert tableName="support_tickets">
+            <column name="id" value="ticket-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-002"/>
+            <column name="created_time" valueDate="2025-02-16T11:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-16T11:30:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="support-flow"/>
+            <column name="state_id" value="ASSIGNED"/>
+            <column name="state_entry_time" valueDate="2025-02-16T11:30:00"/>
+            <column name="customer_id" value="user-cust-002"/>
+            <column name="order_id" value="ord-003"/>
+            <column name="subject" value="Tracking not updating"/>
+            <column name="category" value="SHIPPING"/>
+            <column name="priority" value="HIGH"/>
+            <column name="description" value="Tracking shows in transit but no updates for 2 days. Please check."/>
+            <column name="assigned_agent_id" value="user-agent-001"/>
+            <column name="channel" value="WEB"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 22. RETURN REQUESTS (2 return requests)                            -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-returnrequests" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM returnrequest WHERE id = 'ret-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="returnrequest">
+            <column name="id" value="ret-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-02-11T12:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-11T14:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="return-request-flow"/>
+            <column name="state_id" value="APPROVED"/>
+            <column name="state_entry_time" valueDate="2025-02-11T14:00:00"/>
+            <column name="order_id" value="ord-001"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="reason" value="Product has minor scratches on screen"/>
+            <column name="return_type" value="REFUND"/>
+            <column name="total_refund_amount" valueNumeric="28319.00"/>
+        </insert>
+
+        <insert tableName="returnrequest">
+            <column name="id" value="ret-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-002"/>
+            <column name="created_time" valueDate="2025-02-17T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-17T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="return-request-flow"/>
+            <column name="state_id" value="REQUESTED"/>
+            <column name="state_entry_time" valueDate="2025-02-17T10:00:00"/>
+            <column name="order_id" value="ord-003"/>
+            <column name="customer_id" value="user-cust-002"/>
+            <column name="reason" value="Wrong color received"/>
+            <column name="return_type" value="REPLACEMENT"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 23. ONBOARDING (1 onboarding record)                               -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-onboarding" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM supplier_onboarding WHERE id = 'onb-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="supplier_onboarding">
+            <column name="id" value="onb-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-01-04T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-05T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="onboarding-flow"/>
+            <column name="state_id" value="COMPLETED"/>
+            <column name="state_entry_time" valueDate="2025-01-05T10:00:00"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="applicant_name" value="Vikram Electronics"/>
+            <column name="business_name" value="TechZone India Pvt Ltd"/>
+            <column name="business_type" value="PRIVATE_LIMITED"/>
+            <column name="training_progress" valueNumeric="100"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 24. CHECKOUT (1 checkout record)                                   -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-checkout" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM checkout WHERE id = 'chk-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="checkout">
+            <column name="id" value="chk-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-002"/>
+            <column name="created_time" valueDate="2025-02-01T11:15:00"/>
+            <column name="last_modified_time" valueDate="2025-02-01T11:15:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="checkout-flow"/>
+            <column name="state_id" value="INITIATED"/>
+            <column name="state_entry_time" valueDate="2025-02-01T11:15:00"/>
+            <column name="customer_id" value="user-cust-002"/>
+            <column name="cart_id" value="cart-002"/>
+            <column name="subtotal" valueNumeric="3499.00"/>
+            <column name="currency" value="INR"/>
+            <column name="total" valueNumeric="4178.00"/>
+            <column name="tax_amount" valueNumeric="630.00"/>
+            <column name="shipping_cost" valueNumeric="49.00"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+            <column name="idempotency_key" value="idem-chk-001"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 25. FULFILLMENT ORDERS (1 record)                                  -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-fulfillment-orders" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM fulfillment_orders WHERE id = 'fo-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="fulfillment_orders">
+            <column name="id" value="fo-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-05T10:10:00"/>
+            <column name="last_modified_time" valueDate="2025-02-06T09:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="fulfillment-flow"/>
+            <column name="state_id" value="COMPLETED"/>
+            <column name="state_entry_time" valueDate="2025-02-10T14:00:00"/>
+            <column name="order_id" value="ord-001"/>
+            <column name="warehouse_id" value="wh-001"/>
+            <column name="user_id" value="user-cust-001"/>
+            <column name="priority" value="STANDARD"/>
+            <column name="total_items" valueNumeric="1"/>
+            <column name="carrier" value="BlueDart"/>
+            <column name="tracking_number" value="BLUEDART-987654321"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 26. SAGAS (fulfillment, return-processing, supplier-lifecycle)     -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-sagas" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM fulfillment_saga WHERE id = 'fsaga-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="fulfillment_saga">
+            <column name="id" value="fsaga-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-05T10:08:00"/>
+            <column name="last_modified_time" valueDate="2025-02-10T14:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="fulfillment-flow"/>
+            <column name="state_id" value="COMPLETED"/>
+            <column name="state_entry_time" valueDate="2025-02-10T14:00:00"/>
+            <column name="order_id" value="ord-001"/>
+            <column name="user_id" value="user-cust-001"/>
+            <column name="tracking_number" value="BLUEDART-987654321"/>
+        </insert>
+
+        <insert tableName="return_processing_saga">
+            <column name="id" value="rpsaga-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-11T14:05:00"/>
+            <column name="last_modified_time" valueDate="2025-02-11T14:05:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="return-processing-flow"/>
+            <column name="state_id" value="INITIATED"/>
+            <column name="state_entry_time" valueDate="2025-02-11T14:05:00"/>
+            <column name="return_request_id" value="ret-001"/>
+            <column name="order_id" value="ord-001"/>
+            <column name="refund_amount" valueNumeric="28319.00"/>
+        </insert>
+
+        <insert tableName="supplier_lifecycle_saga">
+            <column name="id" value="slsaga-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-20T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-20T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="suspend-flow"/>
+            <column name="state_id" value="COMPLETED"/>
+            <column name="state_entry_time" valueDate="2025-02-20T12:00:00"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="action" value="SUSPEND"/>
+            <column name="reason" value="Performance review — test suspension"/>
+            <column name="products_affected" valueNumeric="5"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 27. RECONCILIATION BATCHES (1 batch)                               -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-reconciliation" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM reconciliation_batches WHERE id = 'recon-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="reconciliation_batches">
+            <column name="id" value="recon-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-16T02:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-16T02:30:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="reconciliation-flow"/>
+            <column name="state_id" value="COMPLETED"/>
+            <column name="state_entry_time" valueDate="2025-02-16T02:30:00"/>
+            <column name="batch_date" valueDate="2025-02-15"/>
+            <column name="period_start" valueDate="2025-02-15T00:00:00"/>
+            <column name="period_end" valueDate="2025-02-15T23:59:59"/>
+            <column name="gateway_type" value="RAZORPAY"/>
+            <column name="matched_count" valueNumeric="45"/>
+            <column name="mismatch_count" valueNumeric="2"/>
+            <column name="auto_resolved_count" valueNumeric="1"/>
+            <column name="unresolved_count" valueNumeric="1"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 28. TAX RATES (3 rates)                                            -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-tax-rates" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM tax_rates WHERE id = 'tax-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="tax_rates">
+            <column name="id" value="tax-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="GST 18% - Electronics"/>
+            <column name="region_code" value="IN"/>
+            <column name="tax_type" value="GST"/>
+            <column name="rate" valueNumeric="18.0000"/>
+            <column name="effective_from" valueDate="2025-01-01"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="tax_rates">
+            <column name="id" value="tax-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="GST 12% - Appliances"/>
+            <column name="region_code" value="IN"/>
+            <column name="tax_type" value="GST"/>
+            <column name="rate" valueNumeric="12.0000"/>
+            <column name="effective_from" valueDate="2025-01-01"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="tax_rates">
+            <column name="id" value="tax-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="GST 5% - Furniture"/>
+            <column name="region_code" value="IN"/>
+            <column name="tax_type" value="GST"/>
+            <column name="rate" valueNumeric="5.0000"/>
+            <column name="effective_from" valueDate="2025-01-01"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 29. PRICING RULES (2 rules)                                        -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-pricing-rules" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM pricing_rules WHERE id = 'pr-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="pricing_rules">
+            <column name="id" value="pr-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Electronics Base Discount"/>
+            <column name="rule_type" value="CATEGORY_DISCOUNT"/>
+            <column name="priority" valueNumeric="10"/>
+            <column name="discount_type" value="PERCENTAGE"/>
+            <column name="discount_value" valueNumeric="5.00"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="applicable_categories" value="cat-001"/>
+        </insert>
+
+        <insert tableName="pricing_rules">
+            <column name="id" value="pr-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Free Shipping Above 2000"/>
+            <column name="rule_type" value="FREE_SHIPPING"/>
+            <column name="priority" valueNumeric="5"/>
+            <column name="conditions" value="orderTotal >= 2000"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 30. CATALOG CATEGORIES (query model)                               -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-catalog-categories" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM catalog_categories WHERE id = 'ccat-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="catalog_categories">
+            <column name="id" value="ccat-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Electronics"/>
+            <column name="slug" value="electronics-catalog"/>
+            <column name="level" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="product_count" valueNumeric="3"/>
+            <column name="show_in_menu" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="catalog_categories">
+            <column name="id" value="ccat-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Kitchen Appliances"/>
+            <column name="slug" value="kitchen-appliances-catalog"/>
+            <column name="level" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="product_count" valueNumeric="1"/>
+            <column name="show_in_menu" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 31. CATALOG ITEMS (query model)                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-catalog-items" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM catalog_items WHERE id = 'ci-cat-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-16T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-16T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="product_id" value="prod-001"/>
+            <column name="name" value="TechPro Smartphone X1"/>
+            <column name="description" value="Flagship smartphone with 6.7 inch AMOLED display"/>
+            <column name="brand" value="TechPro"/>
+            <column name="price" valueNumeric="24999.00"/>
+            <column name="offer_price" valueNumeric="23999.00"/>
+            <column name="mrp" valueNumeric="24999.00"/>
+            <column name="discount_percent" valueNumeric="4.00"/>
+            <column name="category_id" value="ccat-001"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="480"/>
+            <column name="average_rating" valueNumeric="4.50"/>
+            <column name="review_count" valueNumeric="1"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="variant_id" value="var-001"/>
+            <column name="hsn_code" value="85171290"/>
+            <column name="country_of_origin" value="India"/>
+            <column name="is_returnable" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-16T11:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-16T11:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="product_id" value="prod-002"/>
+            <column name="name" value="TechPro Laptop Pro 15"/>
+            <column name="description" value="15.6 inch laptop, Intel i7, 16GB RAM"/>
+            <column name="brand" value="TechPro"/>
+            <column name="price" valueNumeric="74999.00"/>
+            <column name="offer_price" valueNumeric="69999.00"/>
+            <column name="mrp" valueNumeric="74999.00"/>
+            <column name="discount_percent" valueNumeric="6.67"/>
+            <column name="category_id" value="ccat-001"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="115"/>
+            <column name="average_rating" valueNumeric="0.00"/>
+            <column name="review_count" valueNumeric="0"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="display_order" valueNumeric="2"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="variant_id" value="var-003"/>
+            <column name="hsn_code" value="84713010"/>
+            <column name="country_of_origin" value="India"/>
+            <column name="is_returnable" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-16T12:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-16T12:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="product_id" value="prod-003"/>
+            <column name="name" value="KitchenMaster Mixer Grinder 750W"/>
+            <column name="description" value="Heavy-duty mixer grinder with 3 jars"/>
+            <column name="brand" value="KitchenMaster"/>
+            <column name="price" valueNumeric="3999.00"/>
+            <column name="offer_price" valueNumeric="3499.00"/>
+            <column name="mrp" valueNumeric="3999.00"/>
+            <column name="discount_percent" valueNumeric="12.50"/>
+            <column name="category_id" value="ccat-002"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="790"/>
+            <column name="average_rating" valueNumeric="3.00"/>
+            <column name="review_count" valueNumeric="1"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="display_order" valueNumeric="3"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="variant_id" value="var-004"/>
+            <column name="hsn_code" value="85094010"/>
+            <column name="country_of_origin" value="India"/>
+            <column name="is_returnable" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 32. CMS PAGES and BANNERS                                          -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-cms" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM cms_pages WHERE id = 'cms-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="cms_pages">
+            <column name="id" value="cms-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="slug" value="about-us"/>
+            <column name="title" value="About HomeBase"/>
+            <column name="body" value="HomeBase is India's leading ecommerce marketplace connecting buyers with verified sellers."/>
+            <column name="page_type" value="STATIC"/>
+            <column name="published" valueBoolean="true"/>
+            <column name="published_at" valueDate="2025-01-01T00:00:00"/>
+        </insert>
+
+        <insert tableName="cms_pages">
+            <column name="id" value="cms-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="slug" value="return-policy"/>
+            <column name="title" value="Return and Refund Policy"/>
+            <column name="body" value="Items can be returned within the return window specified on the product page."/>
+            <column name="page_type" value="POLICY"/>
+            <column name="published" valueBoolean="true"/>
+            <column name="published_at" valueDate="2025-01-01T00:00:00"/>
+        </insert>
+
+        <insert tableName="banners">
+            <column name="id" value="banner-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-02-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Republic Day Sale"/>
+            <column name="image_url" value="/images/banners/republic-day-sale.jpg"/>
+            <column name="link_url" value="/sale/republic-day"/>
+            <column name="position" value="HOME_TOP"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="active_from" valueDate="2025-01-20T00:00:00"/>
+            <column name="active_to" valueDate="2025-02-28T23:59:59"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 33. ANALYTICS - DAILY SALES SUMMARY                                -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-analytics" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM daily_sales_summary WHERE id = 'dss-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-16T02:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-16T02:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="summary_date" valueDate="2025-02-15"/>
+            <column name="total_orders" valueNumeric="125"/>
+            <column name="total_revenue" valueNumeric="1850000.00"/>
+            <column name="total_units_sold" valueNumeric="180"/>
+            <column name="total_discount" valueNumeric="95000.00"/>
+            <column name="total_tax" valueNumeric="333000.00"/>
+            <column name="total_shipping" valueNumeric="8500.00"/>
+            <column name="avg_order_value" valueNumeric="14800.00"/>
+            <column name="new_customers" valueNumeric="35"/>
+            <column name="returning_customers" valueNumeric="90"/>
+            <column name="currency" value="INR"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 34. RULES ENGINE - POLICY                                          -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-rules-engine" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM policy WHERE id = 'pol-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="policy">
+            <column name="id" value="pol-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="ruleSet-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="name" value="Order Cancellation Policy"/>
+            <column name="description" value="Rules governing when orders can be cancelled"/>
+            <column name="default_effect" value="DENY"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="target_module" value="order"/>
+        </insert>
+
+        <insert tableName="policy_rule">
+            <column name="id" value="pr-rule-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Allow cancel within 24 hours"/>
+            <column name="expression" value="orderAgeHours &lt; 24 AND state == 'CREATED'"/>
+            <column name="effect" value="ALLOW"/>
+            <column name="priority" valueNumeric="10"/>
+            <column name="policy_id" value="pol-001"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 35. CCONFIG (configuration entries)                                -->
+    <!-- cconfig seed data already loaded by db.changelog-config.xml — not duplicated here -->
+
+</databaseChangeLog>

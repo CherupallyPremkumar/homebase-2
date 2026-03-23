@@ -4,7 +4,7 @@ import com.homebase.ecom.shipping.model.Shipping;
 import com.homebase.ecom.shipping.infrastructure.persistence.adapter.ShippingJpaRepository;
 import com.homebase.ecom.shipping.infrastructure.persistence.entity.ShippingEntity;
 import com.homebase.ecom.shipping.infrastructure.persistence.mapper.ShippingMapper;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 /**
  * Bridges Chenile STM's EntityStore with JPA persistence for Shipping.

@@ -5,7 +5,7 @@ import com.homebase.ecom.cart.repository.CartRepository;
 import com.homebase.ecom.cart.infrastructure.persistence.entity.CartEntity;
 import com.homebase.ecom.cart.infrastructure.persistence.repository.CartJpaRepository;
 import com.homebase.ecom.cart.infrastructure.persistence.mapper.CartMapper;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 import java.util.Optional;
 
@@ -38,7 +38,7 @@ public class ChenileCartEntityStore extends ChenileJpaEntityStore<Cart, CartEnti
 
     @Override
     public Optional<Cart> findActiveCartByCustomerId(String customerId) {
-        return cartJpaRepository.findByCustomerIdAndStateId(customerId, "ACTIVE")
+        return cartJpaRepository.findByCustomerIdAndState_StateId(customerId, "ACTIVE")
                 .map(cartMapper::toModel);
     }
 }

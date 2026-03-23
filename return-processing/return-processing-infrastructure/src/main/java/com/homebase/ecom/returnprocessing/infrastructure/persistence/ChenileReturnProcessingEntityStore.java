@@ -4,7 +4,7 @@ import com.homebase.ecom.returnprocessing.infrastructure.persistence.mapper.Retu
 import com.homebase.ecom.returnprocessing.infrastructure.persistence.entity.ReturnProcessingSagaEntity;
 import com.homebase.ecom.returnprocessing.infrastructure.persistence.repository.ReturnProcessingSagaJpaRepository;
 import com.homebase.ecom.returnprocessing.model.ReturnProcessingSaga;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 /**
  * Chenile EntityStore bridge for return processing saga.

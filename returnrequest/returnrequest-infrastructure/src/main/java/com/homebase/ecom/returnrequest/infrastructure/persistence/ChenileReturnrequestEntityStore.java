@@ -4,7 +4,7 @@ import com.homebase.ecom.returnrequest.model.Returnrequest;
 import com.homebase.ecom.returnrequest.infrastructure.persistence.adapter.ReturnrequestJpaRepository;
 import com.homebase.ecom.returnrequest.infrastructure.persistence.entity.ReturnrequestEntity;
 import com.homebase.ecom.returnrequest.infrastructure.persistence.mapper.ReturnrequestMapper;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 /**
  * Bridges Chenile STM's EntityStore with JPA persistence for Returnrequest.

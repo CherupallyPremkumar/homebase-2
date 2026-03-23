@@ -37,6 +37,7 @@
         <module>shared</module>
         <module>filter-core</module>
         <module>db-migrations</module>
+        <module>core</module>
 
         <!-- Layer 1: Config (depended on by most modules for cconfig validation) -->
         <module>config</module>
@@ -77,8 +78,11 @@
         <!-- Layer 5: Cross-module UI queries -->
         <module>ui-query</module>
 
-        <!-- Layer 6: Final deployable (aggregates everything) -->
-        <module>build</module>
+        <!-- Layer 6: Query build (aggregates all query modules) -->
+        <module>query-build</module>
+
+        <!-- Layer 7: Final deployable (aggregates everything) -->
+        <module>root-build</module>
     </modules>
 
     <dependencyManagement>
@@ -124,7 +128,7 @@
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.homebase.ecom.build</groupId>
+                <groupId>com.homebase.ecom</groupId>
                 <artifactId>core</artifactId>
                 <version>${revision}</version>
             </dependency>

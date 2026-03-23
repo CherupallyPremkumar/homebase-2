@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from product-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='submitForReview' meta-acls="SUPPLIER" meta-bodyType="com.homebase.ecom.product.dto.SubmitForReviewProductPayload"/>
+  <event-information eventId='deleteProduct' meta-acls="SUPPLIER,ADMIN" meta-bodyType="com.homebase.ecom.product.dto.DeleteProductProductPayload"/>
+  <event-information eventId='approveProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.ApproveProductProductPayload"/>
+  <event-information eventId='rejectProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.RejectProductProductPayload"/>
+  <event-information eventId='disableProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.DisableProductProductPayload"/>
+  <event-information eventId='discontinueProduct' meta-acls="ADMIN,SUPPLIER" meta-bodyType="com.homebase.ecom.product.dto.DiscontinueProductProductPayload"/>
+  <event-information eventId='enableProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.EnableProductProductPayload"/>
+  <event-information eventId='requestUpdate' meta-acls="SUPPLIER" meta-bodyType="com.homebase.ecom.product.dto.RequestUpdateProductPayload"/>
+  <event-information eventId='approveUpdate' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.ApproveUpdateProductPayload"/>
+  <event-information eventId='rejectUpdate' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.RejectUpdateProductPayload"/>
+  <event-information eventId='archiveProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.ArchiveProductProductPayload"/>
+  <event-information eventId='unarchiveProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.UnarchiveProductProductPayload"/>
+  <event-information eventId='recallProduct' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.RecallProductProductPayload"/>
+  <event-information eventId='resolveRecall' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.product.dto.ResolveRecallProductPayload"/>
+
+  <flow id="product-flow" default="true">
+
+    <manual-state id="DRAFT" initialState="true" meta-mainPath="true" description="New product, not yet submitted for review">
+      <on eventId="submitForReview" newStateId="UNDER_REVIEW" meta-mainPath="true" meta-acls="SUPPLIER"/>
+      <on eventId="deleteProduct" newStateId="DISCONTINUED" meta-acls="SUPPLIER,ADMIN"/>
+    </manual-state>
+
+    <manual-state id="UNDER_REVIEW" meta-mainPath="true" description="Product submitted, awaiting admin approval">
+      <on eventId="approveProduct" newStateId="PUBLISHED" meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId="rejectProduct" newStateId="DRAFT" meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id="PUBLISHED" meta-mainPath="true" description="Product live and visible in catalog">
+      <on eventId="requestUpdate" newStateId="PENDING_UPDATE" meta-acls="SUPPLIER"/>
+      <on eventId="disableProduct" newStateId="DISABLED" meta-acls="ADMIN"/>
+      <on eventId="archiveProduct" newStateId="ARCHIVED" meta-acls="ADMIN"/>
+      <on eventId="recallProduct" newStateId="RECALLED" meta-acls="ADMIN"/>
+      <on eventId="discontinueProduct" newStateId="DISCONTINUED" meta-acls="ADMIN,SUPPLIER"/>
+    </manual-state>
+
+    <manual-state id="PENDING_UPDATE" description="Published product with pending changes awaiting admin review">
+      <on eventId="approveUpdate" newStateId="PUBLISHED" meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId="rejectUpdate" newStateId="PUBLISHED" meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id="DISABLED" description="Product temporarily hidden from catalog">
+      <on eventId="enableProduct" newStateId="PUBLISHED" meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId="archiveProduct" newStateId="ARCHIVED" meta-acls="ADMIN"/>
+      <on eventId="recallProduct" newStateId="RECALLED" meta-acls="ADMIN"/>
+      <on eventId="discontinueProduct" newStateId="DISCONTINUED" meta-acls="ADMIN,SUPPLIER"/>
+    </manual-state>
+
+    <manual-state id="ARCHIVED" description="Product hidden from catalog but data preserved for order history/returns. Can be re-enabled.">
+      <on eventId="unarchiveProduct" newStateId="PUBLISHED" meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId="recallProduct" newStateId="RECALLED" meta-acls="ADMIN"/>
+      <on eventId="discontinueProduct" newStateId="DISCONTINUED" meta-acls="ADMIN,SUPPLIER"/>
+    </manual-state>
+
+    <manual-state id="RECALLED" description="Product recalled for safety/compliance.">
+      <on eventId="resolveRecall" newStateId="DISCONTINUED" meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id="DISCONTINUED" description="Product permanently removed from catalog"/>
+
+  </flow>
+</states>

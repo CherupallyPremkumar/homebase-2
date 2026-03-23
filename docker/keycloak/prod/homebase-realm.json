@@ -1,0 +1,123 @@
+{
+  "realm": "homebase",
+  "enabled": true,
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": true,
+  "verifyEmail": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "sslRequired": "all",
+  "defaultSignatureAlgorithm": "RS256",
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 28800,
+  "roles": {
+    "realm": [
+      {
+        "name": "CUSTOMER",
+        "description": "Default customer role"
+      },
+      {
+        "name": "ADMIN",
+        "description": "Platform administrator"
+      },
+      {
+        "name": "WAREHOUSE",
+        "description": "Warehouse staff"
+      },
+      {
+        "name": "SUPPLIER",
+        "description": "Marketplace supplier"
+      },
+      {
+        "name": "SYSTEM",
+        "description": "System-level operations"
+      },
+      {
+        "name": "AGENT",
+        "description": "Support agent"
+      }
+    ]
+  },
+  "defaultRoles": [
+    "CUSTOMER"
+  ],
+  "clients": [
+    {
+      "clientId": "homebase-storefront",
+      "name": "HomeBase Storefront",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "${HOMEBASE_STOREFRONT_SECRET}",
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": true,
+      "serviceAccountsEnabled": false,
+      "baseUrl": "/",
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/*"
+      }
+    },
+    {
+      "clientId": "homebase-admin",
+      "name": "HomeBase Admin",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "${HOMEBASE_ADMIN_SECRET}",
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": true,
+      "serviceAccountsEnabled": true,
+      "baseUrl": "/"
+    },
+    {
+      "clientId": "homebase-backend",
+      "name": "HomeBase Backend",
+      "description": "Backend services (monolith/microservices)",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "${HOMEBASE_BACKEND_SECRET}",
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "bearerOnly": true
+    },
+    {
+      "clientId": "homebase-system",
+      "name": "HomeBase System",
+      "description": "Service account for system operations",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "${HOMEBASE_SYSTEM_SECRET}",
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true
+    }
+  ],
+  "users": [],
+  "scopeMappings": [
+    {
+      "client": "homebase-storefront",
+      "roles": [
+        "CUSTOMER",
+        "SUPPLIER"
+      ]
+    },
+    {
+      "client": "homebase-admin",
+      "roles": [
+        "ADMIN",
+        "WAREHOUSE",
+        "SUPPLIER",
+        "AGENT"
+      ]
+    },
+    {
+      "client": "homebase-system",
+      "roles": [
+        "SYSTEM"
+      ]
+    }
+  ]
+}

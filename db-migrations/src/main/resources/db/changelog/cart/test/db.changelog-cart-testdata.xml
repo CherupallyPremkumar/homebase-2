@@ -400,8 +400,8 @@
             <column name="reserved_quantity" valueNumeric="5"/>
             <column name="status" value="AVAILABLE"/>
             <column name="tenant" value="homebase"/>
-            <column name="stateId" value="AVAILABLE"/>
-            <column name="flowId" value="inventory-flow"/>
+            <column name="state_id" value="AVAILABLE"/>
+            <column name="flow_id" value="inventory-flow"/>
         </insert>
         <insert tableName="inventory_item">
             <column name="id" value="inv-2"/>
@@ -413,8 +413,8 @@
             <column name="reserved_quantity" valueNumeric="2"/>
             <column name="status" value="AVAILABLE"/>
             <column name="tenant" value="homebase"/>
-            <column name="stateId" value="AVAILABLE"/>
-            <column name="flowId" value="inventory-flow"/>
+            <column name="state_id" value="AVAILABLE"/>
+            <column name="flow_id" value="inventory-flow"/>
         </insert>
         <insert tableName="inventory_item">
             <column name="id" value="inv-3"/>
@@ -426,8 +426,8 @@
             <column name="reserved_quantity" valueNumeric="3"/>
             <column name="status" value="AVAILABLE"/>
             <column name="tenant" value="homebase"/>
-            <column name="stateId" value="AVAILABLE"/>
-            <column name="flowId" value="inventory-flow"/>
+            <column name="state_id" value="AVAILABLE"/>
+            <column name="flow_id" value="inventory-flow"/>
         </insert>
 
     </changeSet>

@@ -1,6 +1,8 @@
 package com.homebase.ecom.cart.service.handler;
 
-import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
+import com.homebase.ecom.checkout.api.event.CheckoutCompensatedEventDto;
+import com.homebase.ecom.checkout.api.event.CheckoutCompletedEventDto;
+import com.homebase.ecom.core.workflow.HmStateEntityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -41,7 +43,8 @@ public class CartExternalEventHandler {
             }
 
             switch (eventType) {
-                case "CHECKOUT_COMPLETED" -> handleCheckoutCompleted(event, cartService);
+                case CheckoutCompletedEventDto.EVENT_TYPE -> handleCheckoutCompleted(event, cartService);
+                case CheckoutCompensatedEventDto.EVENT_TYPE -> handleCheckoutCompensated(event, cartService);
                 case "STOCK_DEPLETED" -> handleStockDepleted(event, cartService);
                 case "PRODUCT_DISCONTINUED" -> handleProductDiscontinued(event, cartService);
                 case "PRICE_CHANGED" -> handlePriceChanged(event, cartService);
@@ -62,6 +65,17 @@ public class CartExternalEventHandler {
         }
         log.info("Checkout completed for cartId={}, orderId={}", cartId, orderId);
         triggerEvent(cartService, cartId, "completeCheckout", "{\"orderId\":\"" + orderId + "\"}");
+    }
+
+    private void handleCheckoutCompensated(JsonNode event, HmStateEntityServiceImpl<?> cartService) {
+        String cartId = textOrNull(event, "cartId");
+        if (cartId == null) {
+            log.warn("CHECKOUT_COMPENSATED missing cartId, skipping");
+            return;
+        }
+        String reason = textOrNull(event, "reason");
+        log.info("Checkout compensated for cartId={}, reason={}", cartId, reason);
+        triggerEvent(cartService, cartId, "cancelCheckout", "{}");
     }
 
     private void handleStockDepleted(JsonNode event, HmStateEntityServiceImpl<?> cartService) {

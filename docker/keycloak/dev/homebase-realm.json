@@ -1,0 +1,136 @@
+{
+  "realm": "homebase",
+  "enabled": true,
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": true,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "sslRequired": "none",
+  "defaultSignatureAlgorithm": "RS256",
+  "accessTokenLifespan": 3600,
+  "ssoSessionIdleTimeout": 7200,
+  "ssoSessionMaxLifespan": 36000,
+  "roles": {
+    "realm": [
+      { "name": "CUSTOMER", "description": "Default customer role" },
+      { "name": "ADMIN", "description": "Platform administrator" },
+      { "name": "WAREHOUSE", "description": "Warehouse staff" },
+      { "name": "SUPPLIER", "description": "Marketplace supplier" },
+      { "name": "SYSTEM", "description": "System-level operations" },
+      { "name": "AGENT", "description": "Support agent" }
+    ]
+  },
+  "defaultRoles": ["CUSTOMER"],
+  "clients": [
+    {
+      "clientId": "homebase-storefront",
+      "name": "HomeBase Storefront",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "storefront-secret-dev",
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "serviceAccountsEnabled": false,
+      "rootUrl": "http://localhost:3000",
+      "baseUrl": "/",
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/*"
+      }
+    },
+    {
+      "clientId": "homebase-admin",
+      "name": "HomeBase Admin",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "admin-secret-dev",
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "serviceAccountsEnabled": true,
+      "rootUrl": "http://localhost:3001",
+      "baseUrl": "/",
+      "redirectUris": ["http://localhost:3001/*"],
+      "webOrigins": ["http://localhost:3001"]
+    },
+    {
+      "clientId": "homebase-backend",
+      "name": "HomeBase Backend",
+      "description": "Backend services (monolith/microservices)",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "backend-secret-dev",
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "bearerOnly": true
+    },
+    {
+      "clientId": "homebase-system",
+      "name": "HomeBase System",
+      "description": "Service account for system operations",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "system-secret-dev",
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true
+    }
+  ],
+  "users": [
+    {
+      "username": "admin@homebase.in",
+      "email": "admin@homebase.in",
+      "enabled": true,
+      "firstName": "Admin",
+      "lastName": "HomeBase",
+      "credentials": [{ "type": "password", "value": "admin123", "temporary": false }],
+      "realmRoles": ["ADMIN", "CUSTOMER"]
+    },
+    {
+      "username": "warehouse@homebase.in",
+      "email": "warehouse@homebase.in",
+      "enabled": true,
+      "firstName": "Warehouse",
+      "lastName": "Staff",
+      "credentials": [{ "type": "password", "value": "warehouse123", "temporary": false }],
+      "realmRoles": ["WAREHOUSE"]
+    },
+    {
+      "username": "supplier@homebase.in",
+      "email": "supplier@homebase.in",
+      "enabled": true,
+      "firstName": "Test",
+      "lastName": "Supplier",
+      "credentials": [{ "type": "password", "value": "supplier123", "temporary": false }],
+      "realmRoles": ["SUPPLIER"]
+    },
+    {
+      "username": "customer@homebase.in",
+      "email": "customer@homebase.in",
+      "enabled": true,
+      "firstName": "Test",
+      "lastName": "Customer",
+      "credentials": [{ "type": "password", "value": "customer123", "temporary": false }],
+      "realmRoles": ["CUSTOMER"]
+    },
+    {
+      "username": "agent@homebase.in",
+      "email": "agent@homebase.in",
+      "enabled": true,
+      "firstName": "Support",
+      "lastName": "Agent",
+      "credentials": [{ "type": "password", "value": "agent123", "temporary": false }],
+      "realmRoles": ["AGENT"]
+    }
+  ],
+  "scopeMappings": [
+    { "client": "homebase-storefront", "roles": ["CUSTOMER", "SUPPLIER"] },
+    { "client": "homebase-admin", "roles": ["ADMIN", "WAREHOUSE", "SUPPLIER", "AGENT"] },
+    { "client": "homebase-system", "roles": ["SYSTEM"] }
+  ]
+}

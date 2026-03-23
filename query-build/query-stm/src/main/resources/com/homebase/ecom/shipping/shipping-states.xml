@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from shipping-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='createLabel'     meta-acls="WAREHOUSE,SYSTEM"  meta-bodyType="com.homebase.ecom.shipping.dto.CreateLabelShippingPayload"/>
+  <event-information eventId='pickUp'          meta-acls="CARRIER,SYSTEM"    meta-bodyType="com.homebase.ecom.shipping.dto.PickUpShippingPayload"/>
+  <event-information eventId='updateTransit'   meta-acls="CARRIER,SYSTEM"    meta-bodyType="com.homebase.ecom.shipping.dto.UpdateTransitShippingPayload"/>
+  <event-information eventId='outForDelivery'  meta-acls="CARRIER,SYSTEM"    meta-bodyType="com.homebase.ecom.shipping.dto.OutForDeliveryShippingPayload"/>
+  <event-information eventId='deliver'         meta-acls="CARRIER"           meta-bodyType="com.homebase.ecom.shipping.dto.DeliverShippingPayload"/>
+  <event-information eventId='failDelivery'    meta-acls="CARRIER"           meta-bodyType="com.homebase.ecom.shipping.dto.FailDeliveryShippingPayload"/>
+  <event-information eventId='retryDelivery'   meta-acls="WAREHOUSE"         meta-bodyType="com.homebase.ecom.shipping.dto.RetryDeliveryShippingPayload"/>
+  <event-information eventId='cancelShipment'  meta-acls="WAREHOUSE,SYSTEM"  meta-bodyType="com.homebase.ecom.shipping.dto.CancelShipmentShippingPayload"/>
+  <event-information eventId='returnShipment'  meta-acls="WAREHOUSE,SYSTEM"  meta-bodyType="com.homebase.ecom.shipping.dto.ReturnShipmentShippingPayload"/>
+  <event-information eventId='markLost'        meta-acls="CARRIER,ADMIN"     meta-bodyType="com.homebase.ecom.shipping.dto.MarkLostShippingPayload"/>
+  <event-information eventId='holdAtHub'       meta-acls="CARRIER,SYSTEM"    meta-bodyType="com.homebase.ecom.shipping.dto.HoldAtHubShippingPayload"/>
+  <event-information eventId='releaseFromHub'  meta-acls="CUSTOMER,CARRIER"  meta-bodyType="com.homebase.ecom.shipping.dto.ReleaseFromHubShippingPayload"/>
+  <event-information eventId='updateAddress'   meta-acls="CUSTOMER,ADMIN"    meta-bodyType="com.homebase.ecom.shipping.dto.UpdateAddressShippingPayload"/>
+
+  <flow id='shipping-flow' default='true'>
+
+    <manual-state id='PENDING' initialState='true' meta-mainPath="true"
+                  description="Shipment created, awaiting label generation">
+      <on eventId='createLabel' newStateId='LABEL_CREATED' meta-mainPath="true" meta-acls="WAREHOUSE,SYSTEM"/>
+      <on eventId='cancelShipment' newStateId='CANCELLED' meta-acls="WAREHOUSE,SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='LABEL_CREATED' meta-mainPath="true"
+                  description="Shipping label created, ready for carrier pickup">
+      <on eventId='pickUp' newStateId='PICKED_UP' meta-mainPath="true" meta-acls="CARRIER,SYSTEM"/>
+      <on eventId='cancelShipment' newStateId='CANCELLED' meta-acls="WAREHOUSE,SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='PICKED_UP' meta-mainPath="true"
+                  description="Carrier has picked up the shipment">
+      <on eventId='updateTransit' newStateId='IN_TRANSIT' meta-mainPath="true" meta-acls="CARRIER,SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='IN_TRANSIT' meta-mainPath="true"
+                  description="Shipment in transit to destination">
+      <on eventId='outForDelivery' newStateId='OUT_FOR_DELIVERY' meta-mainPath="true" meta-acls="CARRIER,SYSTEM"/>
+      <on eventId='updateTransit' newStateId='IN_TRANSIT' meta-acls="CARRIER,SYSTEM"/>
+      <on eventId='holdAtHub' newStateId='HELD_AT_HUB' meta-acls="CARRIER,SYSTEM"/>
+      <on eventId='markLost' newStateId='LOST' meta-acls="CARRIER,ADMIN"/>
+      <on eventId='updateAddress' newStateId='IN_TRANSIT' meta-acls="CUSTOMER,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='HELD_AT_HUB'
+                  description="Package held at delivery hub or locker for customer pickup">
+      <on eventId='releaseFromHub' newStateId='DELIVERED' meta-mainPath="true" meta-acls="CUSTOMER,CARRIER"/>
+      <on eventId='returnShipment' newStateId='RETURNED' meta-acls="WAREHOUSE,SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='OUT_FOR_DELIVERY' meta-mainPath="true"
+                  description="Shipment out for delivery to customer">
+      <on eventId='deliver' newStateId='DELIVERED' meta-mainPath="true" meta-acls="CARRIER"/>
+      <on eventId='failDelivery' newStateId='DELIVERY_FAILED' meta-acls="CARRIER"/>
+    </manual-state>
+
+    <manual-state id='DELIVERED' meta-mainPath="true"
+                  description="Shipment delivered to customer"/>
+
+    <manual-state id='DELIVERY_FAILED'
+                  description="Delivery attempt failed">
+      <on eventId='retryDelivery' newStateId='OUT_FOR_DELIVERY' meta-acls="WAREHOUSE"/>
+      <on eventId='returnShipment' newStateId='RETURNED' meta-acls="WAREHOUSE,SYSTEM"/>
+      <on eventId='updateAddress' newStateId='DELIVERY_FAILED' meta-acls="CUSTOMER,ADMIN"/>
+    </manual-state>
+
+    <manual-state id='LOST'
+                  description="Shipment lost in transit, insurance claim initiated"/>
+
+    <manual-state id='RETURNED'
+                  description="Shipment returned to warehouse"/>
+
+    <manual-state id='CANCELLED'
+                  description="Shipment cancelled"/>
+
+  </flow>
+</states>

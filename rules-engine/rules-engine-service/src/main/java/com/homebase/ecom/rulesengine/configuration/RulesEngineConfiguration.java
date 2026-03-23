@@ -17,7 +17,6 @@ import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.impl.*;
 import org.chenile.stm.spring.SpringBeanFactoryAdapter;
 import org.chenile.workflow.api.WorkflowRegistry;
-import org.chenile.workflow.service.impl.HmStateEntityServiceImpl;
 import org.chenile.workflow.service.stmcmds.*;
 import org.chenile.stm.impl.ConfigBasedEnablementStrategy;
 

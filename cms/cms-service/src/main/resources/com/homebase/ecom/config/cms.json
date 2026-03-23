@@ -1,0 +1,9 @@
+{
+    "policies": {
+        "content": {
+            "maxBannersPerPage": 10,
+            "maxPageSize": 50,
+            "requireApprovalForPublish": true
+        }
+    }
+}

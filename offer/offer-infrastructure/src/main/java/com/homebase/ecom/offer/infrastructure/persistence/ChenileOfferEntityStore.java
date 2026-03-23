@@ -4,7 +4,7 @@ import com.homebase.ecom.offer.domain.model.Offer;
 import com.homebase.ecom.offer.infrastructure.persistence.adapter.OfferJpaRepository;
 import com.homebase.ecom.offer.infrastructure.persistence.entity.OfferEntity;
 import com.homebase.ecom.offer.infrastructure.persistence.mapper.OfferMapper;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 /**
  * Bridges Chenile STM's EntityStore with JPA persistence for Offer.

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from supplier-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='reviewSupplier' meta-acls="ADMIN,CATALOG_ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.ReviewSupplierPayload"/>
+  <event-information eventId='approveSupplier' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.ApproveSupplierPayload"/>
+  <event-information eventId='rejectSupplier' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.RejectSupplierPayload"/>
+  <event-information eventId='resubmitSupplier' meta-acls="SUPPLIER,SELLER" meta-bodyType="com.homebase.ecom.supplier.dto.ResubmitSupplierPayload"/>
+  <event-information eventId='suspendSupplier' meta-acls="ADMIN,SYSTEM" meta-bodyType="com.homebase.ecom.supplier.dto.SuspendSupplierPayload"/>
+  <event-information eventId='terminateSupplier' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.TerminateSupplierPayload"/>
+  <event-information eventId='putOnProbation' meta-acls="ADMIN,SYSTEM" meta-bodyType="com.homebase.ecom.supplier.dto.PutOnProbationPayload"/>
+  <event-information eventId='reactivateSupplier' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.ReactivateSupplierPayload"/>
+  <event-information eventId='activateSupplier' meta-acls="ADMIN,SYSTEM" meta-bodyType="com.homebase.ecom.supplier.dto.ActivateSupplierPayload"/>
+  <event-information eventId='resolveFromProbation' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.supplier.dto.ResolveFromProbationPayload"/>
+
+  <flow id='supplier-flow' default='true'>
+
+    <manual-state id='APPLIED' initialState='true' meta-mainPath="true"
+                  description="Supplier application submitted, awaiting admin review">
+      <on eventId='reviewSupplier' newStateId='UNDER_REVIEW' meta-mainPath="true" meta-acls="ADMIN,CATALOG_ADMIN"/>
+    </manual-state>
+
+    <manual-state id='UNDER_REVIEW' meta-mainPath="true"
+                  description="Supplier application under admin review">
+      <on eventId='approveSupplier' newStateId='APPROVED' meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='rejectSupplier' newStateId='REJECTED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='APPROVED' meta-mainPath="true"
+                  description="Supplier approved, completing onboarding">
+      <on eventId='activateSupplier' newStateId='ACTIVE' meta-mainPath="true" meta-acls="ADMIN,SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='REJECTED'
+                  description="Supplier application rejected, can resubmit with updates">
+      <on eventId='resubmitSupplier' newStateId='APPLIED' meta-acls="SUPPLIER,SELLER"/>
+    </manual-state>
+
+    <manual-state id='ACTIVE' meta-mainPath="true"
+                  description="Supplier active and able to list products">
+      <on eventId='suspendSupplier' newStateId='SUSPENDED' meta-acls="ADMIN,SYSTEM"/>
+      <on eventId='putOnProbation' newStateId='ON_PROBATION' meta-acls="ADMIN,SYSTEM"/>
+      <on eventId='terminateSupplier' newStateId='TERMINATED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='ON_PROBATION'
+                  description="Supplier on probation due to poor performance metrics">
+      <on eventId='resolveFromProbation' newStateId='ACTIVE' meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='suspendSupplier' newStateId='SUSPENDED' meta-acls="ADMIN,SYSTEM"/>
+      <on eventId='terminateSupplier' newStateId='TERMINATED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='SUSPENDED'
+                  description="Supplier suspended by admin or system">
+      <on eventId='reactivateSupplier' newStateId='ACTIVE' meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='terminateSupplier' newStateId='TERMINATED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='TERMINATED'
+                  description="Supplier permanently terminated from platform"/>
+
+  </flow>
+</states>

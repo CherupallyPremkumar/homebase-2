@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query-side STM metadata. Stripped from onboarding-service. No componentName/conditions. -->
+<states>
+
+  <event-information eventId='submit' meta-acls="SELLER" meta-bodyType="com.homebase.ecom.onboarding.dto.SubmitApplicationPayload"/>
+  <event-information eventId='verifyDocuments' meta-acls="ADMIN,COMPLIANCE" meta-bodyType="com.homebase.ecom.onboarding.dto.VerifyDocumentsPayload"/>
+  <event-information eventId='requestDocuments' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.onboarding.dto.RequestDocumentsPayload"/>
+  <event-information eventId='resubmitDocuments' meta-acls="SELLER" meta-bodyType="com.homebase.ecom.onboarding.dto.SubmitDocumentsPayload"/>
+  <event-information eventId='verifyBusiness' meta-acls="ADMIN,COMPLIANCE" meta-bodyType="com.homebase.ecom.onboarding.dto.VerifyBusinessPayload"/>
+  <event-information eventId='startTraining' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='completeTraining' meta-acls="SELLER" meta-bodyType="com.homebase.ecom.onboarding.dto.CompleteTrainingPayload"/>
+  <event-information eventId='completeOnboarding' meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
+  <event-information eventId='reject' meta-acls="ADMIN" meta-bodyType="com.homebase.ecom.onboarding.dto.RejectOnboardingPayload"/>
+
+  <flow id='onboarding-flow' default='true'>
+
+    <manual-state id='APPLICATION_SUBMITTED' initialState='true' meta-mainPath="true"
+                  description="Supplier application submitted, awaiting document verification">
+      <on eventId='verifyDocuments' newStateId='DOCUMENT_VERIFICATION' meta-mainPath="true" meta-acls="ADMIN,COMPLIANCE"/>
+      <on eventId='reject' newStateId='REJECTED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='DOCUMENT_VERIFICATION' meta-mainPath="true"
+                  description="Documents under verification by compliance team">
+      <on eventId='verifyBusiness' newStateId='BUSINESS_VERIFICATION' meta-mainPath="true" meta-acls="ADMIN,COMPLIANCE"/>
+      <on eventId='requestDocuments' newStateId='DOCUMENTS_REQUESTED' meta-acls="ADMIN"/>
+      <on eventId='reject' newStateId='REJECTED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='DOCUMENTS_REQUESTED'
+                  description="Additional documents requested from seller">
+      <on eventId='resubmitDocuments' newStateId='DOCUMENT_VERIFICATION' meta-acls="SELLER"/>
+    </manual-state>
+
+    <manual-state id='BUSINESS_VERIFICATION' meta-mainPath="true"
+                  description="Business details and credentials being verified">
+      <on eventId='startTraining' newStateId='TRAINING' meta-mainPath="true" meta-acls="SYSTEM"/>
+      <on eventId='reject' newStateId='REJECTED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='TRAINING' meta-mainPath="true"
+                  description="Supplier completing required training modules">
+      <on eventId='completeTraining' newStateId='ONBOARDED' meta-acls="SELLER"/>
+      <on eventId='reject' newStateId='REJECTED' meta-acls="ADMIN"/>
+    </manual-state>
+
+    <manual-state id='ONBOARDED' meta-mainPath="true"
+                  description="Training complete, supplier onboarded and ready for activation">
+      <on eventId='completeOnboarding' newStateId='COMPLETED' meta-mainPath="true" meta-acls="SYSTEM"/>
+    </manual-state>
+
+    <manual-state id='COMPLETED' description="Supplier fully onboarded and activated"/>
+
+    <manual-state id='REJECTED' description="Application rejected"/>
+
+  </flow>
+</states>

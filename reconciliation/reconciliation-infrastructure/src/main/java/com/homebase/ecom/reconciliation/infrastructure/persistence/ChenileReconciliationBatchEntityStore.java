@@ -4,7 +4,7 @@ import com.homebase.ecom.reconciliation.model.ReconciliationBatch;
 import com.homebase.ecom.reconciliation.infrastructure.persistence.entity.ReconciliationBatchEntity;
 import com.homebase.ecom.reconciliation.infrastructure.persistence.adapter.ReconciliationBatchJpaRepository;
 import com.homebase.ecom.reconciliation.infrastructure.persistence.mapper.ReconciliationBatchMapper;
-import org.chenile.jpautils.store.ChenileJpaEntityStore;
+import com.homebase.ecom.core.jpa.ChenileJpaEntityStore;
 
 public class ChenileReconciliationBatchEntityStore extends ChenileJpaEntityStore<ReconciliationBatch, ReconciliationBatchEntity> {
 

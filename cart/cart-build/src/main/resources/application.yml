@@ -4,28 +4,63 @@ server:
 spring:
   application:
     name: cart-service
+  main:
+    allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:h2:mem:cartdb;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:file:./cart-db;MODE=PostgreSQL;AUTO_SERVER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
+      ddl-auto: create
+  h2:
+    console:
+      enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-server: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
 
 chenile:
-  service:
-    registry:
-      enabled: true
-  workflow:
-    enabled: true
+  base:
+    url: http://localhost:8081
+  module:
+    name: cart-service
+  security:
+    client:
+      id: authz-servlet
+      secret: secret
+    keycloak:
+      host: ${KEYCLOAK_HOST:http://localhost:8180}
+      port: ${KEYCLOAK_PORT:8180}
+      base:
+        realm: ${KEYCLOAK_REALM:homebase}
 
-logging:
-  level:
-    org.chenile: DEBUG
-    com.homebase.ecom.cart: DEBUG
+pubsub:
+  topic:
+    separator: "."
+
+
+query:
+  jpa:
+    hibernate:
+      show_sql: 'false'
+      ddl-auto: validate
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: 'false'
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  defaultTenantId: homebase
+  datasource's:
+    homebase:
+      maximumPoolSize: '20'
+      type: com.zaxxer.hikari.HikariDataSource
+      username: ${DB_USERNAME:postgres}
+      password: ${DB_PASSWORD:password}
+      minimumIdle: '5'
+      idleTimeout: '600000'
+      jdbcUrl: ${DB_URL:jdbc:postgresql://localhost:5432/ecommerce_db}
+      driverClassName: org.postgresql.Driver
+  mapperFiles: classpath*:com/homebase/ecom/query/service/mapper/*.xml
+  definitionFiles: classpath*:com/homebase/ecom/query/service/mapper/*.json

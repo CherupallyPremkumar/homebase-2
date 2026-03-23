@@ -15,24 +15,24 @@
             DELETE FROM offers WHERE id IN ('offer-1a','offer-1b','offer-1c','offer-2a','offer-5a','offer-5b');
 
             -- prod-1: 3 sellers, 1 inactive
-            INSERT INTO offers (id, product_id, supplier_id, selling_price, mrp, discount_percent, currency, active, "stateId", "flowId")
+            INSERT INTO offers (id, product_id, supplier_id, selling_price, mrp, discount_percent, currency, active, state_id, flow_id)
             VALUES ('offer-1a', 'prod-1', 'seller-1', 2499.00, 2999.00, 16.67, 'INR', true, 'ACTIVE', 'offer-flow');
 
-            INSERT INTO offers (id, product_id, supplier_id, selling_price, mrp, discount_percent, currency, active, "stateId", "flowId")
+            INSERT INTO offers (id, product_id, supplier_id, selling_price, mrp, discount_percent, currency, active, state_id, flow_id)
             VALUES ('offer-1b', 'prod-1', 'seller-2', 2699.00, 2999.00, 10.00, 'INR', true, 'ACTIVE', 'offer-flow');
 
-            INSERT INTO offers (id, product_id, supplier_id, selling_price, currency, active, "stateId", "flowId")
+            INSERT INTO offers (id, product_id, supplier_id, selling_price, currency, active, state_id, flow_id)
             VALUES ('offer-1c', 'prod-1', 'seller-3', 2399.00, 'INR', false, 'INACTIVE', 'offer-flow');
 
             -- prod-2: single seller
-            INSERT INTO offers (id, product_id, supplier_id, selling_price, mrp, discount_percent, currency, active, "stateId", "flowId")
+            INSERT INTO offers (id, product_id, supplier_id, selling_price, mrp, discount_percent, currency, active, state_id, flow_id)
             VALUES ('offer-2a', 'prod-2', 'seller-1', 599.00, 799.00, 25.03, 'INR', true, 'ACTIVE', 'offer-flow');
 
             -- prod-5: 2 sellers
-            INSERT INTO offers (id, product_id, supplier_id, selling_price, mrp, currency, active, "stateId", "flowId")
+            INSERT INTO offers (id, product_id, supplier_id, selling_price, mrp, currency, active, state_id, flow_id)
             VALUES ('offer-5a', 'prod-5', 'seller-1', 1999.00, 2499.00, 'INR', true, 'ACTIVE', 'offer-flow');
 
-            INSERT INTO offers (id, product_id, supplier_id, selling_price, mrp, currency, active, "stateId", "flowId")
+            INSERT INTO offers (id, product_id, supplier_id, selling_price, mrp, currency, active, state_id, flow_id)
             VALUES ('offer-5b', 'prod-5', 'seller-2', 2099.00, 2499.00, 'INR', true, 'ACTIVE', 'offer-flow');
         </sql>
     </changeSet>

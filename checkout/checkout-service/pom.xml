@@ -34,6 +34,11 @@
             <artifactId>workflow-service</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.homebase.ecom</groupId>
+            <artifactId>core</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>owiz</artifactId>
         </dependency>

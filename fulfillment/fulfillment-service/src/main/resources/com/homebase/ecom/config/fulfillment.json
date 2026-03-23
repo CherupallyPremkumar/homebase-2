@@ -1,0 +1,20 @@
+{
+    "policies": {
+        "fulfillment": {
+            "maxFulfillmentDays": 7,
+            "slaAlertAfterHours": 48,
+            "maxPickRetries": 3,
+            "requirePackSlipSignature": true
+        },
+        "delivery": {
+            "maxDeliveryAttempts": 3,
+            "redeliveryWindowHours": 24
+        }
+    },
+    "rules": {
+        "warehouse": {
+            "autoAssignNearestWarehouse": true,
+            "maxConcurrentPicks": 50
+        }
+    }
+}
