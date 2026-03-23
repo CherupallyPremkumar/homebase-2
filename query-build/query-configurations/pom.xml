@@ -16,6 +16,13 @@
     <description>Query Configurations - contains only configurations for all environments</description>
 
     <dependencies>
-
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>chenile-query-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
     </dependencies>
 </project>

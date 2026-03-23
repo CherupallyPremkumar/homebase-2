@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import org.chenile.base.response.GenericResponse;
 import org.chenile.http.annotation.ChenileController;
+import org.chenile.http.annotation.InterceptedBy;
 import org.chenile.http.handler.ControllerSupport;
 import org.chenile.query.model.SearchRequest;
 import org.chenile.query.model.SearchResponse;
