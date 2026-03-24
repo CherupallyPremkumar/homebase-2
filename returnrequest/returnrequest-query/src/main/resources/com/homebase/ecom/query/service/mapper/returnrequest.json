@@ -2,8 +2,10 @@
 	{
 		"id": "Returnrequest.getAll",
 		"name": "returnrequests",
+		"acls": ["ADMIN", "AGENT"],
 		"workflowName": "returnrequest",
-		"stateColumn": "current_state",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -35,13 +37,13 @@
 				"columnType": "Number",
 				"filterable": true
 			},
-			"currentState": {
-				"name": "current_state",
+			"stateId": {
+				"name": "state_id",
 				"filterable": true,
 				"columnType": "Text"
 			},
-			"createdDate": {
-				"name": "created_date",
+			"createdTime": {
+				"name": "created_time",
 				"columnType": "Date",
 				"sortable": true
 			}
@@ -53,8 +55,10 @@
 	{
 		"id": "Returnrequest.getById",
 		"name": "returnrequestById",
+		"acls": ["ADMIN", "AGENT"],
 		"workflowName": "returnrequest",
-		"stateColumn": "current_state",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -69,9 +73,10 @@
 	{
 		"id": "Returnrequest.getStateCounts",
 		"name": "returnrequestStateCounts",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
-			"currentState": {
-				"name": "current_state",
+			"stateId": {
+				"name": "state_id",
 				"columnType": "Text",
 				"filterable": true
 			}
@@ -83,8 +88,7 @@
 	{
 		"id": "Returnrequest.getPendingReturns",
 		"name": "pendingReturns",
-		"workflowName": "returnrequest",
-		"stateColumn": "current_state",
+		"acls": ["ADMIN", "AGENT"],
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -96,8 +100,8 @@
 				"columnType": "Text",
 				"filterable": true
 			},
-			"currentState": {
-				"name": "current_state",
+			"stateId": {
+				"name": "state_id",
 				"filterable": true,
 				"columnType": "Text"
 			}
@@ -108,16 +112,9 @@
 	},
 	{
 		"id": "Returnrequest.getByCustomerId",
-		"name": "customerReturns",
-		"workflowName": "returnrequest",
-		"stateColumn": "current_state",
-		"columnMetadata": {
-			"customerId": {
-				"name": "customer_id",
-				"filterable": true,
-				"columnType": "Text"
-			}
-		},
+		"name": "myReturns",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {},
 		"flexiblePropnames": false,
 		"paginated": true,
 		"sortable": true
@@ -125,8 +122,7 @@
 	{
 		"id": "Returnrequest.getByOrderId",
 		"name": "orderReturns",
-		"workflowName": "returnrequest",
-		"stateColumn": "current_state",
+		"acls": ["ADMIN", "AGENT"],
 		"columnMetadata": {
 			"orderId": {
 				"name": "order_id",

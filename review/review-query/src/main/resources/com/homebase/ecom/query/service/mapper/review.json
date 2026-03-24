@@ -2,8 +2,7 @@
 	{
 		"id": "Review.getAll",
 		"name": "reviews",
-		"workflowName": "review",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -55,11 +54,18 @@
 			}
 		},
 		"paginated": true,
-		"sortable": true
+		"sortable": true,
+		"workflowName": "review",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId"
 	},
 	{
 		"id": "Review.getById",
 		"name": "review",
+		"acls": ["ADMIN"],
+		"workflowName": "review",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -76,6 +82,7 @@
 	{
 		"id": "Review.getStateCounts",
 		"name": "reviewStateCounts",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"stateId": {
 				"name": "stateId",
@@ -88,8 +95,7 @@
 	{
 		"id": "Review.getFlaggedReviews",
 		"name": "flaggedReviews",
-		"workflowName": "review",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -119,8 +125,7 @@
 	{
 		"id": "Review.getByModeration",
 		"name": "moderationQueue",
-		"workflowName": "review",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"stateId": {
 				"name": "stateId",
@@ -139,6 +144,7 @@
 	{
 		"id": "Review.getByProductId",
 		"name": "productReviews",
+		"acls": [],
 		"columnMetadata": {
 			"productId": {
 				"name": "product_id",
@@ -161,7 +167,8 @@
 	},
 	{
 		"id": "Review.getAverageRating",
-		"name": "averageRating",
+		"name": "reviewSummary",
+		"acls": [],
 		"columnMetadata": {
 			"productId": {
 				"name": "product_id",
@@ -174,6 +181,7 @@
 	{
 		"id": "Review.getRecentReviews",
 		"name": "recentReviews",
+		"acls": [],
 		"columnMetadata": {
 			"productId": {
 				"name": "product_id",

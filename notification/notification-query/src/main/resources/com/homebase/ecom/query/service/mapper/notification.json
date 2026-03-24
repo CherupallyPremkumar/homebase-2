@@ -2,8 +2,10 @@
     {
         "id": "Notification.getAll",
         "name": "notifications",
+        "acls": ["ADMIN"],
         "workflowName": "notification",
         "stateColumn": "stateId",
+		"flowColumn": "flowId",
         "columnMetadata": {
             "id": {
                 "name": "id",
@@ -48,6 +50,10 @@
     {
         "id": "Notification.getById",
         "name": "notification",
+        "acls": ["ADMIN"],
+        "workflowName": "notification",
+        "stateColumn": "stateId",
+        "flowColumn": "flowId",
         "columnMetadata": {
             "id": {
                 "name": "id",
@@ -60,6 +66,7 @@
     {
         "id": "Notification.getStateCounts",
         "name": "notificationStateCounts",
+        "acls": ["ADMIN"],
         "columnMetadata": {
             "stateId": {
                 "name": "stateId",
@@ -72,8 +79,7 @@
     {
         "id": "Notification.getFailedNotifications",
         "name": "failedNotifications",
-        "workflowName": "notification",
-        "stateColumn": "stateId",
+        "acls": ["ADMIN"],
         "columnMetadata": {
             "customerId": {
                 "name": "customerId",
@@ -92,6 +98,7 @@
     {
         "id": "Notification.getDeliveryStats",
         "name": "notificationDeliveryStats",
+        "acls": ["ADMIN"],
         "columnMetadata": {
             "channel": {
                 "name": "channel",
@@ -104,8 +111,7 @@
     {
         "id": "Notification.getByCustomerId",
         "name": "notificationsByCustomer",
-        "workflowName": "notification",
-        "stateColumn": "stateId",
+        "acls": ["ADMIN"],
         "columnMetadata": {
             "customerId": {
                 "name": "customerId",
@@ -124,8 +130,7 @@
     {
         "id": "Notification.getByChannel",
         "name": "notificationsByChannel",
-        "workflowName": "notification",
-        "stateColumn": "stateId",
+        "acls": ["ADMIN"],
         "columnMetadata": {
             "channel": {
                 "name": "channel",
@@ -144,8 +149,7 @@
     {
         "id": "Notification.getByTemplate",
         "name": "notificationsByTemplate",
-        "workflowName": "notification",
-        "stateColumn": "stateId",
+        "acls": ["ADMIN"],
         "columnMetadata": {
             "templateId": {
                 "name": "templateId",

@@ -7,15 +7,16 @@
     <!-- ================================================================ -->
     <select id="getAll" resultType="java.util.HashMap">
         SELECT
-            st.id as id,
-            st.customer_id as customerId,
-            st.subject as subject,
-            st.category as category,
-            st.priority as priority,
-            st.state_id as stateId,
-            st.assigned_agent_id as assignedAgentId,
-            st.reopen_count as reopenCount,
-            st.created_time as createdAt
+            st.id as "id",
+            st.customer_id as "customerId",
+            st.subject as "subject",
+            st.category as "category",
+            st.priority as "priority",
+            st.state_id as "stateId",
+            st.flow_id as "flowId",
+            st.assigned_agent_id as "assignedAgentId",
+            st.reopen_count as "reopenCount",
+            st.created_time as "createdAt"
         FROM support_tickets st
         <where>
             <if test="id != null">AND st.id = #{id}</if>
@@ -52,18 +53,19 @@
     <!-- ================================================================ -->
     <select id="getById" resultType="java.util.HashMap">
         SELECT
-            st.id as id,
-            st.customer_id as customerId,
-            st.order_id as orderId,
-            st.subject as subject,
-            st.category as category,
-            st.priority as priority,
-            st.state_id as stateId,
-            st.assigned_agent_id as assignedAgentId,
-            st.description as description,
-            st.resolved_at as resolvedAt,
-            st.reopen_count as reopenCount,
-            st.created_time as createdAt
+            st.id as "id",
+            st.customer_id as "customerId",
+            st.order_id as "orderId",
+            st.subject as "subject",
+            st.category as "category",
+            st.priority as "priority",
+            st.state_id as "stateId",
+            st.flow_id as "flowId",
+            st.assigned_agent_id as "assignedAgentId",
+            st.description as "description",
+            st.resolved_at as "resolvedAt",
+            st.reopen_count as "reopenCount",
+            st.created_time as "createdAt"
         FROM support_tickets st
         WHERE st.id = #{id}
     </select>
@@ -73,8 +75,8 @@
     <!-- ================================================================ -->
     <select id="getStateCounts" resultType="java.util.HashMap">
         SELECT
-            st.state_id as stateId,
-            COUNT(*) as ticketCount
+            st.state_id as "stateId",
+            COUNT(*) as "ticketCount"
         FROM support_tickets st
         GROUP BY st.state_id
     </select>
@@ -84,19 +86,20 @@
     <!-- ================================================================ -->
     <select id="getOverdueTickets" resultType="java.util.HashMap">
         SELECT
-            st.id as id,
-            st.customer_id as customerId,
-            st.subject as subject,
-            st.category as category,
-            st.priority as priority,
-            st.state_id as stateId,
-            st.assigned_agent_id as assignedAgentId,
-            st.created_time as createdAt,
-            DATEDIFF(HOUR, st.created_time, CURRENT_TIMESTAMP) as hoursOpen
+            st.id as "id",
+            st.customer_id as "customerId",
+            st.subject as "subject",
+            st.category as "category",
+            st.priority as "priority",
+            st.state_id as "stateId",
+            st.flow_id as "flowId",
+            st.assigned_agent_id as "assignedAgentId",
+            st.created_time as "createdAt",
+            EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - st.created_time)) / 3600 as "hoursOpen"
         FROM support_tickets st
         WHERE st.state_id NOT IN ('CLOSED', 'RESOLVED')
-          AND DATEDIFF(HOUR, st.created_time, CURRENT_TIMESTAMP) &gt; COALESCE(#{slaHours}, 24)
-        ORDER BY st.created_at ASC
+          AND EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - st.created_time)) / 3600 &gt; COALESCE(#{slaHours}, 24)
+        ORDER BY st.created_time ASC
         ${pagination}
     </select>
 
@@ -104,7 +107,7 @@
         SELECT COUNT(*)
         FROM support_tickets st
         WHERE st.state_id NOT IN ('CLOSED', 'RESOLVED')
-          AND DATEDIFF(HOUR, st.created_time, CURRENT_TIMESTAMP) &gt; COALESCE(#{slaHours}, 24)
+          AND EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - st.created_time)) / 3600 &gt; COALESCE(#{slaHours}, 24)
     </select>
 
     <!-- ================================================================ -->
@@ -112,14 +115,15 @@
     <!-- ================================================================ -->
     <select id="getByAgent" resultType="java.util.HashMap">
         SELECT
-            st.id as id,
-            st.customer_id as customerId,
-            st.subject as subject,
-            st.category as category,
-            st.priority as priority,
-            st.state_id as stateId,
-            st.assigned_agent_id as assignedAgentId,
-            st.created_time as createdAt
+            st.id as "id",
+            st.customer_id as "customerId",
+            st.subject as "subject",
+            st.category as "category",
+            st.priority as "priority",
+            st.state_id as "stateId",
+            st.flow_id as "flowId",
+            st.assigned_agent_id as "assignedAgentId",
+            st.created_time as "createdAt"
         FROM support_tickets st
         WHERE st.assigned_agent_id = #{assignedAgentId}
         ${orderby} ${pagination}
@@ -136,14 +140,15 @@
     <!-- ================================================================ -->
     <select id="getByPriority" resultType="java.util.HashMap">
         SELECT
-            st.id as id,
-            st.customer_id as customerId,
-            st.subject as subject,
-            st.category as category,
-            st.priority as priority,
-            st.state_id as stateId,
-            st.assigned_agent_id as assignedAgentId,
-            st.created_time as createdAt
+            st.id as "id",
+            st.customer_id as "customerId",
+            st.subject as "subject",
+            st.category as "category",
+            st.priority as "priority",
+            st.state_id as "stateId",
+            st.flow_id as "flowId",
+            st.assigned_agent_id as "assignedAgentId",
+            st.created_time as "createdAt"
         FROM support_tickets st
         WHERE st.priority = #{priority}
         ${orderby} ${pagination}
@@ -160,16 +165,17 @@
     <!-- ================================================================ -->
     <select id="getByCustomerId" resultType="java.util.HashMap">
         SELECT
-            st.id as id,
-            st.customer_id as customerId,
-            st.order_id as orderId,
-            st.subject as subject,
-            st.category as category,
-            st.priority as priority,
-            st.state_id as stateId,
-            st.assigned_agent_id as assignedAgentId,
-            st.resolved_at as resolvedAt,
-            st.created_time as createdAt
+            st.id as "id",
+            st.customer_id as "customerId",
+            st.order_id as "orderId",
+            st.subject as "subject",
+            st.category as "category",
+            st.priority as "priority",
+            st.state_id as "stateId",
+            st.flow_id as "flowId",
+            st.assigned_agent_id as "assignedAgentId",
+            st.resolved_at as "resolvedAt",
+            st.created_time as "createdAt"
         FROM support_tickets st
         WHERE st.customer_id = #{customerId}
         ${orderby} ${pagination}

@@ -2,8 +2,10 @@
 	{
 		"id": "Settlement.getAll",
 		"name": "settlements",
+		"acls": ["ADMIN", "SUPPLIER"],
 		"workflowName": "settlement",
 		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -68,8 +70,10 @@
 	{
 		"id": "Settlement.getById",
 		"name": "settlementById",
+		"acls": ["ADMIN", "SUPPLIER"],
 		"workflowName": "settlement",
 		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -84,8 +88,7 @@
 	{
 		"id": "Settlement.getStateCounts",
 		"name": "settlementStateCounts",
-		"workflowName": "settlement",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"stateId": {
 				"name": "stateId",
@@ -100,8 +103,7 @@
 	{
 		"id": "Settlement.getBySupplier",
 		"name": "settlementsBySupplier",
-		"workflowName": "settlement",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN", "SUPPLIER"],
 		"columnMetadata": {
 			"supplierId": {
 				"name": "supplier_id",
@@ -121,8 +123,7 @@
 	{
 		"id": "Settlement.getPendingSettlements",
 		"name": "pendingSettlements",
-		"workflowName": "settlement",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"supplierId": {
 				"name": "supplier_id",
@@ -137,8 +138,7 @@
 	{
 		"id": "Settlement.getSettlementSummary",
 		"name": "settlementSummary",
-		"workflowName": "settlement",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"supplierId": {
 				"name": "supplier_id",
@@ -153,8 +153,7 @@
 	{
 		"id": "Settlement.getByVendorId",
 		"name": "settlementsByVendor",
-		"workflowName": "settlement",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"supplierId": {
 				"name": "supplier_id",

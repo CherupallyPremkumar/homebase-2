@@ -1,9 +1,11 @@
 [
 	{
 		"id": "Shipping.getAll",
-		"name": "shippings",
+		"name": "shipments",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"workflowName": "shipping",
 		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -48,8 +50,10 @@
 	{
 		"id": "Shipping.getById",
 		"name": "shippingById",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"workflowName": "shipping",
 		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -64,7 +68,7 @@
 	{
 		"id": "Shipping.getStateCounts",
 		"name": "shippingStateCounts",
-		"workflowName": "shipping",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"columnMetadata": {
 			"stateId": {
 				"name": "stateId",
@@ -79,8 +83,7 @@
 	{
 		"id": "Shipping.getByCarrier",
 		"name": "shippingsByCarrier",
-		"workflowName": "shipping",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"columnMetadata": {
 			"carrier": {
 				"name": "carrier",
@@ -100,8 +103,7 @@
 	{
 		"id": "Shipping.getPendingShipments",
 		"name": "pendingShipments",
-		"workflowName": "shipping",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"columnMetadata": {
 			"stateId": {
 				"name": "stateId",
@@ -116,8 +118,7 @@
 	{
 		"id": "Shipping.getByOrderId",
 		"name": "shippingByOrderId",
-		"workflowName": "shipping",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"columnMetadata": {
 			"orderId": {
 				"name": "order_id",
@@ -132,8 +133,7 @@
 	{
 		"id": "Shipping.trackShipment",
 		"name": "trackShipment",
-		"workflowName": "shipping",
-		"stateColumn": "stateId",
+		"acls": ["CUSTOMER"],
 		"columnMetadata": {
 			"trackingNumber": {
 				"name": "tracking_number",

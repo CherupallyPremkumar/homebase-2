@@ -1,7 +1,8 @@
 [
   {
     "id": "CatalogBrowse.browse",
-    "name": "browseCatalog",
+    "name": "catalogItems",
+    "acls": [],
     "columnMetadata": {
       "id": {
         "name": "id",
@@ -43,6 +44,7 @@
   {
     "id": "CatalogBrowse.getUserPicks",
     "name": "userPicks",
+    "acls": [],
     "columnMetadata": {
       "id": {
         "name": "id",
@@ -83,6 +85,7 @@
   {
     "id": "CatalogBrowse.getSuggestions",
     "name": "itemSuggestions",
+    "acls": [],
     "columnMetadata": {
       "id": {
         "name": "id",
@@ -118,6 +121,7 @@
   {
     "id": "CatalogBrowse.getByCategory",
     "name": "catalogByCategory",
+    "acls": [],
     "columnMetadata": {
       "id": {
         "name": "id",

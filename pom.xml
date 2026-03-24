@@ -75,8 +75,11 @@
         <module>return-processing</module>
         <module>supplier-lifecycle</module>
 
+        <!-- Layer 5: Infrastructure modules -->
+        <module>warehouse</module>
+
         <!-- Layer 5: Cross-module UI queries -->
-        <module>ui-query</module>
+        <module>query-modules</module>
 
         <!-- Layer 6: Query build (aggregates all query modules) -->
         <module>query-build</module>
@@ -120,11 +123,6 @@
             <dependency>
                 <groupId>com.homebase.ecom.shared</groupId>
                 <artifactId>shared-api</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.homebase.ecom.shared</groupId>
-                <artifactId>shared-security</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
@@ -727,6 +725,11 @@
             <dependency>
                 <groupId>org.chenile</groupId>
                 <artifactId>chenile-http</artifactId>
+                <version>${chenile.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.chenile</groupId>
+                <artifactId>chenile-security-api</artifactId>
                 <version>${chenile.client.version}</version>
             </dependency>
             <dependency>

@@ -8,19 +8,20 @@
 
     <select id="getAll" resultType="java.util.HashMap">
         SELECT
-            r.id as id,
-            r.product_id as productId,
-            r.customer_id as customerId,
-            r.order_id as orderId,
-            r.rating as rating,
-            r.title as title,
-            r.body as body,
-            r.verified_purchase as verifiedPurchase,
-            r.helpful_count as helpfulCount,
-            r.report_count as reportCount,
-            r.moderator_notes as moderatorNotes,
-            r.state_id as stateId,
-            r.created_time as createdAt
+            r.id as "id",
+            r.product_id as "productId",
+            r.customer_id as "customerId",
+            r.order_id as "orderId",
+            r.rating as "rating",
+            r.title as "title",
+            r.body as "body",
+            r.verified_purchase as "verifiedPurchase",
+            r.helpful_count as "helpfulCount",
+            r.report_count as "reportCount",
+            r.moderator_notes as "moderatorNotes",
+            r.state_id as "stateId",
+            r.flow_id as "flowId",
+            r.created_time as "createdAt"
         FROM product_reviews r
         <where>
             <if test="id != null">AND r.id = #{id}</if>
@@ -52,27 +53,28 @@
 
     <select id="getById" resultType="java.util.HashMap">
         SELECT
-            r.id as id,
-            r.product_id as productId,
-            r.customer_id as customerId,
-            r.order_id as orderId,
-            r.rating as rating,
-            r.title as title,
-            r.body as body,
-            r.verified_purchase as verifiedPurchase,
-            r.helpful_count as helpfulCount,
-            r.report_count as reportCount,
-            r.moderator_notes as moderatorNotes,
-            r.state_id as stateId,
-            r.created_time as createdAt
+            r.id as "id",
+            r.product_id as "productId",
+            r.customer_id as "customerId",
+            r.order_id as "orderId",
+            r.rating as "rating",
+            r.title as "title",
+            r.body as "body",
+            r.verified_purchase as "verifiedPurchase",
+            r.helpful_count as "helpfulCount",
+            r.report_count as "reportCount",
+            r.moderator_notes as "moderatorNotes",
+            r.state_id as "stateId",
+            r.flow_id as "flowId",
+            r.created_time as "createdAt"
         FROM product_reviews r
         WHERE r.id = #{id}
     </select>
 
     <select id="getStateCounts" resultType="java.util.HashMap">
         SELECT
-            r.state_id as stateId,
-            count(*) as count
+            r.state_id as "stateId",
+            count(*) as "count"
         FROM product_reviews r
         <where>
             <if test="stateId != null">AND r.state_id = #{stateId}</if>
@@ -82,15 +84,16 @@
 
     <select id="getFlaggedReviews" resultType="java.util.HashMap">
         SELECT
-            r.id as id,
-            r.product_id as productId,
-            r.customer_id as customerId,
-            r.rating as rating,
-            r.title as title,
-            r.report_count as reportCount,
-            r.moderator_notes as moderatorNotes,
-            r.state_id as stateId,
-            r.created_time as createdAt
+            r.id as "id",
+            r.product_id as "productId",
+            r.customer_id as "customerId",
+            r.rating as "rating",
+            r.title as "title",
+            r.report_count as "reportCount",
+            r.moderator_notes as "moderatorNotes",
+            r.state_id as "stateId",
+            r.flow_id as "flowId",
+            r.created_time as "createdAt"
         FROM product_reviews r
         WHERE r.state_id = 'FLAGGED'
         <if test="productId != null">AND r.product_id = #{productId}</if>
@@ -106,17 +109,18 @@
 
     <select id="getByModeration" resultType="java.util.HashMap">
         SELECT
-            r.id as id,
-            r.product_id as productId,
-            r.customer_id as customerId,
-            r.rating as rating,
-            r.title as title,
-            r.body as body,
-            r.verified_purchase as verifiedPurchase,
-            r.report_count as reportCount,
-            r.moderator_notes as moderatorNotes,
-            r.state_id as stateId,
-            r.created_time as createdAt
+            r.id as "id",
+            r.product_id as "productId",
+            r.customer_id as "customerId",
+            r.rating as "rating",
+            r.title as "title",
+            r.body as "body",
+            r.verified_purchase as "verifiedPurchase",
+            r.report_count as "reportCount",
+            r.moderator_notes as "moderatorNotes",
+            r.state_id as "stateId",
+            r.flow_id as "flowId",
+            r.created_time as "createdAt"
         FROM product_reviews r
         WHERE r.state_id IN ('UNDER_MODERATION', 'FLAGGED')
         <if test="stateId != null">AND r.state_id = #{stateId}</if>
@@ -136,16 +140,16 @@
 
     <select id="getByProductId" resultType="java.util.HashMap">
         SELECT
-            r.id as id,
-            r.product_id as productId,
-            r.customer_id as customerId,
-            r.rating as rating,
-            r.title as title,
-            r.body as body,
-            r.verified_purchase as verifiedPurchase,
-            r.helpful_count as helpfulCount,
-            r.state_id as stateId,
-            r.created_time as createdAt
+            r.id as "id",
+            r.product_id as "productId",
+            r.customer_id as "customerId",
+            r.rating as "rating",
+            r.title as "title",
+            r.body as "body",
+            r.verified_purchase as "verifiedPurchase",
+            r.helpful_count as "helpfulCount",
+            r.state_id as "stateId",
+            r.created_time as "createdAt"
         FROM product_reviews r
         WHERE r.product_id = #{productId}
           AND r.state_id = 'PUBLISHED'
@@ -161,9 +165,9 @@
 
     <select id="getAverageRating" resultType="java.util.HashMap">
         SELECT
-            r.product_id as productId,
-            ROUND(AVG(CAST(r.rating AS DOUBLE)), 2) as averageRating,
-            count(*) as reviewCount
+            r.product_id as "productId",
+            ROUND(AVG(r.rating::numeric), 2) as "averageRating",
+            count(*) as "reviewCount"
         FROM product_reviews r
         WHERE r.product_id = #{productId}
           AND r.state_id = 'PUBLISHED'
@@ -172,15 +176,15 @@
 
     <select id="getRecentReviews" resultType="java.util.HashMap">
         SELECT
-            r.id as id,
-            r.product_id as productId,
-            r.customer_id as customerId,
-            r.rating as rating,
-            r.title as title,
-            r.body as body,
-            r.verified_purchase as verifiedPurchase,
-            r.helpful_count as helpfulCount,
-            r.created_time as createdAt
+            r.id as "id",
+            r.product_id as "productId",
+            r.customer_id as "customerId",
+            r.rating as "rating",
+            r.title as "title",
+            r.body as "body",
+            r.verified_purchase as "verifiedPurchase",
+            r.helpful_count as "helpfulCount",
+            r.created_time as "createdAt"
         FROM product_reviews r
         WHERE r.product_id = #{productId}
           AND r.state_id = 'PUBLISHED'

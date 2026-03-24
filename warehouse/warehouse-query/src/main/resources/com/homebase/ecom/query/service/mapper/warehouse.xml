@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Warehouse">
+
+    <!-- List all warehouses -->
+    <select id="getAll" resultType="map">
+        SELECT
+            id,
+            warehouse_code as "warehouseCode",
+            warehouse_name as "warehouseName",
+            warehouse_type as "warehouseType",
+            city,
+            state,
+            pincode,
+            country,
+            contact_phone as "contactPhone",
+            contact_email as "contactEmail",
+            manager_id as "managerId",
+            max_capacity_units as "maxCapacityUnits",
+            current_utilization_pct as "currentUtilizationPct",
+            is_active as "isActive",
+            is_returns_center as "isReturnsCenter",
+            created_time as "createdTime"
+        FROM warehouses
+        <where>
+            <if test="warehouseCode != null">AND warehouse_code = #{warehouseCode}</if>
+            <if test="warehouseName != null">AND warehouse_name LIKE CONCAT('%', #{warehouseName}, '%')</if>
+            <if test="warehouseType != null">AND warehouse_type = #{warehouseType}</if>
+            <if test="city != null">AND city = #{city}</if>
+            <if test="state != null">AND state = #{state}</if>
+            <if test="pincode != null">AND pincode = #{pincode}</if>
+            <if test="isActive != null">AND is_active = CAST(#{isActive} AS boolean)</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getAll-count" resultType="int">
+        SELECT count(*) FROM warehouses
+        <where>
+            <if test="warehouseCode != null">AND warehouse_code = #{warehouseCode}</if>
+            <if test="warehouseName != null">AND warehouse_name LIKE CONCAT('%', #{warehouseName}, '%')</if>
+            <if test="warehouseType != null">AND warehouse_type = #{warehouseType}</if>
+            <if test="city != null">AND city = #{city}</if>
+            <if test="state != null">AND state = #{state}</if>
+            <if test="pincode != null">AND pincode = #{pincode}</if>
+            <if test="isActive != null">AND is_active = CAST(#{isActive} AS boolean)</if>
+        </where>
+    </select>
+
+    <!-- Warehouse detail -->
+    <select id="getById" resultType="map">
+        SELECT
+            id,
+            warehouse_code as "warehouseCode",
+            warehouse_name as "warehouseName",
+            warehouse_type as "warehouseType",
+            address_line1 as "addressLine1",
+            address_line2 as "addressLine2",
+            city,
+            state,
+            pincode,
+            country,
+            latitude,
+            longitude,
+            timezone,
+            contact_phone as "contactPhone",
+            contact_email as "contactEmail",
+            manager_id as "managerId",
+            max_capacity_units as "maxCapacityUnits",
+            current_utilization_pct as "currentUtilizationPct",
+            is_active as "isActive",
+            is_returns_center as "isReturnsCenter",
+            operating_hours_json as "operatingHoursJson",
+            supported_carriers_json as "supportedCarriersJson",
+            created_time as "createdTime",
+            last_modified_time as "lastModifiedTime"
+        FROM warehouses
+        WHERE id = #{id}
+    </select>
+
+    <!-- Warehouse locations (bins) -->
+    <select id="getLocations" resultType="map">
+        SELECT
+            id,
+            warehouse_id as "warehouseId",
+            location_code as "locationCode",
+            zone,
+            aisle,
+            shelf,
+            bin,
+            location_type as "locationType",
+            capacity_units as "capacityUnits",
+            current_units as "currentUnits",
+            is_active as "isActive"
+        FROM warehouse_locations
+        <where>
+            <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+            <if test="locationType != null">AND location_type = #{locationType}</if>
+            <if test="zone != null">AND zone = #{zone}</if>
+            <if test="isActive != null">AND is_active = CAST(#{isActive} AS boolean)</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getLocations-count" resultType="int">
+        SELECT count(*) FROM warehouse_locations
+        <where>
+            <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+            <if test="locationType != null">AND location_type = #{locationType}</if>
+            <if test="zone != null">AND zone = #{zone}</if>
+            <if test="isActive != null">AND is_active = CAST(#{isActive} AS boolean)</if>
+        </where>
+    </select>
+
+</mapper>

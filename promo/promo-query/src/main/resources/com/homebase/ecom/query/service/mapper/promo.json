@@ -2,8 +2,10 @@
 	{
 		"id": "PromoCode.getAll",
 		"name": "promos",
+		"acls": ["ADMIN"],
 		"workflowName": "promo",
 		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"code": {
 				"name": "code",
@@ -63,6 +65,10 @@
 	{
 		"id": "PromoCode.getById",
 		"name": "promo",
+		"acls": ["ADMIN"],
+		"workflowName": "promo",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"code": {
 				"name": "code",
@@ -75,6 +81,7 @@
 	{
 		"id": "PromoCode.getStateCounts",
 		"name": "promoStateCounts",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"stateId": {
 				"name": "stateId",
@@ -87,8 +94,7 @@
 	{
 		"id": "PromoCode.getActivePromos",
 		"name": "activePromos",
-		"workflowName": "promo",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"code": {
 				"name": "code",
@@ -107,8 +113,7 @@
 	{
 		"id": "PromoCode.getExpiringPromos",
 		"name": "expiringPromos",
-		"workflowName": "promo",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"endDate": {
 				"name": "endDate",
@@ -127,6 +132,7 @@
 	{
 		"id": "PromoCode.getAvailableForCart",
 		"name": "availableForCart",
+		"acls": ["CUSTOMER"],
 		"columnMetadata": {
 			"cartTotal": {
 				"name": "cartTotal",
@@ -150,6 +156,7 @@
 	{
 		"id": "PromoCode.validatePromoCode",
 		"name": "validatePromoCode",
+		"acls": ["CUSTOMER"],
 		"columnMetadata": {
 			"code": {
 				"name": "code",

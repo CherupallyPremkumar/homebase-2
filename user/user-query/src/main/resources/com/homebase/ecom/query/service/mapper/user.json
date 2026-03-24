@@ -2,6 +2,10 @@
 	{
 		"id": "User.getAll",
 		"name": "users",
+		"acls": ["ADMIN"],
+		"workflowName": "user",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"responseClass": "com.homebase.ecom.user.dto.UserDto",
 		"columnMetadata": {
 			"userId": {
@@ -50,6 +54,10 @@
 	{
 		"id": "User.getById",
 		"name": "user",
+		"acls": ["ADMIN"],
+		"workflowName": "user",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"responseClass": "com.homebase.ecom.user.dto.UserDto",
 		"columnMetadata": {
 			"userId": {
@@ -63,6 +71,7 @@
 	{
 		"id": "User.getStateCounts",
 		"name": "userStateCounts",
+		"acls": ["ADMIN"],
 		"responseClass": "com.homebase.ecom.user.dto.UserDto",
 		"columnMetadata": {},
 		"paginated": false
@@ -70,6 +79,7 @@
 	{
 		"id": "User.getRecentRegistrations",
 		"name": "recentRegistrations",
+		"acls": ["ADMIN"],
 		"responseClass": "com.homebase.ecom.user.dto.UserDto",
 		"columnMetadata": {},
 		"paginated": true,
@@ -78,6 +88,7 @@
 	{
 		"id": "User.getSuspendedUsers",
 		"name": "suspendedUsers",
+		"acls": ["ADMIN"],
 		"responseClass": "com.homebase.ecom.user.dto.UserDto",
 		"columnMetadata": {},
 		"paginated": true,
@@ -86,6 +97,7 @@
 	{
 		"id": "User.getByEmail",
 		"name": "userByEmail",
+		"acls": ["ADMIN"],
 		"responseClass": "com.homebase.ecom.user.dto.UserDto",
 		"columnMetadata": {
 			"email": {
@@ -99,6 +111,7 @@
 	{
 		"id": "User.getByRole",
 		"name": "usersByRole",
+		"acls": ["ADMIN"],
 		"responseClass": "com.homebase.ecom.user.dto.UserDto",
 		"columnMetadata": {
 			"role": {

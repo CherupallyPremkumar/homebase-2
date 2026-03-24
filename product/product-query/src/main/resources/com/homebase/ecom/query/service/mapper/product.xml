@@ -2,6 +2,84 @@
 <mapper namespace="Product">
 
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- RESULT MAPS                                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Detail result map with nested variants, media, and tags via sub-selects -->
+<resultMap id="productDetailMap" type="com.homebase.ecom.dto.ProductDto">
+    <id property="id" column="id"/>
+    <result property="name" column="name"/>
+    <result property="description" column="description"/>
+    <result property="shortDescription" column="shortDescription"/>
+    <result property="brand" column="brand"/>
+    <result property="categoryId" column="categoryId"/>
+    <result property="categoryName" column="categoryName"/>
+    <result property="slug" column="slug"/>
+    <result property="metaTitle" column="metaTitle"/>
+    <result property="metaDescription" column="metaDescription"/>
+    <result property="stateId" column="stateId"/>
+    <result property="flowId" column="flowId"/>
+    <result property="basePrice" column="basePrice"/>
+    <result property="sellingPrice" column="sellingPrice"/>
+    <result property="mrp" column="mrp"/>
+    <result property="hsnCode" column="hsnCode"/>
+    <result property="countryOfOrigin" column="countryOfOrigin"/>
+    <result property="weightGrams" column="weightGrams"/>
+    <result property="taxCategory" column="taxCategory"/>
+    <result property="warrantyMonths" column="warrantyMonths"/>
+    <result property="isActive" column="isActive"/>
+    <result property="isReturnable" column="isReturnable"/>
+    <result property="returnWindowDays" column="returnWindowDays"/>
+    <result property="createdBy" column="createdBy"/>
+    <result property="lastModifiedBy" column="lastModifiedBy"/>
+    <result property="createdTime" column="createdTime"/>
+    <result property="lastModifiedTime" column="lastModifiedTime"/>
+    <collection property="variants" ofType="com.homebase.ecom.dto.VariantDto"
+                select="getVariantsForProduct" column="id"/>
+    <collection property="media" ofType="com.homebase.ecom.dto.ProductMediaDto"
+                select="getMediaForProduct" column="id"/>
+    <collection property="tags" ofType="string"
+                select="getTagsForProduct" column="id"/>
+</resultMap>
+
+<!-- Sub-select: variants for a product (collapsed per variant with attributes concatenated) -->
+<select id="getVariantsForProduct" resultType="com.homebase.ecom.dto.VariantDto">
+    SELECT
+        v.id as "id",
+        v.product_id as "productId",
+        v.sku as "sku"
+    FROM product_variants v
+    WHERE v.product_id = #{id}
+    ORDER BY v.sku
+</select>
+
+<!-- Sub-select: media for a product -->
+<select id="getMediaForProduct" resultType="com.homebase.ecom.dto.ProductMediaDto">
+    SELECT
+        ma.id as "assetId",
+        pm.product_id as "productId",
+        ma.cdn_url as "cdnUrl",
+        ma.thumbnail_url as "thumbnailUrl",
+        ma.medium_url as "mediumUrl",
+        ma.zoom_url as "zoomUrl",
+        ma.type as "type",
+        ma.alt_text as "altText",
+        pm.is_primary as "primary",
+        pm.sort_order as "sortOrder"
+    FROM product_media pm
+    JOIN media_assets ma ON ma.id = pm.asset_id
+    WHERE pm.product_id = #{id}
+    ORDER BY pm.is_primary DESC, pm.sort_order ASC
+</select>
+
+<!-- Sub-select: tags for a product (returns plain strings) -->
+<select id="getTagsForProduct" resultType="string">
+    SELECT tag FROM product_tags
+    WHERE product_id = #{id}
+    ORDER BY tag
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
 <!-- STOREFRONT QUERIES                                                     -->
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 
@@ -10,7 +88,7 @@
     SELECT count(*) FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
     <where>
-        p."stateId" = 'PUBLISHED'
+        p.state_id = 'PUBLISHED'
         <if test="name != null">AND p.name LIKE #{name}</if>
         <if test="brand != null">AND p.brand = #{brand}</if>
         <if test="categoryId != null">AND p.category_id = #{categoryId}</if>
@@ -25,11 +103,13 @@
         p.category_id as "categoryId",
         c.name as "categoryName",
         p.slug,
-        p."stateId" as "stateId"
+        p.state_id as "stateId",
+        p.base_price as "basePrice",
+        p.base_price as "sellingPrice"
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
     <where>
-        p."stateId" = 'PUBLISHED'
+        p.state_id = 'PUBLISHED'
         <if test="name != null">AND p.name LIKE #{name}</if>
         <if test="brand != null">AND p.brand = #{brand}</if>
         <if test="categoryId != null">AND p.category_id = #{categoryId}</if>
@@ -38,17 +118,32 @@
 </select>
 
 <!-- Get product by slug (SEO-friendly URL) -->
-<select id="getBySlug" resultType="com.homebase.ecom.dto.ProductDto">
+<select id="getBySlug" resultMap="productDetailMap">
     SELECT
-        p.id, p.name, p.description,
+        p.id as "id", p.name as "name", p.description as "description",
         p.short_description as "shortDescription",
-        p.brand,
+        p.brand as "brand",
         p.category_id as "categoryId",
         c.name as "categoryName",
-        p.slug,
+        p.slug as "slug",
         p.meta_title as "metaTitle",
         p.meta_description as "metaDescription",
-        p."stateId" as "stateId"
+        p.state_id as "stateId",
+        p.flow_id as "flowId",
+        p.base_price as "basePrice",
+        p.base_price as "sellingPrice",
+        p.base_price as "mrp",
+        p.hsn_code as "hsnCode",
+        p.country_of_origin as "countryOfOrigin",
+        p.weight_grams as "weightGrams",
+        p.tax_category as "taxCategory",
+        p.warranty_months as "warrantyMonths",
+        p.is_active as "isActive",
+        p.is_returnable as "isReturnable",
+        p.return_window_days as "returnWindowDays",
+        p.created_by as "createdBy",
+        p.created_time as "createdTime",
+        p.last_modified_time as "lastModifiedTime"
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
     WHERE p.slug = #{slug}
@@ -57,7 +152,7 @@
 <!-- Search products — text search across name, description, brand -->
 <select id="searchProducts-count" resultType="int">
     SELECT count(*) FROM products p
-    WHERE p."stateId" = 'PUBLISHED'
+    WHERE p.state_id = 'PUBLISHED'
       AND (p.name LIKE #{q} OR p.description LIKE #{q} OR p.brand LIKE #{q})
 </select>
 
@@ -69,10 +164,12 @@
         p.category_id as "categoryId",
         c.name as "categoryName",
         p.slug,
-        p."stateId" as "stateId"
+        p.state_id as "stateId",
+        p.base_price as "basePrice",
+        p.base_price as "sellingPrice"
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
-    WHERE p."stateId" = 'PUBLISHED'
+    WHERE p.state_id = 'PUBLISHED'
       AND (p.name LIKE #{q} OR p.description LIKE #{q} OR p.brand LIKE #{q})
     ${orderby} ${pagination}
 </select>
@@ -81,7 +178,7 @@
 <select id="getByCategory-count" resultType="int">
     SELECT count(*) FROM products p
     JOIN categories c ON p.category_id = c.id
-    WHERE p."stateId" = 'PUBLISHED'
+    WHERE p.state_id = 'PUBLISHED'
       AND (c.id = #{categoryId} OR c.parent_id = #{categoryId})
 </select>
 
@@ -93,10 +190,12 @@
         p.category_id as "categoryId",
         c.name as "categoryName",
         p.slug,
-        p."stateId" as "stateId"
+        p.state_id as "stateId",
+        p.base_price as "basePrice",
+        p.base_price as "sellingPrice"
     FROM products p
     JOIN categories c ON p.category_id = c.id
-    WHERE p."stateId" = 'PUBLISHED'
+    WHERE p.state_id = 'PUBLISHED'
       AND (c.id = #{categoryId} OR c.parent_id = #{categoryId})
     ${orderby} ${pagination}
 </select>
@@ -130,43 +229,75 @@
         <if test="brand != null">AND p.brand = #{brand}</if>
         <if test="categoryId != null">AND p.category_id = #{categoryId}</if>
         <if test="slug != null">AND p.slug = #{slug}</if>
-        <if test="stateId != null">AND p."stateId" = #{stateId}</if>
+        <if test="stateId != null">AND p.state_id = #{stateId}</if>
     </where>
 </select>
 
 <select id="getAll" resultType="com.homebase.ecom.dto.ProductDto">
     SELECT
-        p.id, p.name, p.description,
+        p.id as "id",
+        p.name as "name",
+        p.description as "description",
         p.short_description as "shortDescription",
-        p.brand,
+        p.brand as "brand",
         p.category_id as "categoryId",
         c.name as "categoryName",
-        p.slug,
-        p."stateId" as "stateId"
+        p.slug as "slug",
+        p.state_id as "stateId",
+        p.flow_id as "flowId",
+        p.base_price as "basePrice",
+        p.base_price as "sellingPrice",
+        p.base_price as "mrp",
+        p.hsn_code as "hsnCode",
+        p.country_of_origin as "countryOfOrigin",
+        p.weight_grams as "weightGrams",
+        p.is_active as "isActive",
+        p.meta_title as "metaTitle",
+        p.meta_description as "metaDescription",
+        p.created_by as "createdBy",
+        p.created_time as "createdTime",
+        p.last_modified_time as "lastModifiedTime"
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
     <where>
-        <if test="name != null">p.name LIKE #{name}</if>
+        <if test="name != null">p.name LIKE CONCAT('%', #{name}, '%')</if>
         <if test="brand != null">AND p.brand = #{brand}</if>
         <if test="categoryId != null">AND p.category_id = #{categoryId}</if>
         <if test="slug != null">AND p.slug = #{slug}</if>
-        <if test="stateId != null">AND p."stateId" = #{stateId}</if>
+        <if test="stateId != null">AND p.state_id = #{stateId}</if>
+        <if test="q != null">AND (p.name ILIKE CONCAT('%', #{q}, '%') OR p.brand ILIKE CONCAT('%', #{q}, '%'))</if>
     </where>
     ${orderby} ${pagination}
 </select>
 
-<!-- Get product by id (admin detail view) -->
-<select id="getById" resultType="com.homebase.ecom.dto.ProductDto">
+<!-- Get product by id (admin detail view) — uses resultMap for nested variants/media/tags -->
+<select id="getById" resultMap="productDetailMap">
     SELECT
-        p.id, p.name, p.description,
+        p.id as "id", p.name as "name", p.description as "description",
         p.short_description as "shortDescription",
-        p.brand,
+        p.brand as "brand",
         p.category_id as "categoryId",
         c.name as "categoryName",
-        p.slug,
+        p.slug as "slug",
         p.meta_title as "metaTitle",
         p.meta_description as "metaDescription",
-        p."stateId" as "stateId"
+        p.state_id as "stateId",
+        p.flow_id as "flowId",
+        p.base_price as "basePrice",
+        p.base_price as "sellingPrice",
+        p.base_price as "mrp",
+        p.hsn_code as "hsnCode",
+        p.country_of_origin as "countryOfOrigin",
+        p.weight_grams as "weightGrams",
+        p.tax_category as "taxCategory",
+        p.warranty_months as "warrantyMonths",
+        p.is_active as "isActive",
+        p.is_returnable as "isReturnable",
+        p.return_window_days as "returnWindowDays",
+        p.created_by as "createdBy",
+        p.last_modified_by as "lastModifiedBy",
+        p.created_time as "createdTime",
+        p.last_modified_time as "lastModifiedTime"
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
     WHERE p.id = #{id}
@@ -175,16 +306,16 @@
 <!-- Dashboard summary: count of products per state -->
 <select id="getStateCounts" resultType="com.homebase.ecom.dto.StateCountDto">
     SELECT
-        "stateId" as "stateId",
+        state_id as "stateId",
         COUNT(*) as "count"
     FROM products
-    GROUP BY "stateId"
+    GROUP BY state_id
     ORDER BY "count" DESC
 </select>
 
 <!-- Products pending review — admin workflow queue -->
 <select id="getPendingReview-count" resultType="int">
-    SELECT count(*) FROM products WHERE "stateId" = 'UNDER_REVIEW'
+    SELECT count(*) FROM products WHERE state_id = 'UNDER_REVIEW'
 </select>
 
 <select id="getPendingReview" resultType="com.homebase.ecom.dto.ProductDto">
@@ -195,12 +326,12 @@
         p.category_id as "categoryId",
         c.name as "categoryName",
         p.slug,
-        p."stateId" as "stateId",
+        p.state_id as "stateId",
         p.created_by as "createdBy",
         p.created_time as "createdTime"
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
-    WHERE p."stateId" = 'UNDER_REVIEW'
+    WHERE p.state_id = 'UNDER_REVIEW'
     ${orderby} ${pagination}
 </select>
 
@@ -215,7 +346,7 @@
         v.product_id as "productId",
         v.sku as "sku",
         p.name as "productName",
-        p."stateId" as "productState",
+        p.state_id as "productState",
         va.attribute_key as "attributeKey",
         va.attribute_value as "attributeValue"
     FROM product_variants v
@@ -232,7 +363,7 @@
         v.product_id as "productId",
         v.sku as "sku",
         p.name as "productName",
-        p."stateId" as "productState"
+        p.state_id as "productState"
     FROM product_variants v
     JOIN products p ON v.product_id = p.id
     WHERE v.sku = #{sku}
@@ -245,12 +376,12 @@
         v.product_id as "productId",
         v.sku as "sku",
         p.name as "productName",
-        p."stateId" as "productState"
+        p.state_id as "productState"
     FROM product_variants v
     JOIN products p ON v.product_id = p.id
     WHERE v.id = #{variantId}
       AND v.product_id = #{productId}
-      AND p."stateId" IN ('PUBLISHED', 'ACTIVE')
+      AND p.state_id IN ('PUBLISHED', 'ACTIVE')
 </select>
 
 <!-- ═══════════════════════════════════════════════════════════════════════ -->

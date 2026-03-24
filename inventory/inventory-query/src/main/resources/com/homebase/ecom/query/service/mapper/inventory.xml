@@ -16,7 +16,7 @@
         available_quantity as "availableQuantity",
         reserved_quantity as "reserved",
         status,
-        "stateId" as "stateId"
+        state_id as "stateId"
     FROM inventory_item
     <where>
         <if test="productId != null">AND product_id = #{productId}</if>
@@ -36,7 +36,7 @@
         <if test="sku != null">AND sku = #{sku}</if>
         <if test="variantId != null">AND variant_id = #{variantId}</if>
         <if test="status != null">AND status = #{status}</if>
-        <if test="stateId != null">AND "stateId" = #{stateId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
         <if test="primaryFc != null">AND primary_fc = #{primaryFc}</if>
     </where>
 </select>
@@ -54,14 +54,14 @@
         low_stock_threshold as "lowStockThreshold",
         status,
         primary_fc as "primaryFc",
-        "stateId" as "stateId"
+        state_id as "stateId"
     FROM inventory_item
     <where>
         <if test="productId != null">AND product_id = #{productId}</if>
         <if test="sku != null">AND sku = #{sku}</if>
         <if test="variantId != null">AND variant_id = #{variantId}</if>
         <if test="status != null">AND status = #{status}</if>
-        <if test="stateId != null">AND "stateId" = #{stateId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
         <if test="primaryFc != null">AND primary_fc = #{primaryFc}</if>
     </where>
     ${orderby} ${pagination}
@@ -83,7 +83,7 @@
         primary_fc as "primaryFc",
         is_fba as "isFba",
         is_merchant_fulfilled as "isMerchantFulfilled",
-        "stateId" as "stateId"
+        state_id as "stateId"
     FROM inventory_item
     WHERE id = #{id}
 </select>
@@ -101,7 +101,7 @@
         low_stock_threshold as "lowStockThreshold",
         status,
         primary_fc as "primaryFc",
-        "stateId" as "stateId"
+        state_id as "stateId"
     FROM inventory_item
     WHERE product_id = #{productId}
 </select>
@@ -109,10 +109,10 @@
 <!-- Dashboard: inventory state counts -->
 <select id="getStateCounts" resultType="com.homebase.ecom.inventory.dto.InventoryStateCountDto">
     SELECT
-        "stateId" as "stateId",
+        state_id as "stateId",
         COUNT(*) as "count"
     FROM inventory_item
-    GROUP BY "stateId"
+    GROUP BY state_id
     ORDER BY "count" DESC
 </select>
 
@@ -121,7 +121,7 @@
     SELECT count(*) FROM inventory_item
     WHERE available_quantity > 0
       AND available_quantity &lt;= low_stock_threshold
-      AND "stateId" = 'IN_WAREHOUSE'
+      AND state_id = 'IN_WAREHOUSE'
 </select>
 
 <select id="getLowStock" resultType="com.homebase.ecom.inventory.dto.InventoryDto">
@@ -135,18 +135,18 @@
         low_stock_threshold as "lowStockThreshold",
         status,
         primary_fc as "primaryFc",
-        "stateId" as "stateId"
+        state_id as "stateId"
     FROM inventory_item
     WHERE available_quantity > 0
       AND available_quantity &lt;= low_stock_threshold
-      AND "stateId" = 'IN_WAREHOUSE'
+      AND state_id = 'IN_WAREHOUSE'
     ${orderby} ${pagination}
 </select>
 
 <!-- Dashboard: out of stock items -->
 <select id="getOutOfStock-count" resultType="int">
     SELECT count(*) FROM inventory_item
-    WHERE "stateId" = 'OUT_OF_STOCK'
+    WHERE state_id = 'OUT_OF_STOCK'
 </select>
 
 <select id="getOutOfStock" resultType="com.homebase.ecom.inventory.dto.InventoryDto">
@@ -158,9 +158,9 @@
         available_quantity as "availableQuantity",
         status,
         primary_fc as "primaryFc",
-        "stateId" as "stateId"
+        state_id as "stateId"
     FROM inventory_item
-    WHERE "stateId" = 'OUT_OF_STOCK'
+    WHERE state_id = 'OUT_OF_STOCK'
     ${orderby} ${pagination}
 </select>
 

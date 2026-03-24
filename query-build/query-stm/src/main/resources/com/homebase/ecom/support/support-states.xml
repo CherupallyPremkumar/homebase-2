@@ -2,8 +2,6 @@
 <!-- Query-side STM metadata. Stripped from support-service. No componentName/conditions. -->
 <states>
 
-  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
-
   <event-information eventId='create' meta-acls="CUSTOMER,SYSTEM" meta-bodyType="com.homebase.ecom.support.dto.CreateTicketPayload"/>
   <event-information eventId='assignAgent' meta-acls="SUPPORT_LEAD,SYSTEM" meta-bodyType="com.homebase.ecom.support.dto.AssignAgentPayload"/>
   <event-information eventId='reply' meta-acls="SUPPORT_AGENT,CUSTOMER" meta-bodyType="com.homebase.ecom.support.dto.ReplyPayload"/>
@@ -17,55 +15,55 @@
 
   <flow id='support-flow' default='true'>
 
-    <status id='OPEN' initialState='true' meta-mainPath="true"
+    <manual-state id='OPEN' initialState='true' meta-mainPath="true"
             description="Support ticket opened, awaiting agent assignment">
       <on eventId='assignAgent' newStateId='ASSIGNED' meta-mainPath="true" meta-acls="SUPPORT_LEAD,SYSTEM"/>
       <on eventId='escalate' newStateId='ESCALATED' meta-acls="CUSTOMER"/>
-    </status>
+    </manual-state>
 
-    <status id='ASSIGNED' meta-mainPath="true"
+    <manual-state id='ASSIGNED' meta-mainPath="true"
             description="Ticket assigned to a support agent">
       <on eventId='startWork' newStateId='IN_PROGRESS' meta-mainPath="true" meta-acls="SUPPORT_AGENT"/>
       <on eventId='reply' newStateId='ASSIGNED' meta-acls="SUPPORT_AGENT,CUSTOMER"/>
       <on eventId='escalate' newStateId='ESCALATED' meta-acls="SUPPORT_AGENT,CUSTOMER"/>
       <on eventId='resolve' newStateId='RESOLVED' meta-acls="SUPPORT_AGENT"/>
-    </status>
+    </manual-state>
 
-    <status id='IN_PROGRESS' meta-mainPath="true"
+    <manual-state id='IN_PROGRESS' meta-mainPath="true"
             description="Agent actively working on the ticket">
       <on eventId='reply' newStateId='IN_PROGRESS' meta-acls="SUPPORT_AGENT,CUSTOMER"/>
       <on eventId='waitOnCustomer' newStateId='WAITING_ON_CUSTOMER' meta-acls="SUPPORT_AGENT"/>
       <on eventId='escalate' newStateId='ESCALATED' meta-acls="SUPPORT_AGENT,CUSTOMER"/>
       <on eventId='resolve' newStateId='RESOLVED' meta-mainPath="true" meta-acls="SUPPORT_AGENT"/>
-    </status>
+    </manual-state>
 
-    <status id='WAITING_ON_CUSTOMER'
+    <manual-state id='WAITING_ON_CUSTOMER'
             description="Waiting for customer response">
       <on eventId='resumeWork' newStateId='IN_PROGRESS' meta-acls="SUPPORT_AGENT,CUSTOMER"/>
       <on eventId='resolve' newStateId='RESOLVED' meta-acls="SUPPORT_AGENT"/>
       <on eventId='escalate' newStateId='ESCALATED' meta-acls="SUPPORT_AGENT,CUSTOMER"/>
-    </status>
+    </manual-state>
 
-    <status id='ESCALATED'
+    <manual-state id='ESCALATED'
             description="Ticket escalated to senior support or supervisor">
       <on eventId='assignAgent' newStateId='ASSIGNED' meta-acls="SUPPORT_LEAD,SYSTEM"/>
       <on eventId='resolve' newStateId='RESOLVED' meta-acls="SUPPORT_AGENT"/>
       <on eventId='reply' newStateId='ESCALATED' meta-acls="SUPPORT_AGENT,CUSTOMER"/>
-    </status>
+    </manual-state>
 
-    <status id='RESOLVED' meta-mainPath="true"
+    <manual-state id='RESOLVED' meta-mainPath="true"
             description="Ticket resolved, awaiting customer confirmation or auto-close">
       <on eventId='reopen' newStateId='REOPENED' meta-acls="CUSTOMER"/>
       <on eventId='close' newStateId='CLOSED' meta-mainPath="true" meta-acls="SYSTEM,SUPPORT_AGENT"/>
-    </status>
+    </manual-state>
 
-    <status id='CLOSED' description="Ticket closed and archived"/>
+    <manual-state id='CLOSED' description="Ticket closed and archived"/>
 
-    <status id='REOPENED'
+    <manual-state id='REOPENED'
             description="Ticket reopened by customer after resolution">
       <on eventId='assignAgent' newStateId='ASSIGNED' meta-acls="SUPPORT_LEAD,SYSTEM"/>
       <on eventId='escalate' newStateId='ESCALATED' meta-acls="CUSTOMER"/>
-    </status>
+    </manual-state>
 
   </flow>
 </states>

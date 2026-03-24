@@ -2,6 +2,7 @@
   {
     "id": "CconfigEntries.getAll",
     "name": "cconfigEntries",
+    "acls": ["ADMIN"],
     "columnMetadata": {
       "id": {
         "name": "id",
@@ -51,6 +52,7 @@
   {
     "id": "CconfigEntries.getByModule",
     "name": "cconfigByModule",
+    "acls": ["ADMIN"],
     "columnMetadata": {
       "id": {
         "name": "id",
@@ -90,6 +92,7 @@
   {
     "id": "CconfigEntries.getFormSchemas",
     "name": "cconfigFormSchemas",
+    "acls": ["ADMIN"],
     "columnMetadata": {
       "id": {
         "name": "id",

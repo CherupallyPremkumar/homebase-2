@@ -1,0 +1,463 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Storefront">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- STOREFRONT PRODUCTS (from catalog_items read model)                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="storefrontProducts-count" resultType="int">
+    SELECT count(*) FROM catalog_items
+    WHERE active = true
+    <if test="categoryId != null">AND category_id = #{categoryId}</if>
+    <if test="brand != null">AND brand = #{brand}</if>
+    <if test="q != null">AND (name ILIKE CONCAT('%', #{q}, '%') OR description ILIKE CONCAT('%', #{q}, '%') OR brand ILIKE CONCAT('%', #{q}, '%'))</if>
+    <if test="id != null">AND id = #{id}</if>
+</select>
+
+<select id="storefrontProducts" resultType="map">
+    SELECT
+        ci.id as "id",
+        ci.product_id as "productId",
+        ci.name as "name",
+        ci.description as "description",
+        ci.brand as "brandName",
+        ci.image_url as "imageUrl",
+        ci.price as "price",
+        ci.mrp as "mrp",
+        ci.offer_price as "offerPrice",
+        ci.discount_percent as "discount",
+        ci.in_stock as "inStock",
+        ci.available_qty as "availableQuantity",
+        ci.average_rating as "averageRating",
+        ci.review_count as "reviewCount",
+        ci.category_id as "categoryId",
+        ci.supplier_id as "supplierId",
+        ci.featured as "featured",
+        ci.country_of_origin as "countryOfOrigin",
+        'INR' as "currency"
+    FROM catalog_items ci
+    WHERE ci.active = true
+    <if test="categoryId != null">AND ci.category_id = #{categoryId}</if>
+    <if test="brand != null">AND ci.brand = #{brand}</if>
+    <if test="q != null">AND (ci.name ILIKE CONCAT('%', #{q}, '%') OR ci.description ILIKE CONCAT('%', #{q}, '%') OR ci.brand ILIKE CONCAT('%', #{q}, '%'))</if>
+    <if test="id != null">AND ci.id = #{id}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- FEATURED PRODUCTS                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="featuredProducts-count" resultType="int">
+    SELECT count(*) FROM catalog_items
+    WHERE active = true AND featured = true
+</select>
+
+<select id="featuredProducts" resultType="map">
+    SELECT
+        ci.id as "id",
+        ci.product_id as "productId",
+        ci.name as "name",
+        ci.description as "description",
+        ci.brand as "brandName",
+        ci.image_url as "imageUrl",
+        ci.price as "price",
+        ci.mrp as "mrp",
+        ci.offer_price as "offerPrice",
+        ci.discount_percent as "discount",
+        ci.in_stock as "inStock",
+        ci.average_rating as "averageRating",
+        ci.review_count as "reviewCount",
+        ci.category_id as "categoryId",
+        'INR' as "currency"
+    FROM catalog_items ci
+    WHERE ci.active = true AND ci.featured = true
+    ORDER BY ci.review_count DESC, ci.average_rating DESC
+    ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- STOREFRONT CATEGORIES                                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="storefrontCategories" resultType="map">
+    SELECT
+        cc.id as "id",
+        cc.name as "name",
+        cc.slug as "slug",
+        cc.parent_id as "parentId",
+        cc.image_url as "imageUrl",
+        cc.description as "description",
+        cc.level as "level",
+        cc.display_order as "sortOrder",
+        COALESCE(cc.product_count, 0) as "productCount"
+    FROM catalog_categories cc
+    WHERE cc.active = true
+    <if test="parentId != null">AND cc.parent_id = #{parentId}</if>
+    ORDER BY COALESCE(cc.display_order, 999), cc.name ASC
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SEARCH SUGGESTIONS                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="suggestions-count" resultType="int">
+    SELECT count(*) FROM catalog_items
+    WHERE active = true
+    <if test="q != null">AND name ILIKE CONCAT('%', #{q}, '%')</if>
+</select>
+
+<select id="suggestions" resultType="map">
+    SELECT
+        ci.id as "id",
+        ci.name as "text",
+        'product' as "type",
+        ci.product_id as "productId"
+    FROM catalog_items ci
+    WHERE ci.active = true
+    <if test="q != null">AND ci.name ILIKE CONCAT('%', #{q}, '%')</if>
+    ORDER BY ci.name ASC
+    ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- BANNERS                                                               -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="banners" resultType="map">
+    SELECT
+        b.id as "id",
+        b.name as "title",
+        b.image_url as "imageUrl",
+        b.mobile_image_url as "mobileImageUrl",
+        b.link_url as "linkUrl",
+        b.position as "position",
+        b.display_order as "displayOrder"
+    FROM banners b
+    WHERE b.active = true
+      AND (b.active_from IS NULL OR b.active_from &lt;= CURRENT_TIMESTAMP)
+      AND (b.active_to IS NULL OR b.active_to >= CURRENT_TIMESTAMP)
+    ORDER BY COALESCE(b.display_order, 999)
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- FILTERS (categories + brands for faceted navigation)                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="filters" resultType="map">
+    SELECT DISTINCT brand as "value", brand as "label", 'brand' as "filterType"
+    FROM catalog_items
+    WHERE active = true AND brand IS NOT NULL
+    ORDER BY brand
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PRODUCT DETAIL (cross-BC: products + pricing + inventory + reviews)    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="productDetail" resultType="map">
+    SELECT
+        p.id as "id",
+        p.name as "name",
+        p.description as "description",
+        p.short_description as "shortDescription",
+        p.brand as "brand",
+        p.slug as "slug",
+        p.category_id as "categoryId",
+        c.name as "categoryName",
+        p.base_price as "basePrice",
+        p.base_price as "mrp",
+        p.hsn_code as "hsnCode",
+        p.country_of_origin as "countryOfOrigin",
+        p.weight_grams as "weightGrams",
+        p.warranty_months as "warrantyMonths",
+        p.is_returnable as "isReturnable",
+        p.return_window_days as "returnWindowDays",
+        p.meta_title as "metaTitle",
+        p.meta_description as "metaDescription",
+        COALESCE(inv_agg.total_available, 0) as "availableQuantity",
+        CASE WHEN COALESCE(inv_agg.total_available, 0) > 0 THEN true ELSE false END as "inStock",
+        COALESCE(rev_agg.avg_rating, 0) as "averageRating",
+        COALESCE(rev_agg.review_count, 0) as "reviewCount"
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    LEFT JOIN (
+        SELECT product_id, SUM(available_quantity) as total_available
+        FROM inventory_item
+        WHERE state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+        GROUP BY product_id
+    ) inv_agg ON inv_agg.product_id = p.id
+    LEFT JOIN (
+        SELECT product_id, AVG(rating) as avg_rating, COUNT(*) as review_count
+        FROM product_reviews
+        WHERE state_id = 'PUBLISHED'
+        GROUP BY product_id
+    ) rev_agg ON rev_agg.product_id = p.id
+    WHERE p.state_id = 'PUBLISHED'
+      AND p.slug = #{slug}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PRODUCT VARIANTS WITH PRICE (cross-BC: variants + offers + inventory) -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="productVariantsWithPrice" resultType="map">
+    SELECT
+        pv.id as "variantId",
+        pv.product_id as "productId",
+        pv.sku as "sku",
+        COALESCE(o.selling_price, p.base_price) as "sellingPrice",
+        COALESCE(o.mrp, p.base_price) as "mrp",
+        COALESCE(inv.available_quantity, 0) as "availableQuantity",
+        CASE WHEN COALESCE(inv.available_quantity, 0) > 0 THEN true ELSE false END as "inStock",
+        o.id as "offerId",
+        o.state_id as "offerState"
+    FROM product_variants pv
+    JOIN products p ON pv.product_id = p.id
+    LEFT JOIN offer o ON o.variant_id = pv.id AND o.state_id = 'LIVE'
+    LEFT JOIN inventory_item inv ON inv.variant_id = pv.id
+        AND inv.state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+    WHERE pv.product_id = #{productId}
+      AND p.state_id = 'PUBLISHED'
+    ORDER BY pv.sku
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MY ORDERS (cross-BC: orders + payment + shipping status)              -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="myOrders-count" resultType="int">
+    SELECT count(*) FROM orders
+    WHERE tenant = #{tenant}
+    <if test="customerId != null">AND customer_id = #{customerId}</if>
+</select>
+
+<select id="myOrders" resultType="map">
+    SELECT
+        o.id as "orderId",
+        o.order_number as "orderNumber",
+        o.state_id as "stateId",
+        o.total_amount as "totalAmount",
+        o.currency as "currency",
+        o.created_time as "createdTime",
+        o.item_count as "itemCount",
+        pay.state_id as "paymentStatus",
+        pay.payment_method as "paymentMethod",
+        sh.state_id as "shippingStatus",
+        sh.tracking_number as "trackingNumber",
+        sh.carrier as "carrier",
+        sh.estimated_delivery_date as "estimatedDeliveryDate"
+    FROM orders o
+    LEFT JOIN payment pay ON pay.order_id = o.id
+    LEFT JOIN shipments sh ON sh.order_id = o.id
+    WHERE o.tenant = #{tenant}
+    <if test="customerId != null">AND o.customer_id = #{customerId}</if>
+    ORDER BY o.created_time DESC
+    ${pagination}
+</select>
+
+<select id="myOrdersAlias-count" resultType="int">
+    SELECT count(*) FROM orders
+    WHERE tenant = #{tenant}
+    <if test="customerId != null">AND customer_id = #{customerId}</if>
+</select>
+
+<select id="myOrdersAlias" resultType="map">
+    SELECT
+        o.id as "orderId",
+        o.order_number as "orderNumber",
+        o.state_id as "stateId",
+        o.total_amount as "totalAmount",
+        o.currency as "currency",
+        o.created_time as "createdTime",
+        o.item_count as "itemCount",
+        pay.state_id as "paymentStatus",
+        pay.payment_method as "paymentMethod",
+        sh.state_id as "shippingStatus",
+        sh.tracking_number as "trackingNumber",
+        sh.carrier as "carrier",
+        sh.estimated_delivery_date as "estimatedDeliveryDate"
+    FROM orders o
+    LEFT JOIN payment pay ON pay.order_id = o.id
+    LEFT JOIN shipments sh ON sh.order_id = o.id
+    WHERE o.tenant = #{tenant}
+    <if test="customerId != null">AND o.customer_id = #{customerId}</if>
+    ORDER BY o.created_time DESC
+    ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ORDER DETAIL (cross-BC: order + payment + shipping + addresses)       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="orderDetail" resultType="map">
+    SELECT
+        o.id as "orderId",
+        o.order_number as "orderNumber",
+        o.state_id as "orderState",
+        o.total_amount as "totalAmount",
+        o.currency as "currency",
+        o.item_count as "itemCount",
+        o.created_time as "createdTime",
+        pay.id as "paymentId",
+        pay.state_id as "paymentStatus",
+        pay.payment_method as "paymentMethod",
+        pay.amount as "paymentAmount",
+        sh.id as "shipmentId",
+        sh.state_id as "shippingStatus",
+        sh.carrier as "carrier",
+        sh.tracking_number as "trackingNumber",
+        sh.shipping_method as "shippingMethod",
+        sh.estimated_delivery_date as "estimatedDeliveryDate",
+        sh.actual_delivery_date as "actualDeliveryDate",
+        sh.current_location as "currentLocation"
+    FROM orders o
+    LEFT JOIN payment pay ON pay.order_id = o.id
+    LEFT JOIN shipments sh ON sh.order_id = o.id
+    WHERE o.id = #{orderId}
+    <if test="customerId != null">AND o.customer_id = #{customerId}</if>
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ORDER LINE ITEMS (cross-BC: order items + product details)            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="orderLineItems" resultType="map">
+    SELECT
+        oi.id as "itemId",
+        oi.product_id as "productId",
+        oi.product_name as "productName",
+        oi.variant_id as "variantId",
+        oi.sku as "sku",
+        oi.quantity as "quantity",
+        oi.unit_price as "unitPrice",
+        oi.total_price as "totalPrice",
+        oi.status as "itemStatus",
+        p.slug as "productSlug",
+        p.brand as "brand",
+        ma_img.cdn_url as "imageUrl"
+    FROM order_items oi
+    LEFT JOIN products p ON oi.product_id = p.id
+    LEFT JOIN product_media pm_img ON pm_img.product_id = p.id AND pm_img.is_primary = true
+    LEFT JOIN media_assets ma_img ON ma_img.id = pm_img.asset_id
+    WHERE oi.order_id = #{orderId}
+    ORDER BY oi.created_time ASC
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ORDER TRACKING (cross-BC: shipment + tracking events)                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="orderTracking" resultType="map">
+    SELECT
+        sh.id as "shipmentId",
+        sh.order_id as "orderId",
+        sh.state_id as "shippingStatus",
+        sh.carrier as "carrier",
+        sh.tracking_number as "trackingNumber",
+        sh.shipping_method as "shippingMethod",
+        sh.estimated_delivery_date as "estimatedDeliveryDate",
+        sh.actual_delivery_date as "actualDeliveryDate",
+        sh.current_location as "currentLocation",
+        sh.delivery_attempts as "deliveryAttempts",
+        ste.event_type as "eventType",
+        ste.event_description as "eventDescription",
+        ste.location as "eventLocation",
+        ste.event_time as "eventTime"
+    FROM shipments sh
+    LEFT JOIN shipping_tracking_events ste ON ste.shipment_id = sh.id
+    WHERE sh.order_id = #{orderId}
+    <if test="customerId != null">AND sh.customer_id = #{customerId}</if>
+    ORDER BY ste.event_time DESC
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MY CART (cross-BC: cart + items + product details + pricing)           -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="myCart" resultType="map">
+    SELECT
+        c.id as "cartId",
+        c.state_id as "cartState",
+        c.subtotal as "subtotal",
+        c.currency as "currency",
+        c.coupon_codes as "couponCodes",
+        ci.id as "itemId",
+        ci.product_id as "productId",
+        ci.variant_id as "variantId",
+        ci.product_name as "productName",
+        ci.sku as "sku",
+        ci.quantity as "quantity",
+        ci.unit_price as "unitPrice",
+        ci.total_price as "totalPrice",
+        ci.image_url as "imageUrl",
+        p.slug as "productSlug",
+        p.brand as "brand",
+        COALESCE(inv.available_quantity, 0) as "availableQuantity",
+        CASE WHEN COALESCE(inv.available_quantity, 0) >= ci.quantity THEN true ELSE false END as "inStock"
+    FROM cart c
+    JOIN cart_item ci ON ci.cart_id = c.id
+    LEFT JOIN products p ON ci.product_id = p.id
+    LEFT JOIN inventory_item inv ON inv.variant_id = ci.variant_id
+        AND inv.state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+    WHERE c.state_id = 'ACTIVE'
+      AND c.customer_id = #{customerId}
+    ORDER BY ci.created_time ASC
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PRODUCT REVIEWS (cross-BC: reviews + user info for a product)         -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="productReviews-count" resultType="int">
+    SELECT count(*) FROM product_reviews
+    WHERE state_id = 'PUBLISHED' AND product_id = #{productId}
+    <if test="rating != null">AND rating = #{rating}</if>
+</select>
+
+<select id="productReviews" resultType="map">
+    SELECT
+        r.id as "reviewId",
+        r.product_id as "productId",
+        r.customer_id as "customerId",
+        r.rating as "rating",
+        r.title as "title",
+        r.comment as "comment",
+        r.is_verified_purchase as "isVerifiedPurchase",
+        r.helpful_count as "helpfulCount",
+        r.created_time as "createdTime",
+        u.first_name as "reviewerName"
+    FROM product_reviews r
+    LEFT JOIN user_profiles u ON r.customer_id = u.id
+    WHERE r.state_id = 'PUBLISHED'
+      AND r.product_id = #{productId}
+    <if test="rating != null">AND r.rating = #{rating}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- BRAND LIST                                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="brandList" resultType="map">
+    SELECT DISTINCT brand as "name", COUNT(*) as "productCount"
+    FROM catalog_items
+    WHERE active = true AND brand IS NOT NULL
+    GROUP BY brand
+    ORDER BY brand
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PRICE RANGES (for faceted navigation)                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="priceRanges" resultType="map">
+    SELECT
+        MIN(price) as "minPrice",
+        MAX(price) as "maxPrice",
+        AVG(price) as "avgPrice"
+    FROM catalog_items
+    WHERE active = true AND price IS NOT NULL
+</select>
+
+</mapper>

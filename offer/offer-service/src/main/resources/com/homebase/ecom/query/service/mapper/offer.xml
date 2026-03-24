@@ -14,7 +14,7 @@
         <if test="productId != null">AND product_id = #{productId}</if>
         <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
         <if test="offerType != null">AND offer_type = #{offerType}</if>
-        <if test="stateId != null">AND current_state = #{stateId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
     </where>
 </select>
 
@@ -34,13 +34,14 @@
         max_quantity as "maxQuantity",
         sold_quantity as "soldQuantity",
         seller_rating as "sellerRating",
-        current_state as "stateId"
+        state_id as "stateId",
+        flow_id as "flowId"
     FROM offer
     <where>
         <if test="productId != null">AND product_id = #{productId}</if>
         <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
         <if test="offerType != null">AND offer_type = #{offerType}</if>
-        <if test="stateId != null">AND current_state = #{stateId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
     </where>
     ${orderby} ${pagination}
 </select>
@@ -62,7 +63,8 @@
         max_quantity as "maxQuantity",
         sold_quantity as "soldQuantity",
         seller_rating as "sellerRating",
-        current_state as "stateId",
+        state_id as "stateId",
+        flow_id as "flowId",
         created_at as "createdAt",
         updated_at as "updatedAt"
     FROM offer
@@ -72,17 +74,18 @@
 <!-- Dashboard: offer state counts -->
 <select id="getStateCounts" resultType="map">
     SELECT
-        current_state as "stateId",
+        state_id as "stateId",
+        flow_id as "flowId",
         COUNT(*) as "count"
     FROM offer
-    GROUP BY current_state
+    GROUP BY state_id
     ORDER BY "count" DESC
 </select>
 
 <!-- Dashboard: offers pending approval -->
 <select id="getPendingApproval-count" resultType="int">
     SELECT count(*) FROM offer
-    WHERE current_state = 'PENDING_APPROVAL'
+    WHERE state_id = 'PENDING_APPROVAL'
     <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
 </select>
 
@@ -99,7 +102,7 @@
         seller_rating as "sellerRating",
         created_at as "createdAt"
     FROM offer
-    WHERE current_state = 'PENDING_APPROVAL'
+    WHERE state_id = 'PENDING_APPROVAL'
     <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
     ORDER BY created_at ASC
     ${pagination}
@@ -108,7 +111,7 @@
 <!-- Dashboard: offers expiring soon -->
 <select id="getExpiringOffers-count" resultType="int">
     SELECT count(*) FROM offer
-    WHERE current_state = 'LIVE'
+    WHERE state_id = 'LIVE'
       AND end_date IS NOT NULL
       AND end_date &lt;= DATEADD('DAY', COALESCE(#{daysUntilExpiry}, 7), CURRENT_TIMESTAMP)
 </select>
@@ -124,7 +127,7 @@
         end_date as "endDate",
         DATEDIFF('DAY', CURRENT_TIMESTAMP, end_date) as "daysRemaining"
     FROM offer
-    WHERE current_state = 'LIVE'
+    WHERE state_id = 'LIVE'
       AND end_date IS NOT NULL
       AND end_date &lt;= DATEADD('DAY', COALESCE(#{daysUntilExpiry}, 7), CURRENT_TIMESTAMP)
     ORDER BY end_date ASC
@@ -151,7 +154,8 @@
         end_date as "endDate",
         max_quantity as "maxQuantity",
         sold_quantity as "soldQuantity",
-        current_state as "stateId"
+        state_id as "stateId",
+        flow_id as "flowId"
     FROM offer
     WHERE product_id = #{productId}
 </select>
@@ -159,7 +163,7 @@
 <!-- Active (LIVE) offers for storefront -->
 <select id="getActiveOffers-count" resultType="int">
     SELECT count(*) FROM offer
-    WHERE current_state = 'LIVE'
+    WHERE state_id = 'LIVE'
     <if test="productId != null">AND product_id = #{productId}</if>
 </select>
 
@@ -178,7 +182,7 @@
         end_date as "endDate",
         max_quantity - sold_quantity as "remainingQuantity"
     FROM offer
-    WHERE current_state = 'LIVE'
+    WHERE state_id = 'LIVE'
     <if test="productId != null">AND product_id = #{productId}</if>
     ORDER BY discount_percent DESC
     ${pagination}
@@ -198,7 +202,7 @@
         start_date as "startDate",
         end_date as "endDate"
     FROM offer
-    WHERE current_state = 'LIVE'
+    WHERE state_id = 'LIVE'
       AND product_id = #{productId}
     ORDER BY offer_price ASC
     LIMIT 1

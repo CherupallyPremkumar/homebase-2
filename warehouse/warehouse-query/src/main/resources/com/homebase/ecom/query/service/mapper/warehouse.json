@@ -1,0 +1,41 @@
+[
+	{
+		"id": "Warehouse.getAll",
+		"name": "warehouses",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
+			"warehouseCode": { "name": "warehouseCode", "filterable": true, "columnType": "Text" },
+			"warehouseName": { "name": "warehouseName", "filterable": true, "columnType": "Text", "likeQuery": true, "sortable": true },
+			"warehouseType": { "name": "warehouseType", "filterable": true, "columnType": "Text" },
+			"city": { "name": "city", "filterable": true, "columnType": "Text" },
+			"state": { "name": "state", "filterable": true, "columnType": "Text" },
+			"pincode": { "name": "pincode", "filterable": true, "columnType": "Text" },
+			"isActive": { "name": "isActive", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Warehouse.getById",
+		"name": "warehouse",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Warehouse.getLocations",
+		"name": "warehouse-locations",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"warehouseId": { "name": "warehouseId", "filterable": true, "columnType": "Text" },
+			"locationType": { "name": "locationType", "filterable": true, "columnType": "Text" },
+			"zone": { "name": "zone", "filterable": true, "columnType": "Text" },
+			"isActive": { "name": "isActive", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

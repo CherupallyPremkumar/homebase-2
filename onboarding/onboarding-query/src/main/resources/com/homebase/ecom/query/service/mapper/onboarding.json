@@ -2,32 +2,78 @@
 	{
 		"id": "Onboarding.getAll",
 		"name": "onboardings",
-		"workflowName": "onboarding",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
-			"id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
-			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" },
-			"applicantName": { "name": "applicantName", "columnType": "Text", "likeQuery": true, "filterable": true },
-			"businessName": { "name": "businessName", "columnType": "Text", "likeQuery": true, "filterable": true },
-			"businessType": { "name": "businessType", "filterable": true, "columnType": "Text" },
-			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
-			"trainingProgress": { "name": "trainingProgress", "columnType": "Number", "sortable": true },
-			"createdTime": { "name": "createdTime", "columnType": "Date", "sortable": true }
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"supplierId": {
+				"name": "supplierId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"applicantName": {
+				"name": "applicantName",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"businessName": {
+				"name": "businessName",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"businessType": {
+				"name": "businessType",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"trainingProgress": {
+				"name": "trainingProgress",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"createdTime": {
+				"name": "createdTime",
+				"columnType": "Date",
+				"sortable": true
+			}
 		},
 		"paginated": true,
-		"sortable": true
+		"sortable": true,
+		"workflowName": "onboarding",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId"
 	},
 	{
 		"id": "Onboarding.getById",
 		"name": "onboarding",
+		"acls": ["ADMIN", "SUPPLIER"],
+		"workflowName": "onboarding",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
-			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
 		"paginated": false
 	},
 	{
 		"id": "Onboarding.getPendingReview",
 		"name": "onboardings-pending",
+		"acls": ["ADMIN"],
 		"columnMetadata": {},
 		"paginated": true,
 		"sortable": true
@@ -35,8 +81,13 @@
 	{
 		"id": "Onboarding.getBySupplier",
 		"name": "onboarding-by-supplier",
+		"acls": ["ADMIN", "SUPPLIER"],
 		"columnMetadata": {
-			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" }
+			"supplierId": {
+				"name": "supplierId",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
 		"paginated": false
 	}

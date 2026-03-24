@@ -16,8 +16,8 @@ public class ReturnRequestDto implements Serializable {
     private String reason;
     private String returnType;
     private BigDecimal totalRefundAmount;
-    private String currentState;
-    private Date createdDate;
+    private String stateId;
+    private Date createdTime;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -31,8 +31,8 @@ public class ReturnRequestDto implements Serializable {
     public void setReturnType(String returnType) { this.returnType = returnType; }
     public BigDecimal getTotalRefundAmount() { return totalRefundAmount; }
     public void setTotalRefundAmount(BigDecimal totalRefundAmount) { this.totalRefundAmount = totalRefundAmount; }
-    public String getCurrentState() { return currentState; }
-    public void setCurrentState(String currentState) { this.currentState = currentState; }
-    public Date getCreatedDate() { return createdDate; }
-    public void setCreatedDate(Date createdDate) { this.createdDate = createdDate; }
+    public String getStateId() { return stateId; }
+    public void setStateId(String stateId) { this.stateId = stateId; }
+    public Date getCreatedTime() { return createdTime; }
+    public void setCreatedTime(Date createdTime) { this.createdTime = createdTime; }
 }

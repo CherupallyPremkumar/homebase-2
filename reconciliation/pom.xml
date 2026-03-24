@@ -20,6 +20,7 @@
         <module>reconciliation-domain</module>
         <module>reconciliation-infrastructure</module>
         <module>reconciliation-service</module>
+        <module>reconciliation-query</module>
     </modules>
 
     <dependencyManagement>

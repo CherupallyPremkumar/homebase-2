@@ -2,6 +2,7 @@
   {
     "id": "CatalogCollections.getUserCollections",
     "name": "userCollections",
+    "acls": [],
     "columnMetadata": {
       "id": {
         "name": "id",

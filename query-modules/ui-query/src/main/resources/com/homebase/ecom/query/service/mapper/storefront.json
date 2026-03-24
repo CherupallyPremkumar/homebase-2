@@ -1,0 +1,163 @@
+[
+	{
+		"id": "Storefront.storefrontProducts",
+		"name": "storefront-products",
+		"acls": [],
+		"columnMetadata": {
+			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" },
+			"brand": { "name": "brand", "filterable": true, "columnType": "Text", "sortable": true },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true },
+			"minPrice": { "name": "minPrice", "filterable": true, "columnType": "Number" },
+			"maxPrice": { "name": "maxPrice", "filterable": true, "columnType": "Number" },
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false,
+		"sortable": true
+	},
+	{
+		"id": "Storefront.productDetail",
+		"name": "product-detail",
+		"acls": [],
+		"columnMetadata": {
+			"slug": { "name": "slug", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.productVariantsWithPrice",
+		"name": "product-variants-with-price",
+		"acls": [],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.featuredProducts",
+		"name": "featured-products",
+		"acls": [],
+		"columnMetadata": {},
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Storefront.myOrders",
+		"name": "my-orders",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Storefront.myOrdersAlias",
+		"name": "myOrders",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Storefront.orderDetail",
+		"name": "order-detail",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" },
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.orderLineItems",
+		"name": "order-line-items",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.brandList",
+		"name": "brand-list",
+		"acls": [],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.priceRanges",
+		"name": "price-ranges",
+		"acls": [],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.storefrontCategories",
+		"name": "storefront-categories",
+		"acls": [],
+		"columnMetadata": {
+			"parentId": { "name": "parentId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.suggestions",
+		"name": "suggestions",
+		"acls": [],
+		"columnMetadata": {
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Storefront.banners",
+		"name": "banners",
+		"acls": [],
+		"columnMetadata": {
+			"placement": { "name": "placement", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.filters",
+		"name": "filters",
+		"acls": [],
+		"columnMetadata": {
+			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.orderTracking",
+		"name": "order-tracking",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" },
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.myCart",
+		"name": "my-cart",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.productReviews",
+		"name": "product-reviews",
+		"acls": [],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
+			"rating": { "name": "rating", "filterable": true, "columnType": "Number" }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

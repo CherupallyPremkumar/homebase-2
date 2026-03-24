@@ -100,4 +100,33 @@
         </where>
     </select>
 
+    <resultMap id="factDefinitionResult" type="map">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="dataType" column="data_type"/>
+        <result property="module" column="module"/>
+        <result property="createdTime" column="created_time"/>
+    </resultMap>
+
+    <select id="getFactDefinitions" resultMap="factDefinitionResult">
+        SELECT fd.id, fd.name, fd.description, fd.data_type, fd.module, fd.created_time
+        FROM fact_definition fd
+        <where>
+            <if test="name != null">AND fd.name LIKE CONCAT('%', #{name}, '%')</if>
+            <if test="dataType != null">AND fd.data_type = #{dataType}</if>
+            <if test="module != null">AND fd.module = #{module}</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getFactDefinitions-count" resultType="int">
+        SELECT count(*) FROM fact_definition fd
+        <where>
+            <if test="name != null">AND fd.name LIKE CONCAT('%', #{name}, '%')</if>
+            <if test="dataType != null">AND fd.data_type = #{dataType}</if>
+            <if test="module != null">AND fd.module = #{module}</if>
+        </where>
+    </select>
+
 </mapper>

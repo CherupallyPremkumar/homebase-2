@@ -2,6 +2,7 @@
 	{
 		"id": "Cms.getAll",
 		"name": "pages",
+		"acls": [],
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -44,6 +45,7 @@
 	{
 		"id": "Cms.getAllBanners",
 		"name": "banners",
+		"acls": [],
 		"columnMetadata": {
 			"id": {
 				"name": "id",

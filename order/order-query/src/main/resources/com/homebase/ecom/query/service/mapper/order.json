@@ -2,8 +2,10 @@
 	{
 		"id": "Order.getAll",
 		"name": "orders",
+		"acls": ["ADMIN", "AGENT"],
 		"workflowName": "order",
 		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -46,6 +48,10 @@
 	{
 		"id": "Order.getById",
 		"name": "order",
+		"acls": ["ADMIN", "AGENT"],
+		"workflowName": "order",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -85,8 +91,50 @@
 		"paginated": false
 	},
 	{
+		"id": "Order.getMyOrders",
+		"name": "myOrders",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"customerId": {
+				"name": "customerId",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"customerEmail": {
+				"name": "customerEmail",
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"totalAmount": {
+				"name": "totalAmount",
+				"filterable": true,
+				"columnType": "Number",
+				"sortable": true
+			},
+			"createdAt": {
+				"name": "createdAt",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
 		"id": "Order.getDeliveredOrderItemsForSupplier",
 		"name": "deliveredItems",
+		"acls": ["ADMIN", "SUPPLIER"],
 		"columnMetadata": {
 			"orderId": {
 				"name": "order_id",
@@ -126,6 +174,7 @@
 	{
 		"id": "Order.getHeldFundsReport",
 		"name": "heldFunds",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"supplierId": {
 				"name": "supplier_id",

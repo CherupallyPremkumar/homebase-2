@@ -1,9 +1,11 @@
 [
 	{
 		"id": "Support.getAll",
-		"name": "supportTickets",
+		"name": "tickets",
+		"acls": ["ADMIN", "AGENT"],
 		"workflowName": "support",
 		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -55,6 +57,10 @@
 	{
 		"id": "Support.getById",
 		"name": "supportTicket",
+		"acls": ["ADMIN", "AGENT"],
+		"workflowName": "support",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -67,14 +73,14 @@
 	{
 		"id": "Support.getStateCounts",
 		"name": "supportTicketStateCounts",
+		"acls": ["ADMIN", "AGENT"],
 		"columnMetadata": {},
 		"paginated": false
 	},
 	{
 		"id": "Support.getOverdueTickets",
 		"name": "supportOverdueTickets",
-		"workflowName": "support",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN", "AGENT"],
 		"columnMetadata": {
 			"slaHours": {
 				"name": "slaHours",
@@ -88,8 +94,7 @@
 	{
 		"id": "Support.getByAgent",
 		"name": "supportTicketsByAgent",
-		"workflowName": "support",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"assignedAgentId": {
 				"name": "assignedAgentId",
@@ -103,8 +108,7 @@
 	{
 		"id": "Support.getByPriority",
 		"name": "supportTicketsByPriority",
-		"workflowName": "support",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN", "AGENT"],
 		"columnMetadata": {
 			"priority": {
 				"name": "priority",
@@ -117,14 +121,9 @@
 	},
 	{
 		"id": "Support.getByCustomerId",
-		"name": "supportTicketsByCustomer",
-		"columnMetadata": {
-			"customerId": {
-				"name": "customerId",
-				"columnType": "Text",
-				"filterable": true
-			}
-		},
+		"name": "myTickets",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {},
 		"paginated": true,
 		"sortable": true
 	}

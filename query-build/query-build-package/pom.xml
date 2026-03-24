@@ -81,6 +81,16 @@
 		</dependency>
 		<dependency>
 			<groupId>com.homebase.ecom</groupId>
+			<artifactId>order-management-query-service</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>warehouse-management-query-service</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom</groupId>
 			<artifactId>analytics-query-service</artifactId>
 			<version>${revision}</version>
 		</dependency>
@@ -132,6 +142,21 @@
 		<dependency>
 			<groupId>com.homebase.ecom.rulesengine</groupId>
 			<artifactId>rules-engine-query-service</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>reconciliation-query-service</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>fulfillment-query-service</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom</groupId>
+			<artifactId>warehouse-query-service</artifactId>
 			<version>${revision}</version>
 		</dependency>
 		<dependency>
@@ -206,10 +231,6 @@
 
 		<!-- Security -->
 		<dependency>
-			<groupId>com.homebase.ecom.shared</groupId>
-			<artifactId>shared-security</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>chenile-security</artifactId>
 		</dependency>
@@ -220,22 +241,22 @@
 
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<mainClass>com.homebase.ecom.query.QueryBuildApplication</mainClass>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>repackage</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+<!--	<build>-->
+<!--		<plugins>-->
+<!--			<plugin>-->
+<!--				<groupId>org.springframework.boot</groupId>-->
+<!--				<artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--				<configuration>-->
+<!--					<mainClass>com.homebase.ecom.query.QueryBuildApplication</mainClass>-->
+<!--				</configuration>-->
+<!--				<executions>-->
+<!--					<execution>-->
+<!--						<goals>-->
+<!--							<goal>repackage</goal>-->
+<!--						</goals>-->
+<!--					</execution>-->
+<!--				</executions>-->
+<!--			</plugin>-->
+<!--		</plugins>-->
+<!--	</build>-->
 </project>

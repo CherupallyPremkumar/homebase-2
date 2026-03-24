@@ -60,4 +60,9 @@
     <!-- ================================================================== -->
     <include file="db/changelog/test/db.changelog-testdata-master.xml"/>
 
+    <!-- ================================================================== -->
+    <!-- Seed data — expanded storefront/dashboard data for frontend dev    -->
+    <!-- ================================================================== -->
+    <include file="db/changelog/seed/db.changelog-storefront-seed.xml"/>
+
 </databaseChangeLog>

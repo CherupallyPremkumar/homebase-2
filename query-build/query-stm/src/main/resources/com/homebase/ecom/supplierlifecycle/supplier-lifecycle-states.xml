@@ -2,7 +2,6 @@
 <!-- Query-side STM metadata. Stripped from supplier-lifecycle-service. No componentName/conditions. -->
 <states>
 
-  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
 
   <event-information eventId='disableProducts'  meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
   <event-information eventId='removeCatalog'    meta-acls="SYSTEM" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
@@ -20,91 +19,91 @@
 
   <flow id='suspend-flow' default='true'>
 
-    <status id='INITIATED' initialState='true' meta-mainPath="true"
+    <manual-state id='INITIATED' initialState='true' meta-mainPath="true"
             description="Supplier suspension saga initiated">
       <on eventId='disableProducts' newStateId='PRODUCTS_DISABLED' meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
       <on eventId='cancel' newStateId='CANCELLING' meta-acls="SYSTEM,ADMIN"/>
-    </status>
+    </manual-state>
 
-    <status id='PRODUCTS_DISABLED' meta-mainPath="true"
+    <manual-state id='PRODUCTS_DISABLED' meta-mainPath="true"
             description="All supplier products disabled from storefront">
       <on eventId='removeCatalog' newStateId='CATALOG_CLEARED' meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='CATALOG_CLEARED' meta-mainPath="true"
+    <manual-state id='CATALOG_CLEARED' meta-mainPath="true"
             description="Supplier catalog entries removed">
       <on eventId='freezeInventory' newStateId='INVENTORY_FROZEN' meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='INVENTORY_FROZEN' meta-mainPath="true"
+    <manual-state id='INVENTORY_FROZEN' meta-mainPath="true"
             description="Supplier inventory frozen, no new reservations">
       <on eventId='cancelOrders' newStateId='ORDERS_CANCELLED' meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='ORDERS_CANCELLED' meta-mainPath="true"
+    <manual-state id='ORDERS_CANCELLED' meta-mainPath="true"
             description="Open orders for supplier cancelled">
       <on eventId='notifyCustomers' newStateId='COMPLETED' meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='COMPLETED' description="Supplier suspension completed successfully"/>
+    <manual-state id='COMPLETED' description="Supplier suspension completed successfully"/>
 
-    <status id='CANCELLING' description="Suspension being cancelled, compensating steps">
+    <manual-state id='CANCELLING' description="Suspension being cancelled, compensating steps">
       <on eventId='compensate' newStateId='COMPENSATION_DONE' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='COMPENSATION_DONE' description="All suspension steps compensated"/>
+    <manual-state id='COMPENSATION_DONE' description="All suspension steps compensated"/>
 
-    <status id='FAILED' description="Supplier suspension failed, can be retried or compensated">
+    <manual-state id='FAILED' description="Supplier suspension failed, can be retried or compensated">
       <on eventId='retry' newStateId='INITIATED' meta-acls="SYSTEM"/>
       <on eventId='compensate' newStateId='COMPENSATION_DONE' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
   </flow>
 
   <flow id='reactivate-flow'>
 
-    <status id='INITIATED' initialState='true' meta-mainPath="true"
+    <manual-state id='INITIATED' initialState='true' meta-mainPath="true"
             description="Supplier reactivation saga initiated">
       <on eventId='enableProducts' newStateId='PRODUCTS_ENABLED' meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
       <on eventId='cancel' newStateId='CANCELLING' meta-acls="SYSTEM,ADMIN"/>
-    </status>
+    </manual-state>
 
-    <status id='PRODUCTS_ENABLED' meta-mainPath="true"
+    <manual-state id='PRODUCTS_ENABLED' meta-mainPath="true"
             description="Supplier products re-enabled on storefront">
       <on eventId='restoreCatalog' newStateId='CATALOG_RESTORED' meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='CATALOG_RESTORED' meta-mainPath="true"
+    <manual-state id='CATALOG_RESTORED' meta-mainPath="true"
             description="Supplier catalog entries restored">
       <on eventId='unfreezeInventory' newStateId='INVENTORY_UNFROZEN' meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='INVENTORY_UNFROZEN' meta-mainPath="true"
+    <manual-state id='INVENTORY_UNFROZEN' meta-mainPath="true"
             description="Supplier inventory unfrozen, reservations allowed">
       <on eventId='notifySupplier' newStateId='COMPLETED' meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='COMPLETED' description="Supplier reactivation completed successfully"/>
+    <manual-state id='COMPLETED' description="Supplier reactivation completed successfully"/>
 
-    <status id='CANCELLING' description="Reactivation being cancelled, compensating steps">
+    <manual-state id='CANCELLING' description="Reactivation being cancelled, compensating steps">
       <on eventId='compensate' newStateId='COMPENSATION_DONE' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='COMPENSATION_DONE' description="All reactivation steps compensated"/>
+    <manual-state id='COMPENSATION_DONE' description="All reactivation steps compensated"/>
 
-    <status id='FAILED' description="Supplier reactivation failed, can be retried or compensated">
+    <manual-state id='FAILED' description="Supplier reactivation failed, can be retried or compensated">
       <on eventId='retry' newStateId='INITIATED' meta-acls="SYSTEM"/>
       <on eventId='compensate' newStateId='COMPENSATION_DONE' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
   </flow>
 </states>

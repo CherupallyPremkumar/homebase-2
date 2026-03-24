@@ -125,6 +125,37 @@
         </createIndex>
     </changeSet>
 
+    <!-- Fix: Chenile's @JoinColumn(name = "id") expects FK columns to be named "id" -->
+    <changeSet id="svc-reg-004b-fix-client-service-interceptors-fk" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="client_service_interceptors" columnName="service_definition_id"/>
+        </preConditions>
+        <dropForeignKeyConstraint baseTableName="client_service_interceptors" constraintName="fk_csi_service_def"/>
+        <dropIndex tableName="client_service_interceptors" indexName="idx_csi_service_def"/>
+        <renameColumn tableName="client_service_interceptors" oldColumnName="service_definition_id" newColumnName="id" columnDataType="VARCHAR(255)"/>
+        <addForeignKeyConstraint baseTableName="client_service_interceptors" baseColumnNames="id"
+            referencedTableName="service_definition" referencedColumnNames="id"
+            constraintName="fk_csi_service_def"/>
+        <createIndex tableName="client_service_interceptors" indexName="idx_csi_service_def">
+            <column name="id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="svc-reg-005b-fix-client-op-interceptors-fk" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="client_op_interceptors" columnName="operation_definition_id"/>
+        </preConditions>
+        <dropForeignKeyConstraint baseTableName="client_op_interceptors" constraintName="fk_coi_operation_def"/>
+        <dropIndex tableName="client_op_interceptors" indexName="idx_coi_operation_def"/>
+        <renameColumn tableName="client_op_interceptors" oldColumnName="operation_definition_id" newColumnName="id" columnDataType="VARCHAR(255)"/>
+        <addForeignKeyConstraint baseTableName="client_op_interceptors" baseColumnNames="id"
+            referencedTableName="operation_definition" referencedColumnNames="id"
+            constraintName="fk_coi_operation_def"/>
+        <createIndex tableName="client_op_interceptors" indexName="idx_coi_operation_def">
+            <column name="id"/>
+        </createIndex>
+    </changeSet>
+
     <!-- operation_definition_params (Hibernate join table for OperationDefinition → ParamDefinition) -->
     <changeSet id="svc-reg-006-create-operation-definition-params" author="homebase">
         <preConditions onFail="MARK_RAN">

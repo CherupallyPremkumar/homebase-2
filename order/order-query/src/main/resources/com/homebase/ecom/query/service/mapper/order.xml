@@ -54,6 +54,38 @@
         WHERE o.id = #{id}
     </select>
 
+    <select id="getMyOrders" resultType="com.homebase.ecom.dto.OrderDto">
+        SELECT
+            o.id as id,
+            o.customer_id as customerId,
+            u.email as customerEmail,
+            o.state_id as stateId,
+            o.total_amount as totalAmount,
+            o.currency as currency,
+            o.order_number as orderNumber,
+            o.created_time as createdAt
+        FROM orders o
+        LEFT JOIN user_profiles u ON o.customer_id = u.id
+        <where>
+            AND o.customer_id = #{customerId}
+            <if test="stateId != null">AND o.state_id = #{stateId}</if>
+            <if test="startDate != null">AND o.created_time &gt;= #{startDate}</if>
+            <if test="endDate != null">AND o.created_time &lt;= #{endDate}</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getMyOrders-count" resultType="int">
+        SELECT count(*)
+        FROM orders o
+        <where>
+            AND o.customer_id = #{customerId}
+            <if test="stateId != null">AND o.state_id = #{stateId}</if>
+            <if test="startDate != null">AND o.created_time &gt;= #{startDate}</if>
+            <if test="endDate != null">AND o.created_time &lt;= #{endDate}</if>
+        </where>
+    </select>
+
     <select id="getDeliveredOrderItemsForSupplier" resultType="com.homebase.ecom.dto.DeliveredItemDto">
         SELECT
             oi.order_id as "orderId",

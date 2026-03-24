@@ -1,0 +1,410 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Wms">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- WMS OVERVIEW STATS (KPIs for warehouse management dashboard)          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="wmsOverviewStats" resultType="map">
+    SELECT
+        (SELECT COUNT(*) FROM warehouses WHERE is_active = true
+            <if test="warehouseId != null">AND id = #{warehouseId}</if>
+        ) as "activeWarehouses",
+        (SELECT COUNT(*) FROM inventory_item
+            WHERE state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+            <if test="warehouseId != null">AND primary_fc = #{warehouseId}</if>
+        ) as "totalSkus",
+        (SELECT COUNT(*) FROM inventory_item
+            WHERE available_quantity &lt;= low_stock_threshold
+            AND state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+            <if test="warehouseId != null">AND primary_fc = #{warehouseId}</if>
+        ) as "lowStockItems",
+        (SELECT COUNT(*) FROM inventory_item
+            WHERE available_quantity = 0
+            AND state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+            <if test="warehouseId != null">AND primary_fc = #{warehouseId}</if>
+        ) as "outOfStockItems",
+        (SELECT COUNT(*) FROM fulfillment_orders
+            WHERE state_id IN ('INITIATED', 'PICKING', 'PACKING')
+            <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        ) as "pendingFulfillments",
+        (SELECT COUNT(*) FROM fulfillment_orders
+            WHERE state_id = 'SHIPPED'
+            AND DATE(shipped_at) = CURRENT_DATE
+            <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        ) as "shippedToday",
+        (SELECT COUNT(*) FROM pick_lists
+            WHERE status = 'PENDING'
+            <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        ) as "pendingPickLists"
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- INVENTORY WITH PRODUCT (cross-BC: inventory + product + warehouse)    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="inventoryWithProduct-count" resultType="int">
+    SELECT count(*)
+    FROM inventory_item inv
+    LEFT JOIN products p ON inv.product_id = p.id
+    <where>
+        inv.state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+        <if test="warehouseId != null">AND inv.primary_fc = #{warehouseId}</if>
+        <if test="productId != null">AND inv.product_id = #{productId}</if>
+        <if test="sku != null">AND inv.sku = #{sku}</if>
+        <if test="stateId != null">AND inv.state_id = #{stateId}</if>
+        <if test="lowStock != null and lowStock == 'true'">AND inv.available_quantity &lt;= inv.low_stock_threshold</if>
+    </where>
+</select>
+
+<select id="inventoryWithProduct" resultType="map">
+    SELECT
+        inv.id as "inventoryId",
+        inv.sku as "sku",
+        inv.product_id as "productId",
+        inv.variant_id as "variantId",
+        inv.quantity as "totalQuantity",
+        inv.available_quantity as "availableQuantity",
+        inv.reserved_quantity as "reservedQuantity",
+        inv.damaged_quantity as "damagedQuantity",
+        inv.inbound_quantity as "inboundQuantity",
+        inv.low_stock_threshold as "lowStockThreshold",
+        inv.status as "inventoryStatus",
+        inv.state_id as "stateId",
+        inv.primary_fc as "warehouseId",
+        p.name as "productName",
+        p.brand as "brand",
+        p.state_id as "productState",
+        c.name as "categoryName",
+        w.warehouse_name as "warehouseName",
+        w.warehouse_code as "warehouseCode",
+        w.city as "warehouseCity",
+        CASE WHEN inv.available_quantity &lt;= inv.low_stock_threshold THEN true ELSE false END as "isLowStock",
+        CASE WHEN inv.available_quantity = 0 THEN true ELSE false END as "isOutOfStock"
+    FROM inventory_item inv
+    LEFT JOIN products p ON inv.product_id = p.id
+    LEFT JOIN categories c ON p.category_id = c.id
+    LEFT JOIN warehouses w ON inv.primary_fc = w.id
+    <where>
+        inv.state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+        <if test="warehouseId != null">AND inv.primary_fc = #{warehouseId}</if>
+        <if test="productId != null">AND inv.product_id = #{productId}</if>
+        <if test="sku != null">AND inv.sku = #{sku}</if>
+        <if test="stateId != null">AND inv.state_id = #{stateId}</if>
+        <if test="lowStock != null and lowStock == 'true'">AND inv.available_quantity &lt;= inv.low_stock_threshold</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- FULFILLMENT WITH ORDER DETAIL (cross-BC: fulfillment + order + ship)  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="fulfillmentWithOrderDetail-count" resultType="int">
+    SELECT count(*)
+    FROM fulfillment_orders fo
+    <where>
+        <if test="warehouseId != null">AND fo.warehouse_id = #{warehouseId}</if>
+        <if test="stateId != null">AND fo.state_id = #{stateId}</if>
+        <if test="priority != null">AND fo.priority = #{priority}</if>
+        <if test="assignedPickerId != null">AND fo.assigned_picker_id = #{assignedPickerId}</if>
+        <if test="carrier != null">AND fo.carrier = #{carrier}</if>
+    </where>
+</select>
+
+<select id="fulfillmentWithOrderDetail" resultType="map">
+    SELECT
+        fo.id as "fulfillmentId",
+        fo.order_id as "orderId",
+        fo.state_id as "fulfillmentState",
+        fo.priority as "priority",
+        fo.fulfillment_type as "fulfillmentType",
+        fo.total_items as "totalItems",
+        fo.total_weight_grams as "totalWeightGrams",
+        fo.assigned_picker_id as "assignedPicker",
+        fo.assigned_packer_id as "assignedPacker",
+        fo.pick_started_at as "pickStartedAt",
+        fo.pick_completed_at as "pickCompletedAt",
+        fo.pack_started_at as "packStartedAt",
+        fo.pack_completed_at as "packCompletedAt",
+        fo.shipped_at as "shippedAt",
+        fo.carrier as "carrier",
+        fo.tracking_number as "trackingNumber",
+        fo.shipping_method as "shippingMethod",
+        fo.estimated_ship_date as "estimatedShipDate",
+        fo.estimated_delivery_date as "estimatedDeliveryDate",
+        fo.notes as "notes",
+        fo.created_time as "createdTime",
+        fo.warehouse_id as "warehouseId",
+        w.warehouse_name as "warehouseName",
+        w.warehouse_code as "warehouseCode",
+        o.order_number as "orderNumber",
+        o.state_id as "orderState",
+        o.total_amount as "orderAmount",
+        o.currency as "orderCurrency",
+        o.customer_id as "customerId",
+        u.first_name as "customerFirstName",
+        u.last_name as "customerLastName",
+        sh.state_id as "shippingStatus",
+        sh.current_location as "currentLocation"
+    FROM fulfillment_orders fo
+    LEFT JOIN warehouses w ON fo.warehouse_id = w.id
+    LEFT JOIN orders o ON fo.order_id = o.id
+    LEFT JOIN user_profiles u ON o.customer_id = u.id
+    LEFT JOIN shipments sh ON sh.order_id = o.id
+    <where>
+        <if test="warehouseId != null">AND fo.warehouse_id = #{warehouseId}</if>
+        <if test="stateId != null">AND fo.state_id = #{stateId}</if>
+        <if test="priority != null">AND fo.priority = #{priority}</if>
+        <if test="assignedPickerId != null">AND fo.assigned_picker_id = #{assignedPickerId}</if>
+        <if test="carrier != null">AND fo.carrier = #{carrier}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PICK LIST WITH PRODUCT (cross-BC: pick lists + product + location)    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="pickListWithProduct-count" resultType="int">
+    SELECT count(*)
+    FROM pick_lists pl
+    <where>
+        <if test="fulfillmentOrderId != null">AND pl.fulfillment_order_id = #{fulfillmentOrderId}</if>
+        <if test="warehouseId != null">AND pl.warehouse_id = #{warehouseId}</if>
+        <if test="status != null">AND pl.status = #{status}</if>
+        <if test="assignedTo != null">AND pl.assigned_to = #{assignedTo}</if>
+    </where>
+</select>
+
+<select id="pickListWithProduct" resultType="map">
+    SELECT
+        pl.id as "pickListId",
+        pl.fulfillment_order_id as "fulfillmentOrderId",
+        pl.warehouse_id as "warehouseId",
+        pl.assigned_to as "assignedTo",
+        pl.status as "pickStatus",
+        pl.item_count as "itemCount",
+        pl.picked_count as "pickedCount",
+        pl.started_at as "startedAt",
+        pl.completed_at as "completedAt",
+        pl.notes as "notes",
+        pl.created_time as "createdTime",
+        w.warehouse_name as "warehouseName",
+        w.warehouse_code as "warehouseCode",
+        fo.order_id as "orderId",
+        fo.state_id as "fulfillmentState",
+        fo.priority as "fulfillmentPriority",
+        fo.total_items as "fulfillmentTotalItems",
+        o.order_number as "orderNumber",
+        o.customer_id as "customerId"
+    FROM pick_lists pl
+    LEFT JOIN warehouses w ON pl.warehouse_id = w.id
+    LEFT JOIN fulfillment_orders fo ON pl.fulfillment_order_id = fo.id
+    LEFT JOIN orders o ON fo.order_id = o.id
+    <where>
+        <if test="fulfillmentOrderId != null">AND pl.fulfillment_order_id = #{fulfillmentOrderId}</if>
+        <if test="warehouseId != null">AND pl.warehouse_id = #{warehouseId}</if>
+        <if test="status != null">AND pl.status = #{status}</if>
+        <if test="assignedTo != null">AND pl.assigned_to = #{assignedTo}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- FULFILLMENT LINE ITEMS (items in a fulfillment order + product info)  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="fulfillmentLineItems" resultType="map">
+    SELECT
+        fli.id as "lineItemId",
+        fli.fulfillment_order_id as "fulfillmentOrderId",
+        fli.order_item_id as "orderItemId",
+        fli.product_id as "productId",
+        fli.variant_id as "variantId",
+        fli.sku as "sku",
+        fli.quantity_ordered as "quantityOrdered",
+        fli.quantity_allocated as "quantityAllocated",
+        fli.quantity_picked as "quantityPicked",
+        fli.quantity_packed as "quantityPacked",
+        fli.quantity_shipped as "quantityShipped",
+        fli.quantity_short as "quantityShort",
+        fli.bin_location as "binLocation",
+        fli.status as "itemStatus",
+        p.name as "productName",
+        p.brand as "brand",
+        p.weight_grams as "weightGrams",
+        oi.unit_price as "unitPrice",
+        oi.total_price as "totalPrice"
+    FROM fulfillment_line_items fli
+    LEFT JOIN products p ON fli.product_id = p.id
+    LEFT JOIN order_items oi ON fli.order_item_id = oi.id
+    WHERE fli.fulfillment_order_id = #{fulfillmentOrderId}
+    ORDER BY fli.sku
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- WAREHOUSE UTILIZATION (capacity overview per warehouse)               -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="warehouseUtilization-count" resultType="int">
+    SELECT count(*) FROM warehouses
+    <where>
+        <if test="warehouseId != null">AND id = #{warehouseId}</if>
+        <if test="warehouseType != null">AND warehouse_type = #{warehouseType}</if>
+        <if test="isActive != null">AND is_active = CAST(#{isActive} AS boolean)</if>
+    </where>
+</select>
+
+<select id="warehouseUtilization" resultType="map">
+    SELECT
+        w.id as "warehouseId",
+        w.warehouse_code as "warehouseCode",
+        w.warehouse_name as "warehouseName",
+        w.warehouse_type as "warehouseType",
+        w.city as "city",
+        w.state as "state",
+        w.max_capacity_units as "maxCapacityUnits",
+        w.current_utilization_pct as "currentUtilizationPct",
+        w.is_active as "isActive",
+        COALESCE(loc_stats.total_locations, 0) as "totalLocations",
+        COALESCE(loc_stats.active_locations, 0) as "activeLocations",
+        COALESCE(loc_stats.total_capacity, 0) as "totalLocationCapacity",
+        COALESCE(loc_stats.used_capacity, 0) as "usedLocationCapacity",
+        COALESCE(inv_stats.total_skus, 0) as "totalSkus",
+        COALESCE(inv_stats.total_units, 0) as "totalUnits",
+        COALESCE(inv_stats.low_stock_count, 0) as "lowStockCount",
+        COALESCE(ful_stats.pending_fulfillments, 0) as "pendingFulfillments"
+    FROM warehouses w
+    LEFT JOIN (
+        SELECT
+            warehouse_id,
+            COUNT(*) as total_locations,
+            COUNT(*) FILTER (WHERE is_active = true) as active_locations,
+            SUM(capacity_units) as total_capacity,
+            SUM(current_units) as used_capacity
+        FROM warehouse_locations
+        GROUP BY warehouse_id
+    ) loc_stats ON loc_stats.warehouse_id = w.id
+    LEFT JOIN (
+        SELECT
+            primary_fc,
+            COUNT(*) as total_skus,
+            SUM(available_quantity) as total_units,
+            COUNT(*) FILTER (WHERE available_quantity &lt;= low_stock_threshold) as low_stock_count
+        FROM inventory_item
+        WHERE state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+        GROUP BY primary_fc
+    ) inv_stats ON inv_stats.primary_fc = w.id
+    LEFT JOIN (
+        SELECT
+            warehouse_id,
+            COUNT(*) as pending_fulfillments
+        FROM fulfillment_orders
+        WHERE state_id IN ('INITIATED', 'PICKING', 'PACKING')
+        GROUP BY warehouse_id
+    ) ful_stats ON ful_stats.warehouse_id = w.id
+    <where>
+        <if test="warehouseId != null">AND w.id = #{warehouseId}</if>
+        <if test="warehouseType != null">AND w.warehouse_type = #{warehouseType}</if>
+        <if test="isActive != null">AND w.is_active = CAST(#{isActive} AS boolean)</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- INVENTORY BY WAREHOUSE LOCATION (what's in each bin/shelf/zone)       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="inventoryByWarehouseLocation-count" resultType="int">
+    SELECT count(*)
+    FROM warehouse_inventory wi
+    JOIN warehouse_locations wl ON wi.location_id = wl.id
+    <where>
+        <if test="warehouseId != null">AND wl.warehouse_id = #{warehouseId}</if>
+        <if test="zone != null">AND wl.zone = #{zone}</if>
+        <if test="locationType != null">AND wl.location_type = #{locationType}</if>
+    </where>
+</select>
+
+<select id="inventoryByWarehouseLocation" resultType="map">
+    SELECT
+        wi.id as "warehouseInventoryId",
+        wi.location_id as "locationId",
+        wi.product_id as "productId",
+        wi.variant_id as "variantId",
+        wi.sku as "sku",
+        wi.quantity_on_hand as "quantityOnHand",
+        wi.quantity_reserved as "quantityReserved",
+        wi.quantity_available as "quantityAvailable",
+        wi.quantity_damaged as "quantityDamaged",
+        wi.quantity_in_transit as "quantityInTransit",
+        wi.last_counted_at as "lastCountedAt",
+        wl.location_code as "locationCode",
+        wl.zone as "zone",
+        wl.aisle as "aisle",
+        wl.shelf as "shelf",
+        wl.bin as "bin",
+        wl.location_type as "locationType",
+        wl.capacity_units as "locationCapacity",
+        wl.current_units as "locationCurrentUnits",
+        p.name as "productName",
+        p.brand as "brand",
+        w.warehouse_name as "warehouseName",
+        w.warehouse_code as "warehouseCode"
+    FROM warehouse_inventory wi
+    JOIN warehouse_locations wl ON wi.location_id = wl.id
+    JOIN warehouses w ON wl.warehouse_id = w.id
+    LEFT JOIN products p ON wi.product_id = p.id
+    <where>
+        <if test="warehouseId != null">AND wl.warehouse_id = #{warehouseId}</if>
+        <if test="zone != null">AND wl.zone = #{zone}</if>
+        <if test="locationType != null">AND wl.location_type = #{locationType}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- INBOUND SHIPMENTS (inventory movements in + supplier info)            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="inboundShipments-count" resultType="int">
+    SELECT count(*)
+    FROM inventory_movements im
+    LEFT JOIN inventory_item ii ON im.inventory_item_id = ii.id
+    WHERE im.type = 'INBOUND'
+    <if test="warehouseId != null">AND im.fulfillment_center_id = #{warehouseId}</if>
+    <if test="supplierId != null">AND ii.supplier_id = #{supplierId}</if>
+</select>
+
+<select id="inboundShipments" resultType="map">
+    SELECT
+        im.inventory_item_id as "inventoryItemId",
+        ii.product_id as "productId",
+        ii.variant_id as "variantId",
+        ii.sku as "sku",
+        im.quantity as "quantity",
+        im.type as "movementType",
+        im.reference_id as "referenceId",
+        im.fulfillment_center_id as "fulfillmentCenterId",
+        im.movement_time as "movementTime",
+        im.reason as "reason",
+        ii.supplier_id as "supplierId",
+        p.name as "productName",
+        p.brand as "brand",
+        fc.name as "fulfillmentCenterName",
+        fc.code as "fulfillmentCenterCode",
+        s.business_name as "supplierName",
+        s.state_id as "supplierState"
+    FROM inventory_movements im
+    LEFT JOIN inventory_item ii ON im.inventory_item_id = ii.id
+    LEFT JOIN products p ON ii.product_id = p.id
+    LEFT JOIN fulfillment_centers fc ON im.fulfillment_center_id = fc.id
+    LEFT JOIN supplier s ON ii.supplier_id = s.id
+    WHERE im.type = 'INBOUND'
+    <if test="warehouseId != null">AND im.fulfillment_center_id = #{warehouseId}</if>
+    <if test="supplierId != null">AND ii.supplier_id = #{supplierId}</if>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

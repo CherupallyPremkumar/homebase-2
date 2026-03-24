@@ -90,4 +90,38 @@
         ${orderby} ${pagination}
     </select>
 
+    <!-- catalogCategories: All active categories for browsing -->
+    <select id='getCatalogCategories-count' resultType="int">
+        select count(*) from catalog_categories
+        <where>
+            AND active = true
+            <if test="parentId != null">
+                AND parent_id = #{parentId}
+            </if>
+            <if test="level != null">
+                AND level = #{level}
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+        </where>
+    </select>
+
+    <select id="getCatalogCategories" resultMap="menuResult">
+        SELECT * FROM catalog_categories
+        <where>
+            AND active = true
+            <if test="parentId != null">
+                AND parent_id = #{parentId}
+            </if>
+            <if test="level != null">
+                AND level = #{level}
+            </if>
+            <if test="name != null">
+                AND name like #{name}
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
 </mapper>

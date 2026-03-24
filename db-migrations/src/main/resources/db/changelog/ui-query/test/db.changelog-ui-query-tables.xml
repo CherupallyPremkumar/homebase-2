@@ -178,6 +178,7 @@
             <column name="last_modified_time" type="TIMESTAMP"/>
             <column name="created_by" type="VARCHAR(255)"/>
             <column name="last_modified_by" type="VARCHAR(255)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
         </createTable>
     </changeSet>
 
@@ -284,7 +285,6 @@
                 payment_method_id VARCHAR(255), notes TEXT, cancel_reason VARCHAR(1000),
                 description VARCHAR(2000), item_count INT DEFAULT 0,
                 shipping_address TEXT,
-                state_id VARCHAR(255),
                 state_id VARCHAR(100), flow_id VARCHAR(100),
                 created_time TIMESTAMP, updated_time TIMESTAMP,
                 state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
@@ -327,7 +327,6 @@
                 description VARCHAR(500),
                 estimated_delivery_date TIMESTAMP, actual_delivery_date TIMESTAMP,
                 state_id VARCHAR(100), flow_id VARCHAR(100),
-                state_id VARCHAR(50), flow_id VARCHAR(50),
                 state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
                 sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0
             )

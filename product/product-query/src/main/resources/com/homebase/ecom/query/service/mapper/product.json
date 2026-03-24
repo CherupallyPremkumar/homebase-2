@@ -2,34 +2,89 @@
 	{
 		"id": "Product.getAll",
 		"name": "products",
-		"workflowName": "product",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
-			"id": { "name": "id", "filterable": true, "columnType": "Text" },
-			"name": { "name": "name", "columnType": "Text", "likeQuery": true, "filterable": true, "sortable": true },
-			"brand": { "name": "brand", "filterable": true, "columnType": "Text", "sortable": true },
-			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text", "sortable": true },
-			"slug": { "name": "slug", "filterable": true, "columnType": "Text" },
-			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" }
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"name": {
+				"name": "name",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true,
+				"sortable": true
+			},
+			"brand": {
+				"name": "brand",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"categoryId": {
+				"name": "categoryId",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"slug": {
+				"name": "slug",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "stateId",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
 		"paginated": true,
-		"sortable": true
+		"sortable": true,
+		"workflowName": "product",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId"
 	},
 	{
 		"id": "Product.getById",
 		"name": "product",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
-			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
-		"paginated": false
+		"paginated": false,
+		"workflowName": "product",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId"
 	},
 	{
 		"id": "Product.getPublished",
 		"name": "storefront-products",
+		"acls": [],
 		"columnMetadata": {
-			"name": { "name": "name", "columnType": "Text", "likeQuery": true, "filterable": true, "sortable": true },
-			"brand": { "name": "brand", "filterable": true, "columnType": "Text", "sortable": true },
-			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text", "sortable": true }
+			"name": {
+				"name": "name",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true,
+				"sortable": true
+			},
+			"brand": {
+				"name": "brand",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"categoryId": {
+				"name": "categoryId",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			}
 		},
 		"paginated": true,
 		"sortable": true
@@ -37,16 +92,27 @@
 	{
 		"id": "Product.getBySlug",
 		"name": "product-by-slug",
+		"acls": [],
 		"columnMetadata": {
-			"slug": { "name": "slug", "filterable": true, "columnType": "Text" }
+			"slug": {
+				"name": "slug",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
 		"paginated": false
 	},
 	{
 		"id": "Product.searchProducts",
 		"name": "search-products",
+		"acls": [],
 		"columnMetadata": {
-			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+			"q": {
+				"name": "q",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			}
 		},
 		"paginated": true,
 		"sortable": true
@@ -54,8 +120,13 @@
 	{
 		"id": "Product.getByCategory",
 		"name": "products-by-category",
+		"acls": [],
 		"columnMetadata": {
-			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" }
+			"categoryId": {
+				"name": "categoryId",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
 		"paginated": true,
 		"sortable": true
@@ -63,18 +134,21 @@
 	{
 		"id": "Product.getCategoryTree",
 		"name": "category-tree",
+		"acls": [],
 		"columnMetadata": {},
 		"paginated": false
 	},
 	{
 		"id": "Product.getStateCounts",
 		"name": "product-state-counts",
+		"acls": ["ADMIN"],
 		"columnMetadata": {},
 		"paginated": false
 	},
 	{
 		"id": "Product.getPendingReview",
 		"name": "products-pending-review",
+		"acls": ["ADMIN"],
 		"columnMetadata": {},
 		"paginated": true,
 		"sortable": true
@@ -82,65 +156,109 @@
 	{
 		"id": "Product.variantExists",
 		"name": "variant-exists",
+		"acls": ["ADMIN", "SUPPLIER"],
 		"columnMetadata": {
-			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
-			"variantId": { "name": "variantId", "filterable": true, "columnType": "Text" }
+			"productId": {
+				"name": "productId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"variantId": {
+				"name": "variantId",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
 		"paginated": false
 	},
 	{
 		"id": "Product.getVariantsByProduct",
 		"name": "product-variants",
+		"acls": [],
 		"columnMetadata": {
-			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+			"productId": {
+				"name": "productId",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
 		"paginated": false
 	},
 	{
 		"id": "Product.getVariantBySku",
 		"name": "variant-by-sku",
+		"acls": ["ADMIN", "SUPPLIER"],
 		"columnMetadata": {
-			"sku": { "name": "sku", "filterable": true, "columnType": "Text" }
+			"sku": {
+				"name": "sku",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
 		"paginated": false
 	},
 	{
 		"id": "Product.getProductMedia",
 		"name": "product-media",
+		"acls": [],
 		"columnMetadata": {
-			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+			"productId": {
+				"name": "productId",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
 		"paginated": false
 	},
 	{
 		"id": "Product.getProductAttributes",
 		"name": "product-attributes",
+		"acls": [],
 		"columnMetadata": {
-			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+			"productId": {
+				"name": "productId",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
 		"paginated": false
 	},
 	{
 		"id": "Product.getAttributesByCategory",
 		"name": "category-attributes",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
-			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" }
+			"categoryId": {
+				"name": "categoryId",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
 		"paginated": false
 	},
 	{
 		"id": "Product.getProductTags",
 		"name": "product-tags",
+		"acls": [],
 		"columnMetadata": {
-			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+			"productId": {
+				"name": "productId",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
 		"paginated": false
 	},
 	{
 		"id": "Product.getProductActivityLog",
 		"name": "product-activity-log",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
-			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+			"productId": {
+				"name": "productId",
+				"filterable": true,
+				"columnType": "Text"
+			}
 		},
 		"paginated": false
 	}

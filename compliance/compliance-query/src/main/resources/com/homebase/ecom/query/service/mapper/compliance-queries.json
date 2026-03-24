@@ -4,8 +4,8 @@
     "name": "platformPolicies",
     "workflowName": "platformPolicy",
     "stateColumn": "stateId",
-    "flowColumn": "flowId",
-    "acls": ["POLICY_ADMIN", "COMPLIANCE_OFFICER", "test.premium"],
+		"flowColumn": "flowId",
+    "acls": ["ADMIN"],
     "columnMetadata": {
       "id": {
         "name": "id",
@@ -70,8 +70,8 @@
     "name": "agreements",
     "workflowName": "agreement",
     "stateColumn": "stateId",
-    "flowColumn": "flowId",
-    "acls": ["LEGAL_ADMIN", "POLICY_ADMIN", "test.premium"],
+		"flowColumn": "flowId",
+    "acls": ["ADMIN"],
     "columnMetadata": {
       "id": {
         "name": "id",
@@ -139,7 +139,7 @@
   {
     "id": "Compliance.getAcceptances",
     "name": "agreementAcceptances",
-    "acls": ["LEGAL_ADMIN", "POLICY_ADMIN", "test.premium"],
+    "acls": ["ADMIN"],
     "columnMetadata": {
       "id": {
         "name": "id",
@@ -187,7 +187,7 @@
   {
     "id": "Compliance.getRegulations",
     "name": "regulations",
-    "acls": ["POLICY_ADMIN", "COMPLIANCE_OFFICER", "test.premium"],
+    "acls": ["ADMIN"],
     "columnMetadata": {
       "id": {
         "name": "id",

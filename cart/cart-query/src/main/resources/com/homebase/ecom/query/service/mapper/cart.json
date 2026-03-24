@@ -2,9 +2,10 @@
 	{
 		"id": "Cart.getAll",
 		"name": "carts",
+		"acls": ["ADMIN"],
 		"workflowName": "cart",
-		"flowColumn": "flowId",
 		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"responseClass": "com.homebase.ecom.dto.CartDto",
 		"columnMetadata": {
 			"id": {
@@ -48,6 +49,7 @@
 	{
 		"id": "Cart.getStateCounts",
 		"name": "cartStateCounts",
+		"acls": ["ADMIN"],
 		"responseClass": "java.util.Map",
 		"columnMetadata": {
 			"stateId": {
@@ -62,9 +64,7 @@
 	{
 		"id": "Cart.getAbandonedCarts",
 		"name": "abandonedCarts",
-		"workflowName": "cart",
-		"flowColumn": "flowId",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"responseClass": "com.homebase.ecom.dto.CartDto",
 		"columnMetadata": {
 			"id": {
@@ -90,9 +90,7 @@
 	{
 		"id": "Cart.getExpiredCarts",
 		"name": "expiredCarts",
-		"workflowName": "cart",
-		"flowColumn": "flowId",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"responseClass": "com.homebase.ecom.dto.CartDto",
 		"columnMetadata": {
 			"id": {
@@ -113,9 +111,7 @@
 	{
 		"id": "Cart.getByCustomerId",
 		"name": "cartsByCustomer",
-		"workflowName": "cart",
-		"flowColumn": "flowId",
-		"stateColumn": "stateId",
+		"acls": ["CUSTOMER"],
 		"responseClass": "com.homebase.ecom.dto.CartDto",
 		"columnMetadata": {
 			"userId": {
@@ -136,9 +132,7 @@
 	{
 		"id": "Cart.getActiveCart",
 		"name": "activeCart",
-		"workflowName": "cart",
-		"flowColumn": "flowId",
-		"stateColumn": "stateId",
+		"acls": ["CUSTOMER"],
 		"responseClass": "com.homebase.ecom.dto.CartDto",
 		"columnMetadata": {
 			"userId": {
@@ -154,6 +148,7 @@
 	{
 		"id": "Cart.getItemsByCartId",
 		"name": "cartItems",
+		"acls": ["ADMIN"],
 		"responseClass": "com.homebase.ecom.dto.CartItemDto",
 		"columnMetadata": {
 			"cartId": {
@@ -174,6 +169,7 @@
 	{
 		"id": "Cart.getAllItems",
 		"name": "allCartItems",
+		"acls": ["ADMIN"],
 		"responseClass": "com.homebase.ecom.dto.CartItemDto",
 		"columnMetadata": {
 			"cartId": {
@@ -199,9 +195,7 @@
 	{
 		"id": "Cart.getCartDetail",
 		"name": "cartDetail",
-		"workflowName": "cart",
-		"flowColumn": "flowId",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"responseClass": "com.homebase.ecom.dto.CartDetailDto",
 		"columnMetadata": {
 			"cartId": {
@@ -247,6 +241,7 @@
 	{
 		"id": "Cart.getActivitiesByCartId",
 		"name": "cartActivities",
+		"acls": ["ADMIN"],
 		"responseClass": "com.homebase.ecom.dto.CartActivityDto",
 		"columnMetadata": {
 			"cartId": {
@@ -277,6 +272,7 @@
 	{
 		"id": "Cart.getStorefrontCart",
 		"name": "storefrontCart",
+		"acls": ["CUSTOMER"],
 		"responseClass": "com.homebase.ecom.dto.StorefrontCartDto",
 		"columnMetadata": {
 			"userId": {
@@ -292,6 +288,7 @@
 	{
 		"id": "Cart.getStorefrontCartById",
 		"name": "storefrontCartById",
+		"acls": ["CUSTOMER"],
 		"responseClass": "com.homebase.ecom.dto.StorefrontCartDto",
 		"columnMetadata": {
 			"cartId": {
@@ -307,6 +304,7 @@
 	{
 		"id": "Cart.getActiveCartIdsWithVariant",
 		"name": "activeCartIdsWithVariant",
+		"acls": ["SYSTEM"],
 		"responseClass": "java.util.Map",
 		"columnMetadata": {
 			"variantId": {
@@ -322,6 +320,7 @@
 	{
 		"id": "Cart.getActiveCartIdsWithCoupon",
 		"name": "activeCartIdsWithCoupon",
+		"acls": ["SYSTEM"],
 		"responseClass": "java.util.Map",
 		"columnMetadata": {
 			"couponCode": {
@@ -337,6 +336,7 @@
 	{
 		"id": "Cart.getExpiredCartIds",
 		"name": "expiredCartIds",
+		"acls": ["SYSTEM"],
 		"responseClass": "java.util.Map",
 		"columnMetadata": {},
 		"flexiblePropnames": false,
@@ -346,6 +346,7 @@
 	{
 		"id": "Cart.getIdleCartIds",
 		"name": "idleCartIds",
+		"acls": ["SYSTEM"],
 		"responseClass": "java.util.Map",
 		"columnMetadata": {
 			"thresholdHours": {
@@ -361,9 +362,7 @@
 	{
 		"id": "Cart.getCartFull",
 		"name": "cartFull",
-		"workflowName": "cart",
-		"flowColumn": "flowId",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"responseClass": "com.homebase.ecom.dto.CartFullDto",
 		"columnMetadata": {
 			"cartId": {

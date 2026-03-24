@@ -2,8 +2,10 @@
 	{
 		"id": "Supplier.getAll",
 		"name": "suppliers",
+		"acls": ["ADMIN"],
 		"workflowName": "supplier",
 		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -64,8 +66,10 @@
 	{
 		"id": "Supplier.getById",
 		"name": "supplierById",
+		"acls": ["ADMIN", "SUPPLIER"],
 		"workflowName": "supplier",
 		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -80,6 +84,7 @@
 	{
 		"id": "Supplier.getStateCounts",
 		"name": "supplierStateCounts",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"stateId": {
 				"name": "stateId",
@@ -97,8 +102,7 @@
 	{
 		"id": "Supplier.getPendingApproval",
 		"name": "suppliersPendingApproval",
-		"workflowName": "supplier",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -121,8 +125,7 @@
 	{
 		"id": "Supplier.getTopSuppliers",
 		"name": "topSuppliers",
-		"workflowName": "supplier",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -148,8 +151,7 @@
 	{
 		"id": "Supplier.getUnderperforming",
 		"name": "underperformingSuppliers",
-		"workflowName": "supplier",
-		"stateColumn": "stateId",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"id": {
 				"name": "id",
@@ -175,8 +177,7 @@
 	{
 		"id": "Supplier.getProfile",
 		"name": "supplierProfile",
-		"workflowName": "supplier",
-		"stateColumn": "stateId",
+		"acls": ["SUPPLIER"],
 		"columnMetadata": {
 			"userId": {
 				"name": "userId",
@@ -190,9 +191,8 @@
 	},
 	{
 		"id": "Supplier.getPerformanceMetrics",
-		"name": "supplierPerformanceMetrics",
-		"workflowName": "supplier",
-		"stateColumn": "stateId",
+		"name": "performance",
+		"acls": ["ADMIN", "SUPPLIER"],
 		"columnMetadata": {
 			"id": {
 				"name": "id",

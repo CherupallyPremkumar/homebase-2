@@ -46,11 +46,6 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- Shared Security -->
-        <dependency>
-            <groupId>com.homebase.ecom.shared</groupId>
-            <artifactId>shared-security</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>chenile-security</artifactId>

@@ -20,7 +20,6 @@
   </licenses>
   <modules>
     <module>shared-api</module>
-    <module>shared-security</module>
     <module>shared-service</module>
   </modules>
   <properties>
@@ -31,11 +30,6 @@
       <dependency>
         <groupId>com.homebase.ecom.shared</groupId>
         <artifactId>shared-api</artifactId>
-        <version>${revision}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.homebase.ecom.shared</groupId>
-        <artifactId>shared-security</artifactId>
         <version>${revision}</version>
       </dependency>
     </dependencies>

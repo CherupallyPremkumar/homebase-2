@@ -1,3 +1,6 @@
+server:
+  port: 8081
+
 logging:
   level:
     ROOT: INFO
@@ -47,12 +50,11 @@ spring:
   thymeleaf:
     cache: false
 
-server:
-  port: 8000
+
 
 chenile:
   base:
-    url: http://localhost:8000
+    url: http://localhost:8081
   module:
     name: query-service
   security:
@@ -76,7 +78,7 @@ query:
         format_sql: 'true'
         dialect: org.hibernate.dialect.PostgreSQLDialect
   defaultTenantId: homebase
-  datasource's:
+  datasources:
     homebase:
       maximumPoolSize: '10'
       type: com.zaxxer.hikari.HikariDataSource

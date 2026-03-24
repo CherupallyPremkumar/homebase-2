@@ -47,8 +47,6 @@ spring:
   thymeleaf:
     cache: false
 
-server:
-  port: 8000
 
 chenile:
   base:
@@ -76,7 +74,7 @@ query:
         format_sql: 'true'
         dialect: org.hibernate.dialect.PostgreSQLDialect
   defaultTenantId: homebase
-  datasource's:
+  datasources:
     homebase:
       maximumPoolSize: '10'
       type: com.zaxxer.hikari.HikariDataSource

@@ -2,6 +2,7 @@
   {
     "id": "CatalogSearch.search",
     "name": "searchCatalog",
+    "acls": [],
     "columnMetadata": {
       "id": {
         "name": "id",
@@ -79,6 +80,7 @@
   {
     "id": "CatalogSearch.fuzzy",
     "name": "fuzzyCatalog",
+    "acls": [],
     "columnMetadata": {
       "id": {
         "name": "id",

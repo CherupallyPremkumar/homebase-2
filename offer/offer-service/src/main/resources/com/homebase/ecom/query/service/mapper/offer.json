@@ -2,8 +2,10 @@
 	{
 		"id": "Offer.getAll",
 		"name": "offers",
+		"acls": ["ADMIN", "SUPPLIER"],
 		"workflowName": "offer",
 		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
 			"productId": { "name": "productId", "filterable": true, "columnType": "Text", "sortable": true },
@@ -23,6 +25,10 @@
 	{
 		"id": "Offer.getById",
 		"name": "offer",
+		"acls": ["ADMIN", "SUPPLIER"],
+		"workflowName": "offer",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": { "name": "id", "filterable": true, "columnType": "Text" }
 		},
@@ -31,12 +37,14 @@
 	{
 		"id": "Offer.getStateCounts",
 		"name": "offer-state-counts",
+		"acls": ["ADMIN"],
 		"columnMetadata": {},
 		"paginated": false
 	},
 	{
 		"id": "Offer.getPendingApproval",
 		"name": "pending-approval",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" }
 		},
@@ -46,6 +54,7 @@
 	{
 		"id": "Offer.getExpiringOffers",
 		"name": "expiring-offers",
+		"acls": ["ADMIN", "SUPPLIER"],
 		"columnMetadata": {
 			"daysUntilExpiry": { "name": "daysUntilExpiry", "filterable": true, "columnType": "Number" }
 		},
@@ -55,6 +64,7 @@
 	{
 		"id": "Offer.getByProductId",
 		"name": "offers-by-product",
+		"acls": ["ADMIN", "SUPPLIER"],
 		"columnMetadata": {
 			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
 		},
@@ -63,6 +73,7 @@
 	{
 		"id": "Offer.getActiveOffers",
 		"name": "active-offers",
+		"acls": [],
 		"columnMetadata": {
 			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
 		},
@@ -72,6 +83,7 @@
 	{
 		"id": "Offer.getBestOffer",
 		"name": "best-offer",
+		"acls": [],
 		"columnMetadata": {
 			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
 		},

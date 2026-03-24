@@ -26,6 +26,7 @@
         retry_count as "retryCount",
         failure_reason as "failureReason",
         state_id as "stateId",
+        flow_id as "flowId",
         created_time as "createdTime"
     FROM payment
     <where>
@@ -51,6 +52,7 @@
         retry_count as "retryCount",
         failure_reason as "failureReason",
         state_id as "stateId",
+        flow_id as "flowId",
         created_time as "createdTime",
         last_modified_time as "lastModifiedTime"
     FROM payment
@@ -82,6 +84,7 @@
         currency as "currency",
         payment_method as "paymentMethod",
         state_id as "stateId",
+        flow_id as "flowId",
         created_time as "createdTime"
     FROM payment
     WHERE payment_method = #{paymentMethod}
@@ -104,6 +107,7 @@
         failure_reason as "failureReason",
         retry_count as "retryCount",
         state_id as "stateId",
+        flow_id as "flowId",
         created_time as "createdTime"
     FROM payment
     WHERE state_id IN ('FAILED', 'ABANDONED')
@@ -132,6 +136,7 @@
         currency as "currency",
         payment_method as "paymentMethod",
         state_id as "stateId",
+        flow_id as "flowId",
         created_time as "createdTime"
     FROM payment
     WHERE order_id = #{orderId}
@@ -148,10 +153,65 @@
         payment_method as "paymentMethod",
         gateway_transaction_id as "gatewayTransactionId",
         state_id as "stateId",
+        flow_id as "flowId",
         created_time as "createdTime",
         last_modified_time as "lastModifiedTime"
     FROM payment
     WHERE id = #{id}
+</select>
+
+<!-- Refunds by payment ID -->
+<select id="getRefunds-count" resultType="int">
+    SELECT count(*) FROM payment_refunds
+    <where>
+        <if test="paymentId != null">AND payment_id = #{paymentId}</if>
+        <if test="status != null">AND status = #{status}</if>
+    </where>
+</select>
+
+<select id="getRefunds" resultType="map">
+    SELECT
+        id as "id",
+        payment_id as "paymentId",
+        amount as "amount",
+        reason as "reason",
+        status as "status",
+        created_time as "createdTime"
+    FROM payment_refunds
+    <where>
+        <if test="paymentId != null">AND payment_id = #{paymentId}</if>
+        <if test="status != null">AND status = #{status}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Webhook logs by payment ID -->
+<select id="getWebhookLogs-count" resultType="int">
+    SELECT count(*) FROM payment_webhook_log
+    <where>
+        <if test="paymentId != null">AND payment_id = #{paymentId}</if>
+        <if test="eventType != null">AND event_type = #{eventType}</if>
+        <if test="provider != null">AND provider = #{provider}</if>
+        <if test="status != null">AND status = #{status}</if>
+    </where>
+</select>
+
+<select id="getWebhookLogs" resultType="map">
+    SELECT
+        id as "id",
+        payment_id as "paymentId",
+        event_type as "eventType",
+        provider as "provider",
+        status as "status",
+        created_time as "createdTime"
+    FROM payment_webhook_log
+    <where>
+        <if test="paymentId != null">AND payment_id = #{paymentId}</if>
+        <if test="eventType != null">AND event_type = #{eventType}</if>
+        <if test="provider != null">AND provider = #{provider}</if>
+        <if test="status != null">AND status = #{status}</if>
+    </where>
+    ${orderby} ${pagination}
 </select>
 
 </mapper>

@@ -1,0 +1,146 @@
+[
+	{
+		"id": "Dashboard.overviewStats",
+		"name": "overviewStats",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Dashboard.ordersByState",
+		"name": "ordersByState",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Dashboard.dailyOrderStats",
+		"name": "dailyOrderStats",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Dashboard.recentOrders",
+		"name": "recentOrders",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Dashboard.lowStockAlerts",
+		"name": "lowStockAlerts",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Dashboard.outOfStock",
+		"name": "outOfStock",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Dashboard.supplierPerformance",
+		"name": "supplierPerformance",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Dashboard.returnsByState",
+		"name": "returnsByState",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Dashboard.openTickets",
+		"name": "openTickets",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Dashboard.financeStats",
+		"name": "financeStats",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Dashboard.revenueTrend",
+		"name": "revenueTrend",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"days": { "name": "days", "filterable": true, "columnType": "Number" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Dashboard.settlementsByState",
+		"name": "settlementsByState",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Dashboard.sellerStats",
+		"name": "sellerStats",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Dashboard.sellerDailySales",
+		"name": "sellerDailySales",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" },
+			"days": { "name": "days", "filterable": true, "columnType": "Number" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Dashboard.sellerTopProducts",
+		"name": "sellerTopProducts",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Dashboard.sellerRecentOrders",
+		"name": "sellerRecentOrders",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Dashboard.gstSummary",
+		"name": "gstSummary",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" }
+		},
+		"paginated": false
+	}
+]

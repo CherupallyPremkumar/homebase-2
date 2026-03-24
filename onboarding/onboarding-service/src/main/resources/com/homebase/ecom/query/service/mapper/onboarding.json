@@ -2,8 +2,10 @@
 	{
 		"id": "Onboarding.getAll",
 		"name": "onboardings",
+		"acls": ["ADMIN"],
 		"workflowName": "onboarding",
 		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
 			"applicantName": { "name": "applicantName", "filterable": true, "columnType": "Text", "sortable": true },
@@ -20,6 +22,10 @@
 	{
 		"id": "Onboarding.getById",
 		"name": "onboarding",
+		"acls": ["ADMIN", "SUPPLIER"],
+		"workflowName": "onboarding",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": { "name": "id", "filterable": true, "columnType": "Text" }
 		},
@@ -28,12 +34,14 @@
 	{
 		"id": "Onboarding.getStateCounts",
 		"name": "onboarding-state-counts",
+		"acls": ["ADMIN"],
 		"columnMetadata": {},
 		"paginated": false
 	},
 	{
 		"id": "Onboarding.getPendingVerification",
 		"name": "pending-verification",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" }
 		},
@@ -43,6 +51,7 @@
 	{
 		"id": "Onboarding.getStuckApplications",
 		"name": "stuck-applications",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"daysSinceSubmission": { "name": "daysSinceSubmission", "filterable": true, "columnType": "Number" }
 		},
@@ -52,6 +61,7 @@
 	{
 		"id": "Onboarding.getMyApplication",
 		"name": "my-application",
+		"acls": ["SUPPLIER"],
 		"columnMetadata": {
 			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" }
 		},
@@ -60,6 +70,7 @@
 	{
 		"id": "Onboarding.getOnboardingProgress",
 		"name": "onboarding-progress",
+		"acls": ["ADMIN", "SUPPLIER"],
 		"columnMetadata": {
 			"id": { "name": "id", "filterable": true, "columnType": "Text" }
 		},

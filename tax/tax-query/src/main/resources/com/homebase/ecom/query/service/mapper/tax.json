@@ -2,6 +2,7 @@
 	{
 		"id": "TaxRate.getAll",
 		"name": "taxRates",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"id": {
 				"name": "id",

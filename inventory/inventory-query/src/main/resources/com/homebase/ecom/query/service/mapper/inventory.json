@@ -1,9 +1,11 @@
 [
 	{
 		"id": "Inventory.getAll",
-		"name": "inventories",
+		"name": "inventoryItems",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"workflowName": "inventory",
 		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
 			"sku": { "name": "sku", "filterable": true, "columnType": "Text", "sortable": true },
@@ -25,6 +27,10 @@
 	{
 		"id": "Inventory.getById",
 		"name": "inventory",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"workflowName": "inventory",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
 		"columnMetadata": {
 			"id": { "name": "id", "filterable": true, "columnType": "Text" }
 		},
@@ -33,6 +39,7 @@
 	{
 		"id": "Inventory.getByProductId",
 		"name": "inventory-by-product",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"columnMetadata": {
 			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
 		},
@@ -41,6 +48,7 @@
 	{
 		"id": "Inventory.checkAvailability",
 		"name": "check-availability",
+		"acls": [],
 		"columnMetadata": {
 			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
 			"variantId": { "name": "variantId", "filterable": true, "columnType": "Text" }
@@ -50,12 +58,14 @@
 	{
 		"id": "Inventory.getStateCounts",
 		"name": "inventory-state-counts",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"columnMetadata": {},
 		"paginated": false
 	},
 	{
 		"id": "Inventory.getLowStock",
-		"name": "low-stock",
+		"name": "lowStockAlerts",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"columnMetadata": {},
 		"paginated": true,
 		"sortable": true
@@ -63,6 +73,7 @@
 	{
 		"id": "Inventory.getOutOfStock",
 		"name": "out-of-stock",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"columnMetadata": {},
 		"paginated": true,
 		"sortable": true
@@ -70,12 +81,14 @@
 	{
 		"id": "Inventory.getByFulfillmentCenter",
 		"name": "inventory-by-fc",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"columnMetadata": {},
 		"paginated": false
 	},
 	{
 		"id": "Inventory.getDamageSummary",
 		"name": "damage-summary",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"columnMetadata": {
 			"primaryFc": { "name": "primaryFc", "filterable": true, "columnType": "Text" },
 			"status": { "name": "status", "filterable": true, "columnType": "Text" }
@@ -85,12 +98,14 @@
 	{
 		"id": "Inventory.getActiveReservations",
 		"name": "active-reservations",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"columnMetadata": {},
 		"paginated": false
 	},
 	{
 		"id": "Inventory.getRecentMovements",
 		"name": "recent-movements",
+		"acls": ["ADMIN", "WAREHOUSE"],
 		"columnMetadata": {
 			"type": { "name": "type", "filterable": true, "columnType": "Text" },
 			"inventoryItemId": { "name": "inventoryItemId", "filterable": true, "columnType": "Text" },

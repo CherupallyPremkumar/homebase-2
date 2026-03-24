@@ -2,6 +2,7 @@
 	{
 		"id": "Analytics.getDailySales",
 		"name": "dailySales",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"summaryDate": {
 				"name": "summaryDate",
@@ -38,6 +39,7 @@
 	{
 		"id": "Analytics.getProductPerformance",
 		"name": "productPerformance",
+		"acls": ["ADMIN"],
 		"columnMetadata": {
 			"productId": {
 				"name": "productId",

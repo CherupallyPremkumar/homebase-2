@@ -16,7 +16,7 @@
             estimated_delivery_date as "estimatedDeliveryDate",
             actual_delivery_date as "actualDeliveryDate",
             current_location as "currentLocation",
-            created_at as "createdAt"
+            created_time as "createdAt"
         FROM shipments
         <where>
             <if test="orderId != null">AND order_id = #{orderId}</if>
@@ -58,7 +58,7 @@
             weight,
             dimensions,
             delivery_instructions as "deliveryInstructions",
-            created_at as "createdAt"
+            created_time as "createdAt"
         FROM shipments
         WHERE id = #{id}
     </select>
@@ -81,7 +81,7 @@
             shipping_method as "shippingMethod",
             state_id as "stateId",
             current_location as "currentLocation",
-            created_at as "createdAt"
+            created_time as "createdAt"
         FROM shipments
         WHERE carrier = #{carrier}
         <if test="stateId != null">AND state_id = #{stateId}</if>
@@ -104,7 +104,7 @@
             shipping_method as "shippingMethod",
             state_id as "stateId",
             current_location as "currentLocation",
-            created_at as "createdAt"
+            created_time as "createdAt"
         FROM shipments
         WHERE state_id IN ('PENDING', 'LABEL_CREATED')
         ${orderby} ${pagination}

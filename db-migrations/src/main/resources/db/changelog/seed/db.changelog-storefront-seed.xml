@@ -1,0 +1,1888 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        STOREFRONT SEED DATA — Additional products, categories, catalog items,
+        banners, analytics, and inventory for a realistic Indian marketplace.
+        Adds on top of testdata-master.xml. All IDs prefixed with "seed-" to avoid conflicts.
+        All rows have tenant='homebase'.
+    -->
+
+    <!-- ================================================================== -->
+    <!-- 1. ADDITIONAL CATEGORIES (in `categories` table, cat-006 to cat-012) -->
+    <!-- ================================================================== -->
+    <changeSet id="seed-categories" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM categories WHERE id = 'cat-006'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="categories">
+            <column name="id" value="cat-006"/>
+            <column name="name" value="Fashion"/>
+            <column name="slug" value="fashion"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-007"/>
+            <column name="name" value="Home &amp; Kitchen"/>
+            <column name="slug" value="home-kitchen"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-008"/>
+            <column name="name" value="Beauty &amp; Personal Care"/>
+            <column name="slug" value="beauty-personal-care"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-009"/>
+            <column name="name" value="Sports &amp; Fitness"/>
+            <column name="slug" value="sports-fitness"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-010"/>
+            <column name="name" value="Books &amp; Stationery"/>
+            <column name="slug" value="books-stationery"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-011"/>
+            <column name="name" value="Toys &amp; Games"/>
+            <column name="slug" value="toys-games"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-012"/>
+            <column name="name" value="Groceries &amp; Essentials"/>
+            <column name="slug" value="groceries-essentials"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-013"/>
+            <column name="name" value="Baby &amp; Kids"/>
+            <column name="slug" value="baby-kids"/>
+            <column name="depth" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 2. CATALOG CATEGORIES (ccat-003 to ccat-010)                       -->
+    <!-- ================================================================== -->
+    <changeSet id="seed-catalog-categories" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM catalog_categories WHERE id = 'ccat-003'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="catalog_categories">
+            <column name="id" value="ccat-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="name" value="Fashion"/>
+            <column name="slug" value="fashion"/>
+            <column name="description" value="Clothing, footwear, and accessories"/>
+            <column name="level" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="3"/>
+            <column name="image_url" value="https://images.homebase.com/categories/fashion.jpg"/>
+            <column name="icon" value="shirt"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="product_count" valueNumeric="10"/>
+            <column name="show_in_menu" valueBoolean="true"/>
+        </insert>
+        <insert tableName="catalog_categories">
+            <column name="id" value="ccat-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="name" value="Home &amp; Kitchen"/>
+            <column name="slug" value="home-kitchen"/>
+            <column name="description" value="Appliances, cookware, and home essentials"/>
+            <column name="level" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="4"/>
+            <column name="image_url" value="https://images.homebase.com/categories/home-kitchen.jpg"/>
+            <column name="icon" value="home"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="product_count" valueNumeric="8"/>
+            <column name="show_in_menu" valueBoolean="true"/>
+        </insert>
+        <insert tableName="catalog_categories">
+            <column name="id" value="ccat-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="name" value="Beauty &amp; Personal Care"/>
+            <column name="slug" value="beauty"/>
+            <column name="description" value="Skincare, haircare, and cosmetics"/>
+            <column name="level" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="5"/>
+            <column name="image_url" value="https://images.homebase.com/categories/beauty.jpg"/>
+            <column name="icon" value="sparkles"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="product_count" valueNumeric="5"/>
+            <column name="show_in_menu" valueBoolean="true"/>
+        </insert>
+        <insert tableName="catalog_categories">
+            <column name="id" value="ccat-006"/>
+            <column name="tenant" value="homebase"/>
+            <column name="name" value="Sports &amp; Fitness"/>
+            <column name="slug" value="sports-fitness"/>
+            <column name="description" value="Sports equipment, activewear, and fitness gear"/>
+            <column name="level" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="6"/>
+            <column name="image_url" value="https://images.homebase.com/categories/sports.jpg"/>
+            <column name="icon" value="dumbbell"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="product_count" valueNumeric="5"/>
+            <column name="show_in_menu" valueBoolean="true"/>
+        </insert>
+        <insert tableName="catalog_categories">
+            <column name="id" value="ccat-007"/>
+            <column name="tenant" value="homebase"/>
+            <column name="name" value="Books &amp; Stationery"/>
+            <column name="slug" value="books"/>
+            <column name="description" value="Books, notebooks, and office supplies"/>
+            <column name="level" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="7"/>
+            <column name="image_url" value="https://images.homebase.com/categories/books.jpg"/>
+            <column name="icon" value="book"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="product_count" valueNumeric="7"/>
+            <column name="show_in_menu" valueBoolean="true"/>
+        </insert>
+        <insert tableName="catalog_categories">
+            <column name="id" value="ccat-008"/>
+            <column name="tenant" value="homebase"/>
+            <column name="name" value="Toys &amp; Games"/>
+            <column name="slug" value="toys-games"/>
+            <column name="description" value="Toys, games, and hobby supplies"/>
+            <column name="level" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="8"/>
+            <column name="image_url" value="https://images.homebase.com/categories/toys.jpg"/>
+            <column name="icon" value="puzzle"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="product_count" valueNumeric="5"/>
+            <column name="show_in_menu" valueBoolean="true"/>
+        </insert>
+        <insert tableName="catalog_categories">
+            <column name="id" value="ccat-009"/>
+            <column name="tenant" value="homebase"/>
+            <column name="name" value="Groceries &amp; Essentials"/>
+            <column name="slug" value="groceries"/>
+            <column name="description" value="Daily essentials, pantry staples, and fresh produce"/>
+            <column name="level" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="9"/>
+            <column name="image_url" value="https://images.homebase.com/categories/groceries.jpg"/>
+            <column name="icon" value="shopping-basket"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="product_count" valueNumeric="5"/>
+            <column name="show_in_menu" valueBoolean="true"/>
+        </insert>
+        <insert tableName="catalog_categories">
+            <column name="id" value="ccat-010"/>
+            <column name="tenant" value="homebase"/>
+            <column name="name" value="Baby &amp; Kids"/>
+            <column name="slug" value="baby-kids"/>
+            <column name="description" value="Baby care, kids clothing, and nursery essentials"/>
+            <column name="level" valueNumeric="0"/>
+            <column name="display_order" valueNumeric="10"/>
+            <column name="image_url" value="https://images.homebase.com/categories/baby.jpg"/>
+            <column name="icon" value="baby"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="product_count" valueNumeric="5"/>
+            <column name="show_in_menu" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 3. PRODUCTS (45 products: prod-006 to prod-050)                    -->
+    <!--    Uses raw SQL for state_id/flow_id quoting consistency           -->
+    <!-- ================================================================== -->
+    <changeSet id="seed-products" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM products WHERE id = 'prod-006'</sqlCheck>
+        </preConditions>
+
+        <sql>
+            <!-- ======== ELECTRONICS (prod-006 to prod-015, category cat-001) ======== -->
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-006', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Samsung Galaxy M34 5G', '6.5 inch Super AMOLED display, 6000mAh battery, 6GB RAM, 128GB storage', 'Samsung', 'cat-003', 'samsung-galaxy-m34', 14999.00, '85171290', 'India', 208, true, 7, 'ELECTRONICS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-007', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'OnePlus Nord CE3 Lite', '6.72 inch IPS LCD, Snapdragon 695, 8GB RAM, 128GB', 'OnePlus', 'cat-003', 'oneplus-nord-ce3', 17999.00, '85171290', 'India', 195, true, 7, 'ELECTRONICS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-008', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'boAt Airdopes 141', 'True wireless earbuds with 42H playtime, ENx technology, Bluetooth 5.1', 'boAt', 'cat-001', 'boat-airdopes-141', 1299.00, '85183000', 'India', 42, true, 7, 'ELECTRONICS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-009', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Fire-Boltt Ninja Call Pro', 'Smartwatch with 1.69 inch display, Bluetooth calling, SpO2 monitoring', 'Fire-Boltt', 'cat-001', 'fire-boltt-ninja', 1799.00, '91022000', 'India', 48, true, 7, 'ELECTRONICS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-010', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'JBL Tune 230NC', 'True wireless noise cancelling earbuds with JBL Pure Bass sound', 'JBL', 'cat-001', 'jbl-tune-230nc', 4999.00, '85183000', 'India', 55, true, 7, 'ELECTRONICS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-011', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Sony WH-1000XM5', 'Industry-leading noise cancellation headphones with 30hr battery', 'Sony', 'cat-001', 'sony-wh1000xm5', 29990.00, '85183000', 'India', 250, true, 10, 'ELECTRONICS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-012', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Apple iPhone 15 128GB', 'A16 Bionic chip, 48MP camera, Dynamic Island, USB-C', 'Apple', 'cat-003', 'apple-iphone-15', 79900.00, '85171290', 'India', 171, true, 7, 'ELECTRONICS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-013', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Lenovo IdeaPad Slim 3', '15.6 inch FHD, AMD Ryzen 5, 8GB RAM, 512GB SSD', 'Lenovo', 'cat-004', 'lenovo-ideapad-3', 34990.00, '84713010', 'India', 1650, true, 10, 'ELECTRONICS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-014', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'HP DeskJet 2723e', 'All-in-one wireless inkjet printer with HP+ Smart features', 'HP', 'cat-001', 'hp-deskjet-2723e', 5499.00, '84433290', 'India', 3420, true, 7, 'ELECTRONICS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-015', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Redmi 12 5G', '6.79 inch FHD+ display, Snapdragon 4 Gen 2, 50MP camera', 'Xiaomi', 'cat-003', 'redmi-12-5g', 12999.00, '85171290', 'India', 199, true, 7, 'ELECTRONICS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            <!-- ======== FASHION (prod-016 to prod-025, category cat-006) ======== -->
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-016', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Levis 511 Slim Fit Jeans', 'Classic slim fit jeans in mid-wash indigo, stretch denim', 'Levis', 'cat-006', 'levis-511-jeans', 2499.00, 'India', 580, true, 30, 'APPAREL', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-017', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Allen Solly Formal Shirt', 'Regular fit cotton formal shirt in white with spread collar', 'Allen Solly', 'cat-006', 'allen-solly-formal', 1299.00, 'India', 280, true, 30, 'APPAREL', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-018', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Nike Air Max 270', 'Lifestyle running shoes with Max Air unit for all-day comfort', 'Nike', 'cat-006', 'nike-air-max-270', 12995.00, 'India', 340, true, 30, 'APPAREL', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-019', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Puma RS-X Sneakers', 'Retro-inspired chunky sneakers with mesh and leather upper', 'Puma', 'cat-006', 'puma-rsx', 7999.00, 'India', 380, true, 30, 'APPAREL', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-020', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Bata Power Running Shoes', 'Lightweight running shoes with cushioned insole for daily training', 'Bata', 'cat-006', 'bata-power', 1499.00, 'India', 310, true, 30, 'APPAREL', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-021', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Peter England Chinos', 'Slim fit chinos in khaki, wrinkle-free cotton blend', 'Peter England', 'cat-006', 'peter-england-chinos', 1099.00, 'India', 420, true, 30, 'APPAREL', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-022', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Van Heusen Blazer', 'Slim fit single-breasted blazer in navy blue, polyester blend', 'Van Heusen', 'cat-006', 'van-heusen-blazer', 4999.00, 'India', 650, true, 30, 'APPAREL', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-023', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Wildcraft Backpack 35L', 'Durable 35L backpack with laptop compartment and rain cover', 'Wildcraft', 'cat-006', 'wildcraft-backpack', 1799.00, 'India', 780, true, 15, 'APPAREL', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-024', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'US Polo T-Shirt', 'Classic crew neck cotton t-shirt with embroidered logo', 'US Polo', 'cat-006', 'us-polo-tshirt', 899.00, 'India', 200, true, 30, 'APPAREL', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-025', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Raymond Formal Trouser', 'Regular fit formal trouser in charcoal grey, pure wool blend', 'Raymond', 'cat-006', 'raymond-trouser', 1999.00, 'India', 480, true, 30, 'APPAREL', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            <!-- ======== HOME &amp; KITCHEN (prod-026 to prod-033, category cat-007) ======== -->
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-026', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Prestige Induction Cooktop', '1600W induction cooktop with auto-cut, anti-magnetic wall', 'Prestige', 'cat-007', 'prestige-induction', 2499.00, '85166040', 'India', 2800, true, 7, 'APPLIANCES', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-027', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Havells Ceiling Fan', '1200mm ceiling fan with high-speed motor, dust-resistant finish', 'Havells', 'cat-007', 'havells-fan', 1799.00, '84145920', 'India', 5200, true, 7, 'APPLIANCES', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-028', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Philips Air Fryer HD9200', '4.1L capacity air fryer with Rapid Air technology, 1400W', 'Philips', 'cat-007', 'philips-air-fryer', 6999.00, '85166090', 'India', 4500, true, 7, 'APPLIANCES', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-029', 'homebase', 'sup-003', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Milton Thermosteel Flask', '1L vacuum insulated flask, keeps hot 24hr and cold 24hr', 'Milton', 'cat-007', 'milton-flask', 699.00, 'India', 450, true, 7, 'APPLIANCES', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-030', 'homebase', 'sup-003', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Cello Storage Container Set', 'Set of 12 BPA-free plastic containers with airtight lids', 'Cello', 'cat-007', 'cello-containers', 449.00, 'India', 1200, true, 7, 'APPLIANCES', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-031', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Crompton Water Heater', '15L storage water heater with 5-star BEE rating, auto cut-off', 'Crompton', 'cat-007', 'crompton-geyser', 5999.00, '85161000', 'India', 7500, true, 7, 'APPLIANCES', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-032', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Pigeon Water Purifier', '9L RO+UV water purifier with TDS controller and mineral cartridge', 'Pigeon', 'cat-007', 'pigeon-purifier', 8999.00, '84212190', 'India', 8200, true, 7, 'APPLIANCES', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, hsn_code, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-033', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Butterfly Mixer Grinder', '750W mixer grinder with 3 stainless steel jars and overload protection', 'Butterfly', 'cat-007', 'butterfly-mixer', 2999.00, '85094010', 'India', 3800, true, 7, 'APPLIANCES', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            <!-- ======== BEAUTY (prod-034 to prod-038, category cat-008) ======== -->
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-034', 'homebase', 'sup-003', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Lakme 9to5 Foundation', 'Weightless mousse foundation with SPF 20, buildable coverage', 'Lakme', 'cat-008', 'lakme-foundation', 599.00, 'India', 120, true, 15, 'BEAUTY', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-035', 'homebase', 'sup-003', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Maybelline Colossal Mascara', 'Volume express colossal mascara for 12x voluminous lashes', 'Maybelline', 'cat-008', 'maybelline-mascara', 349.00, 'India', 35, true, 15, 'BEAUTY', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-036', 'homebase', 'sup-003', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Nivea Body Lotion 400ml', 'Nourishing body lotion with almond oil for 48hr deep moisture', 'Nivea', 'cat-008', 'nivea-body-lotion', 299.00, 'India', 420, true, 15, 'BEAUTY', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-037', 'homebase', 'sup-003', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Dove Shampoo 650ml', 'Intensive repair shampoo for damaged hair with keratin actives', 'Dove', 'cat-008', 'dove-shampoo', 399.00, 'India', 680, true, 15, 'BEAUTY', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-038', 'homebase', 'sup-003', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Himalaya Face Wash 150ml', 'Purifying neem face wash for pimple-free and clear skin', 'Himalaya', 'cat-008', 'himalaya-facewash', 165.00, 'India', 170, true, 15, 'BEAUTY', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            <!-- ======== SPORTS (prod-039 to prod-043, category cat-009) ======== -->
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-039', 'homebase', 'sup-003', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Yonex Badminton Racket', 'Nanoray 7000I racket, medium flex, head-heavy balance', 'Yonex', 'cat-009', 'yonex-racket', 2499.00, 'India', 95, true, 7, 'SPORTS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-040', 'homebase', 'sup-003', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Cosco Cricket Bat', 'English willow cricket bat, full size, light pickup', 'Cosco', 'cat-009', 'cosco-bat', 1299.00, 'India', 1150, true, 7, 'SPORTS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-041', 'homebase', 'sup-003', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Nivia Football Size 5', 'Official match ball, hand-stitched, waterproof PU cover', 'Nivia', 'cat-009', 'nivia-football', 799.00, 'India', 430, true, 7, 'SPORTS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-042', 'homebase', 'sup-002', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Adidas Ultraboost', 'Boost midsole running shoes with Primeknit upper, Continental rubber outsole', 'Adidas', 'cat-009', 'adidas-ultraboost', 14999.00, 'India', 310, true, 30, 'SPORTS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-043', 'homebase', 'sup-003', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Decathlon Yoga Mat 6mm', 'Non-slip yoga mat with alignment lines, 183x61cm, eco-friendly TPE', 'Decathlon', 'cat-009', 'decathlon-yogamat', 599.00, 'India', 1100, true, 7, 'SPORTS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            <!-- ======== BOOKS (prod-044 to prod-050, category cat-010) ======== -->
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-044', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Atomic Habits', 'An easy and proven way to build good habits and break bad ones by James Clear', 'Penguin', 'cat-010', 'atomic-habits', 399.00, 'India', 320, true, 7, 'BOOKS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-045', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Sapiens', 'A brief history of humankind by Yuval Noah Harari', 'Vintage', 'cat-010', 'sapiens', 499.00, 'India', 390, true, 7, 'BOOKS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-046', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Rich Dad Poor Dad', 'What the rich teach their kids about money by Robert Kiyosaki', 'Plata', 'cat-010', 'rich-dad-poor-dad', 299.00, 'India', 280, true, 7, 'BOOKS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-047', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'The Alchemist', 'A fable about following your dream by Paulo Coelho', 'HarperCollins', 'cat-010', 'the-alchemist', 250.00, 'India', 240, true, 7, 'BOOKS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-048', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Wings of Fire', 'An autobiography of APJ Abdul Kalam', 'Universities Press', 'cat-010', 'wings-of-fire', 299.00, 'India', 300, true, 7, 'BOOKS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-049', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'Ikigai', 'The Japanese secret to a long and happy life by Hector Garcia', 'Penguin', 'cat-010', 'ikigai', 350.00, 'India', 260, true, 7, 'BOOKS', true, TIMESTAMP '2025-01-16 10:00:00');
+
+            INSERT INTO products (id, tenant, created_by, created_time, last_modified_time, version, flow_id, state_id, state_entry_time, name, description, brand, category_id, slug, base_price, country_of_origin, weight_grams, is_returnable, return_window_days, tax_category, is_active, published_at)
+            VALUES ('prod-050', 'homebase', 'sup-001', TIMESTAMP '2025-01-15 10:00:00', TIMESTAMP '2025-01-15 10:00:00', 0, 'product-flow', 'PUBLISHED', TIMESTAMP '2025-01-16 10:00:00', 'The Psychology of Money', 'Timeless lessons on wealth, greed, and happiness by Morgan Housel', 'Jaico', 'cat-010', 'psychology-of-money', 299.00, 'India', 270, true, 7, 'BOOKS', true, TIMESTAMP '2025-01-16 10:00:00');
+        </sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 4. CATALOG ITEMS (45 items mirroring products, ci-cat-004 to ci-cat-048) -->
+    <!-- ================================================================== -->
+    <changeSet id="seed-catalog-items" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM catalog_items WHERE id = 'ci-cat-004'</sqlCheck>
+        </preConditions>
+
+        <!-- ======== ELECTRONICS ======== -->
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-006"/>
+            <column name="name" value="Samsung Galaxy M34 5G"/>
+            <column name="description" value="6.5 inch Super AMOLED, 6000mAh battery, 6GB RAM"/>
+            <column name="brand" value="Samsung"/>
+            <column name="price" valueNumeric="14999.00"/>
+            <column name="mrp" valueNumeric="17999.00"/>
+            <column name="offer_price" valueNumeric="13499.00"/>
+            <column name="discount_percent" valueNumeric="10.00"/>
+            <column name="category_id" value="ccat-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="250"/>
+            <column name="average_rating" valueNumeric="4.30"/>
+            <column name="review_count" valueNumeric="187"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-007"/>
+            <column name="name" value="OnePlus Nord CE3 Lite"/>
+            <column name="description" value="6.72 inch IPS LCD, Snapdragon 695, 8GB RAM"/>
+            <column name="brand" value="OnePlus"/>
+            <column name="price" valueNumeric="17999.00"/>
+            <column name="mrp" valueNumeric="19999.00"/>
+            <column name="offer_price" valueNumeric="15999.00"/>
+            <column name="discount_percent" valueNumeric="11.11"/>
+            <column name="category_id" value="ccat-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="180"/>
+            <column name="average_rating" valueNumeric="4.20"/>
+            <column name="review_count" valueNumeric="142"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-006"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-008"/>
+            <column name="name" value="boAt Airdopes 141"/>
+            <column name="description" value="True wireless earbuds, 42H playtime, Bluetooth 5.1"/>
+            <column name="brand" value="boAt"/>
+            <column name="price" valueNumeric="1299.00"/>
+            <column name="mrp" valueNumeric="1990.00"/>
+            <column name="offer_price" valueNumeric="1099.00"/>
+            <column name="discount_percent" valueNumeric="15.40"/>
+            <column name="category_id" value="ccat-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="500"/>
+            <column name="average_rating" valueNumeric="4.10"/>
+            <column name="review_count" valueNumeric="312"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-007"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-009"/>
+            <column name="name" value="Fire-Boltt Ninja Call Pro"/>
+            <column name="description" value="Smartwatch, 1.69 inch display, Bluetooth calling"/>
+            <column name="brand" value="Fire-Boltt"/>
+            <column name="price" valueNumeric="1799.00"/>
+            <column name="mrp" valueNumeric="2499.00"/>
+            <column name="offer_price" valueNumeric="1599.00"/>
+            <column name="discount_percent" valueNumeric="11.12"/>
+            <column name="category_id" value="ccat-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="320"/>
+            <column name="average_rating" valueNumeric="3.90"/>
+            <column name="review_count" valueNumeric="98"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-008"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-010"/>
+            <column name="name" value="JBL Tune 230NC"/>
+            <column name="description" value="True wireless NC earbuds with JBL Pure Bass"/>
+            <column name="brand" value="JBL"/>
+            <column name="price" valueNumeric="4999.00"/>
+            <column name="mrp" valueNumeric="5999.00"/>
+            <column name="offer_price" valueNumeric="4499.00"/>
+            <column name="discount_percent" valueNumeric="10.00"/>
+            <column name="category_id" value="ccat-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="145"/>
+            <column name="average_rating" valueNumeric="4.40"/>
+            <column name="review_count" valueNumeric="76"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-009"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-011"/>
+            <column name="name" value="Sony WH-1000XM5"/>
+            <column name="description" value="Industry-leading noise cancellation, 30hr battery"/>
+            <column name="brand" value="Sony"/>
+            <column name="price" valueNumeric="29990.00"/>
+            <column name="mrp" valueNumeric="34990.00"/>
+            <column name="offer_price" valueNumeric="27990.00"/>
+            <column name="discount_percent" valueNumeric="6.67"/>
+            <column name="category_id" value="ccat-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="65"/>
+            <column name="average_rating" valueNumeric="4.80"/>
+            <column name="review_count" valueNumeric="234"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-010"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-012"/>
+            <column name="name" value="Apple iPhone 15 128GB"/>
+            <column name="description" value="A16 Bionic, 48MP camera, Dynamic Island, USB-C"/>
+            <column name="brand" value="Apple"/>
+            <column name="price" valueNumeric="79900.00"/>
+            <column name="mrp" valueNumeric="79900.00"/>
+            <column name="offer_price" valueNumeric="74900.00"/>
+            <column name="discount_percent" valueNumeric="6.26"/>
+            <column name="category_id" value="ccat-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="40"/>
+            <column name="average_rating" valueNumeric="4.70"/>
+            <column name="review_count" valueNumeric="289"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-011"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-013"/>
+            <column name="name" value="Lenovo IdeaPad Slim 3"/>
+            <column name="description" value="15.6 inch FHD, AMD Ryzen 5, 8GB RAM, 512GB SSD"/>
+            <column name="brand" value="Lenovo"/>
+            <column name="price" valueNumeric="34990.00"/>
+            <column name="mrp" valueNumeric="42990.00"/>
+            <column name="offer_price" valueNumeric="32490.00"/>
+            <column name="discount_percent" valueNumeric="7.15"/>
+            <column name="category_id" value="ccat-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="55"/>
+            <column name="average_rating" valueNumeric="4.20"/>
+            <column name="review_count" valueNumeric="67"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-012"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-014"/>
+            <column name="name" value="HP DeskJet 2723e"/>
+            <column name="description" value="All-in-one wireless inkjet printer with HP+ Smart"/>
+            <column name="brand" value="HP"/>
+            <column name="price" valueNumeric="5499.00"/>
+            <column name="mrp" valueNumeric="6499.00"/>
+            <column name="offer_price" valueNumeric="4999.00"/>
+            <column name="discount_percent" valueNumeric="9.09"/>
+            <column name="category_id" value="ccat-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="80"/>
+            <column name="average_rating" valueNumeric="3.80"/>
+            <column name="review_count" valueNumeric="34"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-013"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-015"/>
+            <column name="name" value="Redmi 12 5G"/>
+            <column name="description" value="6.79 inch FHD+, Snapdragon 4 Gen 2, 50MP camera"/>
+            <column name="brand" value="Xiaomi"/>
+            <column name="price" valueNumeric="12999.00"/>
+            <column name="mrp" valueNumeric="14999.00"/>
+            <column name="offer_price" valueNumeric="11999.00"/>
+            <column name="discount_percent" valueNumeric="7.70"/>
+            <column name="category_id" value="ccat-001"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="300"/>
+            <column name="average_rating" valueNumeric="4.10"/>
+            <column name="review_count" valueNumeric="156"/>
+        </insert>
+
+        <!-- ======== FASHION ======== -->
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-014"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-016"/>
+            <column name="name" value="Levis 511 Slim Fit Jeans"/>
+            <column name="description" value="Classic slim fit, mid-wash indigo, stretch denim"/>
+            <column name="brand" value="Levis"/>
+            <column name="price" valueNumeric="2499.00"/>
+            <column name="mrp" valueNumeric="3299.00"/>
+            <column name="offer_price" valueNumeric="2199.00"/>
+            <column name="discount_percent" valueNumeric="12.00"/>
+            <column name="category_id" value="ccat-003"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="200"/>
+            <column name="average_rating" valueNumeric="4.40"/>
+            <column name="review_count" valueNumeric="203"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-015"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-017"/>
+            <column name="name" value="Allen Solly Formal Shirt"/>
+            <column name="description" value="Regular fit cotton formal shirt, white, spread collar"/>
+            <column name="brand" value="Allen Solly"/>
+            <column name="price" valueNumeric="1299.00"/>
+            <column name="mrp" valueNumeric="1599.00"/>
+            <column name="offer_price" valueNumeric="1149.00"/>
+            <column name="discount_percent" valueNumeric="11.55"/>
+            <column name="category_id" value="ccat-003"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="350"/>
+            <column name="average_rating" valueNumeric="4.10"/>
+            <column name="review_count" valueNumeric="89"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-016"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-018"/>
+            <column name="name" value="Nike Air Max 270"/>
+            <column name="description" value="Lifestyle running shoes with Max Air unit"/>
+            <column name="brand" value="Nike"/>
+            <column name="price" valueNumeric="12995.00"/>
+            <column name="mrp" valueNumeric="14995.00"/>
+            <column name="offer_price" valueNumeric="11495.00"/>
+            <column name="discount_percent" valueNumeric="11.54"/>
+            <column name="category_id" value="ccat-003"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="85"/>
+            <column name="average_rating" valueNumeric="4.60"/>
+            <column name="review_count" valueNumeric="178"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-017"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-019"/>
+            <column name="name" value="Puma RS-X Sneakers"/>
+            <column name="description" value="Retro chunky sneakers, mesh and leather upper"/>
+            <column name="brand" value="Puma"/>
+            <column name="price" valueNumeric="7999.00"/>
+            <column name="mrp" valueNumeric="8999.00"/>
+            <column name="offer_price" valueNumeric="6999.00"/>
+            <column name="discount_percent" valueNumeric="12.50"/>
+            <column name="category_id" value="ccat-003"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="120"/>
+            <column name="average_rating" valueNumeric="4.30"/>
+            <column name="review_count" valueNumeric="95"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-018"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-020"/>
+            <column name="name" value="Bata Power Running Shoes"/>
+            <column name="description" value="Lightweight running shoes with cushioned insole"/>
+            <column name="brand" value="Bata"/>
+            <column name="price" valueNumeric="1499.00"/>
+            <column name="mrp" valueNumeric="1799.00"/>
+            <column name="offer_price" valueNumeric="1299.00"/>
+            <column name="discount_percent" valueNumeric="13.34"/>
+            <column name="category_id" value="ccat-003"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="400"/>
+            <column name="average_rating" valueNumeric="3.80"/>
+            <column name="review_count" valueNumeric="245"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-019"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-021"/>
+            <column name="name" value="Peter England Chinos"/>
+            <column name="description" value="Slim fit khaki chinos, wrinkle-free cotton blend"/>
+            <column name="brand" value="Peter England"/>
+            <column name="price" valueNumeric="1099.00"/>
+            <column name="mrp" valueNumeric="1499.00"/>
+            <column name="offer_price" valueNumeric="949.00"/>
+            <column name="discount_percent" valueNumeric="13.65"/>
+            <column name="category_id" value="ccat-003"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="280"/>
+            <column name="average_rating" valueNumeric="4.00"/>
+            <column name="review_count" valueNumeric="67"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-020"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-022"/>
+            <column name="name" value="Van Heusen Blazer"/>
+            <column name="description" value="Slim fit navy blue blazer, polyester blend"/>
+            <column name="brand" value="Van Heusen"/>
+            <column name="price" valueNumeric="4999.00"/>
+            <column name="mrp" valueNumeric="5999.00"/>
+            <column name="offer_price" valueNumeric="4499.00"/>
+            <column name="discount_percent" valueNumeric="10.00"/>
+            <column name="category_id" value="ccat-003"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="45"/>
+            <column name="average_rating" valueNumeric="4.20"/>
+            <column name="review_count" valueNumeric="23"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-021"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-023"/>
+            <column name="name" value="Wildcraft Backpack 35L"/>
+            <column name="description" value="35L backpack with laptop compartment and rain cover"/>
+            <column name="brand" value="Wildcraft"/>
+            <column name="price" valueNumeric="1799.00"/>
+            <column name="mrp" valueNumeric="2199.00"/>
+            <column name="offer_price" valueNumeric="1599.00"/>
+            <column name="discount_percent" valueNumeric="11.12"/>
+            <column name="category_id" value="ccat-003"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="160"/>
+            <column name="average_rating" valueNumeric="4.30"/>
+            <column name="review_count" valueNumeric="134"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-022"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-024"/>
+            <column name="name" value="US Polo T-Shirt"/>
+            <column name="description" value="Crew neck cotton t-shirt with embroidered logo"/>
+            <column name="brand" value="US Polo"/>
+            <column name="price" valueNumeric="899.00"/>
+            <column name="mrp" valueNumeric="1199.00"/>
+            <column name="offer_price" valueNumeric="799.00"/>
+            <column name="discount_percent" valueNumeric="11.12"/>
+            <column name="category_id" value="ccat-003"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="450"/>
+            <column name="average_rating" valueNumeric="4.00"/>
+            <column name="review_count" valueNumeric="189"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-023"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-025"/>
+            <column name="name" value="Raymond Formal Trouser"/>
+            <column name="description" value="Regular fit charcoal grey trouser, pure wool blend"/>
+            <column name="brand" value="Raymond"/>
+            <column name="price" valueNumeric="1999.00"/>
+            <column name="mrp" valueNumeric="2499.00"/>
+            <column name="offer_price" valueNumeric="1799.00"/>
+            <column name="discount_percent" valueNumeric="10.01"/>
+            <column name="category_id" value="ccat-003"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="130"/>
+            <column name="average_rating" valueNumeric="4.50"/>
+            <column name="review_count" valueNumeric="56"/>
+        </insert>
+
+        <!-- ======== HOME & KITCHEN ======== -->
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-024"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-026"/>
+            <column name="name" value="Prestige Induction Cooktop"/>
+            <column name="description" value="1600W induction with auto-cut, anti-magnetic wall"/>
+            <column name="brand" value="Prestige"/>
+            <column name="price" valueNumeric="2499.00"/>
+            <column name="mrp" valueNumeric="2999.00"/>
+            <column name="offer_price" valueNumeric="2249.00"/>
+            <column name="discount_percent" valueNumeric="10.00"/>
+            <column name="category_id" value="ccat-004"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="190"/>
+            <column name="average_rating" valueNumeric="4.30"/>
+            <column name="review_count" valueNumeric="145"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-025"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-027"/>
+            <column name="name" value="Havells Ceiling Fan"/>
+            <column name="description" value="1200mm high-speed fan, dust-resistant finish"/>
+            <column name="brand" value="Havells"/>
+            <column name="price" valueNumeric="1799.00"/>
+            <column name="mrp" valueNumeric="2099.00"/>
+            <column name="offer_price" valueNumeric="1599.00"/>
+            <column name="discount_percent" valueNumeric="11.12"/>
+            <column name="category_id" value="ccat-004"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="320"/>
+            <column name="average_rating" valueNumeric="4.40"/>
+            <column name="review_count" valueNumeric="267"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-026"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-028"/>
+            <column name="name" value="Philips Air Fryer HD9200"/>
+            <column name="description" value="4.1L Rapid Air technology air fryer, 1400W"/>
+            <column name="brand" value="Philips"/>
+            <column name="price" valueNumeric="6999.00"/>
+            <column name="mrp" valueNumeric="8999.00"/>
+            <column name="offer_price" valueNumeric="5999.00"/>
+            <column name="discount_percent" valueNumeric="14.29"/>
+            <column name="category_id" value="ccat-004"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="75"/>
+            <column name="average_rating" valueNumeric="4.50"/>
+            <column name="review_count" valueNumeric="198"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-027"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-029"/>
+            <column name="name" value="Milton Thermosteel Flask"/>
+            <column name="description" value="1L vacuum insulated, hot 24hr cold 24hr"/>
+            <column name="brand" value="Milton"/>
+            <column name="price" valueNumeric="699.00"/>
+            <column name="mrp" valueNumeric="899.00"/>
+            <column name="offer_price" valueNumeric="599.00"/>
+            <column name="discount_percent" valueNumeric="14.31"/>
+            <column name="category_id" value="ccat-004"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="420"/>
+            <column name="average_rating" valueNumeric="4.20"/>
+            <column name="review_count" valueNumeric="312"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-028"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-030"/>
+            <column name="name" value="Cello Storage Container Set"/>
+            <column name="description" value="12-piece BPA-free containers with airtight lids"/>
+            <column name="brand" value="Cello"/>
+            <column name="price" valueNumeric="449.00"/>
+            <column name="mrp" valueNumeric="599.00"/>
+            <column name="offer_price" valueNumeric="399.00"/>
+            <column name="discount_percent" valueNumeric="11.14"/>
+            <column name="category_id" value="ccat-004"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="350"/>
+            <column name="average_rating" valueNumeric="4.00"/>
+            <column name="review_count" valueNumeric="178"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-029"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-031"/>
+            <column name="name" value="Crompton Water Heater"/>
+            <column name="description" value="15L storage geyser, 5-star BEE, auto cut-off"/>
+            <column name="brand" value="Crompton"/>
+            <column name="price" valueNumeric="5999.00"/>
+            <column name="mrp" valueNumeric="7499.00"/>
+            <column name="offer_price" valueNumeric="5499.00"/>
+            <column name="discount_percent" valueNumeric="8.34"/>
+            <column name="category_id" value="ccat-004"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="90"/>
+            <column name="average_rating" valueNumeric="4.30"/>
+            <column name="review_count" valueNumeric="87"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-030"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-032"/>
+            <column name="name" value="Pigeon Water Purifier"/>
+            <column name="description" value="9L RO+UV purifier with TDS controller"/>
+            <column name="brand" value="Pigeon"/>
+            <column name="price" valueNumeric="8999.00"/>
+            <column name="mrp" valueNumeric="11999.00"/>
+            <column name="offer_price" valueNumeric="7999.00"/>
+            <column name="discount_percent" valueNumeric="11.11"/>
+            <column name="category_id" value="ccat-004"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="50"/>
+            <column name="average_rating" valueNumeric="4.10"/>
+            <column name="review_count" valueNumeric="45"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-031"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-033"/>
+            <column name="name" value="Butterfly Mixer Grinder"/>
+            <column name="description" value="750W mixer with 3 SS jars, overload protection"/>
+            <column name="brand" value="Butterfly"/>
+            <column name="price" valueNumeric="2999.00"/>
+            <column name="mrp" valueNumeric="3999.00"/>
+            <column name="offer_price" valueNumeric="2699.00"/>
+            <column name="discount_percent" valueNumeric="10.00"/>
+            <column name="category_id" value="ccat-004"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="140"/>
+            <column name="average_rating" valueNumeric="4.10"/>
+            <column name="review_count" valueNumeric="112"/>
+        </insert>
+
+        <!-- ======== BEAUTY ======== -->
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-032"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-034"/>
+            <column name="name" value="Lakme 9to5 Foundation"/>
+            <column name="description" value="Mousse foundation with SPF 20, buildable coverage"/>
+            <column name="brand" value="Lakme"/>
+            <column name="price" valueNumeric="599.00"/>
+            <column name="mrp" valueNumeric="699.00"/>
+            <column name="offer_price" valueNumeric="539.00"/>
+            <column name="discount_percent" valueNumeric="10.02"/>
+            <column name="category_id" value="ccat-005"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="280"/>
+            <column name="average_rating" valueNumeric="4.00"/>
+            <column name="review_count" valueNumeric="156"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-033"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-035"/>
+            <column name="name" value="Maybelline Colossal Mascara"/>
+            <column name="description" value="Volume express for 12x voluminous lashes"/>
+            <column name="brand" value="Maybelline"/>
+            <column name="price" valueNumeric="349.00"/>
+            <column name="mrp" valueNumeric="399.00"/>
+            <column name="offer_price" valueNumeric="319.00"/>
+            <column name="discount_percent" valueNumeric="8.60"/>
+            <column name="category_id" value="ccat-005"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="350"/>
+            <column name="average_rating" valueNumeric="4.30"/>
+            <column name="review_count" valueNumeric="234"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-034"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-036"/>
+            <column name="name" value="Nivea Body Lotion 400ml"/>
+            <column name="description" value="Nourishing body lotion with almond oil, 48hr moisture"/>
+            <column name="brand" value="Nivea"/>
+            <column name="price" valueNumeric="299.00"/>
+            <column name="mrp" valueNumeric="350.00"/>
+            <column name="offer_price" valueNumeric="269.00"/>
+            <column name="discount_percent" valueNumeric="10.03"/>
+            <column name="category_id" value="ccat-005"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="400"/>
+            <column name="average_rating" valueNumeric="4.40"/>
+            <column name="review_count" valueNumeric="289"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-035"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-037"/>
+            <column name="name" value="Dove Shampoo 650ml"/>
+            <column name="description" value="Intensive repair shampoo with keratin actives"/>
+            <column name="brand" value="Dove"/>
+            <column name="price" valueNumeric="399.00"/>
+            <column name="mrp" valueNumeric="450.00"/>
+            <column name="offer_price" valueNumeric="359.00"/>
+            <column name="discount_percent" valueNumeric="10.03"/>
+            <column name="category_id" value="ccat-005"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="320"/>
+            <column name="average_rating" valueNumeric="4.20"/>
+            <column name="review_count" valueNumeric="178"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-036"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-038"/>
+            <column name="name" value="Himalaya Face Wash 150ml"/>
+            <column name="description" value="Purifying neem face wash for clear skin"/>
+            <column name="brand" value="Himalaya"/>
+            <column name="price" valueNumeric="165.00"/>
+            <column name="mrp" valueNumeric="190.00"/>
+            <column name="offer_price" valueNumeric="149.00"/>
+            <column name="discount_percent" valueNumeric="9.70"/>
+            <column name="category_id" value="ccat-005"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="480"/>
+            <column name="average_rating" valueNumeric="4.50"/>
+            <column name="review_count" valueNumeric="312"/>
+        </insert>
+
+        <!-- ======== SPORTS ======== -->
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-037"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-039"/>
+            <column name="name" value="Yonex Badminton Racket"/>
+            <column name="description" value="Nanoray 7000I, medium flex, head-heavy"/>
+            <column name="brand" value="Yonex"/>
+            <column name="price" valueNumeric="2499.00"/>
+            <column name="mrp" valueNumeric="2999.00"/>
+            <column name="offer_price" valueNumeric="2249.00"/>
+            <column name="discount_percent" valueNumeric="10.00"/>
+            <column name="category_id" value="ccat-006"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="75"/>
+            <column name="average_rating" valueNumeric="4.60"/>
+            <column name="review_count" valueNumeric="89"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-038"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-040"/>
+            <column name="name" value="Cosco Cricket Bat"/>
+            <column name="description" value="English willow bat, full size, light pickup"/>
+            <column name="brand" value="Cosco"/>
+            <column name="price" valueNumeric="1299.00"/>
+            <column name="mrp" valueNumeric="1599.00"/>
+            <column name="offer_price" valueNumeric="1149.00"/>
+            <column name="discount_percent" valueNumeric="11.55"/>
+            <column name="category_id" value="ccat-006"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="60"/>
+            <column name="average_rating" valueNumeric="4.10"/>
+            <column name="review_count" valueNumeric="34"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-039"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-041"/>
+            <column name="name" value="Nivia Football Size 5"/>
+            <column name="description" value="Match ball, hand-stitched, waterproof PU"/>
+            <column name="brand" value="Nivia"/>
+            <column name="price" valueNumeric="799.00"/>
+            <column name="mrp" valueNumeric="999.00"/>
+            <column name="offer_price" valueNumeric="699.00"/>
+            <column name="discount_percent" valueNumeric="12.52"/>
+            <column name="category_id" value="ccat-006"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="110"/>
+            <column name="average_rating" valueNumeric="4.00"/>
+            <column name="review_count" valueNumeric="56"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-040"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-042"/>
+            <column name="name" value="Adidas Ultraboost"/>
+            <column name="description" value="Boost midsole, Primeknit upper, Continental rubber"/>
+            <column name="brand" value="Adidas"/>
+            <column name="price" valueNumeric="14999.00"/>
+            <column name="mrp" valueNumeric="17999.00"/>
+            <column name="offer_price" valueNumeric="12999.00"/>
+            <column name="discount_percent" valueNumeric="13.34"/>
+            <column name="category_id" value="ccat-006"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="35"/>
+            <column name="average_rating" valueNumeric="4.70"/>
+            <column name="review_count" valueNumeric="145"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-041"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-043"/>
+            <column name="name" value="Decathlon Yoga Mat 6mm"/>
+            <column name="description" value="Non-slip mat with alignment lines, eco TPE"/>
+            <column name="brand" value="Decathlon"/>
+            <column name="price" valueNumeric="599.00"/>
+            <column name="mrp" valueNumeric="799.00"/>
+            <column name="offer_price" valueNumeric="499.00"/>
+            <column name="discount_percent" valueNumeric="16.69"/>
+            <column name="category_id" value="ccat-006"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="200"/>
+            <column name="average_rating" valueNumeric="4.30"/>
+            <column name="review_count" valueNumeric="178"/>
+        </insert>
+
+        <!-- ======== BOOKS ======== -->
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-042"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-044"/>
+            <column name="name" value="Atomic Habits"/>
+            <column name="description" value="Build good habits and break bad ones by James Clear"/>
+            <column name="brand" value="Penguin"/>
+            <column name="price" valueNumeric="399.00"/>
+            <column name="mrp" valueNumeric="599.00"/>
+            <column name="offer_price" valueNumeric="349.00"/>
+            <column name="discount_percent" valueNumeric="12.53"/>
+            <column name="category_id" value="ccat-007"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="400"/>
+            <column name="average_rating" valueNumeric="4.80"/>
+            <column name="review_count" valueNumeric="312"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-043"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-045"/>
+            <column name="name" value="Sapiens"/>
+            <column name="description" value="A brief history of humankind by Yuval Noah Harari"/>
+            <column name="brand" value="Vintage"/>
+            <column name="price" valueNumeric="499.00"/>
+            <column name="mrp" valueNumeric="699.00"/>
+            <column name="offer_price" valueNumeric="449.00"/>
+            <column name="discount_percent" valueNumeric="10.02"/>
+            <column name="category_id" value="ccat-007"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="250"/>
+            <column name="average_rating" valueNumeric="4.60"/>
+            <column name="review_count" valueNumeric="198"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-044"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-046"/>
+            <column name="name" value="Rich Dad Poor Dad"/>
+            <column name="description" value="What the rich teach about money by Robert Kiyosaki"/>
+            <column name="brand" value="Plata"/>
+            <column name="price" valueNumeric="299.00"/>
+            <column name="mrp" valueNumeric="399.00"/>
+            <column name="offer_price" valueNumeric="259.00"/>
+            <column name="discount_percent" valueNumeric="13.38"/>
+            <column name="category_id" value="ccat-007"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="380"/>
+            <column name="average_rating" valueNumeric="4.40"/>
+            <column name="review_count" valueNumeric="267"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-045"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-047"/>
+            <column name="name" value="The Alchemist"/>
+            <column name="description" value="A fable about following your dream by Paulo Coelho"/>
+            <column name="brand" value="HarperCollins"/>
+            <column name="price" valueNumeric="250.00"/>
+            <column name="mrp" valueNumeric="350.00"/>
+            <column name="offer_price" valueNumeric="225.00"/>
+            <column name="discount_percent" valueNumeric="10.00"/>
+            <column name="category_id" value="ccat-007"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="300"/>
+            <column name="average_rating" valueNumeric="4.50"/>
+            <column name="review_count" valueNumeric="234"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-046"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-048"/>
+            <column name="name" value="Wings of Fire"/>
+            <column name="description" value="Autobiography of APJ Abdul Kalam"/>
+            <column name="brand" value="Universities Press"/>
+            <column name="price" valueNumeric="299.00"/>
+            <column name="mrp" valueNumeric="399.00"/>
+            <column name="offer_price" valueNumeric="269.00"/>
+            <column name="discount_percent" valueNumeric="10.03"/>
+            <column name="category_id" value="ccat-007"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="220"/>
+            <column name="average_rating" valueNumeric="4.70"/>
+            <column name="review_count" valueNumeric="189"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-047"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-049"/>
+            <column name="name" value="Ikigai"/>
+            <column name="description" value="The Japanese secret to a long and happy life"/>
+            <column name="brand" value="Penguin"/>
+            <column name="price" valueNumeric="350.00"/>
+            <column name="mrp" valueNumeric="499.00"/>
+            <column name="offer_price" valueNumeric="315.00"/>
+            <column name="discount_percent" valueNumeric="10.00"/>
+            <column name="category_id" value="ccat-007"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="280"/>
+            <column name="average_rating" valueNumeric="4.40"/>
+            <column name="review_count" valueNumeric="156"/>
+        </insert>
+        <insert tableName="catalog_items">
+            <column name="id" value="ci-cat-048"/>
+            <column name="tenant" value="homebase"/>
+            <column name="product_id" value="prod-050"/>
+            <column name="name" value="The Psychology of Money"/>
+            <column name="description" value="Timeless lessons on wealth and happiness by Morgan Housel"/>
+            <column name="brand" value="Jaico"/>
+            <column name="price" valueNumeric="299.00"/>
+            <column name="mrp" valueNumeric="399.00"/>
+            <column name="offer_price" valueNumeric="269.00"/>
+            <column name="discount_percent" valueNumeric="10.03"/>
+            <column name="category_id" value="ccat-007"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="featured" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="in_stock" valueBoolean="true"/>
+            <column name="available_qty" valueNumeric="310"/>
+            <column name="average_rating" valueNumeric="4.50"/>
+            <column name="review_count" valueNumeric="201"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 5. BANNERS (4 more: banner-002 to banner-005)                      -->
+    <!-- ================================================================== -->
+    <changeSet id="seed-banners" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM banners WHERE id = 'banner-002'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="banners">
+            <column name="id" value="banner-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="name" value="Summer Sale - Up to 50% Off"/>
+            <column name="image_url" value="https://images.homebase.com/banners/summer-sale.jpg"/>
+            <column name="mobile_image_url" value="https://images.homebase.com/banners/summer-sale-m.jpg"/>
+            <column name="link_url" value="/products?filters[tag]=summer-sale"/>
+            <column name="position" value="HOME_TOP"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="active_from" valueDate="2026-03-01T00:00:00"/>
+            <column name="active_to" valueDate="2026-06-30T23:59:59"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="banners">
+            <column name="id" value="banner-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="name" value="New Arrivals in Electronics"/>
+            <column name="image_url" value="https://images.homebase.com/banners/new-electronics.jpg"/>
+            <column name="mobile_image_url" value="https://images.homebase.com/banners/new-electronics-m.jpg"/>
+            <column name="link_url" value="/categories/electronics"/>
+            <column name="position" value="HOME_TOP"/>
+            <column name="display_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="banners">
+            <column name="id" value="banner-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="name" value="Fashion Week Special"/>
+            <column name="image_url" value="https://images.homebase.com/banners/fashion-week.jpg"/>
+            <column name="mobile_image_url" value="https://images.homebase.com/banners/fashion-week-m.jpg"/>
+            <column name="link_url" value="/categories/fashion"/>
+            <column name="position" value="HOME_TOP"/>
+            <column name="display_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="banners">
+            <column name="id" value="banner-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="name" value="Free Shipping on Rs 499+"/>
+            <column name="image_url" value="https://images.homebase.com/banners/free-shipping.jpg"/>
+            <column name="mobile_image_url" value="https://images.homebase.com/banners/free-shipping-m.jpg"/>
+            <column name="link_url" value="/products"/>
+            <column name="position" value="HOME_TOP"/>
+            <column name="display_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 6. DAILY SALES SUMMARY (29 more days: Feb 9 - Mar 8, 2026)         -->
+    <!--    Adds data BEFORE existing analytics (Mar 9-15)                   -->
+    <!-- ================================================================== -->
+    <changeSet id="seed-daily-sales" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM daily_sales_summary WHERE id = 'dss-20260209'</sqlCheck>
+        </preConditions>
+
+        <!-- Feb 9 (Mon) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260209"/><column name="summary_date" valueDate="2026-02-09"/>
+            <column name="total_orders" valueNumeric="142"/><column name="total_revenue" valueNumeric="384920.00"/>
+            <column name="total_units_sold" valueNumeric="238"/><column name="total_discount" valueNumeric="28400.00"/>
+            <column name="total_tax" valueNumeric="69285.60"/><column name="total_shipping" valueNumeric="4260.00"/>
+            <column name="avg_order_value" valueNumeric="2710.00"/><column name="new_customers" valueNumeric="22"/>
+            <column name="returning_customers" valueNumeric="120"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 10 (Tue) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260210"/><column name="summary_date" valueDate="2026-02-10"/>
+            <column name="total_orders" valueNumeric="156"/><column name="total_revenue" valueNumeric="421200.00"/>
+            <column name="total_units_sold" valueNumeric="264"/><column name="total_discount" valueNumeric="31200.00"/>
+            <column name="total_tax" valueNumeric="75816.00"/><column name="total_shipping" valueNumeric="4680.00"/>
+            <column name="avg_order_value" valueNumeric="2700.00"/><column name="new_customers" valueNumeric="26"/>
+            <column name="returning_customers" valueNumeric="130"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 11 (Wed) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260211"/><column name="summary_date" valueDate="2026-02-11"/>
+            <column name="total_orders" valueNumeric="163"/><column name="total_revenue" valueNumeric="456400.00"/>
+            <column name="total_units_sold" valueNumeric="279"/><column name="total_discount" valueNumeric="33800.00"/>
+            <column name="total_tax" valueNumeric="82152.00"/><column name="total_shipping" valueNumeric="4890.00"/>
+            <column name="avg_order_value" valueNumeric="2800.00"/><column name="new_customers" valueNumeric="28"/>
+            <column name="returning_customers" valueNumeric="135"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 12 (Thu) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260212"/><column name="summary_date" valueDate="2026-02-12"/>
+            <column name="total_orders" valueNumeric="148"/><column name="total_revenue" valueNumeric="399600.00"/>
+            <column name="total_units_sold" valueNumeric="251"/><column name="total_discount" valueNumeric="29200.00"/>
+            <column name="total_tax" valueNumeric="71928.00"/><column name="total_shipping" valueNumeric="4440.00"/>
+            <column name="avg_order_value" valueNumeric="2700.00"/><column name="new_customers" valueNumeric="24"/>
+            <column name="returning_customers" valueNumeric="124"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 13 (Fri) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260213"/><column name="summary_date" valueDate="2026-02-13"/>
+            <column name="total_orders" valueNumeric="189"/><column name="total_revenue" valueNumeric="548100.00"/>
+            <column name="total_units_sold" valueNumeric="321"/><column name="total_discount" valueNumeric="42600.00"/>
+            <column name="total_tax" valueNumeric="98658.00"/><column name="total_shipping" valueNumeric="5670.00"/>
+            <column name="avg_order_value" valueNumeric="2900.00"/><column name="new_customers" valueNumeric="35"/>
+            <column name="returning_customers" valueNumeric="154"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 14 (Sat - weekend + Valentine's Day spike) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260214"/><column name="summary_date" valueDate="2026-02-14"/>
+            <column name="total_orders" valueNumeric="278"/><column name="total_revenue" valueNumeric="917400.00"/>
+            <column name="total_units_sold" valueNumeric="498"/><column name="total_discount" valueNumeric="78900.00"/>
+            <column name="total_tax" valueNumeric="165132.00"/><column name="total_shipping" valueNumeric="2780.00"/>
+            <column name="avg_order_value" valueNumeric="3300.00"/><column name="new_customers" valueNumeric="62"/>
+            <column name="returning_customers" valueNumeric="216"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 15 (Sun) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260215"/><column name="summary_date" valueDate="2026-02-15"/>
+            <column name="total_orders" valueNumeric="241"/><column name="total_revenue" valueNumeric="771200.00"/>
+            <column name="total_units_sold" valueNumeric="432"/><column name="total_discount" valueNumeric="62400.00"/>
+            <column name="total_tax" valueNumeric="138816.00"/><column name="total_shipping" valueNumeric="2410.00"/>
+            <column name="avg_order_value" valueNumeric="3200.00"/><column name="new_customers" valueNumeric="55"/>
+            <column name="returning_customers" valueNumeric="186"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 16 (Mon) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260216"/><column name="summary_date" valueDate="2026-02-16"/>
+            <column name="total_orders" valueNumeric="152"/><column name="total_revenue" valueNumeric="410400.00"/>
+            <column name="total_units_sold" valueNumeric="258"/><column name="total_discount" valueNumeric="30400.00"/>
+            <column name="total_tax" valueNumeric="73872.00"/><column name="total_shipping" valueNumeric="4560.00"/>
+            <column name="avg_order_value" valueNumeric="2700.00"/><column name="new_customers" valueNumeric="25"/>
+            <column name="returning_customers" valueNumeric="127"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 17 (Tue) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260217"/><column name="summary_date" valueDate="2026-02-17"/>
+            <column name="total_orders" valueNumeric="168"/><column name="total_revenue" valueNumeric="470400.00"/>
+            <column name="total_units_sold" valueNumeric="285"/><column name="total_discount" valueNumeric="35200.00"/>
+            <column name="total_tax" valueNumeric="84672.00"/><column name="total_shipping" valueNumeric="5040.00"/>
+            <column name="avg_order_value" valueNumeric="2800.00"/><column name="new_customers" valueNumeric="30"/>
+            <column name="returning_customers" valueNumeric="138"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 18 (Wed) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260218"/><column name="summary_date" valueDate="2026-02-18"/>
+            <column name="total_orders" valueNumeric="175"/><column name="total_revenue" valueNumeric="507500.00"/>
+            <column name="total_units_sold" valueNumeric="298"/><column name="total_discount" valueNumeric="37800.00"/>
+            <column name="total_tax" valueNumeric="91350.00"/><column name="total_shipping" valueNumeric="5250.00"/>
+            <column name="avg_order_value" valueNumeric="2900.00"/><column name="new_customers" valueNumeric="32"/>
+            <column name="returning_customers" valueNumeric="143"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 19 (Thu) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260219"/><column name="summary_date" valueDate="2026-02-19"/>
+            <column name="total_orders" valueNumeric="159"/><column name="total_revenue" valueNumeric="438840.00"/>
+            <column name="total_units_sold" valueNumeric="271"/><column name="total_discount" valueNumeric="32600.00"/>
+            <column name="total_tax" valueNumeric="78991.20"/><column name="total_shipping" valueNumeric="4770.00"/>
+            <column name="avg_order_value" valueNumeric="2760.00"/><column name="new_customers" valueNumeric="27"/>
+            <column name="returning_customers" valueNumeric="132"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 20 (Fri) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260220"/><column name="summary_date" valueDate="2026-02-20"/>
+            <column name="total_orders" valueNumeric="198"/><column name="total_revenue" valueNumeric="594000.00"/>
+            <column name="total_units_sold" valueNumeric="342"/><column name="total_discount" valueNumeric="46800.00"/>
+            <column name="total_tax" valueNumeric="106920.00"/><column name="total_shipping" valueNumeric="5940.00"/>
+            <column name="avg_order_value" valueNumeric="3000.00"/><column name="new_customers" valueNumeric="38"/>
+            <column name="returning_customers" valueNumeric="160"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 21 (Sat) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260221"/><column name="summary_date" valueDate="2026-02-21"/>
+            <column name="total_orders" valueNumeric="245"/><column name="total_revenue" valueNumeric="808500.00"/>
+            <column name="total_units_sold" valueNumeric="441"/><column name="total_discount" valueNumeric="63700.00"/>
+            <column name="total_tax" valueNumeric="145530.00"/><column name="total_shipping" valueNumeric="2450.00"/>
+            <column name="avg_order_value" valueNumeric="3300.00"/><column name="new_customers" valueNumeric="52"/>
+            <column name="returning_customers" valueNumeric="193"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 22 (Sun) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260222"/><column name="summary_date" valueDate="2026-02-22"/>
+            <column name="total_orders" valueNumeric="258"/><column name="total_revenue" valueNumeric="851400.00"/>
+            <column name="total_units_sold" valueNumeric="465"/><column name="total_discount" valueNumeric="67800.00"/>
+            <column name="total_tax" valueNumeric="153252.00"/><column name="total_shipping" valueNumeric="2580.00"/>
+            <column name="avg_order_value" valueNumeric="3300.00"/><column name="new_customers" valueNumeric="58"/>
+            <column name="returning_customers" valueNumeric="200"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 23 (Mon) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260223"/><column name="summary_date" valueDate="2026-02-23"/>
+            <column name="total_orders" valueNumeric="161"/><column name="total_revenue" valueNumeric="451480.00"/>
+            <column name="total_units_sold" valueNumeric="274"/><column name="total_discount" valueNumeric="33800.00"/>
+            <column name="total_tax" valueNumeric="81266.40"/><column name="total_shipping" valueNumeric="4830.00"/>
+            <column name="avg_order_value" valueNumeric="2803.00"/><column name="new_customers" valueNumeric="29"/>
+            <column name="returning_customers" valueNumeric="132"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 24 (Tue) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260224"/><column name="summary_date" valueDate="2026-02-24"/>
+            <column name="total_orders" valueNumeric="172"/><column name="total_revenue" valueNumeric="489200.00"/>
+            <column name="total_units_sold" valueNumeric="293"/><column name="total_discount" valueNumeric="36400.00"/>
+            <column name="total_tax" valueNumeric="88056.00"/><column name="total_shipping" valueNumeric="5160.00"/>
+            <column name="avg_order_value" valueNumeric="2844.00"/><column name="new_customers" valueNumeric="31"/>
+            <column name="returning_customers" valueNumeric="141"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 25 (Wed) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260225"/><column name="summary_date" valueDate="2026-02-25"/>
+            <column name="total_orders" valueNumeric="178"/><column name="total_revenue" valueNumeric="516200.00"/>
+            <column name="total_units_sold" valueNumeric="303"/><column name="total_discount" valueNumeric="38400.00"/>
+            <column name="total_tax" valueNumeric="92916.00"/><column name="total_shipping" valueNumeric="5340.00"/>
+            <column name="avg_order_value" valueNumeric="2900.00"/><column name="new_customers" valueNumeric="33"/>
+            <column name="returning_customers" valueNumeric="145"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 26 (Thu) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260226"/><column name="summary_date" valueDate="2026-02-26"/>
+            <column name="total_orders" valueNumeric="165"/><column name="total_revenue" valueNumeric="462000.00"/>
+            <column name="total_units_sold" valueNumeric="281"/><column name="total_discount" valueNumeric="34200.00"/>
+            <column name="total_tax" valueNumeric="83160.00"/><column name="total_shipping" valueNumeric="4950.00"/>
+            <column name="avg_order_value" valueNumeric="2800.00"/><column name="new_customers" valueNumeric="28"/>
+            <column name="returning_customers" valueNumeric="137"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 27 (Fri) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260227"/><column name="summary_date" valueDate="2026-02-27"/>
+            <column name="total_orders" valueNumeric="205"/><column name="total_revenue" valueNumeric="615000.00"/>
+            <column name="total_units_sold" valueNumeric="356"/><column name="total_discount" valueNumeric="48200.00"/>
+            <column name="total_tax" valueNumeric="110700.00"/><column name="total_shipping" valueNumeric="6150.00"/>
+            <column name="avg_order_value" valueNumeric="3000.00"/><column name="new_customers" valueNumeric="40"/>
+            <column name="returning_customers" valueNumeric="165"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Feb 28 (Sat) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260228"/><column name="summary_date" valueDate="2026-02-28"/>
+            <column name="total_orders" valueNumeric="252"/><column name="total_revenue" valueNumeric="831600.00"/>
+            <column name="total_units_sold" valueNumeric="453"/><column name="total_discount" valueNumeric="66200.00"/>
+            <column name="total_tax" valueNumeric="149688.00"/><column name="total_shipping" valueNumeric="2520.00"/>
+            <column name="avg_order_value" valueNumeric="3300.00"/><column name="new_customers" valueNumeric="56"/>
+            <column name="returning_customers" valueNumeric="196"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Mar 1 (Sun) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260301"/><column name="summary_date" valueDate="2026-03-01"/>
+            <column name="total_orders" valueNumeric="264"/><column name="total_revenue" valueNumeric="871200.00"/>
+            <column name="total_units_sold" valueNumeric="476"/><column name="total_discount" valueNumeric="69800.00"/>
+            <column name="total_tax" valueNumeric="156816.00"/><column name="total_shipping" valueNumeric="2640.00"/>
+            <column name="avg_order_value" valueNumeric="3300.00"/><column name="new_customers" valueNumeric="60"/>
+            <column name="returning_customers" valueNumeric="204"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Mar 2 (Mon) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260302"/><column name="summary_date" valueDate="2026-03-02"/>
+            <column name="total_orders" valueNumeric="170"/><column name="total_revenue" valueNumeric="476000.00"/>
+            <column name="total_units_sold" valueNumeric="289"/><column name="total_discount" valueNumeric="35600.00"/>
+            <column name="total_tax" valueNumeric="85680.00"/><column name="total_shipping" valueNumeric="5100.00"/>
+            <column name="avg_order_value" valueNumeric="2800.00"/><column name="new_customers" valueNumeric="30"/>
+            <column name="returning_customers" valueNumeric="140"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Mar 3 (Tue) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260303"/><column name="summary_date" valueDate="2026-03-03"/>
+            <column name="total_orders" valueNumeric="176"/><column name="total_revenue" valueNumeric="502160.00"/>
+            <column name="total_units_sold" valueNumeric="299"/><column name="total_discount" valueNumeric="37200.00"/>
+            <column name="total_tax" valueNumeric="90388.80"/><column name="total_shipping" valueNumeric="5280.00"/>
+            <column name="avg_order_value" valueNumeric="2853.00"/><column name="new_customers" valueNumeric="31"/>
+            <column name="returning_customers" valueNumeric="145"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Mar 4 (Wed) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260304"/><column name="summary_date" valueDate="2026-03-04"/>
+            <column name="total_orders" valueNumeric="182"/><column name="total_revenue" valueNumeric="527800.00"/>
+            <column name="total_units_sold" valueNumeric="310"/><column name="total_discount" valueNumeric="39600.00"/>
+            <column name="total_tax" valueNumeric="95004.00"/><column name="total_shipping" valueNumeric="5460.00"/>
+            <column name="avg_order_value" valueNumeric="2900.00"/><column name="new_customers" valueNumeric="34"/>
+            <column name="returning_customers" valueNumeric="148"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Mar 5 (Thu) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260305"/><column name="summary_date" valueDate="2026-03-05"/>
+            <column name="total_orders" valueNumeric="169"/><column name="total_revenue" valueNumeric="473200.00"/>
+            <column name="total_units_sold" valueNumeric="287"/><column name="total_discount" valueNumeric="35400.00"/>
+            <column name="total_tax" valueNumeric="85176.00"/><column name="total_shipping" valueNumeric="5070.00"/>
+            <column name="avg_order_value" valueNumeric="2800.00"/><column name="new_customers" valueNumeric="27"/>
+            <column name="returning_customers" valueNumeric="142"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Mar 6 (Fri) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260306"/><column name="summary_date" valueDate="2026-03-06"/>
+            <column name="total_orders" valueNumeric="212"/><column name="total_revenue" valueNumeric="636000.00"/>
+            <column name="total_units_sold" valueNumeric="367"/><column name="total_discount" valueNumeric="49800.00"/>
+            <column name="total_tax" valueNumeric="114480.00"/><column name="total_shipping" valueNumeric="6360.00"/>
+            <column name="avg_order_value" valueNumeric="3000.00"/><column name="new_customers" valueNumeric="42"/>
+            <column name="returning_customers" valueNumeric="170"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Mar 7 (Sat) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260307"/><column name="summary_date" valueDate="2026-03-07"/>
+            <column name="total_orders" valueNumeric="259"/><column name="total_revenue" valueNumeric="854700.00"/>
+            <column name="total_units_sold" valueNumeric="467"/><column name="total_discount" valueNumeric="68400.00"/>
+            <column name="total_tax" valueNumeric="153846.00"/><column name="total_shipping" valueNumeric="2590.00"/>
+            <column name="avg_order_value" valueNumeric="3300.00"/><column name="new_customers" valueNumeric="57"/>
+            <column name="returning_customers" valueNumeric="202"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+        <!-- Mar 8 (Sun) -->
+        <insert tableName="daily_sales_summary">
+            <column name="id" value="dss-20260308"/><column name="summary_date" valueDate="2026-03-08"/>
+            <column name="total_orders" valueNumeric="272"/><column name="total_revenue" valueNumeric="870400.00"/>
+            <column name="total_units_sold" valueNumeric="490"/><column name="total_discount" valueNumeric="71200.00"/>
+            <column name="total_tax" valueNumeric="156672.00"/><column name="total_shipping" valueNumeric="2720.00"/>
+            <column name="avg_order_value" valueNumeric="3200.00"/><column name="new_customers" valueNumeric="61"/>
+            <column name="returning_customers" valueNumeric="211"/><column name="currency" value="INR"/><column name="tenant" value="homebase"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 7. INVENTORY ITEMS (45 items for new products, inv-006 to inv-050) -->
+    <!-- ================================================================== -->
+    <changeSet id="seed-inventory" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM inventory_item WHERE id = 'inv-006'</sqlCheck>
+        </preConditions>
+
+        <!-- Electronics -->
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-006"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-006"/><column name="product_id" value="prod-006"/><column name="quantity" valueNumeric="250"/><column name="available_quantity" valueNumeric="250"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-007"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-007"/><column name="product_id" value="prod-007"/><column name="quantity" valueNumeric="180"/><column name="available_quantity" valueNumeric="180"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-008"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-008"/><column name="product_id" value="prod-008"/><column name="quantity" valueNumeric="500"/><column name="available_quantity" valueNumeric="500"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-009"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-009"/><column name="product_id" value="prod-009"/><column name="quantity" valueNumeric="320"/><column name="available_quantity" valueNumeric="320"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-010"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-010"/><column name="product_id" value="prod-010"/><column name="quantity" valueNumeric="145"/><column name="available_quantity" valueNumeric="145"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-011"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-011"/><column name="product_id" value="prod-011"/><column name="quantity" valueNumeric="65"/><column name="available_quantity" valueNumeric="65"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-012"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-012"/><column name="product_id" value="prod-012"/><column name="quantity" valueNumeric="40"/><column name="available_quantity" valueNumeric="40"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-013"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-013"/><column name="product_id" value="prod-013"/><column name="quantity" valueNumeric="55"/><column name="available_quantity" valueNumeric="55"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-014"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-014"/><column name="product_id" value="prod-014"/><column name="quantity" valueNumeric="80"/><column name="available_quantity" valueNumeric="80"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-015"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-015"/><column name="product_id" value="prod-015"/><column name="quantity" valueNumeric="300"/><column name="available_quantity" valueNumeric="300"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+
+        <!-- Fashion -->
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-016"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-016"/><column name="product_id" value="prod-016"/><column name="quantity" valueNumeric="200"/><column name="available_quantity" valueNumeric="200"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-017"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-017"/><column name="product_id" value="prod-017"/><column name="quantity" valueNumeric="350"/><column name="available_quantity" valueNumeric="350"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-018"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-018"/><column name="product_id" value="prod-018"/><column name="quantity" valueNumeric="85"/><column name="available_quantity" valueNumeric="85"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-019"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-019"/><column name="product_id" value="prod-019"/><column name="quantity" valueNumeric="120"/><column name="available_quantity" valueNumeric="120"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-020"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-020"/><column name="product_id" value="prod-020"/><column name="quantity" valueNumeric="400"/><column name="available_quantity" valueNumeric="400"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-021"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-021"/><column name="product_id" value="prod-021"/><column name="quantity" valueNumeric="280"/><column name="available_quantity" valueNumeric="280"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-022"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-022"/><column name="product_id" value="prod-022"/><column name="quantity" valueNumeric="45"/><column name="available_quantity" valueNumeric="45"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-023"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-023"/><column name="product_id" value="prod-023"/><column name="quantity" valueNumeric="160"/><column name="available_quantity" valueNumeric="160"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-024"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-024"/><column name="product_id" value="prod-024"/><column name="quantity" valueNumeric="450"/><column name="available_quantity" valueNumeric="450"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-025"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-025"/><column name="product_id" value="prod-025"/><column name="quantity" valueNumeric="130"/><column name="available_quantity" valueNumeric="130"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+
+        <!-- Home & Kitchen -->
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-026"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-026"/><column name="product_id" value="prod-026"/><column name="quantity" valueNumeric="190"/><column name="available_quantity" valueNumeric="190"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-027"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-027"/><column name="product_id" value="prod-027"/><column name="quantity" valueNumeric="320"/><column name="available_quantity" valueNumeric="320"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-028"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-028"/><column name="product_id" value="prod-028"/><column name="quantity" valueNumeric="75"/><column name="available_quantity" valueNumeric="75"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-029"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-029"/><column name="product_id" value="prod-029"/><column name="quantity" valueNumeric="420"/><column name="available_quantity" valueNumeric="420"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-003"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-030"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-030"/><column name="product_id" value="prod-030"/><column name="quantity" valueNumeric="350"/><column name="available_quantity" valueNumeric="350"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-003"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-031"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-031"/><column name="product_id" value="prod-031"/><column name="quantity" valueNumeric="90"/><column name="available_quantity" valueNumeric="90"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-032"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-032"/><column name="product_id" value="prod-032"/><column name="quantity" valueNumeric="50"/><column name="available_quantity" valueNumeric="50"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-033"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-033"/><column name="product_id" value="prod-033"/><column name="quantity" valueNumeric="140"/><column name="available_quantity" valueNumeric="140"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+
+        <!-- Beauty -->
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-034"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-034"/><column name="product_id" value="prod-034"/><column name="quantity" valueNumeric="280"/><column name="available_quantity" valueNumeric="280"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-003"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-035"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-035"/><column name="product_id" value="prod-035"/><column name="quantity" valueNumeric="350"/><column name="available_quantity" valueNumeric="350"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-003"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-036"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-036"/><column name="product_id" value="prod-036"/><column name="quantity" valueNumeric="400"/><column name="available_quantity" valueNumeric="400"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-003"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-037"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-037"/><column name="product_id" value="prod-037"/><column name="quantity" valueNumeric="320"/><column name="available_quantity" valueNumeric="320"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-003"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-038"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-038"/><column name="product_id" value="prod-038"/><column name="quantity" valueNumeric="480"/><column name="available_quantity" valueNumeric="480"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-003"/>
+        </insert>
+
+        <!-- Sports -->
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-039"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-039"/><column name="product_id" value="prod-039"/><column name="quantity" valueNumeric="75"/><column name="available_quantity" valueNumeric="75"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-003"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-040"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-040"/><column name="product_id" value="prod-040"/><column name="quantity" valueNumeric="60"/><column name="available_quantity" valueNumeric="60"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-003"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-041"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-041"/><column name="product_id" value="prod-041"/><column name="quantity" valueNumeric="110"/><column name="available_quantity" valueNumeric="110"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-003"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-042"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-042"/><column name="product_id" value="prod-042"/><column name="quantity" valueNumeric="35"/><column name="available_quantity" valueNumeric="35"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-002"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-043"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-043"/><column name="product_id" value="prod-043"/><column name="quantity" valueNumeric="200"/><column name="available_quantity" valueNumeric="200"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-003"/>
+        </insert>
+
+        <!-- Books -->
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-044"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-044"/><column name="product_id" value="prod-044"/><column name="quantity" valueNumeric="400"/><column name="available_quantity" valueNumeric="400"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-045"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-045"/><column name="product_id" value="prod-045"/><column name="quantity" valueNumeric="250"/><column name="available_quantity" valueNumeric="250"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-046"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-046"/><column name="product_id" value="prod-046"/><column name="quantity" valueNumeric="380"/><column name="available_quantity" valueNumeric="380"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-047"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-047"/><column name="product_id" value="prod-047"/><column name="quantity" valueNumeric="300"/><column name="available_quantity" valueNumeric="300"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-048"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-048"/><column name="product_id" value="prod-048"/><column name="quantity" valueNumeric="220"/><column name="available_quantity" valueNumeric="220"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-049"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-049"/><column name="product_id" value="prod-049"/><column name="quantity" valueNumeric="280"/><column name="available_quantity" valueNumeric="280"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-001"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+        <insert tableName="inventory_item">
+            <column name="id" value="inv-050"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-15T10:00:00"/><column name="last_modified_time" valueDate="2025-01-15T10:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="inventory-flow"/><column name="state_id" value="IN_WAREHOUSE"/><column name="state_entry_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="sku" value="HB-SKU-050"/><column name="product_id" value="prod-050"/><column name="quantity" valueNumeric="310"/><column name="available_quantity" valueNumeric="310"/><column name="reserved_quantity" valueNumeric="0"/><column name="damaged_quantity" valueNumeric="0"/><column name="low_stock_threshold" valueNumeric="10"/><column name="primary_fc" value="wh-002"/><column name="supplier_id" value="sup-001"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- WAREHOUSE LOCATIONS SEED DATA                                       -->
+    <!-- ================================================================== -->
+    <changeSet id="seed-warehouse-locations" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM warehouse_locations WHERE id = 'wl-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="warehouse_locations">
+            <column name="id" value="wl-001"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-01T00:00:00"/><column name="last_modified_time" valueDate="2025-01-01T00:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="warehouse_id" value="wh-001"/><column name="location_code" value="A-01-01-01"/><column name="zone" value="A"/><column name="aisle" value="01"/><column name="shelf" value="01"/><column name="bin" value="01"/><column name="location_type" value="PICKABLE"/><column name="capacity_units" valueNumeric="100"/><column name="current_units" valueNumeric="45"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="warehouse_locations">
+            <column name="id" value="wl-002"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-01T00:00:00"/><column name="last_modified_time" valueDate="2025-01-01T00:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="warehouse_id" value="wh-001"/><column name="location_code" value="A-01-02-01"/><column name="zone" value="A"/><column name="aisle" value="01"/><column name="shelf" value="02"/><column name="bin" value="01"/><column name="location_type" value="PICKABLE"/><column name="capacity_units" valueNumeric="100"/><column name="current_units" valueNumeric="72"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="warehouse_locations">
+            <column name="id" value="wl-003"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-01T00:00:00"/><column name="last_modified_time" valueDate="2025-01-01T00:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="warehouse_id" value="wh-001"/><column name="location_code" value="B-02-01-01"/><column name="zone" value="B"/><column name="aisle" value="02"/><column name="shelf" value="01"/><column name="bin" value="01"/><column name="location_type" value="BULK_STORAGE"/><column name="capacity_units" valueNumeric="500"/><column name="current_units" valueNumeric="280"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="warehouse_locations">
+            <column name="id" value="wl-004"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-01T00:00:00"/><column name="last_modified_time" valueDate="2025-01-01T00:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="warehouse_id" value="wh-002"/><column name="location_code" value="A-01-01-01"/><column name="zone" value="A"/><column name="aisle" value="01"/><column name="shelf" value="01"/><column name="bin" value="01"/><column name="location_type" value="PICKABLE"/><column name="capacity_units" valueNumeric="80"/><column name="current_units" valueNumeric="35"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="warehouse_locations">
+            <column name="id" value="wl-005"/><column name="tenant" value="homebase"/><column name="created_by" value="admin"/><column name="created_time" valueDate="2025-01-01T00:00:00"/><column name="last_modified_time" valueDate="2025-01-01T00:00:00"/><column name="version" valueNumeric="0"/>
+            <column name="warehouse_id" value="wh-002"/><column name="location_code" value="C-03-01-01"/><column name="zone" value="C"/><column name="aisle" value="03"/><column name="shelf" value="01"/><column name="bin" value="01"/><column name="location_type" value="RECEIVING"/><column name="capacity_units" valueNumeric="200"/><column name="current_units" valueNumeric="0"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

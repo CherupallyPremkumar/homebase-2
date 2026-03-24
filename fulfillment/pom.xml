@@ -21,6 +21,7 @@
         <module>fulfillment-infrastructure</module>
         <module>fulfillment-service</module>
         <module>fulfillment-client</module>
+        <module>fulfillment-query</module>
     </modules>
 
     <dependencyManagement>

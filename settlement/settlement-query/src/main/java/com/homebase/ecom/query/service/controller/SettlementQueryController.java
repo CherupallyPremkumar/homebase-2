@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import org.chenile.base.response.GenericResponse;
 import org.chenile.http.annotation.ChenileController;
+import org.chenile.security.model.SecurityConfig;
 import org.chenile.http.handler.ControllerSupport;
 import org.chenile.query.model.SearchRequest;
 import org.chenile.query.model.SearchResponse;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @ChenileController(value = "settlementQuery", serviceName = "searchService")
 public class SettlementQueryController extends ControllerSupport {
+    @SecurityConfig(authoritiesSupplier = "queryAuthorities")
     @PostMapping({ "/settlement/{queryName}" })
     public ResponseEntity<GenericResponse<SearchResponse>> search(HttpServletRequest request,
             @PathVariable String queryName, @RequestBody SearchRequest<Map<String, Object>> searchRequest) {

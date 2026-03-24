@@ -14,7 +14,7 @@
         <if test="businessName != null">AND business_name LIKE '%' || #{businessName} || '%'</if>
         <if test="applicantName != null">AND applicant_name LIKE '%' || #{applicantName} || '%'</if>
         <if test="businessType != null">AND business_type = #{businessType}</if>
-        <if test="stateId != null">AND current_state = #{stateId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
     </where>
 </select>
 
@@ -25,7 +25,8 @@
         applicant_name as "applicantName",
         business_name as "businessName",
         business_type as "businessType",
-        current_state as "stateId",
+        state_id as "stateId",
+        flow_id as "flowId",
         training_progress as "trainingProgress",
         resubmission_count as "resubmissionCount",
         submitted_at as "submittedAt",
@@ -35,10 +36,9 @@
         <if test="businessName != null">AND business_name LIKE '%' || #{businessName} || '%'</if>
         <if test="applicantName != null">AND applicant_name LIKE '%' || #{applicantName} || '%'</if>
         <if test="businessType != null">AND business_type = #{businessType}</if>
-        <if test="stateId != null">AND current_state = #{stateId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
     </where>
-    <if test="_sortColumn != null">ORDER BY ${_sortColumn} ${_sortOrder}</if>
-    <if test="_limit != null">LIMIT #{_limit} OFFSET #{_offset}</if>
+    ${orderby} ${pagination}
 </select>
 
 <!-- Get by ID (admin detail view) -->
@@ -56,23 +56,25 @@
         resubmission_count as "resubmissionCount",
         submitted_at as "submittedAt",
         rejection_reason as "rejectionReason",
-        current_state as "stateId"
+        state_id as "stateId",
+        flow_id as "flowId"
     FROM supplier_onboarding
     WHERE id = #{id}
 </select>
 
 <!-- State counts (dashboard summary) -->
 <select id="getStateCounts" resultType="java.util.HashMap">
-    SELECT current_state as "stateId", count(*) as "count"
+    SELECT state_id as "stateId",
+        flow_id as "flowId", count(*) as "count"
     FROM supplier_onboarding
-    GROUP BY current_state
+    GROUP BY state_id
     ORDER BY count(*) DESC
 </select>
 
 <!-- Pending verification (applications needing admin action) -->
 <select id="getPendingVerification-count" resultType="int">
     SELECT count(*) FROM supplier_onboarding
-    WHERE current_state IN ('APPLICATION_SUBMITTED', 'DOCUMENT_VERIFICATION', 'BUSINESS_VERIFICATION')
+    WHERE state_id IN ('APPLICATION_SUBMITTED', 'DOCUMENT_VERIFICATION', 'BUSINESS_VERIFICATION')
 </select>
 
 <select id="getPendingVerification" resultType="java.util.HashMap">
@@ -81,19 +83,19 @@
         applicant_name as "applicantName",
         business_name as "businessName",
         business_type as "businessType",
-        current_state as "stateId",
+        state_id as "stateId",
+        flow_id as "flowId",
         submitted_at as "submittedAt",
         resubmission_count as "resubmissionCount"
     FROM supplier_onboarding
-    WHERE current_state IN ('APPLICATION_SUBMITTED', 'DOCUMENT_VERIFICATION', 'BUSINESS_VERIFICATION')
-    <if test="_sortColumn != null">ORDER BY ${_sortColumn} ${_sortOrder}</if>
-    <if test="_limit != null">LIMIT #{_limit} OFFSET #{_offset}</if>
+    WHERE state_id IN ('APPLICATION_SUBMITTED', 'DOCUMENT_VERIFICATION', 'BUSINESS_VERIFICATION')
+    ${orderby} ${pagination}
 </select>
 
 <!-- Stuck applications (exceeding expected processing time) -->
 <select id="getStuckApplications-count" resultType="int">
     SELECT count(*) FROM supplier_onboarding
-    WHERE current_state NOT IN ('COMPLETED', 'REJECTED')
+    WHERE state_id NOT IN ('COMPLETED', 'REJECTED')
     AND submitted_at IS NOT NULL
     AND DATEDIFF('DAY', submitted_at, CURRENT_TIMESTAMP) > 15
 </select>
@@ -103,15 +105,15 @@
         id,
         applicant_name as "applicantName",
         business_name as "businessName",
-        current_state as "stateId",
+        state_id as "stateId",
+        flow_id as "flowId",
         submitted_at as "submittedAt",
         DATEDIFF('DAY', submitted_at, CURRENT_TIMESTAMP) as "daysSinceSubmission"
     FROM supplier_onboarding
-    WHERE current_state NOT IN ('COMPLETED', 'REJECTED')
+    WHERE state_id NOT IN ('COMPLETED', 'REJECTED')
     AND submitted_at IS NOT NULL
     AND DATEDIFF('DAY', submitted_at, CURRENT_TIMESTAMP) > 15
-    <if test="_sortColumn != null">ORDER BY ${_sortColumn} ${_sortOrder}</if>
-    <if test="_limit != null">LIMIT #{_limit} OFFSET #{_offset}</if>
+    ${orderby} ${pagination}
 </select>
 
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
@@ -126,7 +128,8 @@
         applicant_name as "applicantName",
         business_name as "businessName",
         business_type as "businessType",
-        current_state as "stateId",
+        state_id as "stateId",
+        flow_id as "flowId",
         training_progress as "trainingProgress",
         training_completed_modules_json as "trainingCompletedModulesJson",
         resubmission_count as "resubmissionCount",
@@ -143,7 +146,8 @@
 <select id="getOnboardingProgress" resultType="java.util.HashMap">
     SELECT
         id,
-        current_state as "stateId",
+        state_id as "stateId",
+        flow_id as "flowId",
         training_progress as "trainingProgress",
         training_completed_modules_json as "trainingCompletedModulesJson",
         resubmission_count as "resubmissionCount"

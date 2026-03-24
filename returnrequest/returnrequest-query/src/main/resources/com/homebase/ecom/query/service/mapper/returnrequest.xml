@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="ReturnRequest">
+<mapper namespace="Returnrequest">
 
     <!-- Dashboard: getAll -->
     <select id="getAll" resultType="com.homebase.ecom.returnrequest.dto.ReturnRequestDto">
@@ -11,13 +11,13 @@
             reason,
             return_type as "returnType",
             total_refund_amount as "totalRefundAmount",
-            current_state as "currentState",
-            created_date as "createdDate"
+            state_id as "stateId",
+            created_time as "createdTime"
         FROM returnrequest
         <where>
             <if test="orderId != null">AND order_id = #{orderId}</if>
             <if test="customerId != null">AND customer_id = #{customerId}</if>
-            <if test="currentState != null">AND current_state = #{currentState}</if>
+            <if test="currentState != null">AND state_id = #{currentState}</if>
             <if test="returnType != null">AND return_type = #{returnType}</if>
         </where>
         ${orderby} ${pagination}
@@ -28,7 +28,7 @@
         <where>
             <if test="orderId != null">AND order_id = #{orderId}</if>
             <if test="customerId != null">AND customer_id = #{customerId}</if>
-            <if test="currentState != null">AND current_state = #{currentState}</if>
+            <if test="currentState != null">AND state_id = #{currentState}</if>
             <if test="returnType != null">AND return_type = #{returnType}</if>
         </where>
     </select>
@@ -42,8 +42,8 @@
             reason,
             return_type as "returnType",
             total_refund_amount as "totalRefundAmount",
-            current_state as "currentState",
-            created_date as "createdDate"
+            state_id as "stateId",
+            created_time as "createdTime"
         FROM returnrequest
         WHERE id = #{id}
     </select>
@@ -51,10 +51,10 @@
     <!-- Dashboard: getStateCounts -->
     <select id="getStateCounts" resultType="com.homebase.ecom.returnrequest.dto.ReturnRequestDto">
         SELECT
-            current_state as "currentState",
+            state_id as "stateId",
             count(*) as "totalRefundAmount"
         FROM returnrequest
-        GROUP BY current_state
+        GROUP BY state_id
     </select>
 
     <!-- Dashboard: getPendingReturns -->
@@ -66,16 +66,16 @@
             reason,
             return_type as "returnType",
             total_refund_amount as "totalRefundAmount",
-            current_state as "currentState",
-            created_date as "createdDate"
+            state_id as "stateId",
+            created_time as "createdTime"
         FROM returnrequest
-        WHERE current_state IN ('REQUESTED', 'UNDER_REVIEW', 'ITEM_RECEIVED', 'INSPECTED')
+        WHERE state_id IN ('REQUESTED', 'UNDER_REVIEW', 'ITEM_RECEIVED', 'INSPECTED')
         ${orderby} ${pagination}
     </select>
 
     <select id="getPendingReturns-count" resultType="int">
         SELECT count(*) FROM returnrequest
-        WHERE current_state IN ('REQUESTED', 'UNDER_REVIEW', 'ITEM_RECEIVED', 'INSPECTED')
+        WHERE state_id IN ('REQUESTED', 'UNDER_REVIEW', 'ITEM_RECEIVED', 'INSPECTED')
     </select>
 
     <!-- Customer: getByCustomerId -->
@@ -87,8 +87,8 @@
             reason,
             return_type as "returnType",
             total_refund_amount as "totalRefundAmount",
-            current_state as "currentState",
-            created_date as "createdDate"
+            state_id as "stateId",
+            created_time as "createdTime"
         FROM returnrequest
         WHERE customer_id = #{customerId}
         ${orderby} ${pagination}
@@ -107,8 +107,8 @@
             reason,
             return_type as "returnType",
             total_refund_amount as "totalRefundAmount",
-            current_state as "currentState",
-            created_date as "createdDate"
+            state_id as "stateId",
+            created_time as "createdTime"
         FROM returnrequest
         WHERE order_id = #{orderId}
         ${orderby} ${pagination}

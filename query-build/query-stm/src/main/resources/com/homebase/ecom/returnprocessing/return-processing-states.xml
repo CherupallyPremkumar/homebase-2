@@ -2,7 +2,6 @@
 <!-- Query-side STM metadata. Stripped from return-processing-service. No componentName/conditions. -->
 <states>
 
-  <add-state-tag tag="status" manualState="true" descriptorClass="org.chenile.stm.model.StateDescriptor"/>
 
   <event-information eventId='schedulePickup'    meta-acls="SYSTEM"    meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
   <event-information eventId='receiveItem'       meta-acls="WAREHOUSE" meta-bodyType="org.chenile.workflow.param.MinimalPayload"/>
@@ -19,58 +18,58 @@
 
   <flow id='return-processing-flow' default='true'>
 
-    <status id='INITIATED' initialState='true' meta-mainPath="true"
+    <manual-state id='INITIATED' initialState='true' meta-mainPath="true"
             description="Return processing saga initiated">
       <on eventId='schedulePickup' newStateId='PICKUP_SCHEDULED' meta-mainPath="true" meta-acls="SYSTEM"/>
       <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
       <on eventId='cancel' newStateId='CANCELLING' meta-acls="SYSTEM,ADMIN"/>
-    </status>
+    </manual-state>
 
-    <status id='PICKUP_SCHEDULED' meta-mainPath="true"
+    <manual-state id='PICKUP_SCHEDULED' meta-mainPath="true"
             description="Return pickup scheduled with carrier">
       <on eventId='receiveItem' newStateId='ITEM_RECEIVED' meta-mainPath="true" meta-acls="WAREHOUSE"/>
       <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
       <on eventId='cancel' newStateId='CANCELLING' meta-acls="SYSTEM,ADMIN"/>
-    </status>
+    </manual-state>
 
-    <status id='ITEM_RECEIVED' meta-mainPath="true"
+    <manual-state id='ITEM_RECEIVED' meta-mainPath="true"
             description="Returned item received at warehouse">
       <on eventId='inspectItem' newStateId='INVENTORY_RESTOCKED' meta-mainPath="true" meta-acls="WAREHOUSE"/>
       <on eventId='fail' newStateId='FAILED' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='ITEM_REJECTED'
+    <manual-state id='ITEM_REJECTED'
             description="Returned item rejected due to condition, partial refund only">
       <on eventId='adjustSettlement' newStateId='SETTLEMENT_ADJUSTED' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='INVENTORY_RESTOCKED' meta-mainPath="true"
+    <manual-state id='INVENTORY_RESTOCKED' meta-mainPath="true"
             description="Returned item restocked in inventory">
       <on eventId='adjustSettlement' newStateId='SETTLEMENT_ADJUSTED' meta-mainPath="true" meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='SETTLEMENT_ADJUSTED' meta-mainPath="true"
+    <manual-state id='SETTLEMENT_ADJUSTED' meta-mainPath="true"
             description="Supplier settlement adjusted for return">
       <on eventId='processRefund' newStateId='REFUNDED' meta-mainPath="true" meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='REFUNDED' meta-mainPath="true"
+    <manual-state id='REFUNDED' meta-mainPath="true"
             description="Customer refund processed">
       <on eventId='notifyCustomer' newStateId='COMPLETED' meta-mainPath="true" meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='COMPLETED' description="Return processing saga completed successfully"/>
+    <manual-state id='COMPLETED' description="Return processing saga completed successfully"/>
 
-    <status id='CANCELLING' description="Return processing being cancelled, compensating steps">
+    <manual-state id='CANCELLING' description="Return processing being cancelled, compensating steps">
       <on eventId='compensate' newStateId='COMPENSATION_DONE' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
-    <status id='COMPENSATION_DONE' description="All saga steps compensated"/>
+    <manual-state id='COMPENSATION_DONE' description="All saga steps compensated"/>
 
-    <status id='FAILED' description="Return processing failed, can be retried or compensated">
+    <manual-state id='FAILED' description="Return processing failed, can be retried or compensated">
       <on eventId='retry' newStateId='INITIATED' meta-acls="SYSTEM"/>
       <on eventId='compensate' newStateId='COMPENSATION_DONE' meta-acls="SYSTEM"/>
-    </status>
+    </manual-state>
 
   </flow>
 </states>
