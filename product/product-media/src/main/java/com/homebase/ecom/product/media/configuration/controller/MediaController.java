@@ -3,6 +3,7 @@ package com.homebase.ecom.product.media.configuration.controller;
 import com.homebase.ecom.product.api.MediaService;
 import com.homebase.ecom.product.api.MediaService.UploadRequest;
 import com.homebase.ecom.product.dto.MediaAssetDto;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,7 +17,7 @@ public class MediaController {
 
     private final MediaService mediaService;
 
-    public MediaController(MediaService mediaService) {
+    public MediaController(@Lazy MediaService mediaService) {
         this.mediaService = mediaService;
     }
 

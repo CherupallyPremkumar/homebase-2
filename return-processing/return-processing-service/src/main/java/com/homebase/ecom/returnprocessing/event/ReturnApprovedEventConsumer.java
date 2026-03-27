@@ -4,14 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.homebase.ecom.returnprocessing.model.ReturnProcessingSaga;
 import com.homebase.ecom.returnprocessing.port.ReturnProcessingSagaRepository;
 import com.homebase.ecom.shared.event.EventEnvelope;
-import org.chenile.stm.STM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
@@ -20,22 +16,20 @@ import java.util.Map;
  * is approved (RETURN_APPROVED event on the RETURN_EVENTS topic).
  * Creates a new ReturnProcessingSaga in INITIATED state.
  */
-@Service
 public class ReturnApprovedEventConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(ReturnApprovedEventConsumer.class);
     private static final String RETURN_EVENTS_TOPIC = "return.events";
     private static final String RETURN_APPROVED_EVENT_TYPE = "RETURN_APPROVED";
 
-    @Autowired
-    private ReturnProcessingSagaRepository sagaRepository;
+    private final ReturnProcessingSagaRepository sagaRepository;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    @Qualifier("returnProcessingEntityStm")
-    private STM<ReturnProcessingSaga> stm;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    public ReturnApprovedEventConsumer(ReturnProcessingSagaRepository sagaRepository,
+                                       ObjectMapper objectMapper) {
+        this.sagaRepository = sagaRepository;
+        this.objectMapper = objectMapper;
+    }
 
     @KafkaListener(topics = RETURN_EVENTS_TOPIC, groupId = "return-processing-service")
     public void onReturnEvent(EventEnvelope envelope) {

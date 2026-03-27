@@ -38,5 +38,14 @@
 		"acls": ["ADMIN", "WAREHOUSE"],
 		"columnMetadata": {},
 		"paginated": false
+	},
+	{
+		"id": "Fulfillment.getLineItems",
+		"name": "fulfillment-line-items",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"fulfillmentId": { "name": "fulfillmentId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
 	}
 ]

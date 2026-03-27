@@ -1,22 +1,49 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: user
   namespace: user
+  labels:
+    app.kubernetes.io/name: user
+    app.kubernetes.io/part-of: homebase
 spec:
+  replicas: 1
   selector:
     matchLabels:
-      app: user-app
+      app.kubernetes.io/name: user
   template:
     metadata:
       labels:
-        app: user-app
+        app.kubernetes.io/name: user
     spec:
       containers:
-        - name: app
-          image: homebase/user-app
+        - name: user
+          image: homebase-useratest
           ports:
-            - containerPort: 8086
-          env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: "default"
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: user-config
+            - secretRef:
+                name: user-secrets
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 2Gi

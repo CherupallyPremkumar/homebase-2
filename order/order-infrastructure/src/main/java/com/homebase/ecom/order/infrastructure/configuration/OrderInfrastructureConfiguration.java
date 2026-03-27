@@ -40,7 +40,6 @@ public class OrderInfrastructureConfiguration {
 
     @SuppressWarnings("rawtypes")
     @Bean("orderEventPublisherPort")
-    @ConditionalOnBean(KafkaTemplate.class)
     OrderEventPublisherPort orderEventPublisherPort(KafkaTemplate kafkaTemplate) {
         return new KafkaOrderEventPublisher(kafkaTemplate);
     }

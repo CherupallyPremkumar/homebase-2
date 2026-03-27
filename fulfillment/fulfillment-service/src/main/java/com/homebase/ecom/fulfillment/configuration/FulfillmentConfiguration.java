@@ -24,15 +24,19 @@ import org.chenile.workflow.service.activities.ActivityChecker;
 import org.chenile.workflow.service.activities.AreActivitiesComplete;
 
 import com.homebase.ecom.fulfillment.model.FulfillmentSaga;
+import com.homebase.ecom.fulfillment.port.FulfillmentEventPublisherPort;
 import com.homebase.ecom.fulfillment.service.cmds.*;
 import com.homebase.ecom.fulfillment.service.owiz.*;
 import com.homebase.ecom.fulfillment.service.postSaveHooks.*;
+import com.homebase.ecom.fulfillment.infrastructure.integration.KafkaFulfillmentEventPublisher;
 import com.homebase.ecom.fulfillment.infrastructure.persistence.ChenileFulfillmentSagaEntityStore;
 import com.homebase.ecom.fulfillment.infrastructure.persistence.adapter.FulfillmentSagaJpaRepository;
 import com.homebase.ecom.fulfillment.infrastructure.persistence.adapter.FulfillmentSagaRepositoryImpl;
 import com.homebase.ecom.fulfillment.infrastructure.persistence.mapper.FulfillmentSagaMapper;
 import com.homebase.ecom.fulfillment.port.FulfillmentSagaRepository;
 import com.homebase.ecom.fulfillment.service.consumer.OrderPaidEventConsumer;
+import org.chenile.pubsub.ChenilePub;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Full Chenile STM configuration for the Fulfillment saga.
@@ -247,33 +251,39 @@ public class FulfillmentConfiguration {
     }
 
     @Bean
-    INVENTORY_RESERVEDFulfillmentPostSaveHook fulfillmentINVENTORY_RESERVEDPostSaveHook() {
-        return new INVENTORY_RESERVEDFulfillmentPostSaveHook();
+    INVENTORY_RESERVEDFulfillmentPostSaveHook fulfillmentINVENTORY_RESERVEDPostSaveHook(
+            FulfillmentEventPublisherPort eventPublisher) {
+        return new INVENTORY_RESERVEDFulfillmentPostSaveHook(eventPublisher);
     }
 
     @Bean
-    SHIPMENT_CREATEDFulfillmentPostSaveHook fulfillmentSHIPMENT_CREATEDPostSaveHook() {
-        return new SHIPMENT_CREATEDFulfillmentPostSaveHook();
+    SHIPMENT_CREATEDFulfillmentPostSaveHook fulfillmentSHIPMENT_CREATEDPostSaveHook(
+            FulfillmentEventPublisherPort eventPublisher) {
+        return new SHIPMENT_CREATEDFulfillmentPostSaveHook(eventPublisher);
     }
 
     @Bean
-    CUSTOMER_NOTIFIEDFulfillmentPostSaveHook fulfillmentCUSTOMER_NOTIFIEDPostSaveHook() {
-        return new CUSTOMER_NOTIFIEDFulfillmentPostSaveHook();
+    CUSTOMER_NOTIFIEDFulfillmentPostSaveHook fulfillmentCUSTOMER_NOTIFIEDPostSaveHook(
+            FulfillmentEventPublisherPort eventPublisher) {
+        return new CUSTOMER_NOTIFIEDFulfillmentPostSaveHook(eventPublisher);
     }
 
     @Bean
-    SHIPPEDFulfillmentPostSaveHook fulfillmentSHIPPEDPostSaveHook() {
-        return new SHIPPEDFulfillmentPostSaveHook();
+    SHIPPEDFulfillmentPostSaveHook fulfillmentSHIPPEDPostSaveHook(
+            FulfillmentEventPublisherPort eventPublisher) {
+        return new SHIPPEDFulfillmentPostSaveHook(eventPublisher);
     }
 
     @Bean
-    COMPLETEDFulfillmentPostSaveHook fulfillmentCOMPLETEDPostSaveHook() {
-        return new COMPLETEDFulfillmentPostSaveHook();
+    COMPLETEDFulfillmentPostSaveHook fulfillmentCOMPLETEDPostSaveHook(
+            FulfillmentEventPublisherPort eventPublisher) {
+        return new COMPLETEDFulfillmentPostSaveHook(eventPublisher);
     }
 
     @Bean
-    FAILEDFulfillmentPostSaveHook fulfillmentFAILEDPostSaveHook() {
-        return new FAILEDFulfillmentPostSaveHook();
+    FAILEDFulfillmentPostSaveHook fulfillmentFAILEDPostSaveHook(
+            FulfillmentEventPublisherPort eventPublisher) {
+        return new FAILEDFulfillmentPostSaveHook(eventPublisher);
     }
 
     // --- OWIZ Chain Configuration ---
@@ -298,6 +308,14 @@ public class FulfillmentConfiguration {
         OrchExecutorImpl<ChenileExchange> executor = new OrchExecutorImpl<>();
         executor.setOrchConfigurator(configurator);
         return executor;
+    }
+
+    // --- Event Publisher ---
+
+    @Bean
+    FulfillmentEventPublisherPort fulfillmentEventPublisherPort(
+            ChenilePub chenilePub, ObjectMapper objectMapper) {
+        return new KafkaFulfillmentEventPublisher(chenilePub, objectMapper);
     }
 
     // --- Domain Repository Adapter ---

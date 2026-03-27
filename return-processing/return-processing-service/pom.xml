@@ -54,22 +54,6 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.homebase.ecom.returnrequest</groupId>
-            <artifactId>returnrequest-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.shipping</groupId>
-            <artifactId>shipping-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.inventory</groupId>
-            <artifactId>inventory-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.settlement</groupId>
-            <artifactId>settlement-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.homebase.ecom.shared</groupId>
             <artifactId>shared-api</artifactId>
         </dependency>

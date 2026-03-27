@@ -1,13 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: app-service
+  name: product
   namespace: product
+  labels:
+    app.kubernetes.io/name: product
+    app.kubernetes.io/part-of: homebase
 spec:
+  type: ClusterIP
   selector:
-    app: app
+    app.kubernetes.io/name: product
   ports:
     - protocol: TCP
       port: 8080
       targetPort: 8080
-  type: NodePort

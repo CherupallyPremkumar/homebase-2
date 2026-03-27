@@ -1,0 +1,7 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: offer
+  namespace: offer
+spec:
+  replicas: 2

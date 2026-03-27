@@ -23,11 +23,6 @@
 			<groupId>com.homebase.ecom.cart</groupId>
 			<artifactId>cart-api</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom.checkout</groupId>
-			<artifactId>checkout-api</artifactId>
-			<version>${revision}</version>
-		</dependency>
         <dependency>
             <groupId>org.chenile</groupId>
             <artifactId>chenile-proxy</artifactId>
@@ -48,16 +43,6 @@
 		<dependency>
 			<groupId>com.homebase.ecom.shared</groupId>
 			<artifactId>shared-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom.product</groupId>
-			<artifactId>product-client</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom.inventory</groupId>
-			<artifactId>inventory-client</artifactId>
-			<version>${revision}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.homebase.ecom.cconfig</groupId>

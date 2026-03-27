@@ -3,6 +3,12 @@ kind: Kustomization
 
 resources:
   - ../../base
+  - hpa.yaml
+
+images:
+  - name: homebase-promo
+    newName: ${ECR_REGISTRY}/homebase-promo
+    newTag: latest
 
 patchesStrategicMerge:
   - replica-patch.yaml

@@ -460,4 +460,102 @@
     WHERE active = true AND price IS NOT NULL
 </select>
 
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MY WISHLIST (cross-BC: wishlist_items + product details)              -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="myWishlist-count" resultType="int">
+    SELECT count(*) FROM wishlist_items wi
+    INNER JOIN user_profiles up ON up.id = wi.user_id
+    WHERE up.keycloak_id = #{customerId}
+</select>
+
+<select id="myWishlist" resultType="map">
+    SELECT
+        wi.id as "id",
+        wi.product_id as "productId",
+        wi.variant_id as "variantId",
+        wi.added_at as "addedAt",
+        wi.price_when_added as "priceWhenAdded",
+        wi.notify_on_price_drop as "notifyOnPriceDrop",
+        ci.name as "productName",
+        ci.brand as "brand",
+        ci.image_url as "imageUrl",
+        ci.price as "currentPrice",
+        ci.mrp as "mrp",
+        ci.offer_price as "offerPrice",
+        ci.in_stock as "inStock",
+        ci.discount_percent as "discount",
+        ci.average_rating as "averageRating",
+        ci.review_count as "reviewCount"
+    FROM wishlist_items wi
+    INNER JOIN user_profiles up ON up.id = wi.user_id
+    LEFT JOIN catalog_items ci ON ci.product_id = wi.product_id AND ci.active = true
+    WHERE up.keycloak_id = #{customerId}
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MY PROFILE (user profile + address count)                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="myProfile" resultType="map">
+    SELECT
+        u.id as "id",
+        u.first_name as "firstName",
+        u.last_name as "lastName",
+        u.email as "email",
+        u.phone as "phone",
+        u.role as "role",
+        u.state_id as "stateId",
+        u.keycloak_id as "keycloakId",
+        u.default_address_id as "defaultAddressId",
+        u.created_time as "createdTime",
+        COALESCE(addr_count.cnt, 0) as "addressCount"
+    FROM user_profiles u
+    LEFT JOIN (
+        SELECT user_id, COUNT(*) as cnt FROM user_address GROUP BY user_id
+    ) addr_count ON addr_count.user_id = u.id
+    WHERE u.state_id = 'ACTIVE'
+    AND u.keycloak_id = #{customerId}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MY NOTIFICATIONS (customer notifications: order updates, promos, etc) -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="myNotifications-count" resultType="int">
+    SELECT count(*)
+    FROM customer_notifications
+    <where>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="type != null">AND type = #{type}</if>
+        <if test="title != null">AND title LIKE #{title}</if>
+        <if test="isRead != null">AND is_read = CAST(#{isRead} AS boolean)</if>
+        <if test="createdTime != null">AND created_time BETWEEN #{createdTime[0]} AND #{createdTime[1]}</if>
+    </where>
+</select>
+
+<select id="myNotifications" resultType="map">
+    SELECT
+        cn.id as "id",
+        cn.type as "type",
+        cn.title as "title",
+        cn.message as "message",
+        cn.is_read as "isRead",
+        cn.reference_id as "referenceId",
+        cn.reference_type as "referenceType",
+        cn.created_time as "createdTime"
+    FROM customer_notifications cn
+    <where>
+        <if test="customerId != null">AND cn.customer_id = #{customerId}</if>
+        <if test="type != null">AND cn.type = #{type}</if>
+        <if test="title != null">AND cn.title LIKE #{title}</if>
+        <if test="isRead != null">AND cn.is_read = CAST(#{isRead} AS boolean)</if>
+        <if test="createdTime != null">AND cn.created_time BETWEEN #{createdTime[0]} AND #{createdTime[1]}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
 </mapper>

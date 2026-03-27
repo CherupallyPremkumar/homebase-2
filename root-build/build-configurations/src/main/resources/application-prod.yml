@@ -92,3 +92,7 @@ query:
       driverClassName: org.postgresql.Driver
   mapperFiles: classpath*:com/homebase/ecom/query/service/mapper/*.xml
   definitionFiles: classpath*:com/homebase/ecom/query/service/mapper/*.json
+
+homebase:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://homebase.com,https://seller.homebase.com,https://warehouse.homebase.com,https://ops.homebase.com,https://finance.homebase.com,https://admin.homebase.com,https://auth.homebase.com}

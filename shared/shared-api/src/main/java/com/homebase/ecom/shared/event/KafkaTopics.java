@@ -27,4 +27,5 @@ public final class KafkaTopics {
     public static final String SUPPORT_EVENTS = "support.events";
     public static final String PROMO_EVENTS = "promo.events";
     public static final String RETURN_PROCESSING_EVENTS = "return-processing.events";
+    public static final String FULFILLMENT_EVENTS = "fulfillment.events";
 }

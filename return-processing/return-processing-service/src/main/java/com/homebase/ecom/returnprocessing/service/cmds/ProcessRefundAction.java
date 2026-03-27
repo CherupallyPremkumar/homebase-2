@@ -1,6 +1,7 @@
 package com.homebase.ecom.returnprocessing.service.cmds;
 
 import com.homebase.ecom.returnprocessing.model.ReturnProcessingSaga;
+import com.homebase.ecom.returnprocessing.port.ReturnProcessingEventPublisherPort;
 import org.chenile.stm.STMInternalTransitionInvoker;
 import org.chenile.stm.State;
 import org.chenile.stm.model.Transition;
@@ -10,18 +11,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * STM transition action: initiates refund to customer via the payment service.
+ * STM transition action: requests customer refund via the payment service.
  * Transition: SETTLEMENT_ADJUSTED -> REFUNDED
+ *
+ * Validates settlement is adjusted then publishes REFUND_PROCESSING_REQUESTED event.
+ * Payment BC consumes this event and processes the refund.
  */
 public class ProcessRefundAction extends AbstractSTMTransitionAction<ReturnProcessingSaga, MinimalPayload> {
 
     private static final Logger log = LoggerFactory.getLogger(ProcessRefundAction.class);
 
+    private final ReturnProcessingEventPublisherPort eventPublisher;
+
+    public ProcessRefundAction(ReturnProcessingEventPublisherPort eventPublisher) {
+        this.eventPublisher = eventPublisher;
+    }
+
     @Override
     public void transitionTo(ReturnProcessingSaga saga, MinimalPayload payload,
                              State startState, String eventId, State endState,
                              STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
-        log.info("Processing refund for return request: {}, order: {}, amount: {}",
+        log.info("Requesting refund for return request: {}, order: {}, amount: {}",
                 saga.getReturnRequestId(), saga.getOrderId(), saga.getRefundAmount());
 
         if (saga.getSettlementAdjustmentId() == null) {
@@ -30,15 +40,11 @@ public class ProcessRefundAction extends AbstractSTMTransitionAction<ReturnProce
             throw new RuntimeException(msg);
         }
 
-        // Initiate refund to customer via payment gateway
-        String refundId = "RFD-" + saga.getOrderId() + "-" + System.currentTimeMillis();
-        saga.setRefundId(refundId);
+        saga.getTransientMap().put("refundRequestedAt", java.time.Instant.now().toString());
 
-        saga.getTransientMap().put("refundProcessedAt", java.time.Instant.now().toString());
-        saga.getTransientMap().put("refundStatus", "INITIATED");
-        saga.getTransientMap().put("refundMethod", "ORIGINAL_PAYMENT_METHOD");
+        eventPublisher.requestRefundProcessing(saga);
 
-        log.info("Refund processed for return request: {}, refundId: {}, amount: {}",
-                saga.getReturnRequestId(), refundId, saga.getRefundAmount());
+        log.info("Refund processing requested for return request: {}, amount: {}",
+                saga.getReturnRequestId(), saga.getRefundAmount());
     }
 }

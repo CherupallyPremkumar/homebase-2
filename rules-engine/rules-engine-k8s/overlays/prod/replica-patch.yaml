@@ -1,15 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: rules-engine
   namespace: rules-engine
 spec:
-  replicas: 3
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: web
-  namespace: rules-engine
-spec:
-  replicas: 3
+  replicas: 2

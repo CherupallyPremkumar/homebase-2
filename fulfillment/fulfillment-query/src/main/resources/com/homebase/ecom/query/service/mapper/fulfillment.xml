@@ -93,4 +93,33 @@
         ORDER BY count(*) DESC
     </select>
 
+    <!-- Line Items: getLineItems (items in a fulfillment order + product info) -->
+    <select id="getLineItems" resultType="map">
+        SELECT
+            fli.id as "lineItemId",
+            fli.fulfillment_order_id as "fulfillmentOrderId",
+            fli.order_item_id as "orderItemId",
+            fli.product_id as "productId",
+            fli.variant_id as "variantId",
+            fli.sku as "sku",
+            fli.quantity_ordered as "quantityOrdered",
+            fli.quantity_allocated as "quantityAllocated",
+            fli.quantity_picked as "quantityPicked",
+            fli.quantity_packed as "quantityPacked",
+            fli.quantity_shipped as "quantityShipped",
+            fli.quantity_short as "quantityShort",
+            fli.bin_location as "binLocation",
+            fli.status as "itemStatus",
+            p.name as "productName",
+            p.brand as "brand",
+            p.weight_grams as "weightGrams",
+            oi.unit_price as "unitPrice",
+            oi.total_price as "totalPrice"
+        FROM fulfillment_line_items fli
+        LEFT JOIN products p ON fli.product_id = p.id
+        LEFT JOIN order_items oi ON fli.order_item_id = oi.id
+        WHERE fli.fulfillment_order_id = #{fulfillmentId}
+        ORDER BY fli.bin_location, fli.sku
+    </select>
+
 </mapper>

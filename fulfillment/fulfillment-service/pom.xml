@@ -54,22 +54,6 @@
             <groupId>com.homebase.ecom.shared</groupId>
             <artifactId>shared-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.inventory</groupId>
-            <artifactId>inventory-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.shipping</groupId>
-            <artifactId>shipping-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.order</groupId>
-            <artifactId>order-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.notification</groupId>
-            <artifactId>notification-api</artifactId>
-        </dependency>
     <dependency>
 			<groupId>org.junit.vintage</groupId>
 			<artifactId>junit-vintage-engine</artifactId>

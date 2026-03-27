@@ -7,16 +7,21 @@ spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:h2:file:./cart-db;MODE=PostgreSQL;AUTO_SERVER=TRUE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ecommerce_db}
+    driver-class-name: org.postgresql.Driver
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   h2:
     console:
-      enabled: true
+      enabled: false
+  flyway:
+    enabled: false
+  liquibase:
+    enabled: false
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     bootstrap-server: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}

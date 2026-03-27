@@ -18,6 +18,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * Liquibase creates tables + seeds mock data.
  * STM metadata from query-stm for allowed actions.
  * Keycloak JWT security enabled (resource server mode).
+ *
+ * Note: org.chenile.configuration.security is NOT scanned — it requires
+ * OAuth2 login flow which is unnecessary for a resource server.
+ * Security is handled by QueryResourceServerSecurityConfig instead.
  */
 @SpringBootApplication(
     exclude = {
@@ -27,7 +31,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
         "org.chenile.configuration.core",
         "org.chenile.configuration.http",
         "org.chenile.configuration.query",
-        "org.chenile.configuration.security",
         "org.chenile.configuration.controller",
         "org.chenile.core",
         "org.chenile.http",

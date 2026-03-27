@@ -355,123 +355,6 @@
       ]
     },
     {
-      "clientId": "warehouse-web",
-      "name": "Warehouse Management",
-      "description": "Warehouse management system",
-      "enabled": true,
-      "publicClient": true,
-      "clientAuthenticatorType": "client-secret",
-      "standardFlowEnabled": true,
-      "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": true,
-      "serviceAccountsEnabled": false,
-      "protocol": "openid-connect",
-      "rootUrl": "http://localhost:3003",
-      "baseUrl": "http://localhost:3003",
-      "redirectUris": [
-        "http://localhost:3003/*"
-      ],
-      "webOrigins": [
-        "http://localhost:3003"
-      ],
-      "attributes": {
-        "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:3003/*"
-      },
-      "fullScopeAllowed": true,
-      "defaultClientScopes": [
-        "web-origins",
-        "acr",
-        "roles",
-        "profile",
-        "email"
-      ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access",
-        "microprofile-jwt"
-      ]
-    },
-    {
-      "clientId": "oms-web",
-      "name": "Order Management",
-      "description": "Operations management system",
-      "enabled": true,
-      "publicClient": true,
-      "clientAuthenticatorType": "client-secret",
-      "standardFlowEnabled": true,
-      "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": true,
-      "serviceAccountsEnabled": false,
-      "protocol": "openid-connect",
-      "rootUrl": "http://localhost:3004",
-      "baseUrl": "http://localhost:3004",
-      "redirectUris": [
-        "http://localhost:3004/*"
-      ],
-      "webOrigins": [
-        "http://localhost:3004"
-      ],
-      "attributes": {
-        "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:3004/*"
-      },
-      "fullScopeAllowed": true,
-      "defaultClientScopes": [
-        "web-origins",
-        "acr",
-        "roles",
-        "profile",
-        "email"
-      ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access",
-        "microprofile-jwt"
-      ]
-    },
-    {
-      "clientId": "finance-web",
-      "name": "Finance Dashboard",
-      "description": "Finance and settlement management",
-      "enabled": true,
-      "publicClient": true,
-      "clientAuthenticatorType": "client-secret",
-      "standardFlowEnabled": true,
-      "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": true,
-      "serviceAccountsEnabled": false,
-      "protocol": "openid-connect",
-      "rootUrl": "http://localhost:3005",
-      "baseUrl": "http://localhost:3005",
-      "redirectUris": [
-        "http://localhost:3005/*"
-      ],
-      "webOrigins": [
-        "http://localhost:3005"
-      ],
-      "attributes": {
-        "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:3005/*"
-      },
-      "fullScopeAllowed": true,
-      "defaultClientScopes": [
-        "web-origins",
-        "acr",
-        "roles",
-        "profile",
-        "email"
-      ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access",
-        "microprofile-jwt"
-      ]
-    },
-    {
       "clientId": "platform-web",
       "name": "Platform Admin",
       "description": "Platform administration console",
@@ -525,6 +408,45 @@
       "protocol": "openid-connect",
       "redirectUris": [],
       "webOrigins": [],
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    },
+    {
+      "clientId": "backoffice-web",
+      "name": "Backoffice",
+      "description": "Internal staff portal (OMS, Finance, Warehouse)",
+      "enabled": true,
+      "publicClient": true,
+      "clientAuthenticatorType": "client-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "rootUrl": "http://localhost:3003",
+      "baseUrl": "http://localhost:3003",
+      "redirectUris": [
+        "http://localhost:3003/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3003"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3003/*"
+      },
       "fullScopeAllowed": true,
       "defaultClientScopes": [
         "web-origins",

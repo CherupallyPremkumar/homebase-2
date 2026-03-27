@@ -1,15 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: user
   namespace: user
 spec:
-  replicas: 5
-  template:
-    spec:
-      containers:
-        - name: app
-          image: homebase/user-app:prod
-          env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: "prod"
+  replicas: 2

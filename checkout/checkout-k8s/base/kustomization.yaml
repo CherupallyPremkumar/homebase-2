@@ -4,6 +4,4 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - deployment-app.yaml
-  - deployment-web.yaml
   - service-app.yaml
-  - service-web.yaml

@@ -85,6 +85,35 @@ public class KafkaReturnProcessingEventPublisher implements ReturnProcessingEven
         publish(saga.getId(), payload, "RETURN_PROCESSING_FAILED");
     }
 
+    @Override
+    public void requestPickupScheduling(ReturnProcessingSaga saga) {
+        Map<String, Object> payload = basePayload(saga, "PICKUP_SCHEDULING_REQUESTED");
+        payload.put("orderItemId", nullSafe(saga.getOrderItemId()));
+        publish(saga.getId(), payload, "PICKUP_SCHEDULING_REQUESTED");
+    }
+
+    @Override
+    public void requestInventoryRestock(ReturnProcessingSaga saga) {
+        Map<String, Object> payload = basePayload(saga, "INVENTORY_RESTOCK_REQUESTED");
+        payload.put("orderItemId", nullSafe(saga.getOrderItemId()));
+        publish(saga.getId(), payload, "INVENTORY_RESTOCK_REQUESTED");
+    }
+
+    @Override
+    public void requestSettlementAdjustment(ReturnProcessingSaga saga) {
+        Map<String, Object> payload = basePayload(saga, "SETTLEMENT_ADJUSTMENT_REQUESTED");
+        payload.put("refundAmount", nullSafe(saga.getRefundAmount()));
+        publish(saga.getId(), payload, "SETTLEMENT_ADJUSTMENT_REQUESTED");
+    }
+
+    @Override
+    public void requestRefundProcessing(ReturnProcessingSaga saga) {
+        Map<String, Object> payload = basePayload(saga, "REFUND_PROCESSING_REQUESTED");
+        payload.put("refundAmount", nullSafe(saga.getRefundAmount()));
+        payload.put("settlementAdjustmentId", nullSafe(saga.getSettlementAdjustmentId()));
+        publish(saga.getId(), payload, "REFUND_PROCESSING_REQUESTED");
+    }
+
     private Map<String, Object> basePayload(ReturnProcessingSaga saga, String eventType) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("sagaId", nullSafe(saga.getId()));

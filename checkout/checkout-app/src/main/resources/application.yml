@@ -1,37 +1,43 @@
 spring:
   application:
     name: checkout-service
+  main:
+    allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/checkout_db
-    username: postgres
-    password: password
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ecommerce_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: none
+    show-sql: false
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  flyway:
+    enabled: false
+  liquibase:
+    enabled: false
 
 server:
-  port: 8083
+  port: ${SERVER_PORT:8083}
 
-# Feign Client URLs
+# Feign Client URLs — use K8s service names
 cart:
   service:
-    url: http://localhost:8080
+    url: ${CART_SERVICE_URL:http://localhost:8080}
 pricing:
   service:
-    url: http://localhost:8081
+    url: ${PRICING_SERVICE_URL:http://localhost:8081}
 order:
   service:
-    url: http://localhost:8084
+    url: ${ORDER_SERVICE_URL:http://localhost:8084}
 payment:
   service:
-    url: http://localhost:8085
+    url: ${PAYMENT_SERVICE_URL:http://localhost:8085}
 
 # Resilience4j Config
 resilience4j:
@@ -50,5 +56,5 @@ resilience4j:
 
 logging:
   level:
-    com.homebase.ecom.checkout: DEBUG
+    com.homebase.ecom.checkout: INFO
     org.springframework.web: INFO

@@ -21,23 +21,12 @@ import com.homebase.ecom.promo.service.PromotionService;
 import org.chenile.utils.entity.service.EntityStore;
 import org.chenile.workflow.api.StateEntityService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Infrastructure layer: wires checkout adapters to domain ports,
- * plus EntityStore and Mapper (persistence belongs in infrastructure).
- *
- * Each adapter is a pure translator (external DTO <-> domain model).
- * The proxy beans come from client modules via ProxyBuilder --
- * they're lazy JDK proxies that route local/remote at invocation time.
- */
 @Configuration
 public class CheckoutInfrastructureConfiguration {
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Persistence: Mapper + EntityStore
-    // ═══════════════════════════════════════════════════════════════════
 
     @Bean
     CheckoutMapper checkoutMapper() {
@@ -49,31 +38,32 @@ public class CheckoutInfrastructureConfiguration {
         return new ChenileCheckoutEntityStore(repository, mapper);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    // Cross-BC Port Adapters
-    // ═══════════════════════════════════════════════════════════════════
-
     @Bean
+    @ConditionalOnBean(InventoryService.class)
     InventoryReservePort checkoutInventoryReservePort(InventoryService inventoryServiceClient) {
         return new InventoryReserveAdapter(inventoryServiceClient);
     }
 
     @Bean
+    @ConditionalOnBean(OrderService.class)
     OrderCreationPort checkoutOrderCreationPort(OrderService orderServiceClient) {
         return new OrderCreationAdapter(orderServiceClient);
     }
 
     @Bean
+    @ConditionalOnBean(PricingService.class)
     PriceLockPort checkoutPriceLockPort(PricingService pricingServiceClient) {
         return new CheckoutPriceLockAdapter(pricingServiceClient);
     }
 
     @Bean
+    @ConditionalOnBean(PromotionService.class)
     PromoCommitPort checkoutPromoCommitPort(PromotionService promotionServiceClient) {
         return new PromoCommitAdapter(promotionServiceClient);
     }
 
     @Bean
+    @ConditionalOnBean(name = "shippingServiceClient")
     ShippingValidationPort checkoutShippingValidationPort(
             @Qualifier("shippingServiceClient") StateEntityService<?> shippingServiceClient) {
         return new ShippingValidationAdapter(shippingServiceClient);

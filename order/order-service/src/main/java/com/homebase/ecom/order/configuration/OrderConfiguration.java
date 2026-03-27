@@ -1,5 +1,6 @@
 package com.homebase.ecom.order.configuration;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.chenile.stm.*;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.action.scriptsupport.IfAction;

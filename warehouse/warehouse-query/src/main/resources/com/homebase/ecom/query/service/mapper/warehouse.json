@@ -37,5 +37,17 @@
 		},
 		"paginated": true,
 		"sortable": true
+	},
+	{
+		"id": "Warehouse.getInventoryByLocation",
+		"name": "warehouse-inventory-by-location",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"warehouseId": { "name": "warehouseId", "filterable": true, "columnType": "Text" },
+			"locationId": { "name": "locationId", "filterable": true, "columnType": "Text" },
+			"zone": { "name": "zone", "filterable": true, "columnType": "Text" },
+			"locationType": { "name": "locationType", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
 	}
 ]

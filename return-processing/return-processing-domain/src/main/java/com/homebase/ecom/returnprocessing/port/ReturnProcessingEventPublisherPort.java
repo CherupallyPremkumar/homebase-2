@@ -43,4 +43,24 @@ public interface ReturnProcessingEventPublisherPort {
      * Publishes event when the return processing saga fails.
      */
     void publishReturnProcessingFailed(ReturnProcessingSaga saga, String previousState);
+
+    /**
+     * Publishes command event requesting shipping BC to schedule a return pickup.
+     */
+    void requestPickupScheduling(ReturnProcessingSaga saga);
+
+    /**
+     * Publishes command event requesting inventory BC to restock the returned item.
+     */
+    void requestInventoryRestock(ReturnProcessingSaga saga);
+
+    /**
+     * Publishes command event requesting settlement BC to adjust supplier payout.
+     */
+    void requestSettlementAdjustment(ReturnProcessingSaga saga);
+
+    /**
+     * Publishes command event requesting payment BC to process customer refund.
+     */
+    void requestRefundProcessing(ReturnProcessingSaga saga);
 }

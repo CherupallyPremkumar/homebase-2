@@ -1,5 +1,6 @@
 package com.homebase.ecom.build.configuration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -30,6 +31,9 @@ import java.util.Map;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Value("${homebase.cors.allowed-origins}")
+    private List<String> allowedOrigins;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -102,15 +106,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-            "http://localhost:3000",  // Storefront
-            "http://localhost:3002",  // Seller Central
-            "http://localhost:3003",  // Warehouse WMS
-            "http://localhost:3004",  // OMS
-            "http://localhost:3005",  // Finance
-            "http://localhost:3006",  // Platform Admin
-            "http://localhost:8080"   // Same origin
-        ));
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

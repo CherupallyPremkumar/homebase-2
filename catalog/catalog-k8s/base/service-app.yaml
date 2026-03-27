@@ -1,13 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: app-service
+  name: catalog
   namespace: catalog
+  labels:
+    app.kubernetes.io/name: catalog
+    app.kubernetes.io/part-of: homebase
 spec:
+  type: ClusterIP
   selector:
-    app: app
+    app.kubernetes.io/name: catalog
   ports:
     - protocol: TCP
       port: 8080
       targetPort: 8080
-  type: NodePort

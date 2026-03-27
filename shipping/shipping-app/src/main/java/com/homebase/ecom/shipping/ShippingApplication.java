@@ -2,12 +2,14 @@ package com.homebase.ecom.shipping;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-@SpringBootApplication
-@ComponentScan(basePackages = {"com.homebase.ecom.shipping", "org.chenile"})
+@SpringBootApplication(scanBasePackages = {"com.homebase.ecom", "org.chenile"})
+@EntityScan(basePackages = {"com.homebase.ecom", "org.chenile.service.registry.model"})
+@EnableJpaRepositories(basePackages = {"com.homebase.ecom", "org.chenile.service.registry.configuration.dao"})
 public class ShippingApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(ShippingApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ShippingApplication.class, args);
+    }
 }

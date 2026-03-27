@@ -113,7 +113,8 @@
             <artifactId>security-interceptor</artifactId>
         </dependency>
 
-    </dependencies>
+    <dependency><groupId>com.homebase.ecom.cconfig</groupId><artifactId>cconfig-service</artifactId><version>${revision}</version></dependency>
+	</dependencies>
 
     <build>
         <plugins>

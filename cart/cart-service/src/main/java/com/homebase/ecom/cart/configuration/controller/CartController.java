@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.chenile.workflow.dto.StateEntityServiceResponse;
 import com.homebase.ecom.cart.model.Cart;
-import com.homebase.ecom.checkout.api.event.CheckoutTopics;
+import com.homebase.ecom.shared.event.KafkaTopics;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
@@ -64,7 +64,7 @@ public class CartController extends ControllerSupport {
 	 * The service layer parses the event, extracts cartId + STM eventId,
 	 * and calls processById internally.
 	 */
-	@EventsSubscribedTo({CheckoutTopics.EVENTS, "inventory.events", "product.events", "promo.events"})
+	@EventsSubscribedTo({KafkaTopics.CHECKOUT_EVENTS, "inventory.events", "product.events", "promo.events"})
 	@PostMapping("/cart/on-event")
 	public ResponseEntity<GenericResponse<Void>> onExternalEvent(
 			HttpServletRequest httpServletRequest,

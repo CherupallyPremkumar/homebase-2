@@ -1,7 +1,5 @@
 package com.homebase.ecom.cart.service.handler;
 
-import com.homebase.ecom.checkout.api.event.CheckoutCompensatedEventDto;
-import com.homebase.ecom.checkout.api.event.CheckoutCompletedEventDto;
 import com.homebase.ecom.core.workflow.HmStateEntityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +41,8 @@ public class CartExternalEventHandler {
             }
 
             switch (eventType) {
-                case CheckoutCompletedEventDto.EVENT_TYPE -> handleCheckoutCompleted(event, cartService);
-                case CheckoutCompensatedEventDto.EVENT_TYPE -> handleCheckoutCompensated(event, cartService);
+                case "CHECKOUT_COMPLETED" -> handleCheckoutCompleted(event, cartService);
+                case "CHECKOUT_COMPENSATED" -> handleCheckoutCompensated(event, cartService);
                 case "STOCK_DEPLETED" -> handleStockDepleted(event, cartService);
                 case "PRODUCT_DISCONTINUED" -> handleProductDiscontinued(event, cartService);
                 case "PRICE_CHANGED" -> handlePriceChanged(event, cartService);

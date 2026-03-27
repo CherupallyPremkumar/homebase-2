@@ -1,0 +1,200 @@
+[
+	{
+		"id": "Storefront.storefrontProducts",
+		"name": "storefront-products",
+		"acls": [],
+		"columnMetadata": {
+			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" },
+			"brand": { "name": "brand", "filterable": true, "columnType": "Text", "sortable": true },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true },
+			"minPrice": { "name": "minPrice", "filterable": true, "columnType": "Number" },
+			"maxPrice": { "name": "maxPrice", "filterable": true, "columnType": "Number" },
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false,
+		"sortable": true
+	},
+	{
+		"id": "Storefront.productDetail",
+		"name": "product-detail",
+		"acls": [],
+		"columnMetadata": {
+			"slug": { "name": "slug", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.productVariantsWithPrice",
+		"name": "product-variants-with-price",
+		"acls": [],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.featuredProducts",
+		"name": "featured-products",
+		"acls": [],
+		"columnMetadata": {},
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Storefront.myOrders",
+		"name": "my-orders",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Storefront.myOrdersAlias",
+		"name": "myOrders",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Storefront.orderDetail",
+		"name": "order-detail",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" },
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.orderLineItems",
+		"name": "order-line-items",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.brandList",
+		"name": "brand-list",
+		"acls": [],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.priceRanges",
+		"name": "price-ranges",
+		"acls": [],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.storefrontCategories",
+		"name": "storefront-categories",
+		"acls": [],
+		"columnMetadata": {
+			"parentId": { "name": "parentId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.suggestions",
+		"name": "suggestions",
+		"acls": [],
+		"columnMetadata": {
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Storefront.banners",
+		"name": "banners",
+		"acls": [],
+		"columnMetadata": {
+			"placement": { "name": "placement", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.filters",
+		"name": "filters",
+		"acls": [],
+		"columnMetadata": {
+			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.orderTracking",
+		"name": "order-tracking",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" },
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.myCart",
+		"name": "my-cart",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.productReviews",
+		"name": "product-reviews",
+		"acls": [],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
+			"rating": { "name": "rating", "filterable": true, "columnType": "Number" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Storefront.myWishlist",
+		"name": "my-wishlist",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"userId": { "name": "userId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Storefront.myProfile",
+		"name": "my-profile",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"email": { "name": "email", "filterable": true, "columnType": "Text" },
+			"keycloakId": { "name": "keycloakId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Storefront.myNotifications",
+		"name": "my-notifications",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"id": { "name": "ID", "columnType": "Text", "filterable": false, "sortable": false, "display": false },
+			"type": { "name": "Type", "columnType": "DropDown", "filterable": true, "sortable": true, "display": true, "dropDownValues": ["ORDER_UPDATE", "PROMO", "SYSTEM"] },
+			"title": { "name": "Title", "columnType": "Text", "filterable": true, "sortable": false, "display": true, "likeQuery": true },
+			"message": { "name": "Message", "columnType": "Text", "filterable": false, "sortable": false, "display": true },
+			"isRead": { "name": "Read", "columnType": "CheckBox", "filterable": true, "sortable": false, "display": true },
+			"referenceId": { "name": "Reference", "columnType": "Text", "filterable": false, "sortable": false, "display": false },
+			"referenceType": { "name": "Reference Type", "columnType": "Text", "filterable": false, "sortable": false, "display": false },
+			"createdTime": { "name": "Date", "columnType": "DateTime", "filterable": true, "sortable": true, "display": true, "betweenQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

@@ -3,6 +3,12 @@ kind: Kustomization
 
 resources:
   - ../../base
+  - hpa.yaml
+
+images:
+  - name: homebase-rules-engine
+    newName: ${ECR_REGISTRY}/homebase-rules-engine
+    newTag: latest
 
 patchesStrategicMerge:
   - replica-patch.yaml

@@ -1,0 +1,33 @@
+name: CI — Query Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'query-build/**'
+      - 'query-modules/**'
+  pull_request:
+    paths:
+      - 'query-build/**'
+      - 'query-modules/**'
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build query-build
+        run: mvn install -pl query-build/query-build-package -am -DskipTests
+
+      - name: Run tests
+        run: mvn test -pl query-build/query-build-package

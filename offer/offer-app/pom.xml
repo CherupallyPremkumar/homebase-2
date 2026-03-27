@@ -47,7 +47,13 @@
             <groupId>org.chenile</groupId>
             <artifactId>security-interceptor</artifactId>
         </dependency>
-    </dependencies>
+    <dependency><groupId>com.homebase.ecom.offer</groupId><artifactId>offer-infrastructure</artifactId><version>${revision}</version></dependency>
+	<dependency><groupId>org.chenile</groupId><artifactId>chenile-http</artifactId></dependency>
+		<dependency><groupId>org.chenile</groupId><artifactId>service-registry-service</artifactId></dependency>
+		<dependency><groupId>org.chenile</groupId><artifactId>chenile-kafka</artifactId></dependency>
+		<dependency><groupId>org.springframework.kafka</groupId><artifactId>spring-kafka</artifactId></dependency>
+	<dependency><groupId>com.homebase.ecom.cconfig</groupId><artifactId>cconfig-service</artifactId><version>${revision}</version></dependency>
+	</dependencies>
 
     <build>
         <plugins>

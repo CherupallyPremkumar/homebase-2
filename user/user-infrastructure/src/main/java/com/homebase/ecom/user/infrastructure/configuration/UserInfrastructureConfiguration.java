@@ -10,6 +10,7 @@ import com.homebase.ecom.user.infrastructure.adapter.IdentityProviderAdapter;
 import com.homebase.ecom.user.infrastructure.adapter.NotificationAdapter;
 import com.homebase.ecom.user.infrastructure.event.UserEventPublisherImpl;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +39,7 @@ public class UserInfrastructureConfiguration {
     }
 
     @Bean("userNotificationPort")
+    @ConditionalOnBean(NotificationService.class)
     NotificationPort userNotificationPort(NotificationService notificationServiceClient) {
         return new NotificationAdapter(notificationServiceClient);
     }

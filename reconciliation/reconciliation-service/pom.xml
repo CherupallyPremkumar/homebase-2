@@ -75,14 +75,6 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.homebase.ecom.order</groupId>
-            <artifactId>order-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.homebase.ecom.settlement</groupId>
-            <artifactId>settlement-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.homebase.ecom.shared</groupId>
             <artifactId>shared-api</artifactId>
         </dependency>

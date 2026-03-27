@@ -1,33 +1,49 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: offer
   namespace: offer
+  labels:
+    app.kubernetes.io/name: offer
+    app.kubernetes.io/part-of: homebase
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app
+      app.kubernetes.io/name: offer
   template:
     metadata:
       labels:
-        app: app
+        app.kubernetes.io/name: offer
     spec:
       containers:
-      - name: app
-        image: com.homebase.ecom/offer-app:latest
-        ports:
-        - containerPort: 8080
-        env:
-        - name: SPRING_DATASOURCE_URL
-          value: jdbc:postgresql://postgres.infra.svc.cluster.local:5432/offer_db
-        - name: SPRING_DATASOURCE_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: username
-        - name: SPRING_DATASOURCE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: password
+        - name: offer
+          image: homebase-offeratest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: offer-config
+            - secretRef:
+                name: offer-secrets
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 2Gi

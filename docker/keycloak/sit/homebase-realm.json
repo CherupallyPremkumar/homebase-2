@@ -93,6 +93,45 @@
       "directAccessGrantsEnabled": false,
       "standardFlowEnabled": false,
       "serviceAccountsEnabled": true
+    },
+    {
+      "clientId": "backoffice-web",
+      "name": "Backoffice",
+      "description": "Internal staff portal (OMS, Finance, Warehouse)",
+      "enabled": true,
+      "publicClient": true,
+      "clientAuthenticatorType": "client-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "rootUrl": "https://backoffice.homebase.com",
+      "baseUrl": "https://backoffice.homebase.com",
+      "redirectUris": [
+        "https://backoffice.homebase.com/*"
+      ],
+      "webOrigins": [
+        "https://backoffice.homebase.com"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "https://backoffice.homebase.com/*"
+      },
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
     }
   ],
   "users": [

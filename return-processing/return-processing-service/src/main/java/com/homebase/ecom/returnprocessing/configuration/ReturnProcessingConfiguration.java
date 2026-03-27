@@ -1,12 +1,14 @@
 package com.homebase.ecom.returnprocessing.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.homebase.ecom.returnprocessing.event.ReturnApprovedEventConsumer;
 import com.homebase.ecom.returnprocessing.infrastructure.persistence.ChenileReturnProcessingEntityStore;
 import com.homebase.ecom.returnprocessing.infrastructure.persistence.adapter.ReturnProcessingSagaRepositoryImpl;
 import com.homebase.ecom.returnprocessing.infrastructure.persistence.mapper.ReturnProcessingSagaMapper;
 import com.homebase.ecom.returnprocessing.infrastructure.persistence.repository.ReturnProcessingSagaJpaRepository;
 import com.homebase.ecom.returnprocessing.port.ReturnProcessingSagaRepository;
 import com.homebase.ecom.returnprocessing.model.ReturnProcessingSaga;
-import com.homebase.ecom.returnprocessing.port.ReturnProcessingSagaRepository;
+import com.homebase.ecom.returnprocessing.port.ReturnProcessingEventPublisherPort;
 import com.homebase.ecom.returnprocessing.service.cmds.*;
 import com.homebase.ecom.returnprocessing.service.postSaveHooks.*;
 import org.chenile.stm.*;
@@ -45,6 +47,15 @@ public class ReturnProcessingConfiguration {
     @Bean
     IfAction<ReturnProcessingSaga> ifAction() {
         return new IfAction<>();
+    }
+
+    // ==================== Kafka Consumer ====================
+
+    @Bean
+    ReturnApprovedEventConsumer returnApprovedEventConsumer(
+            ReturnProcessingSagaRepository sagaRepository,
+            ObjectMapper objectMapper) {
+        return new ReturnApprovedEventConsumer(sagaRepository, objectMapper);
     }
 
     // ==================== Infrastructure Beans ====================
@@ -184,8 +195,9 @@ public class ReturnProcessingConfiguration {
     // Bean names follow convention: PREFIX_FOR_RESOLVER + eventId + "Action"
 
     @Bean
-    SchedulePickupAction returnProcessingSchedulePickupAction() {
-        return new SchedulePickupAction();
+    SchedulePickupAction returnProcessingSchedulePickupAction(
+            ReturnProcessingEventPublisherPort eventPublisher) {
+        return new SchedulePickupAction(eventPublisher);
     }
 
     @Bean
@@ -199,18 +211,21 @@ public class ReturnProcessingConfiguration {
     }
 
     @Bean
-    RestockInventoryAction returnProcessingRestockInventoryAction() {
-        return new RestockInventoryAction();
+    RestockInventoryAction returnProcessingRestockInventoryAction(
+            ReturnProcessingEventPublisherPort eventPublisher) {
+        return new RestockInventoryAction(eventPublisher);
     }
 
     @Bean
-    AdjustSettlementAction returnProcessingAdjustSettlementAction() {
-        return new AdjustSettlementAction();
+    AdjustSettlementAction returnProcessingAdjustSettlementAction(
+            ReturnProcessingEventPublisherPort eventPublisher) {
+        return new AdjustSettlementAction(eventPublisher);
     }
 
     @Bean
-    ProcessRefundAction returnProcessingProcessRefundAction() {
-        return new ProcessRefundAction();
+    ProcessRefundAction returnProcessingProcessRefundAction(
+            ReturnProcessingEventPublisherPort eventPublisher) {
+        return new ProcessRefundAction(eventPublisher);
     }
 
     @Bean

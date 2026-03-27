@@ -171,9 +171,9 @@
         <insert tableName="user_profiles">
             <column name="id" value="user-8"/>
             <column name="keycloak_id" value="kc-admin-1"/>
-            <column name="email" value="admin@homebase.in"/>
+            <column name="email" value="ops-admin@homebase.in"/>
             <column name="first_name" value="HomeBase"/>
-            <column name="last_name" value="Admin"/>
+            <column name="last_name" value="OpsAdmin"/>
             <column name="phone" value="+919800000001"/>
             <column name="role" value="ADMIN"/>
             <column name="email_verified" valueBoolean="true"/>
