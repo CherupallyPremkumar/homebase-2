@@ -1,6 +1,10 @@
 Feature: Tests the Payment Query Service using a REST client.
 
-Scenario: List all payments with pagination
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
+ List all payments with pagination
 When I POST a REST request to URL "/q/payments" with payload
 """
 {

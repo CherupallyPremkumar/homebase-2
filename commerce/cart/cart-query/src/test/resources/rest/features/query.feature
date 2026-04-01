@@ -17,7 +17,11 @@ Feature: Tests the Cart Query Service - full bounded context coverage.
 
 # ===== DASHBOARD: CART QUERIES =====
 
-Scenario: Dashboard - list all carts sorted by createdTime ASC with all fields
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
+ Dashboard - list all carts sorted by createdTime ASC with all fields
 When I POST a REST request to URL "/q/carts" with payload
 """
 {

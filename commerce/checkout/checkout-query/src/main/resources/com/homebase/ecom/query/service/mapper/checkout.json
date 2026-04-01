@@ -2,13 +2,42 @@
   {
     "id": "Checkout.getAll",
     "name": "checkouts",
-    "acls": ["ADMIN", "AGENT"],
+    "acls": [
+      "ADMIN",
+      "AGENT"
+    ],
     "columnMetadata": {
-      "id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
-      "customerId": { "name": "customerId", "filterable": true, "columnType": "Text" },
-      "stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
-      "totalAmount": { "name": "totalAmount", "filterable": true, "columnType": "Number", "sortable": true },
-      "createdAt": { "name": "createdAt", "filterable": true, "columnType": "Date", "sortable": true }
-    }
+      "id": {
+        "name": "id",
+        "filterable": true,
+        "columnType": "Text",
+        "sortable": true
+      },
+      "customerId": {
+        "name": "customerId",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "stateId": {
+        "name": "stateId",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "totalAmount": {
+        "name": "totalAmount",
+        "filterable": true,
+        "columnType": "Number",
+        "sortable": true
+      },
+      "createdAt": {
+        "name": "createdAt",
+        "filterable": true,
+        "columnType": "Date",
+        "sortable": true
+      }
+    },
+    "workflowName": "checkout",
+    "stateColumn": "stateId",
+    "flowColumn": "flowId"
   }
 ]

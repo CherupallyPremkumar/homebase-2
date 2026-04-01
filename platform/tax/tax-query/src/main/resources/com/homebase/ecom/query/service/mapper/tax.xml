@@ -58,7 +58,7 @@
   </select>
 
   <select id="getExemptions" resultType="map">
-    SELECT id, exemption_type AS "exemptionType", value, description,
+    SELECT id, exemption_type AS "exemptionType", exemption_value AS "value", description,
            full_exemption AS "fullExemption", active
     FROM tax_exemptions
     <where>

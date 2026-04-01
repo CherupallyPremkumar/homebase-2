@@ -10,7 +10,7 @@ import org.chenile.jpautils.entity.BaseJpaEntity;
 public class TaxExemptionEntity extends BaseJpaEntity {
 
     @Column(name = "exemption_type", nullable = false) private String exemptionType;
-    @Column(name = "value", nullable = false) private String value;
+    @Column(name = "exemption_value", nullable = false) private String value;
     @Column(name = "description") private String description;
     @Column(name = "full_exemption") private boolean fullExemption;
     @Column(name = "active") private boolean active = true;

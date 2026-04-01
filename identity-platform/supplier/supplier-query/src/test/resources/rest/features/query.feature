@@ -1,6 +1,10 @@
 Feature: Tests the Supplier Query Service using a REST client.
 
-Scenario: Tests out pagination capability
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
+ Tests out pagination capability
 When I POST a REST request to URL "/q/suppliers" with payload
 """
 {

@@ -1,6 +1,10 @@
 Feature: Tests the Catalog Query Service using a REST client.
 
-Scenario: Browse active catalog items with pagination
+Background:
+  When I construct a REST request with authorization header in realm "tenant0" for user "t0-premium" and password "t0-premium"
+  And I construct a REST request with header "x-chenile-tenant-id" and value "tenant0"
+
+ Browse active catalog items with pagination
 When I POST a REST request to URL "/q/browseCatalog" with payload
 """
 {

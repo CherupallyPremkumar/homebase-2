@@ -114,13 +114,13 @@
     <changeSet id="test-tax-004-exemptions" author="test" context="dev">
         <insert tableName="tax_exemptions">
             <column name="id" value="exempt-001"/><column name="exemption_type" value="CATEGORY"/>
-            <column name="value" value="ESSENTIAL"/><column name="description" value="Essential goods — 0% GST"/>
+            <column name="exemption_value" value="ESSENTIAL"/><column name="description" value="Essential goods — 0% GST"/>
             <column name="full_exemption" valueBoolean="true"/><column name="active" valueBoolean="true"/>
             <column name="tenant" value="homebase"/><column name="version" valueNumeric="0"/>
         </insert>
         <insert tableName="tax_exemptions">
             <column name="id" value="exempt-002"/><column name="exemption_type" value="SUPPLY_TYPE"/>
-            <column name="value" value="EXPORT"/><column name="description" value="Export supply — zero rated"/>
+            <column name="exemption_value" value="EXPORT"/><column name="description" value="Export supply — zero rated"/>
             <column name="full_exemption" valueBoolean="true"/><column name="active" valueBoolean="true"/>
             <column name="tenant" value="homebase"/><column name="version" valueNumeric="0"/>
         </insert>
