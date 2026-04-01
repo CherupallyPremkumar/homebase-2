@@ -23,6 +23,8 @@
         <module>offer-client</module>
         <module>offer-k8s</module>
             <module>offer-liquibase</module>
+            <module>offer-query-api</module>
+        <module>offer-query</module>
     </modules>
 
     <dependencyManagement>

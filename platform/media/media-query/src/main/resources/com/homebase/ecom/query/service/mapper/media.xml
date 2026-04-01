@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Media">
+  <select id="getAll" resultType="map">SELECT id, file_key AS "fileKey", original_name AS "originalName", cdn_url AS "cdnUrl", mime_type AS "mimeType", file_size_bytes AS "fileSizeBytes", width, height, alt_text AS "altText", folder, created_time AS "createdAt" FROM cms_media <where><if test="folder != null">AND folder = #{folder}</if><if test="mimeType != null">AND mime_type = #{mimeType}</if><if test="originalName != null">AND LOWER(original_name) LIKE LOWER(CONCAT('%',#{originalName},'%'))</if></where> ORDER BY created_time DESC</select>
+  <select id="getAll-count" resultType="long">SELECT COUNT(*) FROM cms_media <where><if test="folder != null">AND folder = #{folder}</if><if test="mimeType != null">AND mime_type = #{mimeType}</if></where></select>
+</mapper>

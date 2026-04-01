@@ -19,7 +19,12 @@
 	<properties>
 	</properties>
 
-	<dependencies>	
+	<dependencies>
+        <dependency>
+            <groupId>com.homebase.ecom.order</groupId>
+            <artifactId>order-liquibase</artifactId>
+            <version>${revision}</version>
+        </dependency>	
 		<dependency>
 			<groupId>com.homebase.ecom.order</groupId>
 			<artifactId>order-query-api</artifactId>

@@ -1,0 +1,3 @@
+[
+  {"id":"Invoice.getAll","name":"invoices","acls":["ADMIN","FINANCE"],"columnMetadata":{"id":{"name":"id","filterable":true,"columnType":"Text","sortable":true},"orderId":{"name":"orderId","filterable":true,"columnType":"Text"},"invoiceNumber":{"name":"invoiceNumber","filterable":true,"columnType":"Text","likeQuery":true},"totalAmount":{"name":"totalAmount","filterable":true,"columnType":"Number","sortable":true},"taxAmount":{"name":"taxAmount","columnType":"Number"},"status":{"name":"status","filterable":true,"columnType":"Text"},"createdAt":{"name":"createdAt","filterable":true,"columnType":"Date","sortable":true}}}
+]

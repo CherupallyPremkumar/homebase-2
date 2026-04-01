@@ -12,4 +12,26 @@
     <artifactId>organisation-query</artifactId>
     <packaging>jar</packaging>
     <name>organisation-query</name>
+
+    <dependencies>
+        <!-- Chenile query + HTTP + Security -->
+        <dependency><groupId>org.chenile</groupId><artifactId>query-api</artifactId></dependency>
+        <dependency><groupId>org.chenile</groupId><artifactId>chenile-http</artifactId></dependency>
+        <dependency><groupId>com.homebase.ecom.auth</groupId><artifactId>auth-security</artifactId><version>${revision}</version></dependency>
+        <dependency><groupId>com.homebase.ecom</groupId><artifactId>core</artifactId><version>${revision}</version></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
+        <!-- Schema -->
+        <dependency><groupId>com.homebase.ecom.organisation</groupId><artifactId>organisation-liquibase</artifactId><version>${revision}</version></dependency>
+        <!-- Test -->
+        <dependency><groupId>org.chenile</groupId><artifactId>chenile-query-controller</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>org.chenile</groupId><artifactId>cucumber-utils</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>org.chenile</groupId><artifactId>cucumber-sec-utils</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>org.junit.vintage</groupId><artifactId>junit-vintage-engine</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-jdbc</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-liquibase</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>com.h2database</groupId><artifactId>h2</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>com.github.dasniko</groupId><artifactId>testcontainers-keycloak</artifactId><version>3.5.1</version><scope>test</scope></dependency>
+        <dependency><groupId>org.testcontainers</groupId><artifactId>testcontainers</artifactId><scope>test</scope></dependency>
+    </dependencies>
 </project>

@@ -16,6 +16,11 @@
 	<description>Query Service for Reconciliation</description>
 
 	<dependencies>
+        <dependency>
+            <groupId>com.homebase.ecom.reconciliation</groupId>
+            <artifactId>reconciliation-liquibase</artifactId>
+            <version>${revision}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>query-api</artifactId>

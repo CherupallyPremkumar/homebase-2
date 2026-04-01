@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ReturnProcessing">
+  <select id="getAll" resultType="map">SELECT id, return_request_id AS "returnRequestId", state_id AS "stateId", flow_id AS "flowId", created_time AS "createdAt" FROM return_processing_saga <where><if test="returnRequestId != null">AND return_request_id = #{returnRequestId}</if><if test="stateId != null">AND state_id = #{stateId}</if></where> ORDER BY created_time DESC</select>
+  <select id="getAll-count" resultType="long">SELECT COUNT(*) FROM return_processing_saga <where><if test="stateId != null">AND state_id = #{stateId}</if></where></select>
+</mapper>

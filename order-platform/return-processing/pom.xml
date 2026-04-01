@@ -22,6 +22,8 @@
         <module>return-processing-service</module>
         <module>return-processing-client</module>
             <module>return-processing-liquibase</module>
+            <module>return-processing-query-api</module>
+        <module>return-processing-query</module>
     </modules>
 
     <dependencyManagement>

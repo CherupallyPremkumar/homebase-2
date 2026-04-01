@@ -1,55 +1,41 @@
-logging:
-  level:
-    ROOT: INFO
-    org.hibernate.SQL: INFO
-    org.chenile.*: DEBUG
-
 spring:
-  banner:
-    location: classpath:banner.txt
-  jackson:
-    serialization:
-      indent-output: true
+  main:
+    allow-bean-definition-overriding: true
   datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:mem:demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    url: jdbc:h2:mem:taxquery;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
     username: sa
     password:
-    hikari:
-      poolName: Hikari
-      auto-commit: false
-  h2:
-    console:
-      enabled: true
+  liquibase:
+    enabled: true
+    change-log: classpath:liquibase/query/changelog/changelog-master.xml
+    contexts: dev
   jpa:
     hibernate:
       ddl-auto: none
-  liquibase:
-    enabled: false
-  sql:
-    init:
-      mode: never
-
-server:
-  port: 8000
-  error:
-    whitelabel:
-      enabled: false
-
-chenile:
-  base:
-    url:
 
 query:
   defaultTenantId: homebase
-  datasources:
+  datasource's:
     homebase:
       maximumPoolSize: '10'
       type: com.zaxxer.hikari.HikariDataSource
       username: sa
-      password: ''
+      password:
       minimumIdle: '2'
       idleTimeout: '5000'
-      jdbcUrl: jdbc:h2:mem:demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+      jdbcUrl: jdbc:h2:mem:taxquery;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
   mapperFiles: classpath*:com/homebase/ecom/query/service/mapper/*.xml
   definitionFiles: classpath*:com/homebase/ecom/query/service/mapper/*.json
+
+chenile:
+  base:
+    url:
+  security:
+    client:
+      id: authz-servlet
+      secret: secret
+    keycloak:
+      host: ${KEYCLOAK_HOST:http://localhost:8180}
+      port: ${KEYCLOAK_PORT:8180}
+      base:
+        realm: ${KEYCLOAK_REALM:tenant0}

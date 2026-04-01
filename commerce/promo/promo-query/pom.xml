@@ -19,7 +19,12 @@
 		<promo-query.version>${revision}</promo-query.version>
 	</properties>
 
-	<dependencies>	
+	<dependencies>
+        <dependency>
+            <groupId>com.homebase.ecom.promo</groupId>
+            <artifactId>promo-liquibase</artifactId>
+            <version>${revision}</version>
+        </dependency>	
 		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>query-api</artifactId>

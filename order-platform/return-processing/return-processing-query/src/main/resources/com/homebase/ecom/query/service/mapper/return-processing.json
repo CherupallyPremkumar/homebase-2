@@ -1,0 +1,3 @@
+[
+  {"id":"ReturnProcessing.getAll","name":"returnProcessing","acls":["ADMIN","AGENT","WAREHOUSE"],"columnMetadata":{"id":{"name":"id","filterable":true,"columnType":"Text","sortable":true},"returnRequestId":{"name":"returnRequestId","filterable":true,"columnType":"Text"},"stateId":{"name":"stateId","filterable":true,"columnType":"Text"},"createdAt":{"name":"createdAt","filterable":true,"columnType":"Date","sortable":true}},"workflowName":"returnProcessing","stateColumn":"stateId","flowColumn":"flowId"}
+]

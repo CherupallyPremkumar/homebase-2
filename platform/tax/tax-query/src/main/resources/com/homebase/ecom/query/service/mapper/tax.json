@@ -1,50 +1,57 @@
 [
-	{
-		"id": "TaxRate.getAll",
-		"name": "taxRates",
-		"acls": ["ADMIN"],
-		"columnMetadata": {
-			"id": {
-				"name": "id",
-				"filterable": true,
-				"columnType": "Text",
-				"sortable": true
-			},
-			"name": {
-				"name": "name",
-				"columnType": "Text",
-				"filterable": true,
-				"likeQuery": true
-			},
-			"regionCode": {
-				"name": "regionCode",
-				"filterable": true,
-				"columnType": "Text"
-			},
-			"taxType": {
-				"name": "taxType",
-				"filterable": true,
-				"columnType": "Text"
-			},
-			"rate": {
-				"name": "rate",
-				"filterable": true,
-				"columnType": "Number",
-				"sortable": true
-			},
-			"active": {
-				"name": "active",
-				"filterable": true,
-				"columnType": "Text"
-			},
-			"createdAt": {
-				"name": "createdAt",
-				"columnType": "Date",
-				"sortable": true,
-				"filterable": true
-			}
-		},
-		"paginated": true,
-		"sortable": true
-	}
+  {
+    "id": "Tax.getRates",
+    "name": "taxRates",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
+      "hsnCode": { "name": "hsnCode", "filterable": true, "columnType": "Text", "sortable": true },
+      "description": { "name": "description", "filterable": true, "columnType": "Text", "likeQuery": true },
+      "gstRate": { "name": "gstRate", "filterable": true, "columnType": "Number", "sortable": true },
+      "cessRate": { "name": "cessRate", "filterable": true, "columnType": "Number" },
+      "active": { "name": "active", "filterable": true, "columnType": "CheckBox" }
+    }
+  },
+  {
+    "id": "Tax.getCategoryMappings",
+    "name": "taxCategoryMappings",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "productCategory": { "name": "productCategory", "filterable": true, "columnType": "Text", "sortable": true },
+      "hsnCode": { "name": "hsnCode", "filterable": true, "columnType": "Text", "sortable": true },
+      "description": { "name": "description", "filterable": true, "columnType": "Text", "likeQuery": true }
+    }
+  },
+  {
+    "id": "Tax.getRegions",
+    "name": "taxRegions",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "stateCode": { "name": "stateCode", "filterable": true, "columnType": "Text", "sortable": true },
+      "stateName": { "name": "stateName", "filterable": true, "columnType": "Text", "likeQuery": true, "sortable": true },
+      "unionTerritory": { "name": "unionTerritory", "filterable": true, "columnType": "CheckBox" }
+    }
+  },
+  {
+    "id": "Tax.getExemptions",
+    "name": "taxExemptions",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "exemptionType": { "name": "exemptionType", "filterable": true, "columnType": "Text", "sortable": true },
+      "value": { "name": "value", "filterable": true, "columnType": "Text" },
+      "description": { "name": "description", "filterable": true, "columnType": "Text", "likeQuery": true },
+      "fullExemption": { "name": "fullExemption", "filterable": true, "columnType": "CheckBox" }
+    }
+  },
+  {
+    "id": "Tax.getOrderTaxLines",
+    "name": "orderTaxLines",
+    "acls": ["ADMIN", "AGENT"],
+    "columnMetadata": {
+      "orderId": { "name": "orderId", "filterable": true, "columnType": "Text" },
+      "hsnCode": { "name": "hsnCode", "filterable": true, "columnType": "Text" },
+      "taxType": { "name": "taxType", "filterable": true, "columnType": "Text" },
+      "totalTax": { "name": "totalTax", "filterable": true, "columnType": "Number", "sortable": true }
+    }
+  }
 ]

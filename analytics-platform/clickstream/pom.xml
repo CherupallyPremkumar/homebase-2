@@ -8,5 +8,7 @@
     <modules>
         <module>clickstream-api</module><module>clickstream-domain</module><module>clickstream-infrastructure</module>
         <module>clickstream-service</module><module>clickstream-liquibase</module><module>clickstream-app</module>
+            <module>clickstream-query-api</module>
+        <module>clickstream-query</module>
     </modules>
 </project>

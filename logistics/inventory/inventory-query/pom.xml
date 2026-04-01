@@ -20,7 +20,12 @@
 		<inventory-query.version>${revision}</inventory-query.version>
 	</properties>
 
-	<dependencies>	
+	<dependencies>
+        <dependency>
+            <groupId>com.homebase.ecom.inventory</groupId>
+            <artifactId>inventory-liquibase</artifactId>
+            <version>${revision}</version>
+        </dependency>	
 		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>query-api</artifactId>

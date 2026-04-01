@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="test-org-001" author="test" context="dev">
+        <insert tableName="organisation">
+            <column name="id" value="org-001"/>
+            <column name="company_name" value="HomeBase Pvt Ltd"/>
+            <column name="legal_name" value="HomeBase Private Limited"/>
+            <column name="registration_number" value="U72200KA2024PTC123456"/>
+            <column name="gst_number" value="29AABCU9603R1ZM"/>
+            <column name="pan_number" value="AABCU9603R"/>
+            <column name="domain" value="homebase.com"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="organisation_branding">
+            <column name="id" value="brand-001"/>
+            <column name="organisation_id" value="org-001"/>
+            <column name="logo_url" value="https://cdn.homebase.com/logo.png"/>
+            <column name="primary_color" value="#F97316"/>
+            <column name="copyright_text" value="© 2026 HomeBase Pvt Ltd"/>
+            <column name="founded_year" valueNumeric="2024"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="organisation_contact">
+            <column name="id" value="contact-001"/>
+            <column name="organisation_id" value="org-001"/>
+            <column name="primary_email" value="hello@homebase.com"/>
+            <column name="support_email" value="support@homebase.com"/>
+            <column name="primary_phone" value="+91-9876543210"/>
+            <column name="website_url" value="https://www.homebase.com"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="organisation_address">
+            <column name="id" value="addr-001"/>
+            <column name="organisation_id" value="org-001"/>
+            <column name="address_line1" value="123 MG Road"/>
+            <column name="city" value="Bangalore"/>
+            <column name="state" value="Karnataka"/>
+            <column name="pincode" value="560001"/>
+            <column name="country" value="India"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="organisation_locale">
+            <column name="id" value="locale-001"/>
+            <column name="organisation_id" value="org-001"/>
+            <column name="currency" value="INR"/>
+            <column name="timezone" value="Asia/Kolkata"/>
+            <column name="locale" value="en_IN"/>
+            <column name="date_format" value="dd/MM/yyyy"/>
+            <column name="country_code" value="IN"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="organisation_social">
+            <column name="id" value="social-001"/>
+            <column name="organisation_id" value="org-001"/>
+            <column name="facebook_url" value="https://facebook.com/homebase"/>
+            <column name="twitter_url" value="https://twitter.com/homebase"/>
+            <column name="instagram_url" value="https://instagram.com/homebase"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

@@ -16,6 +16,11 @@
 	<description>Query Service for Review</description>
 
 	<dependencies>
+        <dependency>
+            <groupId>com.homebase.ecom.review</groupId>
+            <artifactId>review-liquibase</artifactId>
+            <version>${revision}</version>
+        </dependency>
 		<dependency>
 			<groupId>com.homebase.ecom.review</groupId>
 			<artifactId>review-query-api</artifactId>

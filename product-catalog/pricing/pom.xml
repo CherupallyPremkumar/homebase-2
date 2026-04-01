@@ -23,6 +23,8 @@
         <module>pricing-client</module>
         <module>pricing-app</module>
             <module>pricing-liquibase</module>
+            <module>pricing-query-api</module>
+        <module>pricing-query</module>
     </modules>
 
     <dependencyManagement>

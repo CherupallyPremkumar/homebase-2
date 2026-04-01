@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Checkout">
+  <select id="getAll" resultType="map">
+    SELECT id, customer_id AS "customerId", cart_id AS "cartId",
+           state_id AS "stateId", flow_id AS "flowId",
+           total_amount AS "totalAmount", created_time AS "createdAt"
+    FROM checkout
+    <where>
+      <if test="id != null">AND id = #{id}</if>
+      <if test="customerId != null">AND customer_id = #{customerId}</if>
+      <if test="stateId != null">AND state_id = #{stateId}</if>
+    </where>
+    ORDER BY created_time DESC
+  </select>
+  <select id="getAll-count" resultType="long">
+    SELECT COUNT(*) FROM checkout
+    <where>
+      <if test="stateId != null">AND state_id = #{stateId}</if>
+      <if test="customerId != null">AND customer_id = #{customerId}</if>
+    </where>
+  </select>
+</mapper>

@@ -19,7 +19,12 @@
 	<properties>
 	</properties>
 
-	<dependencies>	
+	<dependencies>
+        <dependency>
+            <groupId>com.homebase.ecom.product</groupId>
+            <artifactId>product-liquibase</artifactId>
+            <version>${revision}</version>
+        </dependency>	
 		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>query-api</artifactId>

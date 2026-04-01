@@ -25,6 +25,8 @@
         <module>checkout-app</module>
         <module>checkout-client</module>
             <module>checkout-liquibase</module>
+            <module>checkout-query-api</module>
+        <module>checkout-query</module>
     </modules>
 
     <dependencyManagement>

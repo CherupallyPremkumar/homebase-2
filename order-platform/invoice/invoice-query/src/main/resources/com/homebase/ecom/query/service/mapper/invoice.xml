@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Invoice">
+  <select id="getAll" resultType="map">SELECT id, order_id AS "orderId", invoice_number AS "invoiceNumber", total_amount AS "totalAmount", tax_amount AS "taxAmount", status, gstin, created_time AS "createdAt" FROM invoices <where><if test="orderId != null">AND order_id = #{orderId}</if><if test="status != null">AND status = #{status}</if><if test="invoiceNumber != null">AND LOWER(invoice_number) LIKE LOWER(CONCAT('%',#{invoiceNumber},'%'))</if></where> ORDER BY created_time DESC</select>
+  <select id="getAll-count" resultType="long">SELECT COUNT(*) FROM invoices <where><if test="status != null">AND status = #{status}</if></where></select>
+</mapper>

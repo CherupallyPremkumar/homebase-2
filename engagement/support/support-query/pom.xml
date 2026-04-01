@@ -20,6 +20,11 @@
 	</properties>
 
 	<dependencies>
+        <dependency>
+            <groupId>com.homebase.ecom.support</groupId>
+            <artifactId>support-liquibase</artifactId>
+            <version>${revision}</version>
+        </dependency>
 		<dependency>
 			<groupId>com.homebase.ecom.support</groupId>
 			<artifactId>support-query-api</artifactId>

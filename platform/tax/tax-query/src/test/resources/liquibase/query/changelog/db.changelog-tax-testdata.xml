@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- GST Rates by HSN code -->
+    <changeSet id="test-tax-001-rates" author="test" context="dev">
+        <insert tableName="tax_rates">
+            <column name="id" value="rate-001"/>
+            <column name="hsn_code" value="0401"/>
+            <column name="description" value="Milk and dairy (essential)"/>
+            <column name="gst_rate" valueNumeric="0"/>
+            <column name="cess_rate" valueNumeric="0"/>
+            <column name="tcs_rate" valueNumeric="1"/>
+            <column name="effective_from" valueDate="2017-07-01"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="tax_rates">
+            <column name="id" value="rate-002"/>
+            <column name="hsn_code" value="6109"/>
+            <column name="description" value="Cotton T-shirts"/>
+            <column name="gst_rate" valueNumeric="5"/>
+            <column name="cess_rate" valueNumeric="0"/>
+            <column name="tcs_rate" valueNumeric="1"/>
+            <column name="effective_from" valueDate="2017-07-01"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="tax_rates">
+            <column name="id" value="rate-003"/>
+            <column name="hsn_code" value="2106"/>
+            <column name="description" value="Food preparations"/>
+            <column name="gst_rate" valueNumeric="12"/>
+            <column name="cess_rate" valueNumeric="0"/>
+            <column name="tcs_rate" valueNumeric="1"/>
+            <column name="effective_from" valueDate="2017-07-01"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="tax_rates">
+            <column name="id" value="rate-004"/>
+            <column name="hsn_code" value="8471"/>
+            <column name="description" value="Computers and laptops"/>
+            <column name="gst_rate" valueNumeric="18"/>
+            <column name="cess_rate" valueNumeric="0"/>
+            <column name="tcs_rate" valueNumeric="1"/>
+            <column name="effective_from" valueDate="2017-07-01"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="tax_rates">
+            <column name="id" value="rate-005"/>
+            <column name="hsn_code" value="7113"/>
+            <column name="description" value="Gold jewellery (luxury)"/>
+            <column name="gst_rate" valueNumeric="28"/>
+            <column name="cess_rate" valueNumeric="3"/>
+            <column name="tcs_rate" valueNumeric="1"/>
+            <column name="effective_from" valueDate="2017-07-01"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+    </changeSet>
+
+    <!-- Category → HSN mappings -->
+    <changeSet id="test-tax-002-categories" author="test" context="dev">
+        <insert tableName="tax_category_mapping">
+            <column name="id" value="cat-001"/><column name="product_category" value="ELECTRONICS"/>
+            <column name="hsn_code" value="8471"/><column name="description" value="Computers and electronics"/>
+            <column name="tenant" value="homebase"/><column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="tax_category_mapping">
+            <column name="id" value="cat-002"/><column name="product_category" value="CLOTHING"/>
+            <column name="hsn_code" value="6109"/><column name="description" value="Apparel"/>
+            <column name="tenant" value="homebase"/><column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="tax_category_mapping">
+            <column name="id" value="cat-003"/><column name="product_category" value="FOOD"/>
+            <column name="hsn_code" value="2106"/><column name="description" value="Food items"/>
+            <column name="tenant" value="homebase"/><column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="tax_category_mapping">
+            <column name="id" value="cat-004"/><column name="product_category" value="LUXURY"/>
+            <column name="hsn_code" value="7113"/><column name="description" value="Jewellery"/>
+            <column name="tenant" value="homebase"/><column name="version" valueNumeric="0"/>
+        </insert>
+    </changeSet>
+
+    <!-- Tax regions (Indian states) -->
+    <changeSet id="test-tax-003-regions" author="test" context="dev">
+        <insert tableName="tax_regions">
+            <column name="id" value="reg-01"/><column name="state_code" value="29"/><column name="state_name" value="Karnataka"/>
+            <column name="state_alpha" value="KA"/><column name="union_territory" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/><column name="tenant" value="homebase"/><column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="tax_regions">
+            <column name="id" value="reg-02"/><column name="state_code" value="27"/><column name="state_name" value="Maharashtra"/>
+            <column name="state_alpha" value="MH"/><column name="union_territory" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/><column name="tenant" value="homebase"/><column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="tax_regions">
+            <column name="id" value="reg-03"/><column name="state_code" value="07"/><column name="state_name" value="Delhi"/>
+            <column name="state_alpha" value="DL"/><column name="union_territory" valueBoolean="true"/>
+            <column name="active" valueBoolean="true"/><column name="tenant" value="homebase"/><column name="version" valueNumeric="0"/>
+        </insert>
+    </changeSet>
+
+    <!-- Exemptions -->
+    <changeSet id="test-tax-004-exemptions" author="test" context="dev">
+        <insert tableName="tax_exemptions">
+            <column name="id" value="exempt-001"/><column name="exemption_type" value="CATEGORY"/>
+            <column name="value" value="ESSENTIAL"/><column name="description" value="Essential goods — 0% GST"/>
+            <column name="full_exemption" valueBoolean="true"/><column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/><column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="tax_exemptions">
+            <column name="id" value="exempt-002"/><column name="exemption_type" value="SUPPLY_TYPE"/>
+            <column name="value" value="EXPORT"/><column name="description" value="Export supply — zero rated"/>
+            <column name="full_exemption" valueBoolean="true"/><column name="active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/><column name="version" valueNumeric="0"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

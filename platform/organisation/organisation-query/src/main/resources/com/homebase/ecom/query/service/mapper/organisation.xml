@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Organisation">
+
+  <select id="getAll" resultType="map">
+    SELECT o.id, o.company_name AS "companyName", o.legal_name AS "legalName",
+           o.gst_number AS "gstNumber", o.pan_number AS "panNumber", o.domain,
+           o.active, o.created_time AS "createdAt"
+    FROM organisation o
+    <where>
+      <if test="id != null">AND o.id = #{id}</if>
+      <if test="companyName != null">AND LOWER(o.company_name) LIKE LOWER(CONCAT('%', #{companyName}, '%'))</if>
+      <if test="active != null">AND o.active = #{active}</if>
+      <if test="domain != null">AND o.domain = #{domain}</if>
+    </where>
+    ORDER BY o.created_time DESC
+  </select>
+
+  <select id="getAll-count" resultType="long">
+    SELECT COUNT(*) FROM organisation o
+    <where>
+      <if test="id != null">AND o.id = #{id}</if>
+      <if test="companyName != null">AND LOWER(o.company_name) LIKE LOWER(CONCAT('%', #{companyName}, '%'))</if>
+      <if test="active != null">AND o.active = #{active}</if>
+    </where>
+  </select>
+
+  <select id="getProfile" resultType="map">
+    SELECT o.id, o.company_name AS "companyName", o.legal_name AS "legalName",
+           o.registration_number AS "registrationNumber", o.gst_number AS "gstNumber",
+           o.pan_number AS "panNumber", o.domain, o.active,
+           b.logo_url AS "logoUrl", b.favicon_url AS "faviconUrl", b.primary_color AS "primaryColor",
+           b.copyright_text AS "copyrightText", b.founded_year AS "foundedYear",
+           c.primary_email AS "primaryEmail", c.support_email AS "supportEmail",
+           c.primary_phone AS "primaryPhone", c.support_phone AS "supportPhone", c.website_url AS "websiteUrl",
+           a.address_line1 AS "addressLine1", a.address_line2 AS "addressLine2",
+           a.city, a.state, a.pincode, a.country,
+           l.currency, l.timezone, l.locale, l.date_format AS "dateFormat", l.country_code AS "countryCode",
+           s.facebook_url AS "facebookUrl", s.twitter_url AS "twitterUrl",
+           s.instagram_url AS "instagramUrl", s.linkedin_url AS "linkedinUrl", s.youtube_url AS "youtubeUrl"
+    FROM organisation o
+    LEFT JOIN organisation_branding b ON o.id = b.organisation_id
+    LEFT JOIN organisation_contact c ON o.id = c.organisation_id
+    LEFT JOIN organisation_address a ON o.id = a.organisation_id
+    LEFT JOIN organisation_locale l ON o.id = l.organisation_id
+    LEFT JOIN organisation_social s ON o.id = s.organisation_id
+    WHERE o.id = #{id}
+  </select>
+
+  <select id="getProfile-count" resultType="long">
+    SELECT COUNT(*) FROM organisation o WHERE o.id = #{id}
+  </select>
+
+</mapper>

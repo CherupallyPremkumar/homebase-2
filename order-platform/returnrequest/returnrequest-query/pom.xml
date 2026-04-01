@@ -20,7 +20,12 @@
 
 	</properties>
 
-	<dependencies>	
+	<dependencies>
+        <dependency>
+            <groupId>com.homebase.ecom.returnrequest</groupId>
+            <artifactId>returnrequest-liquibase</artifactId>
+            <version>${revision}</version>
+        </dependency>	
 		<dependency>
 			<groupId>org.chenile</groupId>
 			<artifactId>query-api</artifactId>
