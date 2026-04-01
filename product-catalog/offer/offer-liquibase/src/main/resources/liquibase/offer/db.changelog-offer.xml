@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="offer-001-create-offer" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="offer"/></not></preConditions>
+        <createTable tableName="offer">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="supplier_id" type="VARCHAR(255)"/>
+            <column name="offer_type" type="VARCHAR(255)"/>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(2000)"/>
+            <column name="original_price" type="DECIMAL(19,2)"/>
+            <column name="offer_price" type="DECIMAL(19,2)"/>
+            <column name="discount_percent" type="DECIMAL(5,2)"/>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="end_date" type="TIMESTAMP"/>
+            <column name="max_quantity" type="INT"/>
+            <column name="sold_quantity" type="INT"/>
+            <column name="seller_rating" type="DECIMAL(3,2)"/>
+            <column name="buy_box_winner" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="fulfillment_type" type="VARCHAR(20)" defaultValue="MERCHANT"/>
+            <column name="shipping_cost" type="DECIMAL(10,2)" defaultValueNumeric="0"/>
+            <column name="delivery_days" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="offer-002-create-offer-activity-log" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="offer_activity_log"/></not></preConditions>
+        <createTable tableName="offer_activity_log">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="offer_id" type="VARCHAR(255)"/>
+            <column name="event_id" type="VARCHAR(255)"/>
+            <column name="comment" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Add Amazon-standard columns to offer -->
+    <changeSet id="offer-003-add-offer-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="offer"/>
+            <not><columnExists tableName="offer" columnName="sku"/></not>
+        </preConditions>
+        <addColumn tableName="offer">
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="mrp" type="DECIMAL(12,2)"/>
+            <column name="stock_quantity" type="INT" defaultValueNumeric="0"/>
+            <column name="min_order_qty" type="INT" defaultValueNumeric="1"/>
+            <column name="max_order_qty" type="INT" defaultValueNumeric="999"/>
+            <column name="item_condition" type="VARCHAR(50)" defaultValue="NEW"/>
+            <column name="shipping_days_min" type="INT"/>
+            <column name="shipping_days_max" type="INT"/>
+            <column name="buy_box_score" type="DECIMAL(5,2)" defaultValueNumeric="0"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Add indexes to offer -->
+    <changeSet id="offer-004-add-offer-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="offer"/>
+            <not><indexExists indexName="idx_offer_product"/></not>
+        </preConditions>
+        <createIndex indexName="idx_offer_product" tableName="offer">
+            <column name="product_id"/>
+        </createIndex>
+        <createIndex indexName="idx_offer_supplier" tableName="offer">
+            <column name="supplier_id"/>
+        </createIndex>
+        <createIndex indexName="idx_offer_state" tableName="offer">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex indexName="idx_offer_buy_box" tableName="offer">
+            <column name="product_id"/>
+            <column name="buy_box_winner"/>
+        </createIndex>
+        <createIndex indexName="idx_offer_variant" tableName="offer">
+            <column name="variant_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

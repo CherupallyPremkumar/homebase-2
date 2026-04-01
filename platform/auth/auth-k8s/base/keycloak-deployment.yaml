@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.0
+          args:
+            - start
+            - --import-realm
+            - --optimized
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: KC_DB
+              value: postgres
+            - name: KC_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: url
+            - name: KC_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: username
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: password
+            - name: KEYCLOAK_ADMIN
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-secret
+                  key: username
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-secret
+                  key: password
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            - name: KC_METRICS_ENABLED
+              value: "true"
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+            - name: KC_PROXY_HEADERS
+              value: "xforwarded"
+            # HomeBase Kafka SPI
+            - name: KC_SPI_EVENTS_LISTENER_HOMEBASE_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: keycloak-config
+                  key: kafka-bootstrap-servers
+            - name: KC_SPI_EVENTS_LISTENER_HOMEBASE_KAFKA_TOPIC
+              value: auth.user.events
+          volumeMounts:
+            - name: realm-import
+              mountPath: /opt/keycloak/data/import
+              readOnly: true
+            - name: spi-providers
+              mountPath: /opt/keycloak/providers
+              readOnly: true
+            - name: themes
+              mountPath: /opt/keycloak/themes/homebase
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+      initContainers:
+        # Copy SPI JAR
+        - name: spi-provider
+          image: homebase/auth-service:latest
+          command: ["cp", "/app/auth-service.jar", "/providers/auth-service.jar"]
+          volumeMounts:
+            - name: spi-providers
+              mountPath: /providers
+        # Copy realm JSON + themes
+        - name: auth-assets
+          image: homebase/auth-assets:latest
+          command: ["sh", "-c", "cp -r /themes/homebase /theme-out/homebase && cp /realm/homebase-realm.json /realm-out/"]
+          volumeMounts:
+            - name: themes
+              mountPath: /theme-out
+            - name: realm-import
+              mountPath: /realm-out
+      volumes:
+        - name: realm-import
+          emptyDir: {}
+        - name: spi-providers
+          emptyDir: {}
+        - name: themes
+          emptyDir: {}

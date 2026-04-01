@@ -1,0 +1,9 @@
+{
+    "policies": {
+        "announcement": {
+            "titleMaxLength": 200,
+            "messageMaxLength": 2000,
+            "maxActive": 3
+        }
+    }
+}

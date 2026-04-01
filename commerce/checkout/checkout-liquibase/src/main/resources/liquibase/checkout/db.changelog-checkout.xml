@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- checkout (CheckoutEntity extends AbstractJpaStateEntity) -->
+    <changeSet id="checkout-001-create-checkout" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="checkout"/></not>
+        </preConditions>
+        <createTable tableName="checkout">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="cart_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="payment_id" type="VARCHAR(255)"/>
+            <column name="subtotal" type="BIGINT"/>
+            <column name="currency" type="VARCHAR(3)"/>
+            <column name="discount_amount" type="BIGINT"/>
+            <column name="shipping_cost" type="BIGINT"/>
+            <column name="tax_amount" type="BIGINT"/>
+            <column name="total" type="BIGINT"/>
+            <column name="coupon_codes" type="VARCHAR(500)"/>
+            <column name="shipping_address_id" type="VARCHAR(255)"/>
+            <column name="billing_address_id" type="VARCHAR(255)"/>
+            <column name="shipping_method" type="VARCHAR(255)"/>
+            <column name="payment_method_id" type="VARCHAR(255)"/>
+            <column name="last_completed_step" type="VARCHAR(255)"/>
+            <column name="failure_reason" type="VARCHAR(1000)"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+            <column name="description" type="VARCHAR(2000)"/>
+        </createTable>
+        <createIndex indexName="idx_checkout_customer" tableName="checkout">
+            <column name="customer_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- checkout_item (CheckoutItemEntity extends BaseJpaEntity, FK to checkout) -->
+    <changeSet id="checkout-002-create-checkout-item" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="checkout_item"/></not>
+        </preConditions>
+        <createTable tableName="checkout_item">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="checkout_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="supplier_id" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT"/>
+            <column name="unit_price" type="BIGINT"/>
+            <column name="line_total" type="BIGINT"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="checkout_item" baseColumnNames="checkout_id"
+            referencedTableName="checkout" referencedColumnNames="id" constraintName="fk_checkout_item_checkout"/>
+        <createIndex indexName="idx_checkout_item_checkout" tableName="checkout_item">
+            <column name="checkout_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Add idempotency, pricing lock, payment session, and timestamp columns to checkout -->
+    <changeSet id="checkout-003-add-checkout-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="checkout"/>
+            <not><columnExists tableName="checkout" columnName="idempotency_key"/></not>
+        </preConditions>
+        <addColumn tableName="checkout">
+            <column name="idempotency_key" type="VARCHAR(255)"/>
+            <column name="price_lock_token" type="VARCHAR(255)"/>
+            <column name="payment_session_id" type="VARCHAR(255)"/>
+            <column name="completed_at" type="TIMESTAMP"/>
+            <column name="cancelled_at" type="TIMESTAMP"/>
+        </addColumn>
+        <addUniqueConstraint tableName="checkout" columnNames="idempotency_key" constraintName="uk_checkout_idempotency_key"/>
+    </changeSet>
+
+    <!-- Saga log table for checkout orchestration steps -->
+    <changeSet id="checkout-004-create-checkout-saga-log" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="checkout_saga_log"/></not>
+        </preConditions>
+        <createTable tableName="checkout_saga_log">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="checkout_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="step_name" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="step_status" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="started_at" type="TIMESTAMP"/>
+            <column name="completed_at" type="TIMESTAMP"/>
+            <column name="error_message" type="VARCHAR(2000)"/>
+            <column name="compensation_status" type="VARCHAR(50)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="checkout_saga_log" baseColumnNames="checkout_id"
+            referencedTableName="checkout" referencedColumnNames="id" constraintName="fk_checkout_saga_log_checkout"/>
+        <createIndex indexName="idx_checkout_saga_log_checkout" tableName="checkout_saga_log">
+            <column name="checkout_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Indexes on checkout table -->
+    <changeSet id="checkout-005-add-checkout-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="checkout"/>
+            <not><indexExists indexName="idx_checkout_cart"/></not>
+        </preConditions>
+        <createIndex indexName="idx_checkout_cart" tableName="checkout">
+            <column name="cart_id"/>
+        </createIndex>
+        <createIndex indexName="idx_checkout_state" tableName="checkout">
+            <column name="state_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

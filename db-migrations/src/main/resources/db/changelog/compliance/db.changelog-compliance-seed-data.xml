@@ -518,4 +518,185 @@
 
     </changeSet>
 
+    <!-- ================================================================== -->
+    <!-- Seller Document seed data — 8 documents for 3 suppliers            -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-014-seed-seller-documents" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="seller_document"/>
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM seller_document WHERE id = 'sdoc-001'</sqlCheck>
+        </preConditions>
+
+        <!-- sup-001 (TechZone India) — GST Certificate — VERIFIED -->
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-10T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T14:00:00"/>
+            <column name="version" valueNumeric="2"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="VERIFIED"/>
+            <column name="state_entry_time" valueDate="2025-01-15T14:00:00"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="document_type" value="GST"/>
+            <column name="document_number" value="29ABCDE1234F1Z5"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-001/gst-cert.pdf"/>
+            <column name="verification_status" value="VERIFIED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-15T14:00:00"/>
+            <column name="expiry_date" valueDate="2027-03-31"/>
+            <column name="priority" value="HIGH"/>
+        </insert>
+
+        <!-- sup-001 — PAN Card — VERIFIED -->
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-10T10:05:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T14:10:00"/>
+            <column name="version" valueNumeric="2"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="VERIFIED"/>
+            <column name="state_entry_time" valueDate="2025-01-15T14:10:00"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="document_type" value="PAN"/>
+            <column name="document_number" value="ABCDE1234F"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-001/pan-card.pdf"/>
+            <column name="verification_status" value="VERIFIED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-15T14:10:00"/>
+            <column name="priority" value="HIGH"/>
+        </insert>
+
+        <!-- sup-001 — Bank Account — PENDING -->
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-supplier-001"/>
+            <column name="created_time" valueDate="2026-03-20T09:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-20T09:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="PENDING"/>
+            <column name="state_entry_time" valueDate="2026-03-20T09:00:00"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="document_type" value="BANK_ACCOUNT"/>
+            <column name="document_number" value="ICIC0001234-9876543210"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-001/cancelled-cheque.pdf"/>
+            <column name="verification_status" value="PENDING"/>
+            <column name="priority" value="NORMAL"/>
+        </insert>
+
+        <!-- sup-002 (KitchenWorld) — GST Certificate — VERIFIED -->
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-12T11:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-18T16:00:00"/>
+            <column name="version" valueNumeric="2"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="VERIFIED"/>
+            <column name="state_entry_time" valueDate="2025-01-18T16:00:00"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="document_type" value="GST"/>
+            <column name="document_number" value="27FGHIJ5678K2Z3"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-002/gst-cert.pdf"/>
+            <column name="verification_status" value="VERIFIED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-18T16:00:00"/>
+            <column name="expiry_date" valueDate="2027-03-31"/>
+            <column name="priority" value="HIGH"/>
+        </insert>
+
+        <!-- sup-002 — Address Proof — REJECTED -->
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-12T11:10:00"/>
+            <column name="last_modified_time" valueDate="2025-01-20T10:00:00"/>
+            <column name="version" valueNumeric="3"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="REJECTED"/>
+            <column name="state_entry_time" valueDate="2025-01-20T10:00:00"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="document_type" value="ADDRESS_PROOF"/>
+            <column name="document_number" value="UTIL-MH-2025-001"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-002/address-proof.pdf"/>
+            <column name="verification_status" value="REJECTED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-20T10:00:00"/>
+            <column name="rejection_reason" value="Document older than 3 months. Please upload a recent utility bill or bank statement."/>
+            <column name="priority" value="NORMAL"/>
+        </insert>
+
+        <!-- sup-002 — Identity Proof — VERIFIED -->
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-006"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-12T11:15:00"/>
+            <column name="last_modified_time" valueDate="2025-01-18T16:15:00"/>
+            <column name="version" valueNumeric="2"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="VERIFIED"/>
+            <column name="state_entry_time" valueDate="2025-01-18T16:15:00"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="document_type" value="IDENTITY"/>
+            <column name="document_number" value="AADHAAR-XXXX-7890"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-002/aadhaar.pdf"/>
+            <column name="verification_status" value="VERIFIED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-18T16:15:00"/>
+            <column name="priority" value="NORMAL"/>
+        </insert>
+
+        <!-- sup-003 (FurniHome) — Registration Certificate — VERIFIED -->
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-007"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-14T09:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-22T12:00:00"/>
+            <column name="version" valueNumeric="2"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="VERIFIED"/>
+            <column name="state_entry_time" valueDate="2025-01-22T12:00:00"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="document_type" value="REGISTRATION"/>
+            <column name="document_number" value="TN-MSME-2024-00456"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-003/msme-registration.pdf"/>
+            <column name="verification_status" value="VERIFIED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-22T12:00:00"/>
+            <column name="expiry_date" valueDate="2029-12-31"/>
+            <column name="priority" value="NORMAL"/>
+        </insert>
+
+        <!-- sup-003 — GST Certificate — EXPIRED -->
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-008"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-14T09:10:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T00:00:00"/>
+            <column name="version" valueNumeric="3"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="EXPIRED"/>
+            <column name="state_entry_time" valueDate="2026-03-01T00:00:00"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="document_type" value="GST"/>
+            <column name="document_number" value="33KLMNO9012P3Z7"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-003/gst-cert.pdf"/>
+            <column name="verification_status" value="EXPIRED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-22T12:10:00"/>
+            <column name="expiry_date" valueDate="2026-03-01"/>
+            <column name="priority" value="HIGH"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

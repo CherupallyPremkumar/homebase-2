@@ -1,0 +1,20 @@
+{
+  "rules": [
+    {
+      "expression": "stateId=='PUBLISHED'",
+      "style": {"color": "Green", "thickness": 2.0}
+    },
+    {
+      "expression": "stateId=='IN_REVIEW'",
+      "style": {"color": "Orange", "thickness": 2.0}
+    },
+    {
+      "expression": "stateId=='ARCHIVED'",
+      "style": {"color": "Gray", "thickness": 1.5}
+    },
+    {
+      "expression": "highlight==true",
+      "style": {"color": "Fuchsia", "thickness": 2.5}
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- CmsPage Workflow — Block-based CMS page lifecycle                      -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (published via PostSaveHook -> Kafka):                 -->
+  <!--   cms.PUBLISHED   -> invalidate CDN cache, notify subscribers          -->
+  <!--   cms.ARCHIVED    -> remove from storefront search index               -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <event-information eventId='createCmsPage'    meta-acls="EDITOR,ADMIN"         meta-bodyType="com.homebase.ecom.cms.model.CmsPage"/>
+  <event-information eventId='submitForReview'  meta-acls="EDITOR,ADMIN"         meta-bodyType="com.homebase.ecom.cms.model.CmsPage"/>
+  <event-information eventId='approve'          meta-acls="ADMIN"                meta-bodyType="com.homebase.ecom.cms.model.CmsPage"/>
+  <event-information eventId='reject'           meta-acls="ADMIN"                meta-bodyType="com.homebase.ecom.cms.dto.RejectCmsPagePayload"/>
+  <event-information eventId='publish'          meta-acls="ADMIN"                meta-bodyType="com.homebase.ecom.cms.model.CmsPage"/>
+  <event-information eventId='unpublish'        meta-acls="ADMIN"                meta-bodyType="com.homebase.ecom.cms.model.CmsPage"/>
+  <event-information eventId='archive'          meta-acls="ADMIN"                meta-bodyType="com.homebase.ecom.cms.model.CmsPage"/>
+  <event-information eventId='restore'          meta-acls="ADMIN"                meta-bodyType="com.homebase.ecom.cms.model.CmsPage"/>
+
+  <flow id='cms-page-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="cmsPageEntryAction" />
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- HAPPY PATH:  DRAFT -> IN_REVIEW -> PUBLISHED                       -->
+    <!-- DIRECT PATH: DRAFT -> PUBLISHED (admin bypass)                     -->
+    <!-- ARCHIVE:     PUBLISHED -> ARCHIVED -> DRAFT (restore)              -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Initial state: content is being authored -->
+    <manual-state id='DRAFT' initialState='true' meta-mainPath="true"
+                  description="Page is in draft, being authored or revised">
+      <on eventId='submitForReview'
+          componentName='cmsPageDefaultTransitionAction'
+          newStateId='IN_REVIEW'
+          meta-mainPath="true" meta-acls="EDITOR,ADMIN"/>
+      <on eventId='publish'
+          componentName='cmsPagePublishAction'
+          newStateId='PUBLISHED'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- Under editorial review -->
+    <manual-state id='IN_REVIEW' meta-mainPath="true"
+                  description="Page submitted for review, awaiting approval">
+      <on eventId='approve'
+          componentName='cmsPageApproveAction'
+          newStateId='PUBLISHED'
+          meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='reject'
+          componentName='cmsPageRejectAction'
+          newStateId='DRAFT'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- Published and live on storefront -->
+    <manual-state id='PUBLISHED' meta-mainPath="true"
+                  description="Page is live and visible to customers">
+      <on eventId='unpublish'
+          componentName='cmsPageUnpublishAction'
+          newStateId='DRAFT'
+          meta-acls="ADMIN"/>
+      <on eventId='archive'
+          componentName='cmsPageArchiveAction'
+          newStateId='ARCHIVED'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- Archived — soft-deleted from storefront -->
+    <manual-state id='ARCHIVED'
+                  description="Page is archived and no longer visible">
+      <on eventId='restore'
+          componentName='cmsPageDefaultTransitionAction'
+          newStateId='DRAFT'
+          meta-acls="ADMIN"/>
+    </manual-state>
+  </flow>
+</states>

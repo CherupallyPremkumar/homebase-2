@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<packaging>pom</packaging>
+	<modules>
+		<module>compliance-domain</module>
+		<module>compliance-api</module>
+		<module>compliance-infrastructure</module>
+		<module>compliance-service</module>
+		<module>compliance-client</module>
+		<module>compliance-query-api</module>
+		<module>compliance-query</module>
+	        <module>compliance-liquibase</module>
+    </modules>
+	<parent>
+		<groupId>com.homebase.ecom</groupId>
+		<artifactId>homebase-parent</artifactId>
+		<version>${revision}</version>
+		<relativePath>../../pom.xml</relativePath>
+	</parent>
+	<groupId>com.homebase.ecom.compliance</groupId>
+	<version>${revision}</version>
+	<artifactId>compliance-parent</artifactId>
+	<name>compliance-parent</name>
+	<description>Compliance bounded context — agreements, platform policies, regulations, audits</description>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.homebase.ecom.compliance</groupId>
+				<version>${revision}</version>
+				<artifactId>compliance-api</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>com.homebase.ecom.compliance</groupId>
+				<version>${revision}</version>
+				<artifactId>compliance-domain</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>com.homebase.ecom.compliance</groupId>
+				<version>${revision}</version>
+				<artifactId>compliance-infrastructure</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>com.homebase.ecom.compliance</groupId>
+				<version>${revision}</version>
+				<artifactId>compliance-service</artifactId>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+</project>

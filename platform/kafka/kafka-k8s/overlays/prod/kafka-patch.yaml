@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+        - name: kafka
+          env:
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "3"
+            - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "3"
+            - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "2"
+            - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+              value: "false"
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"

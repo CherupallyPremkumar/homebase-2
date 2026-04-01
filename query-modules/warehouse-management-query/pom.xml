@@ -13,7 +13,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.homebase.ecom</groupId>
 	<artifactId>warehouse-management-query-service</artifactId>
-	<name>warehouse-management-query</name>
+	<name>warehouse-management-query-service</name>
 	<description>Cross-BC joined queries for Warehouse Management System (WMS) app</description>
 
 	<dependencies>

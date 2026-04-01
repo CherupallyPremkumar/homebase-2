@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Reports test data: report_definition, scheduled_report, report_history
+        4 report definitions, 2 scheduled reports, 6 history entries
+    -->
+    <changeSet id="reports-test-data" author="homebase-test">
+
+        <!-- ============================================================ -->
+        <!-- REPORT DEFINITIONS — 4 standard reports                      -->
+        <!-- ============================================================ -->
+
+        <insert tableName="report_definition">
+            <column name="id" value="rpt-def-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-01-10T09:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-10T09:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Daily Sales Summary"/>
+            <column name="description" value="Aggregated daily sales including orders, revenue, units sold, discounts, and customer breakdown. Provides day-over-day comparison."/>
+            <column name="category" value="SALES"/>
+            <column name="query_template" value="SELECT summary_date, total_orders, total_revenue, total_units_sold, avg_order_value, new_customers, returning_customers FROM daily_sales_summary WHERE summary_date BETWEEN :start_date AND :end_date ORDER BY summary_date DESC"/>
+            <column name="available_formats" value="PDF,CSV,Excel"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="report_definition">
+            <column name="id" value="rpt-def-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-01-10T09:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-10T09:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Monthly Revenue Report"/>
+            <column name="description" value="Month-end revenue report with breakdown by category, payment method, and region. Includes tax collection summary and refund adjustments."/>
+            <column name="category" value="SALES"/>
+            <column name="query_template" value="SELECT DATE_TRUNC('month', created_time) AS month, SUM(total_amount) AS revenue, SUM(tax_amount) AS tax, COUNT(*) AS order_count FROM orders WHERE created_time BETWEEN :start_date AND :end_date GROUP BY month ORDER BY month DESC"/>
+            <column name="available_formats" value="PDF,Excel"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="report_definition">
+            <column name="id" value="rpt-def-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-01-15T11:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-15T11:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Seller Performance Report"/>
+            <column name="description" value="Per-seller metrics including order count, revenue, fulfillment speed, return rate, cancellation rate, and customer ratings. Used for seller tier evaluation."/>
+            <column name="category" value="SELLER"/>
+            <column name="query_template" value="SELECT supplier_id, total_orders, total_revenue, avg_fulfillment_days, avg_rating, cancellation_rate FROM supplier_performance WHERE period_year = :year AND period_month = :month"/>
+            <column name="available_formats" value="PDF,CSV,Excel"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="report_definition">
+            <column name="id" value="rpt-def-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-01-20T14:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-20T14:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Inventory Turnover Report"/>
+            <column name="description" value="Warehouse-level inventory turnover analysis showing stock movement velocity, dead stock identification, and reorder recommendations."/>
+            <column name="category" value="OPERATIONS"/>
+            <column name="query_template" value="SELECT w.warehouse_name, i.product_id, i.quantity_on_hand, i.quantity_reserved, i.reorder_point FROM inventory_item i JOIN warehouses w ON i.warehouse_id = w.id WHERE i.quantity_on_hand > 0 ORDER BY i.quantity_on_hand DESC"/>
+            <column name="available_formats" value="CSV,Excel"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- SCHEDULED REPORTS — 2 active schedules                       -->
+        <!-- ============================================================ -->
+
+        <!-- Daily Sales emailed every morning at 7 AM -->
+        <insert tableName="scheduled_report">
+            <column name="id" value="sched-rpt-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-02-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-29T07:00:00"/>
+            <column name="version" valueNumeric="28"/>
+            <column name="report_definition_id" value="rpt-def-001"/>
+            <column name="format" value="PDF"/>
+            <column name="frequency" value="DAILY"/>
+            <column name="cron_expression" value="0 0 7 * * ?"/>
+            <column name="next_run_at" valueDate="2026-03-31T07:00:00"/>
+            <column name="recipient_email" value="ops-team@homebase.in"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="last_run_at" valueDate="2026-03-30T07:00:00"/>
+        </insert>
+
+        <!-- Monthly Revenue on 1st of each month at 6 AM -->
+        <insert tableName="scheduled_report">
+            <column name="id" value="sched-rpt-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-02-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T06:00:00"/>
+            <column name="version" valueNumeric="2"/>
+            <column name="report_definition_id" value="rpt-def-002"/>
+            <column name="format" value="Excel"/>
+            <column name="frequency" value="MONTHLY"/>
+            <column name="cron_expression" value="0 0 6 1 * ?"/>
+            <column name="next_run_at" valueDate="2026-04-01T06:00:00"/>
+            <column name="recipient_email" value="finance@homebase.in"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="last_run_at" valueDate="2026-03-01T06:00:00"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- REPORT HISTORY — 6 entries (mix of scheduled + on-demand)    -->
+        <!-- ============================================================ -->
+
+        <!-- Scheduled daily sales — completed yesterday -->
+        <insert tableName="report_history">
+            <column name="id" value="rpt-hist-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2026-03-30T07:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-30T07:00:12"/>
+            <column name="version" valueNumeric="1"/>
+            <column name="report_definition_id" value="rpt-def-001"/>
+            <column name="scheduled_report_id" value="sched-rpt-001"/>
+            <column name="name" value="Daily Sales Summary - 2026-03-29"/>
+            <column name="format" value="PDF"/>
+            <column name="generated_by" value="system"/>
+            <column name="file_url" value="/reports/2026/03/daily-sales-2026-03-29.pdf"/>
+            <column name="file_size_bytes" valueNumeric="245760"/>
+            <column name="record_count" valueNumeric="1"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="completed_at" valueDate="2026-03-30T07:00:12"/>
+        </insert>
+
+        <!-- Scheduled daily sales — day before -->
+        <insert tableName="report_history">
+            <column name="id" value="rpt-hist-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2026-03-29T07:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-29T07:00:15"/>
+            <column name="version" valueNumeric="1"/>
+            <column name="report_definition_id" value="rpt-def-001"/>
+            <column name="scheduled_report_id" value="sched-rpt-001"/>
+            <column name="name" value="Daily Sales Summary - 2026-03-28"/>
+            <column name="format" value="PDF"/>
+            <column name="generated_by" value="system"/>
+            <column name="file_url" value="/reports/2026/03/daily-sales-2026-03-28.pdf"/>
+            <column name="file_size_bytes" valueNumeric="238592"/>
+            <column name="record_count" valueNumeric="1"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="completed_at" valueDate="2026-03-29T07:00:15"/>
+        </insert>
+
+        <!-- Scheduled monthly revenue — March 1st run -->
+        <insert tableName="report_history">
+            <column name="id" value="rpt-hist-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2026-03-01T06:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T06:01:45"/>
+            <column name="version" valueNumeric="1"/>
+            <column name="report_definition_id" value="rpt-def-002"/>
+            <column name="scheduled_report_id" value="sched-rpt-002"/>
+            <column name="name" value="Monthly Revenue Report - February 2026"/>
+            <column name="format" value="Excel"/>
+            <column name="generated_by" value="system"/>
+            <column name="file_url" value="/reports/2026/03/monthly-revenue-feb-2026.xlsx"/>
+            <column name="file_size_bytes" valueNumeric="1048576"/>
+            <column name="record_count" valueNumeric="4820"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="completed_at" valueDate="2026-03-01T06:01:45"/>
+        </insert>
+
+        <!-- On-demand seller performance (no scheduled_report_id) -->
+        <insert tableName="report_history">
+            <column name="id" value="rpt-hist-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-03-25T14:30:00"/>
+            <column name="last_modified_time" valueDate="2026-03-25T14:30:22"/>
+            <column name="version" valueNumeric="1"/>
+            <column name="report_definition_id" value="rpt-def-003"/>
+            <column name="name" value="Seller Performance - March 2026 (ad-hoc)"/>
+            <column name="format" value="CSV"/>
+            <column name="generated_by" value="admin"/>
+            <column name="file_url" value="/reports/2026/03/seller-performance-mar-adhoc.csv"/>
+            <column name="file_size_bytes" valueNumeric="89600"/>
+            <column name="record_count" valueNumeric="42"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="completed_at" valueDate="2026-03-25T14:30:22"/>
+        </insert>
+
+        <!-- On-demand inventory — currently processing -->
+        <insert tableName="report_history">
+            <column name="id" value="rpt-hist-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="warehouse-mgr"/>
+            <column name="created_time" valueDate="2026-03-30T11:45:00"/>
+            <column name="last_modified_time" valueDate="2026-03-30T11:45:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="report_definition_id" value="rpt-def-004"/>
+            <column name="name" value="Inventory Turnover - Q1 2026"/>
+            <column name="format" value="Excel"/>
+            <column name="generated_by" value="warehouse-mgr"/>
+            <column name="status" value="PROCESSING"/>
+        </insert>
+
+        <!-- Failed report — error captured -->
+        <insert tableName="report_history">
+            <column name="id" value="rpt-hist-006"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-03-28T16:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-28T16:00:45"/>
+            <column name="version" valueNumeric="1"/>
+            <column name="report_definition_id" value="rpt-def-002"/>
+            <column name="name" value="Monthly Revenue Report - Custom Range"/>
+            <column name="format" value="PDF"/>
+            <column name="generated_by" value="admin"/>
+            <column name="status" value="FAILED"/>
+            <column name="error_message" value="Query execution timeout after 120s — date range too large (2025-01-01 to 2026-03-28). Reduce the date range or use the Excel format for large datasets."/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

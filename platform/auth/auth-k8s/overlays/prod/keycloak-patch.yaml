@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+spec:
+  replicas: 2
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: keycloak
+          args:
+            - start
+            - --optimized
+          env:
+            # Production hostname
+            - name: KC_HOSTNAME
+              value: auth.homebase.com
+            - name: KC_HOSTNAME_STRICT
+              value: "true"
+            # HTTPS only
+            - name: KC_HTTP_ENABLED
+              value: "false"
+            - name: KC_PROXY_HEADERS
+              value: "xforwarded"
+            # Clustering (Infinispan)
+            - name: KC_CACHE
+              value: ispn
+            - name: KC_CACHE_STACK
+              value: kubernetes
+            - name: JAVA_OPTS_KC_HEAP
+              value: "-XX:MaxRAMPercentage=70.0"
+            # Metrics + health
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            - name: KC_METRICS_ENABLED
+              value: "true"
+            # Brute force protection
+            - name: KC_SPI_BRUTE_FORCE_PROTECTOR_DEFAULT_ENABLED
+              value: "true"
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0

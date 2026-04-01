@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="disputes-001-create-dispute" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="dispute"/></not></preConditions>
+        <createTable tableName="dispute">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- StateEntity columns -->
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <!-- Domain columns -->
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="seller_id" type="VARCHAR(255)"/>
+            <column name="dispute_type" type="VARCHAR(50)"/>
+            <column name="reason" type="VARCHAR(2000)"/>
+            <column name="disputed_amount" type="DECIMAL(19,2)"/>
+            <column name="priority" type="VARCHAR(50)"/>
+            <column name="assigned_to" type="VARCHAR(255)"/>
+            <column name="customer_complaint" type="TEXT"/>
+            <column name="seller_response" type="TEXT"/>
+            <column name="evidence_links" type="VARCHAR(4000)"/>
+            <column name="investigator_id" type="VARCHAR(255)"/>
+            <column name="investigation_notes" type="TEXT"/>
+            <column name="resolution_outcome" type="VARCHAR(50)"/>
+            <column name="resolution_notes" type="TEXT"/>
+            <column name="resolution_date" type="TIMESTAMP"/>
+            <column name="refund_amount" type="DECIMAL(19,2)"/>
+            <column name="sla_target_days" type="INT" defaultValueNumeric="5"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="disputes-002-create-dispute-activity" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="dispute_activity"/></not></preConditions>
+        <createTable tableName="dispute_activity">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- Domain columns -->
+            <column name="dispute_id" type="VARCHAR(255)"/>
+            <column name="event_id" type="VARCHAR(255)"/>
+            <column name="comment" type="TEXT"/>
+            <column name="success" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="disputes-003-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><indexExists indexName="idx_dispute_order"/></not></preConditions>
+        <createIndex indexName="idx_dispute_order" tableName="dispute">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex indexName="idx_dispute_customer" tableName="dispute">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex indexName="idx_dispute_seller" tableName="dispute">
+            <column name="seller_id"/>
+        </createIndex>
+        <createIndex indexName="idx_dispute_state" tableName="dispute">
+            <column name="state_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="disputes-004-fk-dispute-activity" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><foreignKeyConstraintExists foreignKeyName="fk_dispute_activity_dispute"/></not></preConditions>
+        <addForeignKeyConstraint
+            baseTableName="dispute_activity"
+            baseColumnNames="dispute_id"
+            referencedTableName="dispute"
+            referencedColumnNames="id"
+            constraintName="fk_dispute_activity_dispute"/>
+    </changeSet>
+
+</databaseChangeLog>

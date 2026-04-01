@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- Banner Workflow — Promotional banner lifecycle                         -->
+  <!--                                                                        -->
+  <!-- DRAFT → ACTIVE → EXPIRED                                              -->
+  <!-- DRAFT → SCHEDULED → ACTIVE → EXPIRED                                  -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <event-information eventId='createBanner'  meta-acls="EDITOR,ADMIN"  meta-bodyType="com.homebase.ecom.cms.model.Banner"/>
+  <event-information eventId='activate'      meta-acls="ADMIN"         meta-bodyType="com.homebase.ecom.cms.model.Banner"/>
+  <event-information eventId='deactivate'    meta-acls="ADMIN"         meta-bodyType="com.homebase.ecom.cms.model.Banner"/>
+  <event-information eventId='schedule'      meta-acls="ADMIN"         meta-bodyType="com.homebase.ecom.cms.model.Banner"/>
+  <event-information eventId='expire'        meta-acls="ADMIN"         meta-bodyType="com.homebase.ecom.cms.model.Banner"/>
+
+  <flow id='banner-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="cmsBannerEntryAction" />
+
+    <!-- Initial state: banner is being composed -->
+    <manual-state id='DRAFT' initialState='true' meta-mainPath="true"
+                  description="Banner is in draft, being composed">
+      <on eventId='activate'
+          componentName='cmsBannerActivateAction'
+          newStateId='ACTIVE'
+          meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='schedule'
+          componentName='cmsBannerDefaultTransitionAction'
+          newStateId='SCHEDULED'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- Scheduled for future activation -->
+    <manual-state id='SCHEDULED' meta-mainPath="true"
+                  description="Banner is scheduled for future activation">
+      <on eventId='activate'
+          componentName='cmsBannerActivateAction'
+          newStateId='ACTIVE'
+          meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='deactivate'
+          componentName='cmsBannerDeactivateAction'
+          newStateId='DRAFT'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- Active and visible on storefront -->
+    <manual-state id='ACTIVE' meta-mainPath="true"
+                  description="Banner is live and visible to customers">
+      <on eventId='deactivate'
+          componentName='cmsBannerDeactivateAction'
+          newStateId='DRAFT'
+          meta-acls="ADMIN"/>
+      <on eventId='expire'
+          componentName='cmsBannerDefaultTransitionAction'
+          newStateId='EXPIRED'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- Expired — no longer visible -->
+    <manual-state id='EXPIRED'
+                  description="Banner has expired and is no longer visible">
+      <on eventId='activate'
+          componentName='cmsBannerActivateAction'
+          newStateId='ACTIVE'
+          meta-acls="ADMIN"/>
+    </manual-state>
+  </flow>
+</states>

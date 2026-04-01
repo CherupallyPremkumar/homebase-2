@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- orders (OrderEntity extends AbstractJpaStateEntity) -->
+    <changeSet id="order-001-create-orders" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="orders"/></not>
+        </preConditions>
+        <createTable tableName="orders">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="order_number" type="VARCHAR(255)"/>
+            <column name="customer_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="subtotal" type="DECIMAL(12,2)"/>
+            <column name="tax_amount" type="DECIMAL(12,2)"/>
+            <column name="shipping_amount" type="DECIMAL(12,2)"/>
+            <column name="total_amount" type="DECIMAL(12,2)"><constraints nullable="false"/></column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR"><constraints nullable="false"/></column>
+            <column name="shipping_address_id" type="VARCHAR(255)"/>
+            <column name="billing_address_id" type="VARCHAR(255)"/>
+            <column name="payment_method_id" type="VARCHAR(255)"/>
+            <column name="notes" type="TEXT"/>
+            <column name="cancel_reason" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(2000)"/>
+            <column name="item_count" type="INT" defaultValueNumeric="0"/>
+            <column name="discount_amount" type="DECIMAL(12,2)" defaultValueNumeric="0"/>
+            <column name="shipping_address" type="TEXT"/>
+        </createTable>
+        <addUniqueConstraint tableName="orders" columnNames="order_number" constraintName="uk_orders_order_number"/>
+    </changeSet>
+
+    <!-- order_items (OrderItemEntity extends BaseJpaEntity, FK to orders) -->
+    <changeSet id="order-002-create-order-items" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="order_items"/></not>
+        </preConditions>
+        <createTable tableName="order_items">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT"><constraints nullable="false"/></column>
+            <column name="unit_price" type="DECIMAL(12,2)"><constraints nullable="false"/></column>
+            <column name="total_price" type="DECIMAL(12,2)"><constraints nullable="false"/></column>
+            <column name="supplier_id" type="VARCHAR(255)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="order_items" baseColumnNames="order_id"
+            referencedTableName="orders" referencedColumnNames="id" constraintName="fk_order_items_order"/>
+        <createIndex indexName="idx_order_items_order" tableName="order_items">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex indexName="idx_order_items_supplier" tableName="order_items">
+            <column name="supplier_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- order_activity (OrderActivityLogEntity extends BaseJpaEntity) -->
+    <changeSet id="order-003-create-order-activity" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="order_activity"/></not>
+        </preConditions>
+        <createTable tableName="order_activity">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="VARCHAR(2000)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Add missing columns to orders for Amazon-standard schema -->
+    <changeSet id="order-004-add-orders-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="orders"/>
+            <not><columnExists tableName="orders" columnName="payment_id"/></not>
+        </preConditions>
+        <addColumn tableName="orders">
+            <column name="payment_id" type="VARCHAR(255)"/>
+            <column name="checkout_id" type="VARCHAR(255)"/>
+            <column name="invoice_number" type="VARCHAR(100)"/>
+            <column name="invoice_url" type="VARCHAR(500)"/>
+            <column name="estimated_delivery_date" type="TIMESTAMP"/>
+            <column name="actual_delivery_date" type="TIMESTAMP"/>
+            <column name="tracking_number" type="VARCHAR(255)"/>
+            <column name="carrier" type="VARCHAR(100)"/>
+            <column name="coupon_codes" type="VARCHAR(500)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Add missing columns to order_items -->
+    <changeSet id="order-005-add-order-items-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="order_items"/>
+            <not><columnExists tableName="order_items" columnName="tax_amount"/></not>
+        </preConditions>
+        <addColumn tableName="order_items">
+            <column name="tax_amount" type="DECIMAL(12,2)" defaultValueNumeric="0"/>
+            <column name="discount_amount" type="DECIMAL(12,2)" defaultValueNumeric="0"/>
+            <column name="supplier_name" type="VARCHAR(255)"/>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <column name="hsn_code" type="VARCHAR(20)"/>
+            <column name="return_eligible" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="fulfillment_status" type="VARCHAR(50)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- order_addresses (BaseJpaEntity) -->
+    <changeSet id="order-006-create-order-addresses" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="order_addresses"/></not>
+        </preConditions>
+        <createTable tableName="order_addresses">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="address_type" type="VARCHAR(20)"><constraints nullable="false"/></column>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="phone" type="VARCHAR(20)"/>
+            <column name="line1" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="line2" type="VARCHAR(255)"/>
+            <column name="city" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="state" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="pincode" type="VARCHAR(10)"><constraints nullable="false"/></column>
+            <column name="country" type="VARCHAR(50)" defaultValue="India"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="order_addresses" baseColumnNames="order_id"
+            referencedTableName="orders" referencedColumnNames="id" constraintName="fk_order_addresses_order"/>
+        <createIndex indexName="idx_order_addresses_order" tableName="order_addresses">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- order_status_history (BaseJpaEntity) -->
+    <changeSet id="order-007-create-order-status-history" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="order_status_history"/></not>
+        </preConditions>
+        <createTable tableName="order_status_history">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="from_state" type="VARCHAR(100)"/>
+            <column name="to_state" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="changed_by" type="VARCHAR(255)"/>
+            <column name="reason" type="VARCHAR(1000)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="order_status_history" baseColumnNames="order_id"
+            referencedTableName="orders" referencedColumnNames="id" constraintName="fk_order_status_history_order"/>
+        <createIndex indexName="idx_order_status_history_order" tableName="order_status_history">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Indexes on orders table -->
+    <changeSet id="order-008-add-orders-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="orders"/>
+            <not><indexExists indexName="idx_orders_customer"/></not>
+        </preConditions>
+        <createIndex indexName="idx_orders_customer" tableName="orders">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex indexName="idx_orders_state" tableName="orders">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex indexName="idx_orders_payment" tableName="orders">
+            <column name="payment_id"/>
+        </createIndex>
+        <createIndex indexName="idx_orders_created" tableName="orders">
+            <column name="created_time"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

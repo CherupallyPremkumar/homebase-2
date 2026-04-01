@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.homebase.ecom.organisation</groupId>
+        <artifactId>organisation-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>organisation-service</artifactId>
+    <packaging>jar</packaging>
+    <name>organisation-service</name>
+    <dependencies>
+        <dependency><groupId>com.homebase.ecom.organisation</groupId><artifactId>organisation-api</artifactId><version>${revision}</version></dependency>
+        <dependency><groupId>com.homebase.ecom.organisation</groupId><artifactId>organisation-domain</artifactId><version>${revision}</version></dependency>
+        <dependency><groupId>com.homebase.ecom.organisation</groupId><artifactId>organisation-infrastructure</artifactId><version>${revision}</version></dependency>
+        <dependency><groupId>com.homebase.ecom.organisation</groupId><artifactId>organisation-liquibase</artifactId><version>${revision}</version></dependency>
+        <dependency><groupId>org.chenile</groupId><artifactId>chenile-http</artifactId></dependency>
+        <dependency><groupId>org.chenile</groupId><artifactId>chenile-security</artifactId></dependency>
+        <dependency><groupId>com.homebase.ecom</groupId><artifactId>core</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-jpa</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-liquibase</artifactId></dependency>
+
+        <!-- Test -->
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-test-autoconfigure</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>io.cucumber</groupId><artifactId>cucumber-java</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>io.cucumber</groupId><artifactId>cucumber-junit</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>io.cucumber</groupId><artifactId>cucumber-spring</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>org.chenile</groupId><artifactId>cucumber-utils</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>org.chenile</groupId><artifactId>cucumber-sec-utils</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>org.junit.vintage</groupId><artifactId>junit-vintage-engine</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>com.h2database</groupId><artifactId>h2</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-oauth2-resource-server</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-oauth2-client</artifactId></dependency>
+        <dependency><groupId>org.testcontainers</groupId><artifactId>testcontainers</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>com.github.dasniko</groupId><artifactId>testcontainers-keycloak</artifactId><version>3.5.1</version><scope>test</scope></dependency>
+    </dependencies>
+</project>

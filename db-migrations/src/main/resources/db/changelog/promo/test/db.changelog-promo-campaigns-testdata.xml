@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="testdata-campaigns" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM campaign WHERE id = 'camp-001'</sqlCheck>
+        </preConditions>
+
+        <!-- Campaign 1: Diwali Dhamaka — FESTIVAL, ACTIVE -->
+        <insert tableName="campaign">
+            <column name="id" value="camp-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-02-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="version" valueNumeric="2"/>
+            <column name="flow_id" value="campaign-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="name" value="Diwali Dhamaka"/>
+            <column name="campaign_type" value="FESTIVAL"/>
+            <column name="description" value="Massive Diwali sale across all categories with up to 40% off"/>
+            <column name="discount_type" value="PERCENTAGE"/>
+            <column name="discount_value" valueNumeric="40.00"/>
+            <column name="start_date" valueDate="2026-03-15T00:00:00"/>
+            <column name="end_date" valueDate="2026-04-15T23:59:59"/>
+            <column name="budget" valueNumeric="500000.00"/>
+            <column name="spent" valueNumeric="123456.78"/>
+            <column name="revenue" valueNumeric="890000.00"/>
+            <column name="usage_count" valueNumeric="4567"/>
+            <column name="applicable_categories" value="cat-electronics,cat-fashion,cat-home"/>
+            <column name="min_order_amount" valueNumeric="999.00"/>
+            <column name="max_discount_amount" valueNumeric="5000.00"/>
+        </insert>
+
+        <!-- Campaign 2: Summer Clearance — SEASONAL, ENDED -->
+        <insert tableName="campaign">
+            <column name="id" value="camp-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-12-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-02-28T23:59:59"/>
+            <column name="version" valueNumeric="5"/>
+            <column name="flow_id" value="campaign-flow"/>
+            <column name="state_id" value="ENDED"/>
+            <column name="state_entry_time" valueDate="2026-02-28T23:59:59"/>
+            <column name="name" value="Summer Clearance"/>
+            <column name="campaign_type" value="SEASONAL"/>
+            <column name="description" value="End-of-season clearance sale on summer merchandise"/>
+            <column name="discount_type" value="PERCENTAGE"/>
+            <column name="discount_value" valueNumeric="50.00"/>
+            <column name="start_date" valueDate="2026-01-15T00:00:00"/>
+            <column name="end_date" valueDate="2026-02-28T23:59:59"/>
+            <column name="budget" valueNumeric="200000.00"/>
+            <column name="spent" valueNumeric="198500.00"/>
+            <column name="revenue" valueNumeric="650000.00"/>
+            <column name="usage_count" valueNumeric="8934"/>
+            <column name="applicable_categories" value="cat-fashion,cat-footwear"/>
+            <column name="min_order_amount" valueNumeric="499.00"/>
+            <column name="max_discount_amount" valueNumeric="3000.00"/>
+        </insert>
+
+        <!-- Campaign 3: Flash Friday — FLASH_SALE, ACTIVE -->
+        <insert tableName="campaign">
+            <column name="id" value="camp-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-03-20T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-28T10:00:00"/>
+            <column name="version" valueNumeric="1"/>
+            <column name="flow_id" value="campaign-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2026-03-28T10:00:00"/>
+            <column name="name" value="Flash Friday"/>
+            <column name="campaign_type" value="FLASH_SALE"/>
+            <column name="description" value="24-hour flash sale every Friday with doorbusting deals"/>
+            <column name="discount_type" value="FIXED_AMOUNT"/>
+            <column name="discount_value" valueNumeric="500.00"/>
+            <column name="start_date" valueDate="2026-03-28T00:00:00"/>
+            <column name="end_date" valueDate="2026-03-28T23:59:59"/>
+            <column name="budget" valueNumeric="100000.00"/>
+            <column name="spent" valueNumeric="34200.00"/>
+            <column name="revenue" valueNumeric="210000.00"/>
+            <column name="usage_count" valueNumeric="1203"/>
+            <column name="applicable_products" value="prod-001,prod-002,prod-003,prod-010"/>
+            <column name="min_order_amount" valueNumeric="1499.00"/>
+            <column name="max_discount_amount" valueNumeric="500.00"/>
+        </insert>
+
+        <!-- Campaign 4: New Year Bonanza — SEASONAL, SCHEDULED -->
+        <insert tableName="campaign">
+            <column name="id" value="camp-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-03-25T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-25T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="campaign-flow"/>
+            <column name="state_id" value="SCHEDULED"/>
+            <column name="state_entry_time" valueDate="2026-03-25T10:00:00"/>
+            <column name="name" value="New Year Bonanza"/>
+            <column name="campaign_type" value="SEASONAL"/>
+            <column name="description" value="New Year celebration sale with massive discounts across all categories"/>
+            <column name="discount_type" value="PERCENTAGE"/>
+            <column name="discount_value" valueNumeric="30.00"/>
+            <column name="start_date" valueDate="2026-12-28T00:00:00"/>
+            <column name="end_date" valueDate="2027-01-07T23:59:59"/>
+            <column name="budget" valueNumeric="750000.00"/>
+            <column name="spent" valueNumeric="0"/>
+            <column name="revenue" valueNumeric="0"/>
+            <column name="usage_count" valueNumeric="0"/>
+            <column name="min_order_amount" valueNumeric="1999.00"/>
+            <column name="max_discount_amount" valueNumeric="7500.00"/>
+        </insert>
+
+        <!-- Campaign 5: BOGO Week — BOGO, DRAFT -->
+        <insert tableName="campaign">
+            <column name="id" value="camp-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-03-28T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-28T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="campaign-flow"/>
+            <column name="state_id" value="DRAFT"/>
+            <column name="state_entry_time" valueDate="2026-03-28T10:00:00"/>
+            <column name="name" value="BOGO Week"/>
+            <column name="campaign_type" value="BOGO"/>
+            <column name="description" value="Buy one get one free on selected fashion items"/>
+            <column name="discount_type" value="PERCENTAGE"/>
+            <column name="discount_value" valueNumeric="100.00"/>
+            <column name="start_date" valueDate="2026-04-20T00:00:00"/>
+            <column name="end_date" valueDate="2026-04-27T23:59:59"/>
+            <column name="budget" valueNumeric="300000.00"/>
+            <column name="spent" valueNumeric="0"/>
+            <column name="revenue" valueNumeric="0"/>
+            <column name="usage_count" valueNumeric="0"/>
+            <column name="applicable_categories" value="cat-fashion"/>
+            <column name="applicable_products" value="prod-005,prod-006,prod-007"/>
+            <column name="min_order_amount" valueNumeric="799.00"/>
+            <column name="max_discount_amount" valueNumeric="2000.00"/>
+        </insert>
+
+        <!-- Campaign 6: Monsoon Mega Sale — CLEARANCE, ACTIVE -->
+        <insert tableName="campaign">
+            <column name="id" value="camp-006"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-03-10T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-20T10:00:00"/>
+            <column name="version" valueNumeric="3"/>
+            <column name="flow_id" value="campaign-flow"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="state_entry_time" valueDate="2026-03-20T10:00:00"/>
+            <column name="name" value="Monsoon Mega Sale"/>
+            <column name="campaign_type" value="CLEARANCE"/>
+            <column name="description" value="Clearance of pre-monsoon inventory with deep discounts"/>
+            <column name="discount_type" value="PERCENTAGE"/>
+            <column name="discount_value" valueNumeric="60.00"/>
+            <column name="start_date" valueDate="2026-03-15T00:00:00"/>
+            <column name="end_date" valueDate="2026-04-30T23:59:59"/>
+            <column name="budget" valueNumeric="150000.00"/>
+            <column name="spent" valueNumeric="67800.00"/>
+            <column name="revenue" valueNumeric="345000.00"/>
+            <column name="usage_count" valueNumeric="3456"/>
+            <column name="applicable_categories" value="cat-home,cat-garden,cat-outdoor"/>
+            <column name="min_order_amount" valueNumeric="599.00"/>
+            <column name="max_discount_amount" valueNumeric="4000.00"/>
+        </insert>
+
+        <!-- Campaign Activities -->
+        <insert tableName="campaign_activity">
+            <column name="id" value="camp-act-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="campaign_id" value="camp-001"/>
+            <column name="event_id" value="activate"/>
+            <column name="comment" value="Campaign activated for Diwali season"/>
+            <column name="success" valueBoolean="true"/>
+        </insert>
+        <insert tableName="campaign_activity">
+            <column name="id" value="camp-act-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-02-28T23:59:59"/>
+            <column name="last_modified_time" valueDate="2026-02-28T23:59:59"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="campaign_id" value="camp-002"/>
+            <column name="event_id" value="end"/>
+            <column name="comment" value="Summer clearance ended — budget exhausted"/>
+            <column name="success" valueBoolean="true"/>
+        </insert>
+        <insert tableName="campaign_activity">
+            <column name="id" value="camp-act-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-03-28T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-28T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="campaign_id" value="camp-003"/>
+            <column name="event_id" value="activate"/>
+            <column name="comment" value="Flash Friday sale launched"/>
+            <column name="success" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

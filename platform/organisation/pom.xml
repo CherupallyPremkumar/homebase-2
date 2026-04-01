@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+
+    <parent>
+        <groupId>com.homebase.ecom.platform</groupId>
+        <artifactId>platform</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.homebase.ecom.organisation</groupId>
+    <artifactId>organisation-parent</artifactId>
+    <name>organisation-parent</name>
+    <description>Organisation — company profile, branding, business entity</description>
+
+    <modules>
+        <module>organisation-api</module>
+        <module>organisation-domain</module>
+        <module>organisation-infrastructure</module>
+        <module>organisation-service</module>
+        <module>organisation-liquibase</module>
+        <module>organisation-query-api</module>
+        <module>organisation-query</module>
+        <module>organisation-app</module>
+        <module>organisation-client</module>
+    </modules>
+</project>

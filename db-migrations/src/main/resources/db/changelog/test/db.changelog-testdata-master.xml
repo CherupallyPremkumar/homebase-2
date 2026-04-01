@@ -1303,6 +1303,212 @@
     </changeSet>
 
     <!-- ================================================================== -->
+    <!-- 16b. SHIPPING ZONES + CARRIERS (5 zones, 5 carriers, mappings)     -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-shipping-zones-carriers" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="shipping_zone"/>
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM shipping_zone WHERE id = 'szone-metro'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="shipping_zone">
+            <column name="id" value="szone-metro"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Metro"/>
+            <column name="regions" value='["MH-MUM","DL-DEL","KA-BLR","TN-CHN","WB-KOL","TG-HYD"]'/>
+            <column name="delivery_time_desc" value="1-2 days"/>
+            <column name="base_rate" valueNumeric="40.00"/>
+            <column name="per_kg_rate" valueNumeric="10.00"/>
+            <column name="free_shipping_threshold" valueNumeric="299.00"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="shipping_zone">
+            <column name="id" value="szone-tier1"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Tier 1"/>
+            <column name="regions" value='["UP-LKO","MP-BPL","PB-LDH","HR-GGN","UK-DDN"]'/>
+            <column name="delivery_time_desc" value="2-4 days"/>
+            <column name="base_rate" valueNumeric="50.00"/>
+            <column name="per_kg_rate" valueNumeric="15.00"/>
+            <column name="free_shipping_threshold" valueNumeric="499.00"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="shipping_zone">
+            <column name="id" value="szone-tier2"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Tier 2"/>
+            <column name="regions" value='["OR-BBR","GA-GOA","HP-SML","JK-SRN"]'/>
+            <column name="delivery_time_desc" value="3-5 days"/>
+            <column name="base_rate" valueNumeric="65.00"/>
+            <column name="per_kg_rate" valueNumeric="20.00"/>
+            <column name="free_shipping_threshold" valueNumeric="699.00"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="shipping_zone">
+            <column name="id" value="szone-remote"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Remote"/>
+            <column name="regions" value='["JK-LEH","HP-KLU","UK-CML","AN-PBR"]'/>
+            <column name="delivery_time_desc" value="5-10 days"/>
+            <column name="base_rate" valueNumeric="100.00"/>
+            <column name="per_kg_rate" valueNumeric="35.00"/>
+            <column name="free_shipping_threshold" valueNumeric="999.00"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="shipping_zone">
+            <column name="id" value="szone-northeast"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Northeast"/>
+            <column name="regions" value='["AS-GHY","AR-ITN","NL-KOH","ML-SHL","TR-AGT"]'/>
+            <column name="delivery_time_desc" value="4-7 days"/>
+            <column name="base_rate" valueNumeric="80.00"/>
+            <column name="per_kg_rate" valueNumeric="28.00"/>
+            <column name="free_shipping_threshold" valueNumeric="799.00"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="shipping_carrier">
+            <column name="id" value="scarrier-delhivery"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Delhivery"/>
+            <column name="short_code" value="DELHIVERY"/>
+            <column name="services" value='["SURFACE","EXPRESS","REVERSE","COD"]'/>
+            <column name="api_status" value="CONNECTED"/>
+            <column name="avg_delivery_days" valueNumeric="3"/>
+            <column name="cost_per_kg" valueNumeric="18.00"/>
+            <column name="sla_desc" value="Metro 1-2 days, Tier 1 2-4 days, pan-India coverage"/>
+            <column name="rating" valueNumeric="4.3"/>
+            <column name="tracking_url_pattern" value="https://www.delhivery.com/track/package/{trackingNumber}"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="shipping_carrier">
+            <column name="id" value="scarrier-bluedart"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="BlueDart"/>
+            <column name="short_code" value="BLUEDART"/>
+            <column name="services" value='["SURFACE","APEX","DART_APEX","COD"]'/>
+            <column name="api_status" value="CONNECTED"/>
+            <column name="avg_delivery_days" valueNumeric="2"/>
+            <column name="cost_per_kg" valueNumeric="25.00"/>
+            <column name="sla_desc" value="Premium express, metro same-day available"/>
+            <column name="rating" valueNumeric="4.5"/>
+            <column name="tracking_url_pattern" value="https://www.bluedart.com/tracking?id={trackingNumber}"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="shipping_carrier">
+            <column name="id" value="scarrier-dtdc"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="DTDC"/>
+            <column name="short_code" value="DTDC"/>
+            <column name="services" value='["SURFACE","LITE","PRIORITY","COD"]'/>
+            <column name="api_status" value="CONNECTED"/>
+            <column name="avg_delivery_days" valueNumeric="4"/>
+            <column name="cost_per_kg" valueNumeric="15.00"/>
+            <column name="sla_desc" value="Economical option, good Tier 2 coverage"/>
+            <column name="rating" valueNumeric="3.9"/>
+            <column name="tracking_url_pattern" value="https://www.dtdc.in/tracking.asp?strCnno={trackingNumber}"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="shipping_carrier">
+            <column name="id" value="scarrier-ecomexpress"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="Ecom Express"/>
+            <column name="short_code" value="ECOMEXP"/>
+            <column name="services" value='["SURFACE","EXPRESS","REVERSE","COD"]'/>
+            <column name="api_status" value="CONNECTED"/>
+            <column name="avg_delivery_days" valueNumeric="3"/>
+            <column name="cost_per_kg" valueNumeric="16.00"/>
+            <column name="sla_desc" value="E-commerce specialist, strong reverse logistics"/>
+            <column name="rating" valueNumeric="4.1"/>
+            <column name="tracking_url_pattern" value="https://ecomexpress.in/tracking/?awb_field={trackingNumber}"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="shipping_carrier">
+            <column name="id" value="scarrier-indiapost"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="name" value="India Post"/>
+            <column name="short_code" value="INDIAPOST"/>
+            <column name="services" value='["SPEED_POST","REGISTERED_PARCEL","COD"]'/>
+            <column name="api_status" value="DISCONNECTED"/>
+            <column name="avg_delivery_days" valueNumeric="7"/>
+            <column name="cost_per_kg" valueNumeric="12.00"/>
+            <column name="sla_desc" value="Widest reach including remote/NE areas, slower delivery"/>
+            <column name="rating" valueNumeric="3.5"/>
+            <column name="tracking_url_pattern" value="https://www.indiapost.gov.in/_layouts/15/DOP.Portal.Tracking/TrackConsignment.aspx?id={trackingNumber}"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Zone-Carrier mappings -->
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-metro"/><column name="carrier_id" value="scarrier-delhivery"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-metro"/><column name="carrier_id" value="scarrier-bluedart"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-metro"/><column name="carrier_id" value="scarrier-dtdc"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-metro"/><column name="carrier_id" value="scarrier-ecomexpress"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-metro"/><column name="carrier_id" value="scarrier-indiapost"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-tier1"/><column name="carrier_id" value="scarrier-delhivery"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-tier1"/><column name="carrier_id" value="scarrier-dtdc"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-tier1"/><column name="carrier_id" value="scarrier-ecomexpress"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-tier1"/><column name="carrier_id" value="scarrier-indiapost"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-tier2"/><column name="carrier_id" value="scarrier-dtdc"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-tier2"/><column name="carrier_id" value="scarrier-ecomexpress"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-tier2"/><column name="carrier_id" value="scarrier-indiapost"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-remote"/><column name="carrier_id" value="scarrier-indiapost"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-remote"/><column name="carrier_id" value="scarrier-delhivery"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-northeast"/><column name="carrier_id" value="scarrier-indiapost"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-northeast"/><column name="carrier_id" value="scarrier-dtdc"/></insert>
+        <insert tableName="shipping_zone_carrier"><column name="zone_id" value="szone-northeast"/><column name="carrier_id" value="scarrier-delhivery"/></insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
     <!-- 17. COUPONS / PROMOS (3 coupons)                                   -->
     <!-- ================================================================== -->
     <changeSet id="testdata-coupons" author="homebase-seed">
@@ -1650,6 +1856,291 @@
             <column name="description" value="Tracking shows in transit but no updates for 2 days. Please check."/>
             <column name="assigned_agent_id" value="user-agent-001"/>
             <column name="channel" value="WEB"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 21b. SELLER DOCUMENTS (8 documents for 3 suppliers)                -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-seller-documents" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="seller_document"/>
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM seller_document WHERE id = 'sdoc-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-10T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T14:00:00"/>
+            <column name="version" valueNumeric="2"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="VERIFIED"/>
+            <column name="state_entry_time" valueDate="2025-01-15T14:00:00"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="document_type" value="GST"/>
+            <column name="document_number" value="29ABCDE1234F1Z5"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-001/gst-cert.pdf"/>
+            <column name="verification_status" value="VERIFIED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-15T14:00:00"/>
+            <column name="expiry_date" valueDate="2027-03-31"/>
+            <column name="priority" value="HIGH"/>
+        </insert>
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-10T10:05:00"/>
+            <column name="last_modified_time" valueDate="2025-01-15T14:10:00"/>
+            <column name="version" valueNumeric="2"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="VERIFIED"/>
+            <column name="state_entry_time" valueDate="2025-01-15T14:10:00"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="document_type" value="PAN"/>
+            <column name="document_number" value="ABCDE1234F"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-001/pan-card.pdf"/>
+            <column name="verification_status" value="VERIFIED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-15T14:10:00"/>
+            <column name="priority" value="HIGH"/>
+        </insert>
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-supplier-001"/>
+            <column name="created_time" valueDate="2025-02-20T09:00:00"/>
+            <column name="last_modified_time" valueDate="2025-02-20T09:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="PENDING"/>
+            <column name="state_entry_time" valueDate="2025-02-20T09:00:00"/>
+            <column name="supplier_id" value="sup-001"/>
+            <column name="document_type" value="BANK_ACCOUNT"/>
+            <column name="document_number" value="ICIC0001234-9876543210"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-001/cancelled-cheque.pdf"/>
+            <column name="verification_status" value="PENDING"/>
+            <column name="priority" value="NORMAL"/>
+        </insert>
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-12T11:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-18T16:00:00"/>
+            <column name="version" valueNumeric="2"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="VERIFIED"/>
+            <column name="state_entry_time" valueDate="2025-01-18T16:00:00"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="document_type" value="GST"/>
+            <column name="document_number" value="27FGHIJ5678K2Z3"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-002/gst-cert.pdf"/>
+            <column name="verification_status" value="VERIFIED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-18T16:00:00"/>
+            <column name="expiry_date" valueDate="2027-03-31"/>
+            <column name="priority" value="HIGH"/>
+        </insert>
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-12T11:10:00"/>
+            <column name="last_modified_time" valueDate="2025-01-20T10:00:00"/>
+            <column name="version" valueNumeric="3"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="REJECTED"/>
+            <column name="state_entry_time" valueDate="2025-01-20T10:00:00"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="document_type" value="ADDRESS_PROOF"/>
+            <column name="document_number" value="UTIL-MH-2025-001"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-002/address-proof.pdf"/>
+            <column name="verification_status" value="REJECTED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-20T10:00:00"/>
+            <column name="rejection_reason" value="Document older than 3 months. Please upload a recent utility bill or bank statement."/>
+            <column name="priority" value="NORMAL"/>
+        </insert>
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-006"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-12T11:15:00"/>
+            <column name="last_modified_time" valueDate="2025-01-18T16:15:00"/>
+            <column name="version" valueNumeric="2"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="VERIFIED"/>
+            <column name="state_entry_time" valueDate="2025-01-18T16:15:00"/>
+            <column name="supplier_id" value="sup-002"/>
+            <column name="document_type" value="IDENTITY"/>
+            <column name="document_number" value="AADHAAR-XXXX-7890"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-002/aadhaar.pdf"/>
+            <column name="verification_status" value="VERIFIED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-18T16:15:00"/>
+            <column name="priority" value="NORMAL"/>
+        </insert>
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-007"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-14T09:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-22T12:00:00"/>
+            <column name="version" valueNumeric="2"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="VERIFIED"/>
+            <column name="state_entry_time" valueDate="2025-01-22T12:00:00"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="document_type" value="REGISTRATION"/>
+            <column name="document_number" value="TN-MSME-2024-00456"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-003/msme-registration.pdf"/>
+            <column name="verification_status" value="VERIFIED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-22T12:00:00"/>
+            <column name="expiry_date" valueDate="2029-12-31"/>
+            <column name="priority" value="NORMAL"/>
+        </insert>
+        <insert tableName="seller_document">
+            <column name="id" value="sdoc-008"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2025-01-14T09:10:00"/>
+            <column name="last_modified_time" valueDate="2025-03-01T00:00:00"/>
+            <column name="version" valueNumeric="3"/>
+            <column name="flow_id" value="sellerDocument"/>
+            <column name="state_id" value="EXPIRED"/>
+            <column name="state_entry_time" valueDate="2025-03-01T00:00:00"/>
+            <column name="supplier_id" value="sup-003"/>
+            <column name="document_type" value="GST"/>
+            <column name="document_number" value="33KLMNO9012P3Z7"/>
+            <column name="file_url" value="s3://homebase-docs/suppliers/sup-003/gst-cert.pdf"/>
+            <column name="verification_status" value="EXPIRED"/>
+            <column name="verified_by" value="compliance-team"/>
+            <column name="verified_at" valueDate="2025-01-22T12:10:00"/>
+            <column name="expiry_date" valueDate="2025-03-01"/>
+            <column name="priority" value="HIGH"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 21c. KNOWLEDGE BASE ARTICLES (6 articles)                          -->
+    <!-- ================================================================== -->
+    <changeSet id="testdata-knowledge-base" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="knowledge_base_article"/>
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM knowledge_base_article WHERE id = 'kb-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="knowledge_base_article">
+            <column name="id" value="kb-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="support-team"/>
+            <column name="created_time" valueDate="2025-06-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-01T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="category" value="Getting Started"/>
+            <column name="title" value="How to create your HomeBase account"/>
+            <column name="slug" value="how-to-create-account"/>
+            <column name="body" value="Welcome to HomeBase! Follow these steps to get started: 1. Visit homebase.in and click Sign Up. 2. Enter your mobile number for OTP verification. 3. Fill in your name, email address, and create a password. 4. Add your delivery address. 5. Start browsing products!"/>
+            <column name="author" value="support-team"/>
+            <column name="view_count" valueNumeric="4520"/>
+            <column name="helpful_count" valueNumeric="389"/>
+            <column name="not_helpful_count" valueNumeric="12"/>
+            <column name="published" valueBoolean="true"/>
+            <column name="tags" value='["signup","registration","new-user","onboarding"]'/>
+        </insert>
+        <insert tableName="knowledge_base_article">
+            <column name="id" value="kb-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="support-team"/>
+            <column name="created_time" valueDate="2025-06-01T10:30:00"/>
+            <column name="last_modified_time" valueDate="2025-06-01T10:30:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="category" value="Orders"/>
+            <column name="title" value="How to track your order"/>
+            <column name="slug" value="how-to-track-order"/>
+            <column name="body" value="Track your HomeBase order in 3 ways: 1. My Orders page — Go to My Account > My Orders and click on the order. 2. Tracking link via SMS/email sent when order ships. 3. Carrier website using AWB number."/>
+            <column name="author" value="support-team"/>
+            <column name="view_count" valueNumeric="8930"/>
+            <column name="helpful_count" valueNumeric="712"/>
+            <column name="not_helpful_count" valueNumeric="45"/>
+            <column name="published" valueBoolean="true"/>
+            <column name="tags" value='["tracking","order-status","shipping","delivery"]'/>
+        </insert>
+        <insert tableName="knowledge_base_article">
+            <column name="id" value="kb-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="support-team"/>
+            <column name="created_time" valueDate="2025-06-02T11:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-02T11:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="category" value="Payments"/>
+            <column name="title" value="Payment methods accepted on HomeBase"/>
+            <column name="slug" value="payment-methods"/>
+            <column name="body" value="HomeBase accepts: UPI (Google Pay, PhonePe, Paytm), Credit/Debit Cards (Visa, MasterCard, RuPay), Net Banking, Wallets, and Cash on Delivery up to Rs.25,000."/>
+            <column name="author" value="support-team"/>
+            <column name="view_count" valueNumeric="3210"/>
+            <column name="helpful_count" valueNumeric="278"/>
+            <column name="not_helpful_count" valueNumeric="8"/>
+            <column name="published" valueBoolean="true"/>
+            <column name="tags" value='["payment","upi","cod","credit-card","emi"]'/>
+        </insert>
+        <insert tableName="knowledge_base_article">
+            <column name="id" value="kb-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="support-team"/>
+            <column name="created_time" valueDate="2025-06-02T14:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-02T14:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="category" value="Returns"/>
+            <column name="title" value="How to return a product"/>
+            <column name="slug" value="how-to-return-product"/>
+            <column name="body" value="To return a product: 1. Go to My Account > My Orders. 2. Select the order and click Return. 3. Choose a reason and upload photos if damaged. 4. Select pickup or self-ship. Return window: 7 days for most items, 10 days for electronics."/>
+            <column name="author" value="support-team"/>
+            <column name="view_count" valueNumeric="6780"/>
+            <column name="helpful_count" valueNumeric="534"/>
+            <column name="not_helpful_count" valueNumeric="67"/>
+            <column name="published" valueBoolean="true"/>
+            <column name="tags" value='["return","refund","exchange","pickup","damaged"]'/>
+        </insert>
+        <insert tableName="knowledge_base_article">
+            <column name="id" value="kb-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="support-team"/>
+            <column name="created_time" valueDate="2025-06-03T09:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-03T09:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="category" value="Account"/>
+            <column name="title" value="How to update your address and profile details"/>
+            <column name="slug" value="update-address-profile"/>
+            <column name="body" value="Update your profile: Name/Email via My Account > Profile. Phone via Change Phone with OTP. Addresses via My Account > Addresses. Password via My Account > Security > Change Password."/>
+            <column name="author" value="support-team"/>
+            <column name="view_count" valueNumeric="2150"/>
+            <column name="helpful_count" valueNumeric="189"/>
+            <column name="not_helpful_count" valueNumeric="5"/>
+            <column name="published" valueBoolean="true"/>
+            <column name="tags" value='["profile","address","phone","password","account-settings"]'/>
+        </insert>
+        <insert tableName="knowledge_base_article">
+            <column name="id" value="kb-006"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="support-team"/>
+            <column name="created_time" valueDate="2025-06-05T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-05T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="category" value="Seller Guide"/>
+            <column name="title" value="Getting started as a HomeBase seller"/>
+            <column name="slug" value="seller-getting-started"/>
+            <column name="body" value="Start selling in 5 steps: 1. Register at seller.homebase.in. 2. Submit GST, PAN, bank details. 3. List products with photos and pricing. 4. Ship orders within 2 business days. 5. Get paid every 7 days after commission and TCS deduction."/>
+            <column name="author" value="seller-ops-team"/>
+            <column name="view_count" valueNumeric="5670"/>
+            <column name="helpful_count" valueNumeric="456"/>
+            <column name="not_helpful_count" valueNumeric="23"/>
+            <column name="published" valueBoolean="true"/>
+            <column name="tags" value='["seller","onboarding","commission","listing","settlement"]'/>
         </insert>
     </changeSet>
 
@@ -2226,5 +2717,30 @@
     <!-- ================================================================== -->
     <!-- 35. CCONFIG (configuration entries)                                -->
     <!-- cconfig seed data already loaded by db.changelog-config.xml — not duplicated here -->
+
+    <!-- ================================================================== -->
+    <!-- 36. DISPUTES (6 disputes with activities)                          -->
+    <!-- ================================================================== -->
+    <include file="db/changelog/disputes/test/db.changelog-disputes-testdata.xml"/>
+
+    <!-- ================================================================== -->
+    <!-- 37. CAMPAIGNS (6 campaigns with activities)                        -->
+    <!-- ================================================================== -->
+    <include file="db/changelog/promo/test/db.changelog-promo-campaigns-testdata.xml"/>
+
+    <!-- ================================================================== -->
+    <!-- 38. REPORTS (4 definitions, 2 schedules, 6 history entries)        -->
+    <!-- ================================================================== -->
+    <include file="db/changelog/reports/test/db.changelog-reports-testdata.xml"/>
+
+    <!-- ================================================================== -->
+    <!-- 39. DATA EXPORTS (5 export entries with varied statuses)           -->
+    <!-- ================================================================== -->
+    <include file="db/changelog/exports/test/db.changelog-exports-testdata.xml"/>
+
+    <!-- ================================================================== -->
+    <!-- 40. HEALTH MONITORING (6 health checks, 3 alerts)                 -->
+    <!-- ================================================================== -->
+    <include file="db/changelog/health/test/db.changelog-health-testdata.xml"/>
 
 </databaseChangeLog>

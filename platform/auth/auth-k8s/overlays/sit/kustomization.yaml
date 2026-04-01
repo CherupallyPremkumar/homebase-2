@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../../base
+
+patchesStrategicMerge:
+  - keycloak-patch.yaml
+
+configMapGenerator:
+  - name: keycloak-config
+    literals:
+      - kafka-bootstrap-servers=kafka.homebase-infra.svc.cluster.local:9092
+
+  - name: keycloak-realm
+    files:
+      - homebase-realm.json
+
+secretGenerator:
+  - name: keycloak-db-secret
+    literals:
+      - url=jdbc:postgresql://keycloak-db:5432/keycloak
+      - username=keycloak
+      - password=sit-keycloak-password
+
+  - name: keycloak-admin-secret
+    literals:
+      - username=admin
+      - password=sit-admin-password

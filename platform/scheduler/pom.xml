@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <parent><groupId>com.homebase.ecom.platform</groupId><artifactId>platform</artifactId><version>${revision}</version><relativePath>../pom.xml</relativePath></parent>
+    <groupId>com.homebase.ecom.scheduler</groupId><artifactId>scheduler-parent</artifactId><name>scheduler-parent</name>
+    <description>Scheduler — cron jobs, distributed locking, job history</description>
+    <modules>
+        <module>scheduler-api</module><module>scheduler-domain</module><module>scheduler-infrastructure</module>
+        <module>scheduler-service</module><module>scheduler-liquibase</module><module>scheduler-app</module>
+    </modules>
+</project>

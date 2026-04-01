@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+spec:
+  replicas: 1
+  template:
+    spec:
+      initContainers:
+        - name: spi-provider
+          imagePullPolicy: Never
+        - name: auth-assets
+          imagePullPolicy: Never
+      containers:
+        - name: keycloak
+          args:
+            - start-dev
+            - --import-realm
+          env:
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+            - name: KC_HTTP_ENABLED
+              value: "true"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

@@ -652,4 +652,16 @@
         </createIndex>
     </changeSet>
 
+    <!-- Add is_critical and details columns to audit_log -->
+    <changeSet id="missing-019-add-audit-log-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="audit_log"/>
+            <not><columnExists tableName="audit_log" columnName="is_critical"/></not>
+        </preConditions>
+        <addColumn tableName="audit_log">
+            <column name="is_critical" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="details" type="VARCHAR(1000)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

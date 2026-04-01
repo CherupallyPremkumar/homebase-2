@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kafka-topic-creator
+  labels:
+    app: kafka-topic-creator
+spec:
+  backoffLimit: 5
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: topic-creator
+          image: confluentinc/cp-kafka:7.6.0
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Waiting for Kafka to be ready..."
+              until kafka-broker-api-versions --bootstrap-server kafka:29092 2>/dev/null; do
+                sleep 5
+              done
+              echo "Kafka is ready. Creating topics..."
+
+              # === Identity ===
+              kafka-topics --create --bootstrap-server kafka:29092 --topic auth.user.events --partitions 3 --replication-factor 1 --if-not-exists
+
+              # === Product Catalog ===
+              kafka-topics --create --bootstrap-server kafka:29092 --topic product.events --partitions 6 --replication-factor 1 --if-not-exists
+              kafka-topics --create --bootstrap-server kafka:29092 --topic inventory.events --partitions 6 --replication-factor 1 --if-not-exists
+              kafka-topics --create --bootstrap-server kafka:29092 --topic offer.events --partitions 3 --replication-factor 1 --if-not-exists
+              kafka-topics --create --bootstrap-server kafka:29092 --topic pricing.events --partitions 3 --replication-factor 1 --if-not-exists
+
+              # === Commerce ===
+              kafka-topics --create --bootstrap-server kafka:29092 --topic cart.events --partitions 6 --replication-factor 1 --if-not-exists
+              kafka-topics --create --bootstrap-server kafka:29092 --topic checkout.events --partitions 6 --replication-factor 1 --if-not-exists
+              kafka-topics --create --bootstrap-server kafka:29092 --topic promo.events --partitions 3 --replication-factor 1 --if-not-exists
+
+              # === Order ===
+              kafka-topics --create --bootstrap-server kafka:29092 --topic order.events --partitions 12 --replication-factor 1 --if-not-exists
+              kafka-topics --create --bootstrap-server kafka:29092 --topic payment.events --partitions 6 --replication-factor 1 --if-not-exists
+              kafka-topics --create --bootstrap-server kafka:29092 --topic return.events --partitions 3 --replication-factor 1 --if-not-exists
+              kafka-topics --create --bootstrap-server kafka:29092 --topic settlement.events --partitions 3 --replication-factor 1 --if-not-exists
+
+              # === Logistics ===
+              kafka-topics --create --bootstrap-server kafka:29092 --topic shipping.events --partitions 6 --replication-factor 1 --if-not-exists
+              kafka-topics --create --bootstrap-server kafka:29092 --topic fulfillment.events --partitions 6 --replication-factor 1 --if-not-exists
+
+              # === Engagement ===
+              kafka-topics --create --bootstrap-server kafka:29092 --topic notification.events --partitions 6 --replication-factor 1 --if-not-exists
+              kafka-topics --create --bootstrap-server kafka:29092 --topic cms.events --partitions 3 --replication-factor 1 --if-not-exists
+              kafka-topics --create --bootstrap-server kafka:29092 --topic review.events --partitions 3 --replication-factor 1 --if-not-exists
+
+              # === Identity (sellers) ===
+              kafka-topics --create --bootstrap-server kafka:29092 --topic supplier.events --partitions 3 --replication-factor 1 --if-not-exists
+              kafka-topics --create --bootstrap-server kafka:29092 --topic onboarding.events --partitions 3 --replication-factor 1 --if-not-exists
+
+              echo ""
+              echo "=== All topics created ==="
+              kafka-topics --list --bootstrap-server kafka:29092

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="inventory-001-create-inventory-item" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="inventory_item"/></not></preConditions>
+        <createTable tableName="inventory_item">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="asin" type="VARCHAR(255)"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT"/>
+            <column name="available_quantity" type="INT"/>
+            <column name="reserved_quantity" type="INT"/>
+            <column name="inbound_quantity" type="INT"/>
+            <column name="damaged_quantity" type="INT"/>
+            <column name="primary_fc" type="VARCHAR(255)"/>
+            <column name="is_fba" type="BOOLEAN"/>
+            <column name="is_merchant_fulfilled" type="BOOLEAN"/>
+            <column name="low_stock_threshold" type="INT"/>
+            <column name="out_of_stock_threshold" type="INT"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="last_sale_at" type="TIMESTAMP"/>
+            <column name="last_restock_at" type="TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="inventory_item" columnNames="variant_id" constraintName="uk_inventory_item_variant"/>
+    </changeSet>
+
+    <changeSet id="inventory-002-create-inventory-reservations" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="inventory_reservations"/></not></preConditions>
+        <createTable tableName="inventory_reservations">
+            <column name="inventory_item_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="session_id" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT"/>
+            <column name="reserved_at" type="TIMESTAMP"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+            <column name="status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="inventory-003-create-inventory-movements" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="inventory_movements"/></not></preConditions>
+        <createTable tableName="inventory_movements">
+            <column name="inventory_item_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="type" type="VARCHAR(50)"/>
+            <column name="quantity" type="INT"/>
+            <column name="reference_id" type="VARCHAR(255)"/>
+            <column name="fulfillment_center_id" type="VARCHAR(255)"/>
+            <column name="movement_time" type="TIMESTAMP"/>
+            <column name="reason" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="inventory-004-create-inventory-damage-records" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="inventory_damage_records"/></not></preConditions>
+        <createTable tableName="inventory_damage_records">
+            <column name="inventory_item_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="unit_identifier" type="VARCHAR(255)"/>
+            <column name="location" type="VARCHAR(255)"/>
+            <column name="damage_type" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="discovered_at" type="TIMESTAMP"/>
+            <column name="status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="inventory-005-create-inventory-item-activity" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="inventory_item_activity"/></not></preConditions>
+        <createTable tableName="inventory_item_activity">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="inventory_item_id" type="VARCHAR(255)"/>
+            <column name="event_id" type="VARCHAR(255)"/>
+            <column name="comment" type="VARCHAR(255)"/>
+            <column name="success" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Add supplier, cost, batch, expiry, and shelf location columns to inventory_item -->
+    <changeSet id="inventory-006-add-inventory-item-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="inventory_item"/>
+            <not><columnExists tableName="inventory_item" columnName="supplier_id"/></not>
+        </preConditions>
+        <addColumn tableName="inventory_item">
+            <column name="supplier_id" type="VARCHAR(255)"/>
+            <column name="cost_price" type="DECIMAL(12,2)"/>
+            <column name="batch_number" type="VARCHAR(100)"/>
+            <column name="expiry_date" type="DATE"/>
+            <column name="shelf_location" type="VARCHAR(100)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Fulfillment centers table -->
+    <changeSet id="inventory-007-create-fulfillment-centers" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="fulfillment_centers"/></not>
+        </preConditions>
+        <createTable tableName="fulfillment_centers">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="code" type="VARCHAR(50)"><constraints nullable="false" unique="true"/></column>
+            <column name="address_line1" type="VARCHAR(255)"/>
+            <column name="address_line2" type="VARCHAR(255)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="state" type="VARCHAR(100)"/>
+            <column name="pincode" type="VARCHAR(10)"/>
+            <column name="country" type="VARCHAR(50)" defaultValue="India"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="capacity" type="INT"/>
+            <column name="contact_phone" type="VARCHAR(20)"/>
+            <column name="contact_email" type="VARCHAR(255)"/>
+        </createTable>
+        <createIndex indexName="idx_fc_code" tableName="fulfillment_centers">
+            <column name="code"/>
+        </createIndex>
+        <createIndex indexName="idx_fc_pincode" tableName="fulfillment_centers">
+            <column name="pincode"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Indexes on inventory tables -->
+    <changeSet id="inventory-008-add-inventory-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="inventory_item"/>
+            <not><indexExists indexName="idx_inventory_product"/></not>
+        </preConditions>
+        <createIndex indexName="idx_inventory_product" tableName="inventory_item">
+            <column name="product_id"/>
+        </createIndex>
+        <createIndex indexName="idx_inventory_variant" tableName="inventory_item">
+            <column name="variant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_inventory_state" tableName="inventory_item">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex indexName="idx_inventory_sku" tableName="inventory_item">
+            <column name="sku"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="inventory-009-add-reservation-movement-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="inventory_reservations"/>
+            <not><indexExists indexName="idx_inventory_reservations_item"/></not>
+        </preConditions>
+        <createIndex indexName="idx_inventory_reservations_item" tableName="inventory_reservations">
+            <column name="inventory_item_id"/>
+        </createIndex>
+        <createIndex indexName="idx_inventory_reservations_expires" tableName="inventory_reservations">
+            <column name="expires_at"/>
+        </createIndex>
+        <createIndex indexName="idx_inventory_movements_item" tableName="inventory_movements">
+            <column name="inventory_item_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

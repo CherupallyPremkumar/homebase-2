@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="testdata-disputes" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM dispute WHERE id = 'disp-001'</sqlCheck>
+        </preConditions>
+
+        <!-- Dispute 1: OPEN, HIGH priority, product quality issue -->
+        <insert tableName="dispute">
+            <column name="id" value="disp-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-06-10T09:30:00"/>
+            <column name="last_modified_time" valueDate="2025-06-10T09:30:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="dispute-flow"/>
+            <column name="state_id" value="OPEN"/>
+            <column name="state_entry_time" valueDate="2025-06-10T09:30:00"/>
+            <column name="order_id" value="ord-001"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="seller_id" value="sup-001"/>
+            <column name="dispute_type" value="PRODUCT_QUALITY"/>
+            <column name="reason" value="Item received was damaged and not matching the product description"/>
+            <column name="disputed_amount" valueNumeric="4599.00"/>
+            <column name="priority" value="HIGH"/>
+            <column name="customer_complaint" value="The laptop screen had visible scratches and the packaging was torn. Product does not match what was advertised."/>
+            <column name="sla_target_days" valueNumeric="5"/>
+        </insert>
+
+        <!-- Dispute 2: UNDER_REVIEW, MEDIUM priority, wrong item -->
+        <insert tableName="dispute">
+            <column name="id" value="disp-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-002"/>
+            <column name="created_time" valueDate="2025-06-08T14:15:00"/>
+            <column name="last_modified_time" valueDate="2025-06-09T10:00:00"/>
+            <column name="version" valueNumeric="1"/>
+            <column name="flow_id" value="dispute-flow"/>
+            <column name="state_id" value="UNDER_REVIEW"/>
+            <column name="state_entry_time" valueDate="2025-06-09T10:00:00"/>
+            <column name="order_id" value="ord-002"/>
+            <column name="customer_id" value="user-cust-002"/>
+            <column name="seller_id" value="sup-002"/>
+            <column name="dispute_type" value="WRONG_ITEM"/>
+            <column name="reason" value="Received completely different item than what was ordered"/>
+            <column name="disputed_amount" valueNumeric="1299.00"/>
+            <column name="priority" value="MEDIUM"/>
+            <column name="assigned_to" value="user-admin-001"/>
+            <column name="customer_complaint" value="Ordered wireless earbuds but received a phone case instead."/>
+            <column name="seller_response" value="We are investigating this with our warehouse team."/>
+            <column name="sla_target_days" valueNumeric="5"/>
+        </insert>
+
+        <!-- Dispute 3: ESCALATED, HIGH priority, non-delivery -->
+        <insert tableName="dispute">
+            <column name="id" value="disp-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-001"/>
+            <column name="created_time" valueDate="2025-06-01T08:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-07T16:30:00"/>
+            <column name="version" valueNumeric="3"/>
+            <column name="flow_id" value="dispute-flow"/>
+            <column name="state_id" value="ESCALATED"/>
+            <column name="state_entry_time" valueDate="2025-06-07T16:30:00"/>
+            <column name="order_id" value="ord-003"/>
+            <column name="customer_id" value="user-cust-001"/>
+            <column name="seller_id" value="sup-001"/>
+            <column name="dispute_type" value="NON_DELIVERY"/>
+            <column name="reason" value="Order marked as delivered but never received"/>
+            <column name="disputed_amount" valueNumeric="8750.00"/>
+            <column name="priority" value="HIGH"/>
+            <column name="assigned_to" value="user-admin-001"/>
+            <column name="investigator_id" value="user-admin-001"/>
+            <column name="investigation_notes" value="Courier confirmed delivery to wrong address. Escalated for refund approval."/>
+            <column name="sla_target_days" valueNumeric="7"/>
+        </insert>
+
+        <!-- Dispute 4: RESOLVED, LOW priority, pricing dispute -->
+        <insert tableName="dispute">
+            <column name="id" value="disp-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-002"/>
+            <column name="created_time" valueDate="2025-05-20T11:00:00"/>
+            <column name="last_modified_time" valueDate="2025-05-25T14:00:00"/>
+            <column name="version" valueNumeric="4"/>
+            <column name="flow_id" value="dispute-flow"/>
+            <column name="state_id" value="RESOLVED"/>
+            <column name="state_entry_time" valueDate="2025-05-25T14:00:00"/>
+            <column name="order_id" value="ord-004"/>
+            <column name="customer_id" value="user-cust-002"/>
+            <column name="seller_id" value="sup-002"/>
+            <column name="dispute_type" value="PRICING"/>
+            <column name="reason" value="Charged higher price than displayed at checkout"/>
+            <column name="disputed_amount" valueNumeric="350.00"/>
+            <column name="priority" value="LOW"/>
+            <column name="assigned_to" value="user-admin-001"/>
+            <column name="resolution_outcome" value="REFUND_PARTIAL"/>
+            <column name="resolution_notes" value="Price difference refunded to customer. Seller notified of pricing discrepancy."/>
+            <column name="resolution_date" valueDate="2025-05-25T14:00:00"/>
+            <column name="refund_amount" valueNumeric="350.00"/>
+            <column name="sla_target_days" valueNumeric="5"/>
+        </insert>
+
+        <!-- Dispute 5: RESOLVED, MEDIUM priority, product quality, full refund -->
+        <insert tableName="dispute">
+            <column name="id" value="disp-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-003"/>
+            <column name="created_time" valueDate="2025-05-15T09:00:00"/>
+            <column name="last_modified_time" valueDate="2025-05-22T17:00:00"/>
+            <column name="version" valueNumeric="5"/>
+            <column name="flow_id" value="dispute-flow"/>
+            <column name="state_id" value="RESOLVED"/>
+            <column name="state_entry_time" valueDate="2025-05-22T17:00:00"/>
+            <column name="order_id" value="ord-005"/>
+            <column name="customer_id" value="user-cust-003"/>
+            <column name="seller_id" value="sup-001"/>
+            <column name="dispute_type" value="PRODUCT_QUALITY"/>
+            <column name="reason" value="Defective product - stops working after 2 days"/>
+            <column name="disputed_amount" valueNumeric="2199.00"/>
+            <column name="priority" value="MEDIUM"/>
+            <column name="assigned_to" value="user-admin-001"/>
+            <column name="resolution_outcome" value="REFUND_FULL"/>
+            <column name="resolution_notes" value="Product confirmed defective. Full refund issued and seller penalized."/>
+            <column name="resolution_date" valueDate="2025-05-22T17:00:00"/>
+            <column name="refund_amount" valueNumeric="2199.00"/>
+            <column name="sla_target_days" valueNumeric="5"/>
+        </insert>
+
+        <!-- Dispute 6: OPEN, MEDIUM priority, seller fraud -->
+        <insert tableName="dispute">
+            <column name="id" value="disp-006"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-cust-003"/>
+            <column name="created_time" valueDate="2025-06-12T16:45:00"/>
+            <column name="last_modified_time" valueDate="2025-06-12T16:45:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="flow_id" value="dispute-flow"/>
+            <column name="state_id" value="OPEN"/>
+            <column name="state_entry_time" valueDate="2025-06-12T16:45:00"/>
+            <column name="order_id" value="ord-006"/>
+            <column name="customer_id" value="user-cust-003"/>
+            <column name="seller_id" value="sup-002"/>
+            <column name="dispute_type" value="SELLER_FRAUD"/>
+            <column name="reason" value="Seller sent counterfeit product instead of genuine brand item"/>
+            <column name="disputed_amount" valueNumeric="5999.00"/>
+            <column name="priority" value="MEDIUM"/>
+            <column name="customer_complaint" value="The product has no brand labels and looks nothing like the genuine item advertised."/>
+            <column name="sla_target_days" valueNumeric="7"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="testdata-dispute-activities" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM dispute_activity WHERE id = 'disp-act-001'</sqlCheck>
+        </preConditions>
+
+        <insert tableName="dispute_activity">
+            <column name="id" value="disp-act-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-06-10T09:30:00"/>
+            <column name="last_modified_time" valueDate="2025-06-10T09:30:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="dispute_id" value="disp-001"/>
+            <column name="event_id" value="CREATED"/>
+            <column name="comment" value="Dispute created by customer"/>
+            <column name="success" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="dispute_activity">
+            <column name="id" value="disp-act-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-06-08T14:15:00"/>
+            <column name="last_modified_time" valueDate="2025-06-08T14:15:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="dispute_id" value="disp-002"/>
+            <column name="event_id" value="CREATED"/>
+            <column name="comment" value="Dispute created by customer"/>
+            <column name="success" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="dispute_activity">
+            <column name="id" value="disp-act-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-admin-001"/>
+            <column name="created_time" valueDate="2025-06-09T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-09T10:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="dispute_id" value="disp-002"/>
+            <column name="event_id" value="START_REVIEW"/>
+            <column name="comment" value="Assigned for review"/>
+            <column name="success" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="dispute_activity">
+            <column name="id" value="disp-act-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="user-admin-001"/>
+            <column name="created_time" valueDate="2025-05-25T14:00:00"/>
+            <column name="last_modified_time" valueDate="2025-05-25T14:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="dispute_id" value="disp-004"/>
+            <column name="event_id" value="RESOLVE"/>
+            <column name="comment" value="Partial refund issued for pricing discrepancy"/>
+            <column name="success" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

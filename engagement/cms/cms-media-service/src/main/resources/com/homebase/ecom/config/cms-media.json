@@ -1,0 +1,8 @@
+{
+    "policies": {
+        "media": {
+            "maxSizeMb": 5,
+            "allowedMimeTypes": "image/jpeg,image/png,image/webp,image/gif"
+        }
+    }
+}

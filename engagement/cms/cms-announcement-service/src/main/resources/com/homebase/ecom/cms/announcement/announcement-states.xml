@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- Announcement Workflow — System/feature announcement lifecycle          -->
+  <!--                                                                        -->
+  <!-- DRAFT → SCHEDULED → ACTIVE → EXPIRED                                  -->
+  <!-- DRAFT → ACTIVE → EXPIRED                                              -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <event-information eventId='createAnnouncement'  meta-acls="EDITOR,ADMIN"  meta-bodyType="com.homebase.ecom.cms.model.Announcement"/>
+  <event-information eventId='schedule'            meta-acls="ADMIN"         meta-bodyType="com.homebase.ecom.cms.model.Announcement"/>
+  <event-information eventId='activate'            meta-acls="ADMIN"         meta-bodyType="com.homebase.ecom.cms.model.Announcement"/>
+  <event-information eventId='expire'              meta-acls="ADMIN"         meta-bodyType="com.homebase.ecom.cms.model.Announcement"/>
+  <event-information eventId='deactivate'          meta-acls="ADMIN"         meta-bodyType="com.homebase.ecom.cms.model.Announcement"/>
+
+  <flow id='announcement-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="cmsAnnouncementEntryAction" />
+
+    <!-- Initial state: announcement is being composed -->
+    <manual-state id='DRAFT' initialState='true' meta-mainPath="true"
+                  description="Announcement is in draft">
+      <on eventId='schedule'
+          componentName='cmsAnnouncementScheduleAction'
+          newStateId='SCHEDULED'
+          meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='activate'
+          componentName='cmsAnnouncementActivateAction'
+          newStateId='ACTIVE'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- Scheduled for future publication -->
+    <manual-state id='SCHEDULED' meta-mainPath="true"
+                  description="Announcement is scheduled for future publication">
+      <on eventId='activate'
+          componentName='cmsAnnouncementActivateAction'
+          newStateId='ACTIVE'
+          meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='deactivate'
+          componentName='cmsAnnouncementDefaultTransitionAction'
+          newStateId='DRAFT'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- Active and visible -->
+    <manual-state id='ACTIVE' meta-mainPath="true"
+                  description="Announcement is active and visible to target audience">
+      <on eventId='expire'
+          componentName='cmsAnnouncementExpireAction'
+          newStateId='EXPIRED'
+          meta-mainPath="true" meta-acls="ADMIN"/>
+      <on eventId='deactivate'
+          componentName='cmsAnnouncementDefaultTransitionAction'
+          newStateId='DRAFT'
+          meta-acls="ADMIN"/>
+    </manual-state>
+
+    <!-- Expired — no longer visible -->
+    <manual-state id='EXPIRED'
+                  description="Announcement has expired and is no longer visible">
+      <on eventId='activate'
+          componentName='cmsAnnouncementActivateAction'
+          newStateId='ACTIVE'
+          meta-acls="ADMIN"/>
+    </manual-state>
+  </flow>
+</states>

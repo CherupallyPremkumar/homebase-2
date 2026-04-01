@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- organisation — aggregate root                                      -->
+    <!-- ================================================================== -->
+    <changeSet id="org-001-create-organisation" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation"/></not></preConditions>
+        <createTable tableName="organisation">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="company_name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="legal_name" type="VARCHAR(255)"/>
+            <column name="registration_number" type="VARCHAR(100)"/>
+            <column name="gst_number" type="VARCHAR(50)"/>
+            <column name="pan_number" type="VARCHAR(20)"/>
+            <column name="domain" type="VARCHAR(255)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- organisation_branding                                               -->
+    <!-- ================================================================== -->
+    <changeSet id="org-002-create-branding" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_branding"/></not></preConditions>
+        <createTable tableName="organisation_branding">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="organisation_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="logo_url" type="VARCHAR(500)"/>
+            <column name="favicon_url" type="VARCHAR(500)"/>
+            <column name="primary_color" type="VARCHAR(20)"/>
+            <column name="copyright_text" type="VARCHAR(500)"/>
+            <column name="founded_year" type="INT"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="organisation_branding" baseColumnNames="organisation_id"
+            referencedTableName="organisation" referencedColumnNames="id" constraintName="fk_branding_org"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- organisation_contact                                                -->
+    <!-- ================================================================== -->
+    <changeSet id="org-003-create-contact" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_contact"/></not></preConditions>
+        <createTable tableName="organisation_contact">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="organisation_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="primary_email" type="VARCHAR(255)"/>
+            <column name="support_email" type="VARCHAR(255)"/>
+            <column name="primary_phone" type="VARCHAR(30)"/>
+            <column name="support_phone" type="VARCHAR(30)"/>
+            <column name="website_url" type="VARCHAR(500)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="organisation_contact" baseColumnNames="organisation_id"
+            referencedTableName="organisation" referencedColumnNames="id" constraintName="fk_contact_org"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- organisation_address                                                -->
+    <!-- ================================================================== -->
+    <changeSet id="org-004-create-address" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_address"/></not></preConditions>
+        <createTable tableName="organisation_address">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="organisation_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="address_line1" type="VARCHAR(500)"/>
+            <column name="address_line2" type="VARCHAR(500)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="state" type="VARCHAR(100)"/>
+            <column name="pincode" type="VARCHAR(20)"/>
+            <column name="country" type="VARCHAR(100)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="organisation_address" baseColumnNames="organisation_id"
+            referencedTableName="organisation" referencedColumnNames="id" constraintName="fk_address_org"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- organisation_locale                                                 -->
+    <!-- ================================================================== -->
+    <changeSet id="org-005-create-locale" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_locale"/></not></preConditions>
+        <createTable tableName="organisation_locale">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="organisation_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="currency" type="VARCHAR(10)" defaultValue="INR"/>
+            <column name="timezone" type="VARCHAR(50)" defaultValue="Asia/Kolkata"/>
+            <column name="locale" type="VARCHAR(10)" defaultValue="en_IN"/>
+            <column name="date_format" type="VARCHAR(30)" defaultValue="dd/MM/yyyy"/>
+            <column name="country_code" type="VARCHAR(5)" defaultValue="IN"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="organisation_locale" baseColumnNames="organisation_id"
+            referencedTableName="organisation" referencedColumnNames="id" constraintName="fk_locale_org"/>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- organisation_social                                                 -->
+    <!-- ================================================================== -->
+    <changeSet id="org-006-create-social" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_social"/></not></preConditions>
+        <createTable tableName="organisation_social">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="organisation_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="facebook_url" type="VARCHAR(500)"/>
+            <column name="twitter_url" type="VARCHAR(500)"/>
+            <column name="instagram_url" type="VARCHAR(500)"/>
+            <column name="linkedin_url" type="VARCHAR(500)"/>
+            <column name="youtube_url" type="VARCHAR(500)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="organisation_social" baseColumnNames="organisation_id"
+            referencedTableName="organisation" referencedColumnNames="id" constraintName="fk_social_org"/>
+    </changeSet>
+
+</databaseChangeLog>

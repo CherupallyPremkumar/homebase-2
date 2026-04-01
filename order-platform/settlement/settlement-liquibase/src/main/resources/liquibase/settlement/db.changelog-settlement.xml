@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="settlement-001-create-settlements" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="settlements"/></not></preConditions>
+        <createTable tableName="settlements">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="description" type="TEXT"/>
+            <column name="supplier_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="order_amount" type="BIGINT"/>
+            <column name="commission_amount" type="BIGINT"/>
+            <column name="platform_fee" type="BIGINT"/>
+            <column name="net_amount" type="BIGINT"/>
+            <column name="currency" type="VARCHAR(3)"/>
+            <column name="settlement_period_start" type="DATE"/>
+            <column name="settlement_period_end" type="DATE"/>
+            <column name="disbursement_reference" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="settlement-002-create-settlement-adjustments" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="settlement_adjustments"/></not></preConditions>
+        <createTable tableName="settlement_adjustments">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="settlement_id" type="VARCHAR(255)"/>
+            <column name="amount" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
+            <column name="reason" type="TEXT"/>
+            <column name="adjusted_by" type="VARCHAR(255)"/>
+            <column name="adjusted_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="settlement-003-create-settlement-activity" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="settlement_activity"/></not></preConditions>
+        <createTable tableName="settlement_activity">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="settlement_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="activity_success" type="BOOLEAN"><constraints nullable="false"/></column>
+            <column name="activity_comment" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Add Amazon-standard columns to settlements -->
+    <changeSet id="settlement-004-add-settlement-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="settlements"/>
+            <not><columnExists tableName="settlements" columnName="payment_id"/></not>
+        </preConditions>
+        <addColumn tableName="settlements">
+            <column name="payment_id" type="VARCHAR(255)"/>
+            <column name="settlement_number" type="VARCHAR(100)"/>
+            <column name="tax_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="adjustment_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="bank_account_id" type="VARCHAR(255)"/>
+            <column name="disbursement_date" type="TIMESTAMP"/>
+            <column name="disbursement_method" type="VARCHAR(50)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Create settlement_line_items table -->
+    <changeSet id="settlement-005-create-settlement-line-items" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="settlement_line_items"/></not>
+        </preConditions>
+        <createTable tableName="settlement_line_items">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="settlement_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="order_item_id" type="VARCHAR(255)"/>
+            <column name="item_price" type="BIGINT"><constraints nullable="false"/></column>
+            <column name="commission_amount" type="BIGINT"><constraints nullable="false"/></column>
+            <column name="shipping_fee" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="tax_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="refund_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="net_amount" type="BIGINT"><constraints nullable="false"/></column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="settlement_line_items" baseColumnNames="settlement_id"
+                                 referencedTableName="settlements" referencedColumnNames="id"
+                                 constraintName="fk_settlement_line_items_settlement"/>
+        <createIndex indexName="idx_settlement_lines_settlement" tableName="settlement_line_items">
+            <column name="settlement_id"/>
+        </createIndex>
+        <createIndex indexName="idx_settlement_lines_order" tableName="settlement_line_items">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Add indexes to settlements -->
+    <changeSet id="settlement-006-add-settlement-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="settlements"/>
+            <not><indexExists indexName="idx_settlements_supplier"/></not>
+        </preConditions>
+        <createIndex indexName="idx_settlements_supplier" tableName="settlements">
+            <column name="supplier_id"/>
+        </createIndex>
+        <createIndex indexName="idx_settlements_state" tableName="settlements">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex indexName="idx_settlements_period" tableName="settlements">
+            <column name="settlement_period_start"/>
+            <column name="settlement_period_end"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

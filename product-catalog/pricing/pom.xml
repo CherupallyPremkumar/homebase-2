@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.homebase.ecom</groupId>
+        <artifactId>homebase-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.homebase.ecom.pricing</groupId>
+    <artifactId>pricing</artifactId>
+    <packaging>pom</packaging>
+    <name>pricing-parent</name>
+
+    <modules>
+        <module>pricing-domain</module>
+        <module>pricing-infrastructure</module>
+        <module>pricing-service</module>
+        <module>pricing-api</module>
+        <module>pricing-client</module>
+        <module>pricing-app</module>
+            <module>pricing-liquibase</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.homebase.ecom.pricing</groupId>
+                <artifactId>pricing-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.pricing</groupId>
+                <artifactId>pricing-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.pricing</groupId>
+                <artifactId>pricing-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.pricing</groupId>
+                <artifactId>pricing-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.pricing</groupId>
+                <artifactId>pricing-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.rulesengine</groupId>
+                <artifactId>rules-engine-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

@@ -337,4 +337,92 @@
 
     </changeSet>
 
+    <!-- Login history test data — 5 entries for user-1 and user-2 -->
+    <changeSet id="user-test-data-login-history" author="homebase-test">
+
+        <!-- user-1: current session from Chrome on desktop -->
+        <insert tableName="login_history">
+            <column name="id" value="login-1"/>
+            <column name="user_id" value="user-1"/>
+            <column name="browser" value="Chrome 124"/>
+            <column name="user_agent" value="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36"/>
+            <column name="ip_address" value="49.36.128.42"/>
+            <column name="location" value="Mumbai, Maharashtra, India"/>
+            <column name="session_id" value="sess-abc-001"/>
+            <column name="login_at" valueDate="2026-03-30T08:15:00"/>
+            <column name="is_current" valueBoolean="true"/>
+            <column name="login_method" value="PASSWORD"/>
+            <column name="created_time" valueDate="2026-03-30T08:15:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- user-1: previous session from mobile -->
+        <insert tableName="login_history">
+            <column name="id" value="login-2"/>
+            <column name="user_id" value="user-1"/>
+            <column name="browser" value="Safari Mobile"/>
+            <column name="user_agent" value="Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1"/>
+            <column name="ip_address" value="49.36.128.55"/>
+            <column name="location" value="Mumbai, Maharashtra, India"/>
+            <column name="session_id" value="sess-abc-002"/>
+            <column name="login_at" valueDate="2026-03-28T19:30:00"/>
+            <column name="logout_at" valueDate="2026-03-28T21:45:00"/>
+            <column name="is_current" valueBoolean="false"/>
+            <column name="login_method" value="OTP"/>
+            <column name="created_time" valueDate="2026-03-28T19:30:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- user-1: older session -->
+        <insert tableName="login_history">
+            <column name="id" value="login-3"/>
+            <column name="user_id" value="user-1"/>
+            <column name="browser" value="Chrome 123"/>
+            <column name="user_agent" value="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/123.0.0.0 Safari/537.36"/>
+            <column name="ip_address" value="103.15.67.10"/>
+            <column name="location" value="Pune, Maharashtra, India"/>
+            <column name="session_id" value="sess-abc-003"/>
+            <column name="login_at" valueDate="2026-03-20T10:00:00"/>
+            <column name="logout_at" valueDate="2026-03-20T12:30:00"/>
+            <column name="is_current" valueBoolean="false"/>
+            <column name="login_method" value="PASSWORD"/>
+            <column name="created_time" valueDate="2026-03-20T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- user-2: current session -->
+        <insert tableName="login_history">
+            <column name="id" value="login-4"/>
+            <column name="user_id" value="user-2"/>
+            <column name="browser" value="Firefox 125"/>
+            <column name="user_agent" value="Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0"/>
+            <column name="ip_address" value="14.139.54.22"/>
+            <column name="location" value="New Delhi, Delhi, India"/>
+            <column name="session_id" value="sess-def-001"/>
+            <column name="login_at" valueDate="2026-03-29T14:00:00"/>
+            <column name="is_current" valueBoolean="true"/>
+            <column name="login_method" value="SSO"/>
+            <column name="created_time" valueDate="2026-03-29T14:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- user-2: previous session -->
+        <insert tableName="login_history">
+            <column name="id" value="login-5"/>
+            <column name="user_id" value="user-2"/>
+            <column name="browser" value="Chrome 124"/>
+            <column name="user_agent" value="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36"/>
+            <column name="ip_address" value="14.139.54.30"/>
+            <column name="location" value="New Delhi, Delhi, India"/>
+            <column name="session_id" value="sess-def-002"/>
+            <column name="login_at" valueDate="2026-03-25T09:00:00"/>
+            <column name="logout_at" valueDate="2026-03-25T17:30:00"/>
+            <column name="is_current" valueBoolean="false"/>
+            <column name="login_method" value="PASSWORD"/>
+            <column name="created_time" valueDate="2026-03-25T09:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
 </databaseChangeLog>

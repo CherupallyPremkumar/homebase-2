@@ -26,6 +26,7 @@
     <include file="db/changelog/shipping/db.changelog-shipping.xml"/>
     <include file="db/changelog/notification/db.changelog-notification.xml"/>
     <include file="db/changelog/returnrequest/db.changelog-returnrequest.xml"/>
+    <include file="db/changelog/disputes/db.changelog-disputes.xml"/>
     <include file="db/changelog/review/db.changelog-review.xml"/>
     <include file="db/changelog/settlement/db.changelog-settlement.xml"/>
     <include file="db/changelog/support/db.changelog-support.xml"/>
@@ -34,7 +35,8 @@
     <include file="db/changelog/tax/db.changelog-tax.xml"/>
     <include file="db/changelog/onboarding/db.changelog-onboarding.xml"/>
     <include file="db/changelog/catalog/db.changelog-catalog.xml"/>
-    <include file="db/changelog/cms/db.changelog-cms.xml"/>
+    <!-- CMS migrations moved to cms/cms-infrastructure/src/main/resources/liquibase/changelog/ (microservices) -->
+    <!-- <include file="db/changelog/cms/db.changelog-cms.xml"/> -->
     <include file="db/changelog/analytics/db.changelog-analytics.xml"/>
     <include file="db/changelog/rules-engine/db.changelog-rules-engine.xml"/>
     <include file="db/changelog/config/db.changelog-config.xml"/>
@@ -42,6 +44,14 @@
     <include file="db/changelog/fulfillment/db.changelog-fulfillment.xml"/>
     <include file="db/changelog/reconciliation/db.changelog-reconciliation.xml"/>
     <include file="db/changelog/compliance/db.changelog-compliance.xml"/>
+
+    <!-- ================================================================== -->
+    <!-- Infrastructure — reports, exports, health monitoring               -->
+    <!-- (No STM — these modules have no state transitions)                 -->
+    <!-- ================================================================== -->
+    <include file="db/changelog/reports/db.changelog-reports.xml"/>
+    <include file="db/changelog/exports/db.changelog-exports.xml"/>
+    <include file="db/changelog/health/db.changelog-health.xml"/>
 
     <!-- ================================================================== -->
     <!-- Domain — saga orchestrators                                        -->

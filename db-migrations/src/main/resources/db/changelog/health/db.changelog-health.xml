@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Health Monitoring — service health checks and platform alerts      -->
+    <!-- Infrastructure module (no STM — operational monitoring)            -->
+    <!-- ================================================================== -->
+
+    <!-- service_health_check (ServiceHealthCheckEntity extends BaseJpaEntity) -->
+    <changeSet id="health-001-create-service-health-check" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="service_health_check"/></not>
+        </preConditions>
+        <createTable tableName="service_health_check">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="service_name" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="status" type="VARCHAR(20)"/>
+            <column name="response_time_ms" type="INT"/>
+            <column name="last_checked_at" type="TIMESTAMP"/>
+            <column name="details" type="TEXT"/>
+        </createTable>
+        <createIndex indexName="idx_health_service_name" tableName="service_health_check">
+            <column name="service_name"/>
+        </createIndex>
+        <createIndex indexName="idx_health_status" tableName="service_health_check">
+            <column name="status"/>
+        </createIndex>
+        <createIndex indexName="idx_health_last_checked" tableName="service_health_check">
+            <column name="last_checked_at"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- platform_alert (PlatformAlertEntity extends BaseJpaEntity) -->
+    <changeSet id="health-002-create-platform-alert" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="platform_alert"/></not>
+        </preConditions>
+        <createTable tableName="platform_alert">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="severity" type="VARCHAR(20)"/>
+            <column name="title" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="description" type="TEXT"/>
+            <column name="service_name" type="VARCHAR(100)"/>
+            <column name="detected_at" type="TIMESTAMP"/>
+            <column name="acknowledged_at" type="TIMESTAMP"/>
+            <column name="acknowledged_by" type="VARCHAR(255)"/>
+            <column name="resolved_at" type="TIMESTAMP"/>
+            <column name="auto_resolve" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+        <createIndex indexName="idx_alert_severity" tableName="platform_alert">
+            <column name="severity"/>
+        </createIndex>
+        <createIndex indexName="idx_alert_service_name" tableName="platform_alert">
+            <column name="service_name"/>
+        </createIndex>
+        <createIndex indexName="idx_alert_detected_at" tableName="platform_alert">
+            <column name="detected_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

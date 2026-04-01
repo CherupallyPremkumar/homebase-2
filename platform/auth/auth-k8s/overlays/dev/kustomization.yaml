@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: homebase-auth
+
+resources:
+  - ../../base
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+patches:
+  - path: keycloak-patch.yaml
+  - path: keycloak-nodeport.yaml
+
+configMapGenerator:
+  - name: keycloak-config
+    literals:
+      - kafka-bootstrap-servers=kafka:9092
+
+secretGenerator:
+  - name: keycloak-db-secret
+    literals:
+      - url=jdbc:postgresql://keycloak-db:5432/keycloak
+      - username=keycloak
+      - password=keycloak
+
+  - name: keycloak-admin-secret
+    literals:
+      - username=admin
+      - password=admin

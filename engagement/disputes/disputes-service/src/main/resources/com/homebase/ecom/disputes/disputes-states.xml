@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<states>
+  <scripting-strategy componentName="ognlScriptingStrategy"/>
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- Event definitions with ACLs and payload types                          -->
+  <!--                                                                        -->
+  <!-- Cross-BC Events (published via PostSaveHook -> Kafka):                 -->
+  <!--   disputes.UNDER_REVIEW  -> notify support team                        -->
+  <!--   disputes.ESCALATED     -> notify escalation team                     -->
+  <!--   disputes.RESOLVED      -> notify customer + seller                   -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <event-information eventId='createDispute'  meta-acls="CUSTOMER,SYSTEM"         meta-bodyType="com.homebase.ecom.disputes.model.Dispute"/>
+  <event-information eventId='review'         meta-acls="SUPPORT,ADMIN"           meta-bodyType="com.homebase.ecom.disputes.dto.ReviewDisputePayload"/>
+  <event-information eventId='escalate'       meta-acls="CUSTOMER,SUPPORT,ADMIN"  meta-bodyType="com.homebase.ecom.disputes.dto.EscalateDisputePayload"/>
+  <event-information eventId='resolve'        meta-acls="SUPPORT,ADMIN"           meta-bodyType="com.homebase.ecom.disputes.dto.ResolveDisputePayload"/>
+  <event-information eventId='addNote'        meta-acls="CUSTOMER,SUPPORT,ADMIN"  meta-bodyType="com.homebase.ecom.disputes.dto.AddNoteDisputePayload"/>
+
+  <flow id='disputes-flow' default='true'>
+    <security-strategy componentName="stmSecurityStrategy"/>
+    <entry-action componentName="disputesEntryAction" />
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- HAPPY PATH: OPEN -> UNDER_REVIEW -> RESOLVED                       -->
+    <!-- ESCALATION:  OPEN -> ESCALATED -> RESOLVED                         -->
+    <!--              UNDER_REVIEW -> ESCALATED -> RESOLVED                  -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Customer or system creates dispute -->
+    <manual-state id='OPEN' initialState='true' meta-mainPath="true"
+                  description="Dispute opened, pending review">
+      <on eventId='review'
+          componentName='disputesReviewAction'
+          newStateId='UNDER_REVIEW'
+          meta-mainPath="true" meta-acls="SUPPORT,ADMIN"/>
+      <on eventId='escalate'
+          componentName='disputesEscalateAction'
+          newStateId='ESCALATED'
+          meta-acls="CUSTOMER,SUPPORT,ADMIN"/>
+      <on eventId='addNote'
+          componentName='disputesAddNoteAction'
+          newStateId='OPEN'
+          meta-acls="CUSTOMER,SUPPORT,ADMIN"/>
+    </manual-state>
+
+    <!-- Support/Admin reviews the dispute -->
+    <manual-state id='UNDER_REVIEW' meta-mainPath="true"
+                  description="Dispute under investigation by support team">
+      <on eventId='resolve'
+          componentName='disputesResolveAction'
+          newStateId='RESOLVED'
+          meta-mainPath="true" meta-acls="SUPPORT,ADMIN"/>
+      <on eventId='escalate'
+          componentName='disputesEscalateAction'
+          newStateId='ESCALATED'
+          meta-acls="CUSTOMER,SUPPORT,ADMIN"/>
+      <on eventId='addNote'
+          componentName='disputesAddNoteAction'
+          newStateId='UNDER_REVIEW'
+          meta-acls="CUSTOMER,SUPPORT,ADMIN"/>
+    </manual-state>
+
+    <!-- Escalated to senior support / supervisor -->
+    <manual-state id='ESCALATED'
+                  description="Dispute escalated to senior support for resolution">
+      <on eventId='resolve'
+          componentName='disputesResolveAction'
+          newStateId='RESOLVED'
+          meta-acls="SUPPORT,ADMIN"/>
+      <on eventId='addNote'
+          componentName='disputesAddNoteAction'
+          newStateId='ESCALATED'
+          meta-acls="CUSTOMER,SUPPORT,ADMIN"/>
+    </manual-state>
+
+    <!-- Dispute resolved - terminal state -->
+    <manual-state id='RESOLVED' meta-mainPath="true"
+                  description="Dispute resolved, outcome determined">
+    </manual-state>
+
+    <!-- BDD test terminal state -->
+    <manual-state id='__TERMINAL_STATE__' description="Terminal state for activity completion testing">
+    </manual-state>
+  </flow>
+</states>

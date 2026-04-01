@@ -1,0 +1,63 @@
+logging:
+  level:
+    ROOT: INFO
+    org.hibernate.SQL: INFO
+    org.chenile.*: DEBUG
+
+
+chenile:
+  base:
+    url:
+  security:
+    client:
+      id: authz-servlet
+      secret: secret
+    keycloak:
+      host: http://localhost:8180
+      port: 8180
+      base:
+        realm: ${KEYCLOAK_REALM:tenant0}
+
+pubsub:
+  topic:
+    separator: "."
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  kafka:
+    bootstrap-server: localhost:9092
+  banner:
+    location: classpath:banner.txt
+  devtools:
+    restart:
+      enabled: true
+      additional-exclude: static/**,.h2.server.properties
+    livereload:
+      enabled: false
+  jackson:
+    serialization:
+      indent-output: true
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:h2:mem:demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    username: sa
+    password:
+    hikari:
+      poolName: Hikari
+      auto-commit: false
+
+  liquibase:
+    change-log: classpath:liquibase/cms/changelog-master.xml
+    contexts: dev, faker
+
+  messages:
+    cache-duration: PT1S
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8000
+  error:
+    whitelabel:
+      enabled: false

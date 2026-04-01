@@ -1,0 +1,126 @@
+# ================================================================
+# HomeBase Kafka Topics — SINGLE SOURCE OF TRUTH
+# All modules define their topics here.
+# ================================================================
+
+topics:
+  # === Identity ===
+  - name: auth.user.events
+    partitions: 3
+    replication: 1
+    retention.ms: 604800000  # 7 days
+    description: "User registered/updated/disabled from Keycloak SPI"
+
+  # === Product Catalog ===
+  - name: product.events
+    partitions: 6
+    replication: 1
+    retention.ms: 604800000
+    description: "Product created/enabled/disabled/discontinued"
+
+  - name: inventory.events
+    partitions: 6
+    replication: 1
+    retention.ms: 604800000
+    description: "Stock reserved/released/depleted/restocked"
+
+  - name: offer.events
+    partitions: 3
+    replication: 1
+    retention.ms: 604800000
+    description: "Offer live/expired/suspended, price changed"
+
+  - name: pricing.events
+    partitions: 3
+    replication: 1
+    retention.ms: 604800000
+    description: "Price calculated/locked/unlocked"
+
+  # === Commerce ===
+  - name: cart.events
+    partitions: 6
+    replication: 1
+    retention.ms: 604800000
+    description: "Cart created/item added/checkout initiated/abandoned"
+
+  - name: checkout.events
+    partitions: 6
+    replication: 1
+    retention.ms: 604800000
+    description: "Checkout completed/cancelled/payment failed"
+
+  - name: promo.events
+    partitions: 3
+    replication: 1
+    retention.ms: 604800000
+    description: "Promo activated/expired/usage incremented"
+
+  # === Order ===
+  - name: order.events
+    partitions: 12
+    replication: 1
+    retention.ms: 2592000000  # 30 days
+    description: "Order created/confirmed/shipped/delivered/cancelled"
+
+  - name: payment.events
+    partitions: 6
+    replication: 1
+    retention.ms: 2592000000
+    description: "Payment succeeded/failed/refunded"
+
+  - name: return.events
+    partitions: 3
+    replication: 1
+    retention.ms: 604800000
+    description: "Return requested/approved/completed"
+
+  - name: settlement.events
+    partitions: 3
+    replication: 1
+    retention.ms: 2592000000
+    description: "Settlement calculated/approved/disbursed"
+
+  # === Logistics ===
+  - name: shipping.events
+    partitions: 6
+    replication: 1
+    retention.ms: 604800000
+    description: "Shipment created/in-transit/delivered/returned"
+
+  - name: fulfillment.events
+    partitions: 6
+    replication: 1
+    retention.ms: 604800000
+    description: "Fulfillment initiated/shipped/completed"
+
+  # === Engagement ===
+  - name: notification.events
+    partitions: 6
+    replication: 1
+    retention.ms: 259200000  # 3 days
+    description: "Notification queued/sent/delivered/failed"
+
+  - name: cms.events
+    partitions: 3
+    replication: 1
+    retention.ms: 604800000
+    description: "Page published/archived, banner activated"
+
+  - name: review.events
+    partitions: 3
+    replication: 1
+    retention.ms: 604800000
+    description: "Review submitted/published/flagged"
+
+  # === Identity (sellers) ===
+  - name: supplier.events
+    partitions: 3
+    replication: 1
+    retention.ms: 604800000
+    description: "Supplier approved/suspended/terminated"
+
+  - name: onboarding.events
+    partitions: 3
+    replication: 1
+    retention.ms: 604800000
+    description: "Onboarding started/documents verified/completed"

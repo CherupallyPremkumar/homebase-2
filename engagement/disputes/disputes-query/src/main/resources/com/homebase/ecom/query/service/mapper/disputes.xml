@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Dispute">
+
+    <select id="getAll" resultType="map">
+        SELECT
+            d.id,
+            d.order_id AS "orderId",
+            d.customer_id AS "customerId",
+            d.seller_id AS "sellerId",
+            d.dispute_type AS "disputeType",
+            d.reason,
+            d.disputed_amount AS "disputedAmount",
+            d.priority,
+            d.assigned_to AS "assignedTo",
+            d.state_id AS "stateId",
+            d.flow_id AS "flowId",
+            d.created_time AS "createdTime",
+            d.last_modified_time AS "lastModifiedTime",
+            d.resolution_outcome AS "resolutionOutcome",
+            d.resolution_date AS "resolutionDate",
+            d.sla_target_days AS "slaTargetDays",
+            u.first_name || ' ' || u.last_name AS "customerName",
+            u.email AS "customerEmail",
+            s.business_name AS "sellerName"
+        FROM dispute d
+        LEFT JOIN user_profiles u ON d.customer_id = u.id
+        LEFT JOIN supplier s ON d.seller_id = s.id
+        <where>
+            <if test="filters != null and filters.disputeType != null">AND d.dispute_type = #{filters.disputeType}</if>
+            <if test="filters != null and filters.priority != null">AND d.priority = #{filters.priority}</if>
+            <if test="filters != null and filters.currentState != null">AND d.state_id = #{filters.currentState}</if>
+            <if test="filters != null and filters.orderId != null">AND d.order_id = #{filters.orderId}</if>
+            <if test="filters != null and filters.sellerId != null">AND d.seller_id = #{filters.sellerId}</if>
+            <if test="searchText != null and searchText != ''">
+                AND (d.id ILIKE '%' || #{searchText} || '%'
+                     OR d.order_id ILIKE '%' || #{searchText} || '%'
+                     OR u.first_name ILIKE '%' || #{searchText} || '%'
+                     OR u.last_name ILIKE '%' || #{searchText} || '%'
+                     OR s.business_name ILIKE '%' || #{searchText} || '%')
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <select id="getAll-count" resultType="int">
+        SELECT count(*)
+        FROM dispute d
+        LEFT JOIN user_profiles u ON d.customer_id = u.id
+        LEFT JOIN supplier s ON d.seller_id = s.id
+        <where>
+            <if test="filters != null and filters.disputeType != null">AND d.dispute_type = #{filters.disputeType}</if>
+            <if test="filters != null and filters.priority != null">AND d.priority = #{filters.priority}</if>
+            <if test="filters != null and filters.currentState != null">AND d.state_id = #{filters.currentState}</if>
+            <if test="filters != null and filters.orderId != null">AND d.order_id = #{filters.orderId}</if>
+            <if test="filters != null and filters.sellerId != null">AND d.seller_id = #{filters.sellerId}</if>
+            <if test="searchText != null and searchText != ''">
+                AND (d.id ILIKE '%' || #{searchText} || '%'
+                     OR d.order_id ILIKE '%' || #{searchText} || '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="stats" resultType="map">
+        SELECT
+            COUNT(*) AS "total",
+            COUNT(CASE WHEN state_id = 'OPEN' THEN 1 END) AS "open",
+            COUNT(CASE WHEN state_id = 'UNDER_REVIEW' THEN 1 END) AS "underReview",
+            COUNT(CASE WHEN state_id = 'ESCALATED' THEN 1 END) AS "escalated",
+            COUNT(CASE WHEN state_id = 'RESOLVED' THEN 1 END) AS "resolved",
+            COALESCE(AVG(CASE WHEN state_id = 'RESOLVED' THEN EXTRACT(EPOCH FROM (resolution_date - created_time)) / 86400 END), 0) AS "avgResolutionDays"
+        FROM dispute
+        <where>
+            <if test="filters != null and filters.sellerId != null">AND seller_id = #{filters.sellerId}</if>
+        </where>
+    </select>
+
+</mapper>

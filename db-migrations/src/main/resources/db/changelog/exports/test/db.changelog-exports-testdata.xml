@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Data Exports test data: 5 export entries with varied statuses
+        Covers CSV/Excel/JSON formats and different export types
+    -->
+    <changeSet id="exports-test-data" author="homebase-test">
+
+        <!-- Completed product export — CSV -->
+        <insert tableName="data_export">
+            <column name="id" value="export-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-03-28T09:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-28T09:02:30"/>
+            <column name="version" valueNumeric="1"/>
+            <column name="export_type" value="Products"/>
+            <column name="format" value="CSV"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="file_name" value="products-export-20260328-090000.csv"/>
+            <column name="file_url" value="/exports/2026/03/products-export-20260328-090000.csv"/>
+            <column name="file_size_bytes" valueNumeric="2457600"/>
+            <column name="record_count" valueNumeric="3450"/>
+            <column name="filters_json" value='{"category": "Electronics", "is_active": true}'/>
+            <column name="requested_by" value="admin"/>
+            <column name="completed_at" valueDate="2026-03-28T09:02:30"/>
+            <column name="expires_at" valueDate="2026-04-04T09:02:30"/>
+        </insert>
+
+        <!-- Completed orders export — Excel -->
+        <insert tableName="data_export">
+            <column name="id" value="export-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="finance-user"/>
+            <column name="created_time" valueDate="2026-03-29T14:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-29T14:05:12"/>
+            <column name="version" valueNumeric="1"/>
+            <column name="export_type" value="Orders"/>
+            <column name="format" value="EXCEL"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="file_name" value="orders-export-march-2026.xlsx"/>
+            <column name="file_url" value="/exports/2026/03/orders-export-march-2026.xlsx"/>
+            <column name="file_size_bytes" valueNumeric="8912896"/>
+            <column name="record_count" valueNumeric="12840"/>
+            <column name="filters_json" value='{"date_from": "2026-03-01", "date_to": "2026-03-29", "status": ["DELIVERED", "SHIPPED"]}'/>
+            <column name="requested_by" value="finance-user"/>
+            <column name="completed_at" valueDate="2026-03-29T14:05:12"/>
+            <column name="expires_at" valueDate="2026-04-05T14:05:12"/>
+        </insert>
+
+        <!-- Currently processing — sellers export -->
+        <insert tableName="data_export">
+            <column name="id" value="export-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="admin"/>
+            <column name="created_time" valueDate="2026-03-30T10:30:00"/>
+            <column name="last_modified_time" valueDate="2026-03-30T10:30:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="export_type" value="Sellers"/>
+            <column name="format" value="CSV"/>
+            <column name="status" value="PROCESSING"/>
+            <column name="file_name" value="sellers-export-20260330.csv"/>
+            <column name="filters_json" value='{"status": "APPROVED", "include_performance": true}'/>
+            <column name="requested_by" value="admin"/>
+        </insert>
+
+        <!-- Pending — transactions export (queued) -->
+        <insert tableName="data_export">
+            <column name="id" value="export-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="finance-user"/>
+            <column name="created_time" valueDate="2026-03-30T11:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-30T11:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="export_type" value="Transactions"/>
+            <column name="format" value="JSON"/>
+            <column name="status" value="PENDING"/>
+            <column name="file_name" value="transactions-q1-2026.json"/>
+            <column name="filters_json" value='{"date_from": "2026-01-01", "date_to": "2026-03-31", "min_amount": 1000}'/>
+            <column name="requested_by" value="finance-user"/>
+        </insert>
+
+        <!-- Failed — inventory export -->
+        <insert tableName="data_export">
+            <column name="id" value="export-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="warehouse-mgr"/>
+            <column name="created_time" valueDate="2026-03-27T16:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-27T16:03:00"/>
+            <column name="version" valueNumeric="1"/>
+            <column name="export_type" value="Inventory"/>
+            <column name="format" value="EXCEL"/>
+            <column name="status" value="FAILED"/>
+            <column name="file_name" value="inventory-full-export.xlsx"/>
+            <column name="requested_by" value="warehouse-mgr"/>
+            <column name="error_message" value="Export exceeded maximum row limit (500,000). Apply filters to reduce the dataset or contact admin to increase the limit."/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

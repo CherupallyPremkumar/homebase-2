@@ -502,6 +502,64 @@
     </changeSet>
 
 
+    <!-- ================================================================== -->
+    <!-- 13. seller_document — Seller KYC/compliance documents (StateEntity) -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-013-seller-document" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="seller_document"/></not>
+        </preConditions>
+
+        <createTable tableName="seller_document">
+            <!-- BaseJpaEntity fields -->
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+
+            <!-- AbstractJpaStateEntity fields -->
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+
+            <!-- SellerDocument-specific fields -->
+            <column name="supplier_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_type" type="VARCHAR(50)"/>
+            <column name="document_number" type="VARCHAR(100)"/>
+            <column name="file_url" type="VARCHAR(1000)"/>
+            <column name="verification_status" type="VARCHAR(50)"/>
+            <column name="verified_by" type="VARCHAR(255)"/>
+            <column name="verified_at" type="TIMESTAMP"/>
+            <column name="expiry_date" type="DATE"/>
+            <column name="rejection_reason" type="VARCHAR(500)"/>
+            <column name="priority" type="VARCHAR(20)" defaultValue="NORMAL"/>
+        </createTable>
+
+        <createIndex tableName="seller_document" indexName="idx_seller_doc_supplier">
+            <column name="supplier_id"/>
+        </createIndex>
+        <createIndex tableName="seller_document" indexName="idx_seller_doc_type">
+            <column name="document_type"/>
+        </createIndex>
+        <createIndex tableName="seller_document" indexName="idx_seller_doc_status">
+            <column name="verification_status"/>
+        </createIndex>
+        <addForeignKeyConstraint constraintName="fk_seller_doc_supplier"
+                                 baseTableName="seller_document" baseColumnNames="supplier_id"
+                                 referencedTableName="supplier" referencedColumnNames="id"/>
+    </changeSet>
+
     <!-- Production seed data: 6 regulations, 5 agreements, 6 platform policies, 5 mappings, 2 audits -->
     <include file="db/changelog/compliance/db.changelog-compliance-seed-data.xml"/>
 

@@ -1,0 +1,10 @@
+{
+    "policies": {
+        "page": {
+            "titleMaxLength": 200,
+            "bodyMaxLength": 50000,
+            "maxBlocksPerPage": 20,
+            "slugPattern": "^[a-z0-9-]+$"
+        }
+    }
+}

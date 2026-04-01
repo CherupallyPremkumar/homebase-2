@@ -1,0 +1,11 @@
+{
+    "policies": {
+        "banner": {
+            "titleMaxLength": 100,
+            "maxPerPosition": 5,
+            "imageMinWidth": 800,
+            "imageMinHeight": 400,
+            "imageMaxSizeKb": 500
+        }
+    }
+}

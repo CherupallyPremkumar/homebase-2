@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent><groupId>com.homebase.ecom.auth</groupId><artifactId>auth-parent</artifactId><version>${revision}</version><relativePath>../pom.xml</relativePath></parent>
+    <artifactId>auth-service</artifactId><packaging>jar</packaging><name>auth-service</name>
+    <description>Keycloak Event Listener SPI — publishes user events to Kafka</description>
+    <dependencies>
+        <dependency><groupId>com.homebase.ecom.auth</groupId><artifactId>auth-api</artifactId><version>${revision}</version></dependency>
+        <dependency><groupId>org.keycloak</groupId><artifactId>keycloak-server-spi</artifactId><version>26.0.8</version><scope>provided</scope></dependency>
+        <dependency><groupId>org.keycloak</groupId><artifactId>keycloak-server-spi-private</artifactId><version>26.0.8</version><scope>provided</scope></dependency>
+        <dependency><groupId>org.keycloak</groupId><artifactId>keycloak-services</artifactId><version>26.0.8</version><scope>provided</scope></dependency>
+        <dependency><groupId>org.apache.kafka</groupId><artifactId>kafka-clients</artifactId><version>3.7.0</version></dependency>
+        <dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId><scope>provided</scope></dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Copy kafka-clients JAR to target for Keycloak providers dir -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-deps</id>
+                        <phase>package</phase>
+                        <goals><goal>copy-dependencies</goal></goals>
+                        <configuration>
+                            <includeArtifactIds>kafka-clients,auth-api</includeArtifactIds>
+                            <outputDirectory>${project.build.directory}/providers</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

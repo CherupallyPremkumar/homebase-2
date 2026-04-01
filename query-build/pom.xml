@@ -19,7 +19,7 @@
 
 	<groupId>com.homebase.ecom.query</groupId>
 	<artifactId>query-parent</artifactId>
-	<name>query-parent</name>
+	<name>query-build</name>
 	<description>Parent module for query build and configurations</description>
 
 	<dependencyManagement>

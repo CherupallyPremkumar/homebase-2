@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="cart-001-create-cart" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cart"/></not></preConditions>
+        <createTable tableName="cart">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="session_id" type="VARCHAR(255)"/>
+            <column name="subtotal" type="BIGINT"/>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="coupon_codes" type="VARCHAR(500)"/>
+            <column name="discount_amount" type="BIGINT"/>
+            <column name="total" type="BIGINT"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+            <column name="notes" type="VARCHAR(1000)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="price_changed" type="BOOLEAN"/>
+            <column name="description" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="cart-002-create-cart-item" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cart_item"/></not></preConditions>
+        <createTable tableName="cart_item">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="cart_id" type="VARCHAR(255)"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="supplier_id" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT"/>
+            <column name="unit_price" type="BIGINT"/>
+            <column name="line_total" type="BIGINT"/>
+            <column name="available" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="cart-003-create-cart-activity-log" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cart_activity_log"/></not></preConditions>
+        <createTable tableName="cart_activity_log">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="cart_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Add Amazon "Save for Later", image, and original price columns to cart_item -->
+    <changeSet id="cart-004-add-cart-item-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="cart_item"/>
+            <not><columnExists tableName="cart_item" columnName="saved_for_later"/></not>
+        </preConditions>
+        <addColumn tableName="cart_item">
+            <column name="saved_for_later" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <column name="original_price" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Indexes on cart table -->
+    <changeSet id="cart-005-add-cart-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="cart"/>
+            <not><indexExists indexName="idx_cart_customer"/></not>
+        </preConditions>
+        <createIndex indexName="idx_cart_customer" tableName="cart">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex indexName="idx_cart_session" tableName="cart">
+            <column name="session_id"/>
+        </createIndex>
+        <createIndex indexName="idx_cart_state" tableName="cart">
+            <column name="state_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Indexes on cart_item table -->
+    <changeSet id="cart-006-add-cart-item-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="cart_item"/>
+            <not><indexExists indexName="idx_cart_item_cart"/></not>
+        </preConditions>
+        <createIndex indexName="idx_cart_item_cart" tableName="cart_item">
+            <column name="cart_id"/>
+        </createIndex>
+        <createIndex indexName="idx_cart_item_variant" tableName="cart_item">
+            <column name="variant_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

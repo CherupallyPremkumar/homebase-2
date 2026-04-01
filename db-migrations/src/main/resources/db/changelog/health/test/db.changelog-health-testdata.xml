@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Health monitoring test data:
+        6 service health checks (API, Database, Redis, Kafka, Keycloak, Storage)
+        3 platform alerts (1 resolved, 1 acknowledged, 1 active)
+    -->
+    <changeSet id="health-test-data" author="homebase-test">
+
+        <!-- ============================================================ -->
+        <!-- SERVICE HEALTH CHECKS — 6 core services                      -->
+        <!-- ============================================================ -->
+
+        <!-- API Gateway — healthy -->
+        <insert tableName="service_health_check">
+            <column name="id" value="health-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2026-03-30T12:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-30T12:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="service_name" value="API Gateway"/>
+            <column name="status" value="OPERATIONAL"/>
+            <column name="response_time_ms" valueNumeric="12"/>
+            <column name="last_checked_at" valueDate="2026-03-30T12:00:00"/>
+            <column name="details" value="All endpoints responding. Avg latency 12ms. 99.98% uptime last 24h."/>
+        </insert>
+
+        <!-- PostgreSQL Database — healthy -->
+        <insert tableName="service_health_check">
+            <column name="id" value="health-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2026-03-30T12:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-30T12:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="service_name" value="PostgreSQL"/>
+            <column name="status" value="OPERATIONAL"/>
+            <column name="response_time_ms" valueNumeric="3"/>
+            <column name="last_checked_at" valueDate="2026-03-30T12:00:00"/>
+            <column name="details" value="Primary: healthy, Replica: healthy. Connection pool: 18/100 active. Replication lag: 0.2s."/>
+        </insert>
+
+        <!-- Redis — healthy -->
+        <insert tableName="service_health_check">
+            <column name="id" value="health-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2026-03-30T12:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-30T12:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="service_name" value="Redis"/>
+            <column name="status" value="OPERATIONAL"/>
+            <column name="response_time_ms" valueNumeric="1"/>
+            <column name="last_checked_at" valueDate="2026-03-30T12:00:00"/>
+            <column name="details" value="Memory usage: 2.1GB/8GB. Hit rate: 94.2%. Connected clients: 45."/>
+        </insert>
+
+        <!-- Kafka — degraded (consumer lag) -->
+        <insert tableName="service_health_check">
+            <column name="id" value="health-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2026-03-30T12:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-30T12:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="service_name" value="Kafka"/>
+            <column name="status" value="DEGRADED"/>
+            <column name="response_time_ms" valueNumeric="85"/>
+            <column name="last_checked_at" valueDate="2026-03-30T12:00:00"/>
+            <column name="details" value="Broker cluster: 3/3 online. Consumer lag detected on order-events topic (lag: 1,240 messages). Notification-events topic: healthy."/>
+        </insert>
+
+        <!-- Keycloak — healthy -->
+        <insert tableName="service_health_check">
+            <column name="id" value="health-005"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2026-03-30T12:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-30T12:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="service_name" value="Keycloak"/>
+            <column name="status" value="OPERATIONAL"/>
+            <column name="response_time_ms" valueNumeric="28"/>
+            <column name="last_checked_at" valueDate="2026-03-30T12:00:00"/>
+            <column name="details" value="Auth service responding. Token issuance: avg 28ms. Active sessions: 312. Realm: homebase."/>
+        </insert>
+
+        <!-- Object Storage — healthy -->
+        <insert tableName="service_health_check">
+            <column name="id" value="health-006"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2026-03-30T12:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-30T12:00:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="service_name" value="Object Storage"/>
+            <column name="status" value="OPERATIONAL"/>
+            <column name="response_time_ms" valueNumeric="45"/>
+            <column name="last_checked_at" valueDate="2026-03-30T12:00:00"/>
+            <column name="details" value="S3-compatible storage online. Bucket: homebase-assets. Used: 42GB/500GB. Upload/download: normal."/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- PLATFORM ALERTS — 3 alerts in different states               -->
+        <!-- ============================================================ -->
+
+        <!-- Resolved alert — DB connection spike last week -->
+        <insert tableName="platform_alert">
+            <column name="id" value="alert-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2026-03-23T03:15:00"/>
+            <column name="last_modified_time" valueDate="2026-03-23T03:45:00"/>
+            <column name="version" valueNumeric="2"/>
+            <column name="severity" value="WARNING"/>
+            <column name="title" value="Database connection pool exhaustion approaching"/>
+            <column name="description" value="PostgreSQL connection pool reached 85/100 active connections during nightly batch job window (03:00-04:00). Peak lasted 18 minutes. No queries failed but headroom was low."/>
+            <column name="service_name" value="PostgreSQL"/>
+            <column name="detected_at" valueDate="2026-03-23T03:15:00"/>
+            <column name="acknowledged_at" valueDate="2026-03-23T08:30:00"/>
+            <column name="acknowledged_by" value="admin"/>
+            <column name="resolved_at" valueDate="2026-03-23T03:45:00"/>
+            <column name="auto_resolve" valueBoolean="true"/>
+        </insert>
+
+        <!-- Acknowledged alert — Kafka consumer lag (matches degraded health check) -->
+        <insert tableName="platform_alert">
+            <column name="id" value="alert-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2026-03-30T11:30:00"/>
+            <column name="last_modified_time" valueDate="2026-03-30T11:45:00"/>
+            <column name="version" valueNumeric="1"/>
+            <column name="severity" value="WARNING"/>
+            <column name="title" value="Kafka consumer lag on order-events topic"/>
+            <column name="description" value="Consumer group order-processor has accumulated 1,240 unprocessed messages on order-events topic. Processing rate dropped from 500/min to 120/min. Likely caused by downstream payment service slowness."/>
+            <column name="service_name" value="Kafka"/>
+            <column name="detected_at" valueDate="2026-03-30T11:30:00"/>
+            <column name="acknowledged_at" valueDate="2026-03-30T11:45:00"/>
+            <column name="acknowledged_by" value="admin"/>
+            <column name="auto_resolve" valueBoolean="false"/>
+        </insert>
+
+        <!-- Active unacknowledged alert — high error rate -->
+        <insert tableName="platform_alert">
+            <column name="id" value="alert-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2026-03-30T11:55:00"/>
+            <column name="last_modified_time" valueDate="2026-03-30T11:55:00"/>
+            <column name="version" valueNumeric="0"/>
+            <column name="severity" value="CRITICAL"/>
+            <column name="title" value="Payment gateway error rate above threshold"/>
+            <column name="description" value="Payment gateway returning 5xx errors at 8.2% rate (threshold: 5%). Affected payment methods: UPI, Net Banking. Card payments unaffected. Last 15 minutes: 41 failed out of 500 attempts."/>
+            <column name="service_name" value="API Gateway"/>
+            <column name="detected_at" valueDate="2026-03-30T11:55:00"/>
+            <column name="auto_resolve" valueBoolean="false"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

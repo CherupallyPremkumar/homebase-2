@@ -21,40 +21,15 @@
     </license>
   </licenses>
   <modules>
-    <module>shared</module>
-    <module>filter-core</module>
     <module>db-migrations</module>
-    <module>core</module>
-    <module>config</module>
-    <module>user</module>
-    <module>product</module>
-    <module>inventory</module>
-    <module>offer</module>
-    <module>cart</module>
-    <module>pricing</module>
-    <module>promo</module>
-    <module>order</module>
-    <module>payment</module>
-    <module>checkout</module>
-    <module>shipping</module>
-    <module>notification</module>
-    <module>supplier</module>
-    <module>onboarding</module>
-    <module>review</module>
-    <module>support</module>
-    <module>settlement</module>
-    <module>returnrequest</module>
-    <module>tax</module>
-    <module>rules-engine</module>
-    <module>compliance</module>
-    <module>catalog</module>
-    <module>cms</module>
-    <module>analytics</module>
-    <module>reconciliation</module>
-    <module>fulfillment</module>
-    <module>return-processing</module>
-    <module>supplier-lifecycle</module>
-    <module>warehouse</module>
+    <module>platform</module>
+    <module>identity-platform</module>
+    <module>product-catalog</module>
+    <module>commerce</module>
+    <module>order-platform</module>
+    <module>logistics</module>
+    <module>engagement</module>
+    <module>analytics-platform</module>
     <module>query-modules</module>
     <module>query-build</module>
     <module>root-build</module>
@@ -359,6 +334,16 @@
       <dependency>
         <groupId>com.homebase.ecom.returnrequest</groupId>
         <artifactId>returnrequest-service</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.disputes</groupId>
+        <artifactId>disputes-api</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.homebase.ecom.disputes</groupId>
+        <artifactId>disputes-service</artifactId>
         <version>0.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>

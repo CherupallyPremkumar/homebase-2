@@ -1,0 +1,346 @@
+[
+	{
+		"id": "Cms.getAll",
+		"name": "pages",
+		"acls": [],
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"slug": {
+				"name": "slug",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"title": {
+				"name": "title",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"pageType": {
+				"name": "pageType",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"published": {
+				"name": "published",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"publishedAt": {
+				"name": "publishedAt",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cms.getAllBanners",
+		"name": "banners",
+		"acls": [],
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"name": {
+				"name": "name",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"imageUrl": {
+				"name": "imageUrl",
+				"columnType": "Text"
+			},
+			"position": {
+				"name": "position",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"active": {
+				"name": "active",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdAt": {
+				"name": "createdAt",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cms.getAllBlocks",
+		"name": "blocks",
+		"acls": [],
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"pageId": {
+				"name": "pageId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"blockType": {
+				"name": "blockType",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"sortOrder": {
+				"name": "sortOrder",
+				"columnType": "Text",
+				"sortable": true
+			},
+			"active": {
+				"name": "active",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cms.getAllMedia",
+		"name": "media",
+		"acls": [],
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"originalName": {
+				"name": "originalName",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"mimeType": {
+				"name": "mimeType",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"folder": {
+				"name": "folder",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"fileSizeBytes": {
+				"name": "fileSizeBytes",
+				"columnType": "Text",
+				"sortable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cms.getAllVersions",
+		"name": "versions",
+		"acls": [],
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"pageId": {
+				"name": "pageId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"versionNumber": {
+				"name": "versionNumber",
+				"columnType": "Text",
+				"sortable": true
+			},
+			"publishedBy": {
+				"name": "publishedBy",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"publishedAt": {
+				"name": "publishedAt",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cms.getAllSchedules",
+		"name": "schedules",
+		"acls": [],
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"pageId": {
+				"name": "pageId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"active": {
+				"name": "active",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"publishAt": {
+				"name": "publishAt",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			},
+			"unpublishAt": {
+				"name": "unpublishAt",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cms.getAllAnnouncements",
+		"name": "announcements",
+		"acls": [],
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"title": {
+				"name": "title",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"announcementType": {
+				"name": "announcementType",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"targetAudience": {
+				"name": "targetAudience",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"priority": {
+				"name": "priority",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"status": {
+				"name": "status",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"dismissible": {
+				"name": "dismissible",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"scheduledDate": {
+				"name": "scheduledDate",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			},
+			"expiryDate": {
+				"name": "expiryDate",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			},
+			"createdAt": {
+				"name": "createdAt",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cms.getAllSeoMeta",
+		"name": "seoMeta",
+		"acls": [],
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"pageId": {
+				"name": "pageId",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"ogTitle": {
+				"name": "ogTitle",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"ogType": {
+				"name": "ogType",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"canonicalUrl": {
+				"name": "canonicalUrl",
+				"columnType": "Text"
+			},
+			"robots": {
+				"name": "robots",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"keywords": {
+				"name": "keywords",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"createdAt": {
+				"name": "createdAt",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

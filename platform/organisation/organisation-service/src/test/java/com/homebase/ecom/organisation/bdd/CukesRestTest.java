@@ -1,0 +1,17 @@
+package com.homebase.ecom.organisation.bdd;
+
+import io.cucumber.junit.Cucumber;
+import io.cucumber.junit.CucumberOptions;
+import org.junit.runner.RunWith;
+
+@RunWith(Cucumber.class)
+@CucumberOptions(
+    features = "src/test/resources/features",
+    glue = {
+        "com/homebase/ecom/organisation/bdd",
+        "org/chenile/cucumber/rest",
+        "org/chenile/cucumber/security/rest"
+    }
+)
+public class CukesRestTest {
+}

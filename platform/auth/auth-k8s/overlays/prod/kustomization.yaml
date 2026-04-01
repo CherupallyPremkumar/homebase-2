@@ -1,0 +1,35 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../../base
+
+patchesStrategicMerge:
+  - keycloak-patch.yaml
+
+resources:
+  - ingress.yaml
+  - keycloak-hpa.yaml
+
+configMapGenerator:
+  - name: keycloak-config
+    literals:
+      - kafka-bootstrap-servers=kafka.homebase-infra.svc.cluster.local:9092
+
+  - name: keycloak-realm
+    files:
+      - homebase-realm.json
+
+# Production secrets should come from external secret manager (AWS SSM, Vault)
+# These are placeholders — replace with ExternalSecret or SealedSecret
+secretGenerator:
+  - name: keycloak-db-secret
+    literals:
+      - url=jdbc:postgresql://keycloak-db.homebase-auth.svc.cluster.local:5432/keycloak
+      - username=keycloak
+      - password=CHANGE_ME_USE_VAULT
+
+  - name: keycloak-admin-secret
+    literals:
+      - username=admin
+      - password=CHANGE_ME_USE_VAULT
