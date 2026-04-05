@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="User">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Listing: dim_customer (star schema dimension)                          -->
+<!-- Detail: customer_360_flat (flat table — zero JOINs)                    -->
+<!-- Populated by UserSyncService ETL.                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN: getAll users ====== -->
+<select id="getAll" resultType="com.homebase.ecom.user.dto.UserDto">
+    SELECT
+        customer_key       as "id",
+        customer_key       as "userId",
+        first_name         as "firstName",
+        last_name          as "lastName",
+        email              as "email",
+        phone              as "phone",
+        customer_status    as "stateId",
+        customer_tier      as "customerTier",
+        segment            as "segment",
+        city               as "city",
+        state              as "state",
+        total_orders       as "totalOrders",
+        total_spent        as "totalSpent",
+        registered_date    as "registeredDate",
+        last_synced_at     as "lastSyncedAt"
+    FROM hm_query.dim_customer
+    <where>
+        <if test="userId != null">AND customer_key = #{userId}</if>
+        <if test="email != null">AND email LIKE CONCAT('%', #{email}, '%')</if>
+        <if test="firstName != null">AND first_name LIKE CONCAT('%', #{firstName}, '%')</if>
+        <if test="lastName != null">AND last_name LIKE CONCAT('%', #{lastName}, '%')</if>
+        <if test="phone != null">AND phone = #{phone}</if>
+        <if test="stateId != null">AND customer_status = #{stateId}</if>
+        <if test="customerTier != null">AND customer_tier = #{customerTier}</if>
+        <if test="segment != null">AND segment = #{segment}</if>
+        <if test="city != null">AND city LIKE CONCAT('%', #{city}, '%')</if>
+        <if test="state != null">AND state = #{state}</if>
+        <if test="q != null">AND (first_name LIKE CONCAT('%', #{q}, '%') OR last_name LIKE CONCAT('%', #{q}, '%') OR email LIKE CONCAT('%', #{q}, '%') OR phone LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.dim_customer
+    <where>
+        <if test="userId != null">AND customer_key = #{userId}</if>
+        <if test="email != null">AND email LIKE CONCAT('%', #{email}, '%')</if>
+        <if test="firstName != null">AND first_name LIKE CONCAT('%', #{firstName}, '%')</if>
+        <if test="lastName != null">AND last_name LIKE CONCAT('%', #{lastName}, '%')</if>
+        <if test="phone != null">AND phone = #{phone}</if>
+        <if test="stateId != null">AND customer_status = #{stateId}</if>
+        <if test="customerTier != null">AND customer_tier = #{customerTier}</if>
+        <if test="segment != null">AND segment = #{segment}</if>
+        <if test="city != null">AND city LIKE CONCAT('%', #{city}, '%')</if>
+        <if test="state != null">AND state = #{state}</if>
+        <if test="q != null">AND (first_name LIKE CONCAT('%', #{q}, '%') OR last_name LIKE CONCAT('%', #{q}, '%') OR email LIKE CONCAT('%', #{q}, '%') OR phone LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<!-- ====== ADMIN: getById (from customer_360_flat — zero JOINs) ====== -->
+<select id="getById" resultType="com.homebase.ecom.user.dto.UserDto">
+    SELECT
+        customer_id        as "id",
+        customer_id        as "userId",
+        first_name         as "firstName",
+        last_name          as "lastName",
+        email              as "email",
+        phone              as "phone",
+        customer_status    as "stateId",
+        customer_tier      as "customerTier",
+        segment            as "segment",
+        registered_date    as "registeredDate",
+        last_login_at      as "lastLoginAt",
+        last_active_at     as "lastActiveAt",
+        email_verified     as "emailVerified",
+        phone_verified     as "phoneVerified",
+        city               as "city",
+        state              as "state",
+        pincode            as "pincode",
+        total_orders       as "totalOrders",
+        total_spent        as "totalSpent",
+        avg_order_value    as "avgOrderValue",
+        first_order_date   as "firstOrderDate",
+        last_purchase_date as "lastPurchaseDate",
+        ltv                as "ltv",
+        total_returns      as "totalReturns",
+        return_rate        as "returnRate",
+        reviews_given      as "reviewsGiven",
+        churn_risk         as "churnRisk",
+        days_since_last_purchase as "daysSinceLastPurchase",
+        fraud_score        as "fraudScore",
+        open_tickets       as "openTickets",
+        wishlist_count     as "wishlistCount",
+        active_cart_value  as "activeCartValue"
+    FROM hm_query.customer_360_flat
+    WHERE customer_id = #{userId}
+</select>
+
+<!-- ====== ADMIN: getStateCounts ====== -->
+<select id="getStateCounts" resultType="com.homebase.ecom.user.dto.UserDto">
+    SELECT
+        customer_status    as "stateId",
+        count(*)           as "userCount"
+    FROM hm_query.dim_customer
+    GROUP BY customer_status
+</select>
+
+<!-- ====== ADMIN: getRecentRegistrations ====== -->
+<select id="getRecentRegistrations-count" resultType="int">
+    SELECT count(*) FROM hm_query.dim_customer WHERE customer_status = 'REGISTERED'
+</select>
+
+<select id="getRecentRegistrations" resultType="com.homebase.ecom.user.dto.UserDto">
+    SELECT
+        customer_key       as "id",
+        customer_key       as "userId",
+        first_name         as "firstName",
+        last_name          as "lastName",
+        email              as "email",
+        customer_tier      as "customerTier",
+        customer_status    as "stateId",
+        registered_date    as "registeredDate"
+    FROM hm_query.dim_customer
+    WHERE customer_status = 'REGISTERED'
+    ORDER BY registered_date DESC
+    ${pagination}
+</select>
+
+<!-- ====== ADMIN: getSuspendedUsers ====== -->
+<select id="getSuspendedUsers-count" resultType="int">
+    SELECT count(*) FROM hm_query.dim_customer WHERE customer_status = 'SUSPENDED'
+</select>
+
+<select id="getSuspendedUsers" resultType="com.homebase.ecom.user.dto.UserDto">
+    SELECT
+        customer_key       as "id",
+        customer_key       as "userId",
+        first_name         as "firstName",
+        last_name          as "lastName",
+        email              as "email",
+        customer_tier      as "customerTier",
+        customer_status    as "stateId"
+    FROM hm_query.dim_customer
+    WHERE customer_status = 'SUSPENDED'
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== ADMIN: getByEmail ====== -->
+<select id="getByEmail" resultType="com.homebase.ecom.user.dto.UserDto">
+    SELECT
+        customer_key       as "id",
+        customer_key       as "userId",
+        first_name         as "firstName",
+        last_name          as "lastName",
+        email              as "email",
+        phone              as "phone",
+        customer_status    as "stateId",
+        customer_tier      as "customerTier"
+    FROM hm_query.dim_customer
+    WHERE email = #{email}
+</select>
+
+<!-- ====== ADMIN: getByRole (uses segment as role proxy) ====== -->
+<select id="getByRole-count" resultType="int">
+    SELECT count(*) FROM hm_query.dim_customer WHERE segment = #{role}
+</select>
+
+<select id="getByRole" resultType="com.homebase.ecom.user.dto.UserDto">
+    SELECT
+        customer_key       as "id",
+        customer_key       as "userId",
+        first_name         as "firstName",
+        last_name          as "lastName",
+        email              as "email",
+        phone              as "phone",
+        customer_status    as "stateId",
+        customer_tier      as "customerTier",
+        segment            as "segment"
+    FROM hm_query.dim_customer
+    WHERE segment = #{role}
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== ADMIN: At-risk customers (churn prevention) ====== -->
+<select id="getAtRiskCustomers-count" resultType="int">
+    SELECT count(*) FROM hm_query.dim_customer WHERE churn_risk IN ('MEDIUM', 'HIGH')
+</select>
+
+<select id="getAtRiskCustomers" resultType="com.homebase.ecom.user.dto.UserDto">
+    SELECT
+        customer_key       as "id",
+        customer_key       as "userId",
+        first_name         as "firstName",
+        last_name          as "lastName",
+        email              as "email",
+        customer_tier      as "customerTier",
+        customer_status    as "stateId",
+        churn_risk         as "churnRisk",
+        total_orders       as "totalOrders",
+        total_spent        as "totalSpent",
+        last_purchase_date as "lastPurchaseDate"
+    FROM hm_query.dim_customer
+    WHERE churn_risk IN ('MEDIUM', 'HIGH')
+    ORDER BY total_spent DESC
+    ${pagination}
+</select>
+
+</mapper>

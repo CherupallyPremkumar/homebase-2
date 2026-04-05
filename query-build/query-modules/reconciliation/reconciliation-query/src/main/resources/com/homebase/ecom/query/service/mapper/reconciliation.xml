@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Reconciliation">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: reconciliation_batches_flat                                     -->
+<!-- Populated by ReconciliationSyncService ETL.                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.reconciliation_batches_flat
+    <where>
+        <if test="gatewayType != null">AND gateway_type = #{gatewayType}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="startDate != null">AND batch_date &gt;= #{startDate}</if>
+        <if test="endDate != null">AND batch_date &lt;= #{endDate}</if>
+        <if test="q != null">AND (gateway_type LIKE CONCAT('%', #{q}, '%') OR reconciliation_method LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.reconciliation.dto.ReconciliationBatchQueryDto">
+    SELECT
+        id,
+        batch_date                as "batchDate",
+        period_start              as "periodStart",
+        period_end                as "periodEnd",
+        gateway_type              as "gatewayType",
+        reconciliation_method     as "reconciliationMethod",
+        matched_count             as "matchedCount",
+        mismatch_count            as "mismatchCount",
+        auto_resolved_count       as "autoResolvedCount",
+        state_id                  as "stateId",
+        flow_id                   as "flowId",
+        created_time              as "createdTime"
+    FROM hm_query.reconciliation_batches_flat
+    <where>
+        <if test="gatewayType != null">AND gateway_type = #{gatewayType}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="startDate != null">AND batch_date &gt;= #{startDate}</if>
+        <if test="endDate != null">AND batch_date &lt;= #{endDate}</if>
+        <if test="q != null">AND (gateway_type LIKE CONCAT('%', #{q}, '%') OR reconciliation_method LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<select id="getById" resultType="com.homebase.ecom.reconciliation.dto.ReconciliationBatchDetailQueryDto">
+    SELECT
+        id,
+        batch_date                as "batchDate",
+        period_start              as "periodStart",
+        period_end                as "periodEnd",
+        gateway_type              as "gatewayType",
+        reconciliation_method     as "reconciliationMethod",
+        matched_count             as "matchedCount",
+        mismatch_count            as "mismatchCount",
+        auto_resolved_count       as "autoResolvedCount",
+        state_id                  as "stateId",
+        flow_id                   as "flowId",
+        created_time              as "createdTime",
+        last_modified_time        as "lastModifiedTime"
+    FROM hm_query.reconciliation_batches_flat
+    WHERE id = #{id}
+</select>
+
+<select id="getStateCounts" resultType="com.homebase.ecom.reconciliation.dto.ReconciliationStateCountQueryDto">
+    SELECT
+        state_id as "stateId",
+        COUNT(*) as "count"
+    FROM hm_query.reconciliation_batches_flat
+    GROUP BY state_id
+    ORDER BY "count" DESC
+</select>
+
+</mapper>

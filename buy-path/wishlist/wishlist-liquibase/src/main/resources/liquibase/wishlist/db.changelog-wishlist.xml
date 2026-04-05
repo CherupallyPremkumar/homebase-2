@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="wishlist-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_wishlist</sql>
+    </changeSet>
+
+    <changeSet id="wishlist-001-create-wishlist-items" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="wishlist_items" schemaName="hm_wishlist"/></not>
+        </preConditions>
+        <createTable tableName="wishlist_items" schemaName="hm_wishlist">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="user_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="added_at" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="price_when_added" type="DECIMAL(12,2)"/>
+            <column name="notify_on_price_drop" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="notes" type="VARCHAR(500)"/>
+        </createTable>
+        <createIndex indexName="idx_wishlist_user" tableName="wishlist_items" schemaName="hm_wishlist">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_wishlist_product" tableName="wishlist_items" schemaName="hm_wishlist">
+            <column name="product_id"/>
+        </createIndex>
+        <addUniqueConstraint tableName="wishlist_items" columnNames="user_id, variant_id" constraintName="uk_wishlist_user_variant" schemaName="hm_wishlist"/>
+    </changeSet>
+
+</databaseChangeLog>

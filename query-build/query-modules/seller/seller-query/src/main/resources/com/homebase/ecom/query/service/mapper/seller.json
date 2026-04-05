@@ -1,0 +1,140 @@
+[
+	{
+		"id": "Seller.getAll",
+		"name": "sellers",
+		"acls": ["ADMIN", "AGENT"],
+		"workflowName": "seller",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "seller_id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"storeName": {
+				"name": "store_name",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true,
+				"sortable": true
+			},
+			"businessName": {
+				"name": "business_name",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"email": {
+				"name": "contact_email",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"phone": {
+				"name": "contact_phone",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "seller_status",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"tier": {
+				"name": "tier",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"kycStatus": {
+				"name": "gst_verified",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"active": {
+				"name": "seller_status",
+				"filterable": true,
+				"columnType": "CheckBox"
+			},
+			"healthScore": {
+				"name": "health_score",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"rating": {
+				"name": "rating",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"createdAt": {
+				"name": "active_date",
+				"filterable": true,
+				"columnType": "Date",
+				"sortable": true
+			},
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Seller.getStateCounts",
+		"name": "sellerStateCounts",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Seller.getPerformance",
+		"name": "sellerPerformance",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"sellerId": {
+				"name": "seller_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"healthScore": {
+				"name": "health_score",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"orderCount": {
+				"name": "orders_30d",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"returnRate": {
+				"name": "return_rate",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"rating": {
+				"name": "rating",
+				"columnType": "Number",
+				"sortable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Seller.getById",
+		"name": "seller",
+		"acls": ["ADMIN", "AGENT"],
+		"workflowName": "seller",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "seller_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false,
+		"sortable": false
+	}
+]

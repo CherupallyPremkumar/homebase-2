@@ -1,0 +1,167 @@
+[
+	{
+		"id": "User.getAll",
+		"name": "users",
+		"acls": ["ADMIN"],
+		"workflowName": "user",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {
+			"userId": {
+				"name": "customer_key",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"firstName": {
+				"name": "first_name",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"lastName": {
+				"name": "last_name",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"email": {
+				"name": "email",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"phone": {
+				"name": "phone",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "customer_status",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"customerTier": {
+				"name": "customer_tier",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"segment": {
+				"name": "segment",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"city": {
+				"name": "city",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"state": {
+				"name": "state",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"totalOrders": {
+				"name": "total_orders",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"totalSpent": {
+				"name": "total_spent",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"registeredDate": {
+				"name": "registered_date",
+				"columnType": "Date",
+				"sortable": true
+			},
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "User.getById",
+		"name": "user",
+		"acls": ["ADMIN"],
+		"workflowName": "user",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {
+			"userId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "User.getStateCounts",
+		"name": "userStateCounts",
+		"acls": ["ADMIN"],
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "User.getRecentRegistrations",
+		"name": "recentRegistrations",
+		"acls": ["ADMIN"],
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "User.getSuspendedUsers",
+		"name": "suspendedUsers",
+		"acls": ["ADMIN"],
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "User.getByEmail",
+		"name": "userByEmail",
+		"acls": ["ADMIN"],
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {
+			"email": {
+				"name": "email",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "User.getByRole",
+		"name": "usersByRole",
+		"acls": ["ADMIN"],
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {
+			"role": {
+				"name": "segment",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "User.getAtRiskCustomers",
+		"name": "atRiskCustomers",
+		"acls": ["ADMIN"],
+		"responseClass": "com.homebase.ecom.user.dto.UserDto",
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": true
+	}
+]

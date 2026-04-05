@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="fraud-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_fraud</sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- fraud_rules — configurable fraud detection rules                    -->
+    <!-- ================================================================== -->
+    <changeSet id="fraud-001-create-fraud-rules" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="fraud_rules" schemaName="hm_fraud"/></not></preConditions>
+        <createTable tableName="fraud_rules" schemaName="hm_fraud">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="rule_name" type="VARCHAR(255)"/>
+            <column name="rule_type" type="VARCHAR(50)"/>
+            <column name="condition_json" type="VARCHAR(4000)"/>
+            <column name="severity_level" type="VARCHAR(50)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="description" type="VARCHAR(1000)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- fraud_signals — detected fraud signals per transaction              -->
+    <!-- ================================================================== -->
+    <changeSet id="fraud-002-create-fraud-signals" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="fraud_signals" schemaName="hm_fraud"/></not></preConditions>
+        <createTable tableName="fraud_signals" schemaName="hm_fraud">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="transaction_id" type="VARCHAR(255)"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="signal_type" type="VARCHAR(100)"/>
+            <column name="signal_value" type="VARCHAR(255)"/>
+            <column name="threshold_value" type="VARCHAR(255)"/>
+            <column name="severity_score" type="INT"/>
+            <column name="source_system" type="VARCHAR(100)"/>
+            <column name="metadata" type="VARCHAR(4000)"/>
+        </createTable>
+        <createIndex indexName="idx_fraud_signals_transaction" tableName="fraud_signals" schemaName="hm_fraud">
+            <column name="transaction_id"/>
+        </createIndex>
+        <createIndex indexName="idx_fraud_signals_user" tableName="fraud_signals" schemaName="hm_fraud">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- fraud_assessments — STM entity for transaction risk assessment       -->
+    <!-- ================================================================== -->
+    <changeSet id="fraud-003-create-fraud-assessments" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="fraud_assessments" schemaName="hm_fraud"/></not></preConditions>
+        <createTable tableName="fraud_assessments" schemaName="hm_fraud">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- STM columns -->
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <!-- Domain columns -->
+            <column name="transaction_id" type="VARCHAR(255)"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="risk_score" type="INT"/>
+            <column name="risk_level" type="VARCHAR(50)"/>
+            <column name="decision" type="VARCHAR(50)"/>
+            <column name="confidence_score" type="INT"/>
+            <column name="triggered_rules" type="VARCHAR(2000)"/>
+            <column name="triggered_signals" type="VARCHAR(2000)"/>
+            <column name="assessment_reason" type="VARCHAR(1000)"/>
+            <column name="assessed_by" type="VARCHAR(100)"/>
+            <column name="appeals_count" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_assessments_transaction" tableName="fraud_assessments" schemaName="hm_fraud">
+            <column name="transaction_id"/>
+        </createIndex>
+        <createIndex indexName="idx_assessments_user" tableName="fraud_assessments" schemaName="hm_fraud">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- blocked_entities — blacklisted users, IPs, devices, cards           -->
+    <!-- ================================================================== -->
+    <changeSet id="fraud-004-create-blocked-entities" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="blocked_entities" schemaName="hm_fraud"/></not></preConditions>
+        <createTable tableName="blocked_entities" schemaName="hm_fraud">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="entity_type" type="VARCHAR(50)"/>
+            <column name="entity_value" type="VARCHAR(255)"/>
+            <column name="entity_hash" type="VARCHAR(255)"/>
+            <column name="reason" type="VARCHAR(255)"/>
+            <column name="severity" type="VARCHAR(50)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="blocked_by" type="VARCHAR(100)"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+            <column name="evidence" type="VARCHAR(2000)"/>
+            <column name="appeal_enabled" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <createIndex indexName="idx_blocked_entity_value" tableName="blocked_entities" schemaName="hm_fraud">
+            <column name="entity_value"/>
+        </createIndex>
+        <createIndex indexName="idx_blocked_entity_type" tableName="blocked_entities" schemaName="hm_fraud">
+            <column name="entity_type"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- device_fingerprints — device trust and risk tracking                -->
+    <!-- ================================================================== -->
+    <changeSet id="fraud-005-create-device-fingerprints" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="device_fingerprints" schemaName="hm_fraud"/></not></preConditions>
+        <createTable tableName="device_fingerprints" schemaName="hm_fraud">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="device_id" type="VARCHAR(255)"/>
+            <column name="device_hash" type="VARCHAR(255)"/>
+            <column name="device_type" type="VARCHAR(50)"/>
+            <column name="os" type="VARCHAR(100)"/>
+            <column name="browser_type" type="VARCHAR(100)"/>
+            <column name="screen_resolution" type="VARCHAR(50)"/>
+            <column name="timezone" type="VARCHAR(50)"/>
+            <column name="ip_address" type="VARCHAR(50)"/>
+            <column name="device_risk_score" type="INT" defaultValueNumeric="0"/>
+            <column name="is_trusted" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="first_seen" type="TIMESTAMP"/>
+            <column name="last_seen" type="TIMESTAMP"/>
+            <column name="total_transactions" type="INT" defaultValueNumeric="0"/>
+            <column name="fraud_incidents" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_fingerprints_user" tableName="device_fingerprints" schemaName="hm_fraud">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_fingerprints_device" tableName="device_fingerprints" schemaName="hm_fraud">
+            <column name="device_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- velocity_checks — transaction rate limiting and anomaly detection    -->
+    <!-- ================================================================== -->
+    <changeSet id="fraud-006-create-velocity-checks" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="velocity_checks" schemaName="hm_fraud"/></not></preConditions>
+        <createTable tableName="velocity_checks" schemaName="hm_fraud">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="transaction_id" type="VARCHAR(255)"/>
+            <column name="check_type" type="VARCHAR(50)"/>
+            <column name="time_window_minutes" type="INT"/>
+            <column name="data_element" type="VARCHAR(100)"/>
+            <column name="element_value" type="VARCHAR(255)"/>
+            <column name="current_count" type="INT"/>
+            <column name="threshold_value" type="INT"/>
+            <column name="exceeds_threshold" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="alert_triggered" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="reset_at" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_velocity_user" tableName="velocity_checks" schemaName="hm_fraud">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

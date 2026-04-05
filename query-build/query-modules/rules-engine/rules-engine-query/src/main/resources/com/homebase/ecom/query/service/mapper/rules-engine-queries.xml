@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="RulesEngine">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: rule_sets_flat, rules_flat, decisions_flat, fact_definitions_flat -->
+<!-- Populated by RulesEngineSyncService ETL.                               -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+    <resultMap id="ruleSetResult" type="com.homebase.ecom.rulesengine.query.dto.RuleSetQueryDto">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="targetModule" column="target_module"/>
+        <result property="defaultEffect" column="default_effect"/>
+        <result property="active" column="active"/>
+        <result property="stateId" column="state_id"/>
+        <result property="flowId" column="flow_id"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="lastModifiedTime" column="last_modified_time"/>
+        <result property="tenant" column="tenant"/>
+    </resultMap>
+
+    <resultMap id="ruleResult" type="com.homebase.ecom.rulesengine.query.dto.RuleQueryDto">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="expression" column="expression"/>
+        <result property="effect" column="effect"/>
+        <result property="priority" column="priority"/>
+        <result property="policyId" column="policy_id"/>
+        <result property="policyName" column="policy_name"/>
+    </resultMap>
+
+    <resultMap id="decisionResult" type="com.homebase.ecom.rulesengine.query.dto.DecisionQueryDto">
+        <result property="id" column="id"/>
+        <result property="policyId" column="policy_id"/>
+        <result property="subjectId" column="subject_id"/>
+        <result property="effect" column="effect"/>
+        <result property="reasons" column="reasons"/>
+        <result property="targetModule" column="target_module"/>
+        <result property="createdTime" column="created_time"/>
+    </resultMap>
+
+    <resultMap id="factDefinitionResult" type="map">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="dataType" column="data_type"/>
+        <result property="module" column="module"/>
+        <result property="createdTime" column="created_time"/>
+    </resultMap>
+
+    <!-- Rule Sets -->
+    <select id="getRuleSets-count" resultType="int">
+        SELECT count(*) FROM hm_query.rule_sets_flat
+        <where>
+            <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+            <if test="targetModule != null">AND target_module = #{targetModule}</if>
+            <if test="active != null">AND active = #{active}</if>
+            <if test="stateId != null">AND state_id IN <foreach item="item" collection="stateId" open="(" separator="," close=")">#{item}</foreach></if>
+            <if test="q != null">AND (name LIKE CONCAT('%', #{q}, '%') OR description LIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+    </select>
+
+    <select id="getRuleSets" resultMap="ruleSetResult">
+        SELECT id, name, description, target_module, default_effect,
+               active, state_id, flow_id,
+               created_time, last_modified_time, tenant
+        FROM hm_query.rule_sets_flat
+        <where>
+            <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+            <if test="targetModule != null">AND target_module = #{targetModule}</if>
+            <if test="active != null">AND active = #{active}</if>
+            <if test="stateId != null">AND state_id IN <foreach item="item" collection="stateId" open="(" separator="," close=")">#{item}</foreach></if>
+            <if test="q != null">AND (name LIKE CONCAT('%', #{q}, '%') OR description LIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- Rules by RuleSet -->
+    <select id="getRulesByRuleSet-count" resultType="int">
+        SELECT count(*) FROM hm_query.rules_flat
+        <where>
+            <if test="policyId != null">AND policy_id = #{policyId}</if>
+        </where>
+    </select>
+
+    <select id="getRulesByRuleSet" resultMap="ruleResult">
+        SELECT id, name, expression, effect, priority, policy_id, policy_name
+        FROM hm_query.rules_flat
+        <where>
+            <if test="policyId != null">AND policy_id = #{policyId}</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- Decisions -->
+    <select id="getDecisions-count" resultType="int">
+        SELECT count(*) FROM hm_query.decisions_flat
+        <where>
+            <if test="targetModule != null">AND target_module = #{targetModule}</if>
+            <if test="effect != null">AND effect IN <foreach item="item" collection="effect" open="(" separator="," close=")">#{item}</foreach></if>
+            <if test="createdTime != null">AND created_time BETWEEN #{createdTime[0]} AND #{createdTime[1]}</if>
+            <if test="policyId != null">AND policy_id = #{policyId}</if>
+        </where>
+    </select>
+
+    <select id="getDecisions" resultMap="decisionResult">
+        SELECT id, policy_id, subject_id, effect, reasons, target_module, created_time
+        FROM hm_query.decisions_flat
+        <where>
+            <if test="targetModule != null">AND target_module = #{targetModule}</if>
+            <if test="effect != null">AND effect IN <foreach item="item" collection="effect" open="(" separator="," close=")">#{item}</foreach></if>
+            <if test="createdTime != null">AND created_time BETWEEN #{createdTime[0]} AND #{createdTime[1]}</if>
+            <if test="policyId != null">AND policy_id = #{policyId}</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- Fact Definitions -->
+    <select id="getFactDefinitions-count" resultType="int">
+        SELECT count(*) FROM hm_query.fact_definitions_flat
+        <where>
+            <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+            <if test="dataType != null">AND data_type = #{dataType}</if>
+            <if test="module != null">AND module = #{module}</if>
+        </where>
+    </select>
+
+    <select id="getFactDefinitions" resultMap="factDefinitionResult">
+        SELECT id, name, description, data_type, module, created_time
+        FROM hm_query.fact_definitions_flat
+        <where>
+            <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+            <if test="dataType != null">AND data_type = #{dataType}</if>
+            <if test="module != null">AND module = #{module}</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+</mapper>

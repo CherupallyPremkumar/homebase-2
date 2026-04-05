@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="OnboardingSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SYNC: OLTP → OLAP                                                      -->
+<!-- Reads from hm_onboarding.supplier_onboarding                           -->
+<!-- Writes to hm_query.onboarding_flat                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateOnboardingFlat">
+    TRUNCATE TABLE hm_query.onboarding_flat
+</update>
+
+<insert id="syncOnboardingFlat">
+    INSERT INTO hm_query.onboarding_flat (
+        id, tenant, last_synced_at,
+        onboarding_id, supplier_id,
+        applicant_name, business_name, business_type,
+        documents_json, verification_notes,
+        training_progress, training_completed_modules_json,
+        resubmission_count, rejection_reason,
+        state_id, flow_id,
+        submitted_at, created_time, last_modified_time
+    )
+    SELECT
+        ob.id, ob.tenant, NOW(),
+        ob.id, ob.supplier_id,
+        ob.applicant_name, ob.business_name, ob.business_type,
+        ob.documents_json, ob.verification_notes,
+        ob.training_progress, ob.training_completed_modules_json,
+        ob.resubmission_count, ob.rejection_reason,
+        ob.state_id, ob.flow_id,
+        ob.submitted_at, ob.created_time, ob.last_modified_time
+    FROM hm_onboarding.supplier_onboarding ob
+</insert>
+
+</mapper>

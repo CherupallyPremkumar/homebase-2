@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="media-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_media</sql>
+    </changeSet>
+
+    <!-- media_assets (extends BaseJpaEntity — shared media storage) -->
+    <changeSet id="media-001-create-media-assets" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="media_assets" schemaName="hm_media"/></not>
+        </preConditions>
+        <createTable tableName="media_assets" schemaName="hm_media">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="original_url" type="VARCHAR(1000)"/>
+            <column name="cdn_url" type="VARCHAR(1000)"/>
+            <column name="thumbnail_url" type="VARCHAR(1000)"/>
+            <column name="medium_url" type="VARCHAR(1000)"/>
+            <column name="zoom_url" type="VARCHAR(1000)"/>
+            <column name="type" type="VARCHAR(50)"/>
+            <column name="mime_type" type="VARCHAR(255)"/>
+            <column name="file_size_bytes" type="BIGINT"/>
+            <column name="width" type="INT"/>
+            <column name="height" type="INT"/>
+            <column name="alt_text" type="VARCHAR(255)"/>
+            <column name="processing_status" type="VARCHAR(50)"/>
+        </createTable>
+        <createIndex indexName="idx_media_type" tableName="media_assets" schemaName="hm_media">
+            <column name="type"/>
+        </createIndex>
+        <createIndex indexName="idx_media_status" tableName="media_assets" schemaName="hm_media">
+            <column name="processing_status"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

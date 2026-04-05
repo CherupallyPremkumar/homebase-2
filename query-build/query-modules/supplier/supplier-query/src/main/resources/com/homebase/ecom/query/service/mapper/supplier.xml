@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Supplier">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Listing: dim_seller (star schema dimension)                            -->
+<!-- Detail: seller_dashboard_flat (flat table — zero JOINs)                -->
+<!-- Populated by SupplierSyncService ETL.                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN: getAll suppliers ====== -->
+<select id="getAll" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+    SELECT
+        seller_key         as "id",
+        business_name      as "businessName",
+        business_type      as "businessType",
+        contact_email      as "contactEmail",
+        rating             as "rating",
+        fulfillment_rate   as "fulfillmentRate",
+        total_products     as "totalOrders",
+        commission_rate    as "commissionRate",
+        seller_status      as "stateId",
+        tier               as "tier",
+        city               as "city",
+        state              as "state",
+        health_score       as "healthScore",
+        active_date        as "createdAt"
+    FROM hm_query.dim_seller
+    <where>
+        <if test="businessName != null">AND business_name LIKE CONCAT('%', #{businessName}, '%')</if>
+        <if test="contactEmail != null">AND contact_email LIKE CONCAT('%', #{contactEmail}, '%')</if>
+        <if test="businessType != null">AND business_type = #{businessType}</if>
+        <if test="stateId != null">AND seller_status = #{stateId}</if>
+        <if test="tier != null">AND tier = #{tier}</if>
+        <if test="city != null">AND city LIKE CONCAT('%', #{city}, '%')</if>
+        <if test="state != null">AND state = #{state}</if>
+        <if test="q != null">AND (business_name LIKE CONCAT('%', #{q}, '%') OR contact_email LIKE CONCAT('%', #{q}, '%') OR store_name LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.dim_seller
+    <where>
+        <if test="businessName != null">AND business_name LIKE CONCAT('%', #{businessName}, '%')</if>
+        <if test="contactEmail != null">AND contact_email LIKE CONCAT('%', #{contactEmail}, '%')</if>
+        <if test="businessType != null">AND business_type = #{businessType}</if>
+        <if test="stateId != null">AND seller_status = #{stateId}</if>
+        <if test="tier != null">AND tier = #{tier}</if>
+        <if test="city != null">AND city LIKE CONCAT('%', #{city}, '%')</if>
+        <if test="state != null">AND state = #{state}</if>
+        <if test="q != null">AND (business_name LIKE CONCAT('%', #{q}, '%') OR contact_email LIKE CONCAT('%', #{q}, '%') OR store_name LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<!-- ====== ADMIN/SUPPLIER: getById (from seller_dashboard_flat — zero JOINs) ====== -->
+<select id="getById" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+    SELECT
+        seller_id          as "id",
+        business_name      as "businessName",
+        store_name         as "storeName",
+        business_type      as "businessType",
+        contact_email      as "contactEmail",
+        contact_phone      as "contactPhone",
+        city               as "city",
+        state              as "state",
+        gstin              as "gstin",
+        gst_verified       as "gstVerified",
+        pan_verified       as "panVerified",
+        bank_account_verified as "bankAccountVerified",
+        tier               as "tier",
+        commission_rate    as "commissionRate",
+        rating             as "rating",
+        health_score       as "healthScore",
+        fulfillment_rate   as "fulfillmentRate",
+        dispatch_sla_pct   as "dispatchSlaPct",
+        delivery_sla_pct   as "deliverySlaPct",
+        return_rate        as "returnRate",
+        response_time_hours as "responseTimeHours",
+        cancellation_rate  as "cancellationRate",
+        violations_count   as "violationsCount",
+        total_products     as "totalProducts",
+        active_listings    as "activeListings",
+        gmv_30d            as "gmv30d",
+        orders_30d         as "orders30d",
+        revenue_30d        as "revenue30d",
+        pending_payout     as "pendingPayout",
+        last_payout_date   as "lastPayoutDate",
+        last_payout_amount as "lastPayoutAmount",
+        payout_frequency   as "payoutFrequency",
+        avg_lead_time_days as "avgLeadTimeDays",
+        seller_status      as "stateId",
+        active_date        as "activeDate"
+    FROM hm_query.seller_dashboard_flat
+    WHERE seller_id = #{id}
+</select>
+
+<!-- ====== ADMIN: getStateCounts ====== -->
+<select id="getStateCounts" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+    SELECT
+        seller_status      as "stateId",
+        count(*)           as "totalOrders"
+    FROM hm_query.dim_seller
+    GROUP BY seller_status
+</select>
+
+<select id="getStateCounts-count" resultType="int">
+    SELECT count(DISTINCT seller_status) FROM hm_query.dim_seller
+</select>
+
+<!-- ====== ADMIN: getPendingApproval ====== -->
+<select id="getPendingApproval" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+    SELECT
+        seller_key         as "id",
+        business_name      as "businessName",
+        business_type      as "businessType",
+        contact_email      as "contactEmail",
+        seller_status      as "stateId",
+        active_date        as "createdAt"
+    FROM hm_query.dim_seller
+    WHERE seller_status IN ('APPLIED', 'UNDER_REVIEW')
+    ${orderby} ${pagination}
+</select>
+
+<select id="getPendingApproval-count" resultType="int">
+    SELECT count(*) FROM hm_query.dim_seller
+    WHERE seller_status IN ('APPLIED', 'UNDER_REVIEW')
+</select>
+
+<!-- ====== ADMIN: getTopSuppliers ====== -->
+<select id="getTopSuppliers" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+    SELECT
+        seller_key         as "id",
+        business_name      as "businessName",
+        rating             as "rating",
+        fulfillment_rate   as "fulfillmentRate",
+        total_products     as "totalOrders",
+        health_score       as "healthScore",
+        seller_status      as "stateId"
+    FROM hm_query.dim_seller
+    WHERE seller_status = 'ACTIVE'
+    ORDER BY rating DESC, fulfillment_rate DESC
+    ${pagination}
+</select>
+
+<select id="getTopSuppliers-count" resultType="int">
+    SELECT count(*) FROM hm_query.dim_seller
+    WHERE seller_status = 'ACTIVE'
+</select>
+
+<!-- ====== ADMIN: getUnderperforming ====== -->
+<select id="getUnderperforming" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+    SELECT
+        seller_key         as "id",
+        business_name      as "businessName",
+        rating             as "rating",
+        fulfillment_rate   as "fulfillmentRate",
+        total_products     as "totalOrders",
+        return_rate        as "returnRate",
+        health_score       as "healthScore",
+        seller_status      as "stateId"
+    FROM hm_query.dim_seller
+    WHERE (rating &lt; 200 OR fulfillment_rate &lt; 8500)
+      AND seller_status IN ('ACTIVE', 'ON_PROBATION')
+    ${orderby} ${pagination}
+</select>
+
+<select id="getUnderperforming-count" resultType="int">
+    SELECT count(*) FROM hm_query.dim_seller
+    WHERE (rating &lt; 200 OR fulfillment_rate &lt; 8500)
+      AND seller_status IN ('ACTIVE', 'ON_PROBATION')
+</select>
+
+<!-- ====== SUPPLIER: getProfile (own profile — OLAP only) ====== -->
+<select id="getProfile" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+    SELECT
+        seller_id          as "id",
+        business_name      as "businessName",
+        store_name         as "storeName",
+        business_type      as "businessType",
+        contact_email      as "contactEmail",
+        contact_phone      as "contactPhone",
+        city               as "city",
+        state              as "state",
+        tier               as "tier",
+        commission_rate    as "commissionRate",
+        rating             as "rating",
+        health_score       as "healthScore",
+        fulfillment_rate   as "fulfillmentRate",
+        total_products     as "totalProducts",
+        active_listings    as "activeListings",
+        gmv_30d            as "gmv30d",
+        orders_30d         as "orders30d",
+        pending_payout     as "pendingPayout",
+        seller_status      as "stateId",
+        active_date        as "activeDate"
+    FROM hm_query.seller_dashboard_flat
+    WHERE user_id = #{userId}
+</select>
+
+<select id="getProfile-count" resultType="int">
+    SELECT count(*) FROM hm_query.seller_dashboard_flat
+    WHERE user_id = #{userId}
+</select>
+
+<!-- ====== ADMIN/SUPPLIER: getPerformanceMetrics ====== -->
+<select id="getPerformanceMetrics" resultType="com.homebase.ecom.supplier.dto.SupplierDto">
+    SELECT
+        seller_id          as "id",
+        business_name      as "businessName",
+        rating             as "rating",
+        health_score       as "healthScore",
+        fulfillment_rate   as "fulfillmentRate",
+        dispatch_sla_pct   as "dispatchSlaPct",
+        return_rate        as "returnRate",
+        response_time_hours as "responseTimeHours",
+        cancellation_rate  as "cancellationRate",
+        violations_count   as "violationsCount",
+        avg_lead_time_days as "avgLeadTimeDays",
+        gmv_30d            as "gmv30d",
+        orders_30d         as "orders30d",
+        revenue_30d        as "revenue30d"
+    FROM hm_query.seller_dashboard_flat
+    WHERE seller_id = #{id}
+</select>
+
+<select id="getPerformanceMetrics-count" resultType="int">
+    SELECT count(*) FROM hm_query.seller_dashboard_flat WHERE seller_id = #{id}
+</select>
+
+</mapper>

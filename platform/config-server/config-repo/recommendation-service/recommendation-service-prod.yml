@@ -1,0 +1,3 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://prod-recommendation-db.homebase.internal:5432/homebase_recommendation

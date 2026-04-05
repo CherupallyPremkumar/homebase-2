@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SupplierSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SYNC: OLTP → OLAP                                                      -->
+<!-- Reads from hm_supplier.supplier, hm_seller_analytics.*, hm_product.*   -->
+<!-- Writes to hm_query.dim_seller, hm_query.seller_dashboard_flat          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== dim_seller ====== -->
+<update id="truncateDimSeller">
+    TRUNCATE TABLE hm_query.dim_seller
+</update>
+
+<insert id="syncDimSeller">
+    INSERT INTO hm_query.dim_seller (
+        seller_key, tenant, last_synced_at,
+        business_name, store_name, seller_status, tier, business_type,
+        contact_email, contact_phone, city, state, gstin,
+        gst_verified, pan_verified, bank_account_verified,
+        active_date, commission_rate,
+        health_score, rating, fulfillment_rate, dispatch_sla_pct,
+        return_rate, response_time_hours, violations_count,
+        total_products, active_listings
+    )
+    SELECT
+        s.id, s.tenant, NOW(),
+        s.business_name, s.store_name, s.state_id, s.tier, s.business_type,
+        s.contact_email, s.contact_phone, s.city, s.state, s.gstin,
+        s.gst_verified, s.pan_verified, s.bank_account_verified,
+        s.active_date, s.commission_rate,
+        COALESCE(sc.health_score, 0),
+        s.rating, s.fulfillment_rate,
+        COALESCE(sc.dispatch_sla_pct, 0),
+        COALESCE(sc.return_rate, 0),
+        COALESCE(sc.response_time_hours, 0),
+        COALESCE(sc.violations_count, 0),
+        COALESCE(prod_agg.total_products, 0),
+        COALESCE(prod_agg.active_listings, 0)
+    FROM hm_supplier.supplier s
+    LEFT JOIN LATERAL (
+        SELECT health_score, dispatch_sla_pct, return_rate, response_time_hours, violations_count
+        FROM hm_seller_analytics.seller_scorecards
+        WHERE supplier_id = s.id
+        ORDER BY period_end DESC LIMIT 1
+    ) sc ON true
+    LEFT JOIN LATERAL (
+        SELECT
+            COUNT(*) as total_products,
+            COUNT(*) FILTER (WHERE state_id = 'PUBLISHED') as active_listings
+        FROM hm_product.products WHERE supplier_id = s.id
+    ) prod_agg ON true
+</insert>
+
+<!-- ====== seller_dashboard_flat ====== -->
+<update id="truncateSellerDashboardFlat">
+    TRUNCATE TABLE hm_query.seller_dashboard_flat
+</update>
+
+<insert id="syncSellerDashboardFlat">
+    INSERT INTO hm_query.seller_dashboard_flat (
+        id, tenant, last_synced_at,
+        seller_id, user_id, business_name, store_name, seller_status, tier, business_type,
+        contact_email, contact_phone, city, state, gstin,
+        gst_verified, pan_verified, bank_account_verified,
+        active_date, commission_rate,
+        health_score, rating, fulfillment_rate, dispatch_sla_pct, delivery_sla_pct,
+        return_rate, response_time_hours, cancellation_rate, violations_count,
+        total_products, active_listings,
+        gmv_30d, orders_30d, revenue_30d,
+        pending_payout, payout_frequency, avg_lead_time_days
+    )
+    SELECT
+        s.id, s.tenant, NOW(),
+        s.id, s.user_id, s.business_name, s.store_name, s.state_id, s.tier, s.business_type,
+        s.contact_email, s.contact_phone, s.city, s.state, s.gstin,
+        s.gst_verified, s.pan_verified, s.bank_account_verified,
+        s.active_date, s.commission_rate,
+        COALESCE(sc.health_score, 0),
+        s.rating, s.fulfillment_rate,
+        COALESCE(sc.dispatch_sla_pct, 0),
+        COALESCE(sc.delivery_sla_pct, 0),
+        COALESCE(sc.return_rate, 0),
+        COALESCE(sc.response_time_hours, 0),
+        COALESCE(sc.cancellation_rate, 0),
+        COALESCE(sc.violations_count, 0),
+        COALESCE(prod_agg.total_products, 0),
+        COALESCE(prod_agg.active_listings, 0),
+        COALESCE(sales_agg.gmv_30d, 0),
+        COALESCE(sales_agg.orders_30d, 0),
+        COALESCE(sales_agg.revenue_30d, 0),
+        0, s.payout_frequency,
+        COALESCE(s.avg_shipping_days, 0)
+    FROM hm_supplier.supplier s
+    LEFT JOIN LATERAL (
+        SELECT health_score, dispatch_sla_pct, delivery_sla_pct, return_rate,
+               response_time_hours, cancellation_rate, violations_count
+        FROM hm_seller_analytics.seller_scorecards
+        WHERE supplier_id = s.id ORDER BY period_end DESC LIMIT 1
+    ) sc ON true
+    LEFT JOIN LATERAL (
+        SELECT COUNT(*) as total_products,
+               COUNT(*) FILTER (WHERE state_id = 'PUBLISHED') as active_listings
+        FROM hm_product.products WHERE supplier_id = s.id
+    ) prod_agg ON true
+    LEFT JOIN LATERAL (
+        SELECT
+            COALESCE(SUM(total_amount), 0) as gmv_30d,
+            COUNT(*) as orders_30d,
+            COALESCE(SUM(total_amount), 0) as revenue_30d
+        FROM hm_order.orders o
+        JOIN hm_order.order_items oi ON oi.order_id = o.id
+        WHERE oi.supplier_id = s.id
+          AND o.created_time >= NOW() - INTERVAL '30 days'
+    ) sales_agg ON true
+</insert>
+
+</mapper>

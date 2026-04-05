@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Offer">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: offer_flat                                                      -->
+<!-- Populated by OfferSyncService ETL.                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ================================================================ -->
+<!-- Offer Listing                                                     -->
+<!-- ================================================================ -->
+
+<select id="getAll-count" resultType="long">
+    SELECT COUNT(*) FROM hm_query.offer_flat
+    <where>
+        <if test="id != null">AND id = #{id}</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="q != null">AND (product_name LIKE CONCAT('%', #{q}, '%') OR supplier_name LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.offer.dto.OfferQueryDto">
+    SELECT
+        id,
+        product_id         AS "productId",
+        product_name       AS "productName",
+        supplier_id        AS "supplierId",
+        supplier_name      AS "supplierName",
+        offer_price        AS "offerPrice",
+        mrp,
+        discount_percent   AS "discountPercent",
+        state_id           AS "stateId",
+        flow_id            AS "flowId",
+        created_at         AS "createdAt"
+    FROM hm_query.offer_flat
+    <where>
+        <if test="id != null">AND id = #{id}</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="q != null">AND (product_name LIKE CONCAT('%', #{q}, '%') OR supplier_name LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Offer Detail                                                      -->
+<!-- ================================================================ -->
+
+<select id="getById" resultType="com.homebase.ecom.offer.dto.OfferQueryDto">
+    SELECT
+        id,
+        product_id         AS "productId",
+        product_name       AS "productName",
+        supplier_id        AS "supplierId",
+        supplier_name      AS "supplierName",
+        offer_price        AS "offerPrice",
+        mrp,
+        discount_percent   AS "discountPercent",
+        state_id           AS "stateId",
+        flow_id            AS "flowId",
+        created_at         AS "createdAt"
+    FROM hm_query.offer_flat
+    WHERE id = #{id}
+</select>
+
+<!-- ================================================================ -->
+<!-- State Counts                                                      -->
+<!-- ================================================================ -->
+
+<select id="getStateCounts" resultType="java.util.HashMap">
+    SELECT
+        state_id           AS "stateId",
+        COUNT(*)           AS "count"
+    FROM hm_query.offer_flat
+    GROUP BY state_id
+</select>
+
+<!-- ================================================================ -->
+<!-- Offers by Supplier                                                -->
+<!-- ================================================================ -->
+
+<select id="getBySupplierId-count" resultType="long">
+    SELECT COUNT(*) FROM hm_query.offer_flat
+    WHERE supplier_id = #{supplierId}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+</select>
+
+<select id="getBySupplierId" resultType="com.homebase.ecom.offer.dto.OfferQueryDto">
+    SELECT
+        id,
+        product_id         AS "productId",
+        product_name       AS "productName",
+        supplier_id        AS "supplierId",
+        supplier_name      AS "supplierName",
+        offer_price        AS "offerPrice",
+        mrp,
+        discount_percent   AS "discountPercent",
+        state_id           AS "stateId",
+        flow_id            AS "flowId",
+        created_at         AS "createdAt"
+    FROM hm_query.offer_flat
+    WHERE supplier_id = #{supplierId}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Offers by Product                                                 -->
+<!-- ================================================================ -->
+
+<select id="getByProductId-count" resultType="long">
+    SELECT COUNT(*) FROM hm_query.offer_flat
+    WHERE product_id = #{productId}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+</select>
+
+<select id="getByProductId" resultType="com.homebase.ecom.offer.dto.OfferQueryDto">
+    SELECT
+        id,
+        product_id         AS "productId",
+        product_name       AS "productName",
+        supplier_id        AS "supplierId",
+        supplier_name      AS "supplierName",
+        offer_price        AS "offerPrice",
+        mrp,
+        discount_percent   AS "discountPercent",
+        state_id           AS "stateId",
+        flow_id            AS "flowId",
+        created_at         AS "createdAt"
+    FROM hm_query.offer_flat
+    WHERE product_id = #{productId}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

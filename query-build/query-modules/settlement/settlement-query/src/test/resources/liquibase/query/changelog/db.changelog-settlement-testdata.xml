@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Settlement test data — STM states from settlement-states.xml:
+        INITIATED, CALCULATING, CALCULATED, CHECK_AUTO_APPROVE,
+        PENDING_APPROVAL, APPROVED, REJECTED, DISBURSING, DISBURSED, FAILED
+    -->
+    <changeSet id="settlement-test-data" author="homebase-test">
+
+        <!-- settle-1: DISBURSED — GreenLeaf March settlement -->
+        <insert tableName="settlements">
+            <column name="id" value="settle-1"/>
+            <column name="settlement_number" value="STL-20260315-001"/>
+            <column name="supplier_id" value="supplier-1"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="payment_id" value="pay-1"/>
+            <column name="order_amount" valueNumeric="1568"/>
+            <column name="commission_amount" valueNumeric="188"/>
+            <column name="platform_fee" valueNumeric="25"/>
+            <column name="tax_amount" valueNumeric="38"/>
+            <column name="net_amount" valueNumeric="1317"/>
+            <column name="currency" value="INR"/>
+            <column name="settlement_period_start" valueDate="2026-03-01"/>
+            <column name="settlement_period_end" valueDate="2026-03-15"/>
+            <column name="disbursement_date" valueDate="2026-03-16T10:00:00"/>
+            <column name="disbursement_method" value="NEFT"/>
+            <column name="disbursement_reference" value="NEFT-REF-001"/>
+            <column name="state_id" value="DISBURSED"/>
+            <column name="flow_id" value="settlement-flow"/>
+            <column name="created_time" valueDate="2026-03-15T02:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-16T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="6"/>
+        </insert>
+
+        <!-- settle-2: CALCULATED — TechVista pending approval -->
+        <insert tableName="settlements">
+            <column name="id" value="settle-2"/>
+            <column name="settlement_number" value="STL-20260315-002"/>
+            <column name="supplier_id" value="supplier-2"/>
+            <column name="order_id" value="ord-2"/>
+            <column name="payment_id" value="pay-2"/>
+            <column name="order_amount" valueNumeric="5389"/>
+            <column name="commission_amount" valueNumeric="808"/>
+            <column name="platform_fee" valueNumeric="50"/>
+            <column name="tax_amount" valueNumeric="154"/>
+            <column name="net_amount" valueNumeric="4377"/>
+            <column name="currency" value="INR"/>
+            <column name="settlement_period_start" valueDate="2026-03-01"/>
+            <column name="settlement_period_end" valueDate="2026-03-15"/>
+            <column name="state_id" value="CALCULATED"/>
+            <column name="flow_id" value="settlement-flow"/>
+            <column name="created_time" valueDate="2026-03-15T02:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-15T02:05:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- settle-3: PENDING_APPROVAL — High-value needs manual approval -->
+        <insert tableName="settlements">
+            <column name="id" value="settle-3"/>
+            <column name="settlement_number" value="STL-20260315-003"/>
+            <column name="supplier_id" value="supplier-3"/>
+            <column name="order_amount" valueNumeric="52000"/>
+            <column name="commission_amount" valueNumeric="5200"/>
+            <column name="platform_fee" valueNumeric="100"/>
+            <column name="net_amount" valueNumeric="46700"/>
+            <column name="currency" value="INR"/>
+            <column name="settlement_period_start" valueDate="2026-03-01"/>
+            <column name="settlement_period_end" valueDate="2026-03-15"/>
+            <column name="state_id" value="PENDING_APPROVAL"/>
+            <column name="flow_id" value="settlement-flow"/>
+            <column name="created_time" valueDate="2026-03-15T02:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-15T02:06:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- Settlement Line Items -->
+        <insert tableName="settlement_line_items">
+            <column name="id" value="sli-1a"/>
+            <column name="settlement_id" value="settle-1"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="order_item_id" value="oi-1a"/>
+            <column name="item_price" valueNumeric="1000"/>
+            <column name="commission_amount" valueNumeric="120"/>
+            <column name="shipping_fee" valueNumeric="0"/>
+            <column name="tax_amount" valueNumeric="22"/>
+            <column name="net_amount" valueNumeric="858"/>
+            <column name="created_time" valueDate="2026-03-15T02:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="settlement_line_items">
+            <column name="id" value="sli-1b"/>
+            <column name="settlement_id" value="settle-1"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="order_item_id" value="oi-1b"/>
+            <column name="item_price" valueNumeric="499"/>
+            <column name="commission_amount" valueNumeric="75"/>
+            <column name="shipping_fee" valueNumeric="0"/>
+            <column name="tax_amount" valueNumeric="14"/>
+            <column name="net_amount" valueNumeric="410"/>
+            <column name="created_time" valueDate="2026-03-15T02:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+        <!-- Settlement Activity -->
+        <insert tableName="settlement_activity">
+            <column name="id" value="stact-1"/>
+            <column name="settlement_id" value="settle-1"/>
+            <column name="activity_name" value="calculate"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Settlement calculated: net Rs.1317"/>
+            <column name="created_time" valueDate="2026-03-15T02:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="settlement_activity">
+            <column name="id" value="stact-2"/>
+            <column name="settlement_id" value="settle-1"/>
+            <column name="activity_name" value="disburse"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="activity_comment" value="Disbursed via NEFT"/>
+            <column name="created_time" valueDate="2026-03-16T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

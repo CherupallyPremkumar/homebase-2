@@ -1,0 +1,102 @@
+[
+	{
+		"id": "Onboarding.getAll",
+		"name": "onboardings",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"id": {
+				"name": "onboarding_id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"supplierId": {
+				"name": "supplier_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"applicantName": {
+				"name": "applicant_name",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"businessName": {
+				"name": "business_name",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"businessType": {
+				"name": "business_type",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "state_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"trainingProgress": {
+				"name": "training_progress",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"createdTime": {
+				"name": "created_time",
+				"columnType": "Date",
+				"sortable": true
+			},
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true,
+		"workflowName": "onboarding",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId"
+	},
+	{
+		"id": "Onboarding.getById",
+		"name": "onboarding",
+		"acls": ["ADMIN", "SUPPLIER"],
+		"workflowName": "onboarding",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "onboarding_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "Onboarding.getPendingReview",
+		"name": "onboardings-pending",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Onboarding.getBySupplier",
+		"name": "onboarding-by-supplier",
+		"acls": ["ADMIN", "SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": {
+				"name": "supplier_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "Onboarding.getStateCounts",
+		"name": "onboardingStateCounts",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": false
+	}
+]

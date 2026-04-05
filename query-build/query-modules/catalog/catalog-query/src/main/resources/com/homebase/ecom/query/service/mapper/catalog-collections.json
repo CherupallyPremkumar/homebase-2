@@ -1,0 +1,20 @@
+[
+  {
+    "id": "CatalogCollections.getUserCollections",
+    "name": "userCollections",
+    "acls": [],
+    "columnMetadata": {
+      "id": { "name": "id", "filterable": true, "columnType": "Text" },
+      "name": { "name": "name", "columnType": "Text", "filterable": true, "likeQuery": true },
+      "slug": { "name": "slug", "columnType": "Text" },
+      "type": { "name": "type", "filterable": true, "columnType": "Text" },
+      "imageUrl": { "name": "imageUrl", "columnType": "Text" },
+      "featured": { "name": "featured", "filterable": true, "columnType": "CheckBox" },
+      "active": { "name": "active", "filterable": true, "columnType": "CheckBox" },
+      "q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  }
+]

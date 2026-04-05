@@ -1,3 +1,0 @@
-[
-  {"id":"Disputes.getAll","name":"disputes","acls":["ADMIN","AGENT"],"columnMetadata":{"id":{"name":"id","filterable":true,"columnType":"Text","sortable":true},"orderId":{"name":"orderId","filterable":true,"columnType":"Text"},"reason":{"name":"reason","filterable":true,"columnType":"Text"},"status":{"name":"status","filterable":true,"columnType":"Text"},"priority":{"name":"priority","filterable":true,"columnType":"Text"},"createdAt":{"name":"createdAt","filterable":true,"columnType":"Date","sortable":true}}}
-]

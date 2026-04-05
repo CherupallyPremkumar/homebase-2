@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CconfigEntries">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: cconfig_flat                                                    -->
+<!-- Populated by CconfigSyncService ETL.                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+    <resultMap id="cconfigResult" type="map">
+        <result property="id" column="id"/>
+        <result property="moduleName" column="module_name"/>
+        <result property="keyName" column="key_name"/>
+        <result property="avalue" column="avalue"/>
+        <result property="customAttribute" column="custom_attribute"/>
+        <result property="tenant" column="tenant"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="lastModifiedTime" column="last_modified_time"/>
+    </resultMap>
+
+    <!-- cconfigEntries: All config entries with filters and pagination -->
+    <select id='getAll-count' resultType="int">
+        SELECT count(*) FROM hm_query.cconfig_flat
+        <where>
+            <if test="moduleName != null">AND module_name = #{moduleName}</if>
+            <if test="keyName != null">AND key_name LIKE CONCAT('%', #{keyName}, '%')</if>
+            <if test="customAttribute != null">AND custom_attribute = #{customAttribute}</if>
+            <if test="tenant != null">AND tenant = #{tenant}</if>
+            <if test="q != null">AND (key_name LIKE CONCAT('%', #{q}, '%') OR module_name LIKE CONCAT('%', #{q}, '%') OR avalue LIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+    </select>
+
+    <select id="getAll" resultMap="cconfigResult">
+        SELECT id, module_name, key_name, avalue, custom_attribute,
+               tenant, created_time, last_modified_time
+        FROM hm_query.cconfig_flat
+        <where>
+            <if test="moduleName != null">AND module_name = #{moduleName}</if>
+            <if test="keyName != null">AND key_name LIKE CONCAT('%', #{keyName}, '%')</if>
+            <if test="customAttribute != null">AND custom_attribute = #{customAttribute}</if>
+            <if test="tenant != null">AND tenant = #{tenant}</if>
+            <if test="q != null">AND (key_name LIKE CONCAT('%', #{q}, '%') OR module_name LIKE CONCAT('%', #{q}, '%') OR avalue LIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- cconfigByModule: Entries for a specific module -->
+    <select id='getByModule-count' resultType="int">
+        SELECT count(*) FROM hm_query.cconfig_flat
+        <where>
+            AND module_name = #{moduleName}
+            <if test="keyName != null">AND key_name LIKE CONCAT('%', #{keyName}, '%')</if>
+            <if test="customAttribute != null">AND custom_attribute = #{customAttribute}</if>
+            <if test="tenant != null">AND tenant = #{tenant}</if>
+            <if test="q != null">AND (key_name LIKE CONCAT('%', #{q}, '%') OR avalue LIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+    </select>
+
+    <select id="getByModule" resultMap="cconfigResult">
+        SELECT id, module_name, key_name, avalue, custom_attribute,
+               tenant, created_time, last_modified_time
+        FROM hm_query.cconfig_flat
+        <where>
+            AND module_name = #{moduleName}
+            <if test="keyName != null">AND key_name LIKE CONCAT('%', #{keyName}, '%')</if>
+            <if test="customAttribute != null">AND custom_attribute = #{customAttribute}</if>
+            <if test="tenant != null">AND tenant = #{tenant}</if>
+            <if test="q != null">AND (key_name LIKE CONCAT('%', #{q}, '%') OR avalue LIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- cconfigFormSchemas: Only form.schema entries -->
+    <select id='getFormSchemas-count' resultType="int">
+        SELECT count(*) FROM hm_query.cconfig_flat
+        <where>
+            AND key_name LIKE '%form.schema'
+            <if test="moduleName != null">AND module_name = #{moduleName}</if>
+            <if test="tenant != null">AND tenant = #{tenant}</if>
+            <if test="q != null">AND (key_name LIKE CONCAT('%', #{q}, '%') OR module_name LIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+    </select>
+
+    <select id="getFormSchemas" resultMap="cconfigResult">
+        SELECT id, module_name, key_name, avalue, custom_attribute,
+               tenant, created_time, last_modified_time
+        FROM hm_query.cconfig_flat
+        <where>
+            AND key_name LIKE '%form.schema'
+            <if test="moduleName != null">AND module_name = #{moduleName}</if>
+            <if test="tenant != null">AND tenant = #{tenant}</if>
+            <if test="q != null">AND (key_name LIKE CONCAT('%', #{q}, '%') OR module_name LIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+</mapper>

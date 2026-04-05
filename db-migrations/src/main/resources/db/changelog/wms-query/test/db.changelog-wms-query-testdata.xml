@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        WMS Query cross-module test data.
+        Populates: warehouses, warehouse_locations, warehouse_inventory,
+                   inventory_item, products, categories, orders, order_items,
+                   user_profiles, fulfillment_orders, fulfillment_line_items,
+                   pick_lists, shipments, supplier, inventory_movements,
+                   fulfillment_centers.
+    -->
+    <changeSet id="wms-query-test-data" author="homebase-test">
+
+        <!-- WAREHOUSES -->
+        <sql>
+            INSERT INTO warehouses (id, warehouse_code, warehouse_name, warehouse_type, city, state, pincode, max_capacity_units, current_utilization_pct, is_active, tenant, created_time)
+            VALUES ('wh-1', 'BLR-FC1', 'Bangalore Fulfillment Center', 'FULFILLMENT_CENTER', 'Bangalore', 'Karnataka', '560001', 50000, 72.5, TRUE, 'homebase', NOW());
+
+            INSERT INTO warehouses (id, warehouse_code, warehouse_name, warehouse_type, city, state, pincode, max_capacity_units, current_utilization_pct, is_active, tenant, created_time)
+            VALUES ('wh-2', 'MUM-FC1', 'Mumbai Returns Center', 'RETURNS_CENTER', 'Mumbai', 'Maharashtra', '400001', 20000, 45.0, TRUE, 'homebase', NOW());
+
+            INSERT INTO warehouses (id, warehouse_code, warehouse_name, warehouse_type, city, state, pincode, max_capacity_units, current_utilization_pct, is_active, is_returns_center, tenant, created_time)
+            VALUES ('wh-3', 'DEL-FC1', 'Delhi Warehouse', 'FULFILLMENT_CENTER', 'Delhi', 'Delhi', '110001', 30000, 88.0, FALSE, FALSE, 'homebase', NOW());
+        </sql>
+
+        <!-- WAREHOUSE LOCATIONS -->
+        <sql>
+            INSERT INTO warehouse_locations (id, warehouse_id, location_code, zone, aisle, shelf, bin, location_type, capacity_units, current_units, is_active, tenant)
+            VALUES ('wl-1', 'wh-1', 'A-01-01-01', 'A', '01', '01', '01', 'PICKABLE', 100, 75, TRUE, 'homebase');
+
+            INSERT INTO warehouse_locations (id, warehouse_id, location_code, zone, aisle, shelf, bin, location_type, capacity_units, current_units, is_active, tenant)
+            VALUES ('wl-2', 'wh-1', 'A-01-02-01', 'A', '01', '02', '01', 'PICKABLE', 100, 20, TRUE, 'homebase');
+
+            INSERT INTO warehouse_locations (id, warehouse_id, location_code, zone, aisle, shelf, bin, location_type, capacity_units, current_units, is_active, tenant)
+            VALUES ('wl-3', 'wh-1', 'B-01-01-01', 'B', '01', '01', '01', 'BULK_STORAGE', 500, 300, TRUE, 'homebase');
+
+            INSERT INTO warehouse_locations (id, warehouse_id, location_code, zone, aisle, shelf, bin, location_type, capacity_units, current_units, is_active, tenant)
+            VALUES ('wl-4', 'wh-2', 'R-01-01-01', 'R', '01', '01', '01', 'RETURNS', 200, 50, TRUE, 'homebase');
+        </sql>
+
+        <!-- CATEGORIES -->
+        <sql>
+            INSERT INTO categories (id, name, slug) VALUES ('cat-electronics', 'Electronics', 'electronics');
+            INSERT INTO categories (id, name, slug) VALUES ('cat-fashion', 'Fashion', 'fashion');
+        </sql>
+
+        <!-- PRODUCTS -->
+        <sql>
+            INSERT INTO products (id, name, brand, category_id, slug, weight_grams, state_id, flow_id, tenant, created_time)
+            VALUES ('prod-1', 'Wireless Headphones', 'SoundMax', 'cat-electronics', 'wireless-headphones', 250, 'PUBLISHED', 'product-flow', 'homebase', NOW());
+
+            INSERT INTO products (id, name, brand, category_id, slug, weight_grams, state_id, flow_id, tenant, created_time)
+            VALUES ('prod-2', 'Cotton T-Shirt', 'BasicWear', 'cat-fashion', 'cotton-tshirt', 200, 'PUBLISHED', 'product-flow', 'homebase', NOW());
+
+            INSERT INTO products (id, name, brand, category_id, slug, weight_grams, state_id, flow_id, tenant, created_time)
+            VALUES ('prod-3', 'Bluetooth Speaker', 'SoundMax', 'cat-electronics', 'bluetooth-speaker', 500, 'PUBLISHED', 'product-flow', 'homebase', NOW());
+        </sql>
+
+        <!-- SUPPLIER -->
+        <sql>
+            INSERT INTO supplier (id, business_name, name, email, status, state_id, flow_id, tenant, created_time)
+            VALUES ('seller-1', 'TechWorld Electronics', 'TechWorld', 'tech@example.com', 'ACTIVE', 'ACTIVE', 'supplier-flow', 'homebase', NOW());
+        </sql>
+
+        <!-- INVENTORY ITEM -->
+        <sql>
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, damaged_quantity, inbound_quantity, low_stock_threshold, primary_fc, status, state_id, flow_id, supplier_id, tenant)
+            VALUES ('inv-1a', 'WH-BLK-001', 'prod-1', 'var-1a', 50, 45, 5, 0, 10, 10, 'wh-1', 'AVAILABLE', 'AVAILABLE', 'inventory-flow', 'seller-1', 'homebase');
+
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, damaged_quantity, inbound_quantity, low_stock_threshold, primary_fc, status, state_id, flow_id, supplier_id, tenant)
+            VALUES ('inv-1b', 'WH-WHT-001', 'prod-1', 'var-1b', 12, 8, 4, 0, 0, 10, 'wh-1', 'AVAILABLE', 'AVAILABLE', 'inventory-flow', 'seller-1', 'homebase');
+
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, damaged_quantity, inbound_quantity, low_stock_threshold, primary_fc, status, state_id, flow_id, supplier_id, tenant)
+            VALUES ('inv-2a', 'TS-BLK-M', 'prod-2', 'var-2a', 5, 3, 2, 0, 0, 20, 'wh-1', 'AVAILABLE', 'AVAILABLE', 'inventory-flow', 'seller-1', 'homebase');
+
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, damaged_quantity, inbound_quantity, low_stock_threshold, primary_fc, status, state_id, flow_id, supplier_id, tenant)
+            VALUES ('inv-3a', 'BS-RED-001', 'prod-3', 'var-3a', 0, 0, 0, 0, 0, 15, 'wh-1', 'OUT_OF_STOCK', 'OUT_OF_STOCK', 'inventory-flow', 'seller-1', 'homebase');
+        </sql>
+
+        <!-- WAREHOUSE INVENTORY -->
+        <sql>
+            INSERT INTO warehouse_inventory (id, warehouse_id, location_id, product_id, variant_id, sku, quantity_on_hand, quantity_reserved, quantity_available, quantity_damaged, quantity_in_transit, tenant)
+            VALUES ('wi-1', 'wh-1', 'wl-1', 'prod-1', 'var-1a', 'WH-BLK-001', 45, 5, 40, 0, 10, 'homebase');
+
+            INSERT INTO warehouse_inventory (id, warehouse_id, location_id, product_id, variant_id, sku, quantity_on_hand, quantity_reserved, quantity_available, quantity_damaged, quantity_in_transit, tenant)
+            VALUES ('wi-2', 'wh-1', 'wl-2', 'prod-2', 'var-2a', 'TS-BLK-M', 20, 2, 18, 0, 0, 'homebase');
+
+            INSERT INTO warehouse_inventory (id, warehouse_id, location_id, product_id, variant_id, sku, quantity_on_hand, quantity_reserved, quantity_available, quantity_damaged, quantity_in_transit, tenant)
+            VALUES ('wi-3', 'wh-1', 'wl-3', 'prod-3', 'var-3a', 'BS-RED-001', 100, 10, 90, 5, 25, 'homebase');
+        </sql>
+
+        <!-- USER PROFILES -->
+        <sql>
+            INSERT INTO user_profiles (id, first_name, last_name, email, phone, role, state_id, flow_id, tenant, created_time)
+            VALUES ('cust-1', 'Priya', 'Sharma', 'priya@example.com', '9876543210', 'CUSTOMER', 'VERIFIED', 'user-flow', 'homebase', NOW());
+        </sql>
+
+        <!-- ORDERS -->
+        <sql>
+            INSERT INTO orders (id, order_number, customer_id, total_amount, currency, item_count, state_id, flow_id, created_time)
+            VALUES ('ord-1', 'HB-2025-0001', 'cust-1', 3655.64, 'INR', 2, 'DELIVERED', 'order-flow', TIMESTAMP '2025-02-10 14:30:00');
+
+            INSERT INTO orders (id, order_number, customer_id, total_amount, currency, item_count, state_id, flow_id, created_time)
+            VALUES ('ord-2', 'HB-2025-0002', 'cust-1', 2358.82, 'INR', 1, 'SHIPPED', 'order-flow', TIMESTAMP '2025-03-01 16:00:00');
+        </sql>
+
+        <!-- ORDER ITEMS -->
+        <sql>
+            INSERT INTO order_items (id, order_id, product_id, variant_id, sku, product_name, quantity, unit_price, total_price, supplier_id)
+            VALUES ('oi-1a', 'ord-1', 'prod-1', 'var-1a', 'WH-BLK-001', 'Wireless Headphones', 1, 2499.00, 2499.00, 'seller-1');
+
+            INSERT INTO order_items (id, order_id, product_id, variant_id, sku, product_name, quantity, unit_price, total_price, supplier_id)
+            VALUES ('oi-1b', 'ord-1', 'prod-2', 'var-2a', 'TS-BLK-M', 'Cotton T-Shirt', 1, 599.00, 599.00, 'seller-1');
+        </sql>
+
+        <!-- FULFILLMENT ORDERS -->
+        <sql>
+            INSERT INTO fulfillment_orders (id, order_id, warehouse_id, user_id, priority, fulfillment_type, total_items, total_weight_grams, assigned_picker_id, assigned_packer_id, carrier, tracking_number, shipping_method, state_id, flow_id, tenant, created_time, shipped_at)
+            VALUES ('fo-1', 'ord-1', 'wh-1', 'cust-1', 'HIGH', 'SHIP_TO_CUSTOMER', 2, 450, 'picker-1', 'packer-1', 'HOMEBASE-LOGISTICS', 'HBL-TRK-001', 'EXPRESS', 'SHIPPED', 'fulfillment-flow', 'homebase', TIMESTAMP '2025-02-10 15:00:00', TIMESTAMP '2025-02-11 08:00:00');
+
+            INSERT INTO fulfillment_orders (id, order_id, warehouse_id, user_id, priority, fulfillment_type, total_items, assigned_picker_id, state_id, flow_id, tenant, created_time)
+            VALUES ('fo-2', 'ord-2', 'wh-1', 'cust-1', 'STANDARD', 'SHIP_TO_CUSTOMER', 1, 'picker-2', 'PICKING', 'fulfillment-flow', 'homebase', TIMESTAMP '2025-03-01 17:00:00');
+        </sql>
+
+        <!-- FULFILLMENT LINE ITEMS -->
+        <sql>
+            INSERT INTO fulfillment_line_items (id, fulfillment_order_id, order_item_id, product_id, variant_id, sku, quantity_ordered, quantity_allocated, quantity_picked, quantity_packed, quantity_shipped, bin_location, status, tenant)
+            VALUES ('fli-1', 'fo-1', 'oi-1a', 'prod-1', 'var-1a', 'WH-BLK-001', 1, 1, 1, 1, 1, 'A-01-01-01', 'SHIPPED', 'homebase');
+
+            INSERT INTO fulfillment_line_items (id, fulfillment_order_id, order_item_id, product_id, variant_id, sku, quantity_ordered, quantity_allocated, quantity_picked, quantity_packed, quantity_shipped, bin_location, status, tenant)
+            VALUES ('fli-2', 'fo-1', 'oi-1b', 'prod-2', 'var-2a', 'TS-BLK-M', 1, 1, 1, 1, 1, 'A-01-02-01', 'SHIPPED', 'homebase');
+
+            INSERT INTO fulfillment_line_items (id, fulfillment_order_id, order_item_id, product_id, variant_id, sku, quantity_ordered, quantity_allocated, quantity_picked, status, tenant)
+            VALUES ('fli-3', 'fo-2', 'oi-1a', 'prod-1', 'var-1a', 'WH-BLK-001', 1, 1, 0, 'PENDING', 'homebase');
+        </sql>
+
+        <!-- PICK LISTS -->
+        <sql>
+            INSERT INTO pick_lists (id, fulfillment_order_id, warehouse_id, assigned_to, status, item_count, picked_count, started_at, completed_at, tenant, created_time)
+            VALUES ('pl-1', 'fo-1', 'wh-1', 'picker-1', 'COMPLETED', 2, 2, TIMESTAMP '2025-02-10 16:00:00', TIMESTAMP '2025-02-10 16:30:00', 'homebase', TIMESTAMP '2025-02-10 15:30:00');
+
+            INSERT INTO pick_lists (id, fulfillment_order_id, warehouse_id, assigned_to, status, item_count, picked_count, tenant, created_time)
+            VALUES ('pl-2', 'fo-2', 'wh-1', 'picker-2', 'PENDING', 1, 0, 'homebase', TIMESTAMP '2025-03-01 17:30:00');
+        </sql>
+
+        <!-- SHIPMENTS -->
+        <sql>
+            INSERT INTO shipments (id, order_id, carrier, tracking_number, shipping_method, state_id, flow_id, created_time)
+            VALUES ('ship-1', 'ord-1', 'HOMEBASE-LOGISTICS', 'HBL-TRK-001', 'EXPRESS', 'DELIVERED', 'shipping-flow', TIMESTAMP '2025-02-11 08:00:00');
+        </sql>
+
+        <!-- FULFILLMENT CENTERS (for inbound shipments query) -->
+        <sql>
+            INSERT INTO fulfillment_centers (id, name, code, city, state, pincode, active, capacity, tenant, created_time)
+            VALUES ('fc-1', 'Bangalore FC', 'BLR-FC', 'Bangalore', 'Karnataka', '560001', TRUE, 50000, 'homebase', NOW());
+        </sql>
+
+        <!-- INVENTORY MOVEMENTS (inbound) -->
+        <sql>
+            INSERT INTO inventory_movements (inventory_item_id, type, quantity, reference_id, fulfillment_center_id, movement_time, reason)
+            VALUES ('inv-1a', 'INBOUND', 50, 'PO-001', 'fc-1', TIMESTAMP '2025-01-20 10:00:00', 'Initial stock');
+
+            INSERT INTO inventory_movements (inventory_item_id, type, quantity, reference_id, fulfillment_center_id, movement_time, reason)
+            VALUES ('inv-2a', 'INBOUND', 100, 'PO-002', 'fc-1', TIMESTAMP '2025-01-25 10:00:00', 'Restock');
+
+            INSERT INTO inventory_movements (inventory_item_id, type, quantity, fulfillment_center_id, movement_time, reason)
+            VALUES ('inv-1a', 'OUTBOUND', 5, 'fc-1', TIMESTAMP '2025-02-10 15:00:00', 'Order fulfillment');
+        </sql>
+
+    </changeSet>
+
+</databaseChangeLog>

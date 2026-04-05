@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AnalyticsSync">
+
+<!-- ====== Platform KPI Snapshots ====== -->
+<update id="truncatePlatformKpiSnapshots">TRUNCATE TABLE hm_query.platform_kpi_snapshots</update>
+<insert id="syncPlatformKpiSnapshots">
+    INSERT INTO hm_query.platform_kpi_snapshots (
+        id, tenant, last_synced_at,
+        snapshot_date, total_orders, total_revenue, avg_order_value,
+        currency, new_customers, active_sellers,
+        cancellation_rate, return_rate
+    )
+    SELECT
+        dss.id, dss.tenant, NOW(),
+        dss.summary_date,
+        dss.total_orders,
+        dss.total_revenue,
+        dss.avg_order_value,
+        dss.currency,
+        COALESCE(dss.new_customers, 0),
+        COALESCE(dss.active_sellers, 0),
+        COALESCE(dss.cancellation_rate, 0),
+        COALESCE(dss.return_rate, 0)
+    FROM hm_analytics.daily_sales_summary dss
+</insert>
+
+<!-- ====== Product Performance ====== -->
+<update id="truncateProductPerformanceFlat">TRUNCATE TABLE hm_query.product_performance_flat</update>
+<insert id="syncProductPerformanceFlat">
+    INSERT INTO hm_query.product_performance_flat (
+        id, tenant, last_synced_at,
+        product_id, product_name, period_date,
+        views, purchases, revenue, avg_rating, conversion_rate
+    )
+    SELECT
+        pp.id, pp.tenant, NOW(),
+        pp.product_id,
+        COALESCE(p.name, ''),
+        pp.period_date,
+        pp.views, pp.purchases, pp.revenue,
+        pp.avg_rating,
+        CASE WHEN pp.views > 0 THEN ROUND((pp.purchases::numeric / pp.views) * 100, 2) ELSE 0 END
+    FROM hm_analytics.product_performance pp
+    LEFT JOIN hm_product.products p ON pp.product_id = p.id
+</insert>
+
+</mapper>

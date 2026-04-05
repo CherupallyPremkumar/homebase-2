@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- All domain tables -->
+    <include file="db/changelog/db.changelog-master.xml" />
+
+    <!-- Recommendation-specific tables (not yet in db-migrations) -->
+    <changeSet id="recommendation-query-create-product-recommendations" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_recommendations"/></not>
+        </preConditions>
+        <createTable tableName="product_recommendations">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="user_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="recommendation_type" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="score" type="DECIMAL(5,3)"/>
+            <column name="reason" type="VARCHAR(500)"/>
+        </createTable>
+        <createIndex indexName="idx_product_recs_user" tableName="product_recommendations">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_product_recs_type" tableName="product_recommendations">
+            <column name="recommendation_type"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="recommendation-query-create-trending-products" author="homebase-test">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="trending_products"/></not>
+        </preConditions>
+        <createTable tableName="trending_products">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="category" type="VARCHAR(100)"/>
+            <column name="trending_score" type="DECIMAL(5,3)"/>
+            <column name="time_window" type="VARCHAR(20)"/>
+            <column name="view_count" type="INT" defaultValueNumeric="0"/>
+            <column name="order_count" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_trending_products_category" tableName="trending_products">
+            <column name="category"/>
+        </createIndex>
+        <createIndex indexName="idx_trending_products_window" tableName="trending_products">
+            <column name="time_window"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Recommendation test data -->
+    <changeSet id="recommendation-query-test-data" author="homebase-test">
+        <sql>
+            -- User Recommendations
+            INSERT INTO product_recommendations (id, created_time, tenant, user_id, product_id, recommendation_type, score, reason)
+            VALUES ('rec-1', TIMESTAMP '2025-01-15 10:00:00', 'homebase', 'user-001', 'prod-1', 'SIMILAR', 0.950, 'Based on your browsing history of silk products');
+
+            INSERT INTO product_recommendations (id, created_time, tenant, user_id, product_id, recommendation_type, score, reason)
+            VALUES ('rec-2', TIMESTAMP '2025-01-15 10:01:00', 'homebase', 'user-001', 'prod-2', 'FREQUENTLY_BOUGHT', 0.870, 'Frequently bought together with items in your cart');
+
+            INSERT INTO product_recommendations (id, created_time, tenant, user_id, product_id, recommendation_type, score, reason)
+            VALUES ('rec-3', TIMESTAMP '2025-01-15 10:02:00', 'homebase', 'user-001', 'prod-3', 'PERSONALIZED', 0.820, 'Matches your interest in handmade home decor');
+
+            INSERT INTO product_recommendations (id, created_time, tenant, user_id, product_id, recommendation_type, score, reason)
+            VALUES ('rec-4', TIMESTAMP '2025-01-15 10:03:00', 'homebase', 'user-002', 'prod-1', 'SIMILAR', 0.910, 'Similar to items you recently viewed');
+
+            INSERT INTO product_recommendations (id, created_time, tenant, user_id, product_id, recommendation_type, score, reason)
+            VALUES ('rec-5', TIMESTAMP '2025-01-15 10:04:00', 'homebase', 'user-002', 'prod-4', 'PERSONALIZED', 0.780, 'Based on your purchase patterns');
+
+            -- Trending Products
+            INSERT INTO trending_products (id, created_time, tenant, product_id, category, trending_score, time_window, view_count, order_count)
+            VALUES ('trend-1', TIMESTAMP '2025-01-15 08:00:00', 'homebase', 'prod-1', 'Handmade Textiles', 0.980, 'DAILY', 1520, 87);
+
+            INSERT INTO trending_products (id, created_time, tenant, product_id, category, trending_score, time_window, view_count, order_count)
+            VALUES ('trend-2', TIMESTAMP '2025-01-15 08:00:00', 'homebase', 'prod-2', 'Handmade Textiles', 0.850, 'DAILY', 980, 54);
+
+            INSERT INTO trending_products (id, created_time, tenant, product_id, category, trending_score, time_window, view_count, order_count)
+            VALUES ('trend-3', TIMESTAMP '2025-01-15 08:00:00', 'homebase', 'prod-3', 'Home Decor', 0.920, 'DAILY', 1200, 72);
+
+            INSERT INTO trending_products (id, created_time, tenant, product_id, category, trending_score, time_window, view_count, order_count)
+            VALUES ('trend-4', TIMESTAMP '2025-01-15 08:00:00', 'homebase', 'prod-1', 'Handmade Textiles', 0.960, 'WEEKLY', 8500, 420);
+
+            INSERT INTO trending_products (id, created_time, tenant, product_id, category, trending_score, time_window, view_count, order_count)
+            VALUES ('trend-5', TIMESTAMP '2025-01-15 08:00:00', 'homebase', 'prod-4', 'Home Decor', 0.780, 'WEEKLY', 4200, 210);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

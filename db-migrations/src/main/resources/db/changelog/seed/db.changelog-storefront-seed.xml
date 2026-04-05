@@ -1295,6 +1295,7 @@
     <!-- ================================================================== -->
     <changeSet id="seed-banners" author="homebase-seed">
         <preConditions onFail="MARK_RAN">
+            <tableExists tableName="banners"/>
             <sqlCheck expectedResult="0">SELECT COUNT(*) FROM banners WHERE id = 'banner-002'</sqlCheck>
         </preConditions>
 

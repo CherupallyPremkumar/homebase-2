@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ReturnrequestSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query.fact_returns from OLTP source tables      -->
+<!-- Source: returnrequest + orders + user_profiles + supplier + products   -->
+<!-- Called by ReturnRequestSyncService                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateFactReturns">
+    TRUNCATE TABLE hm_query.fact_returns
+</update>
+
+<insert id="syncFactReturns">
+    INSERT INTO hm_query.fact_returns (
+        id, tenant, last_synced_at,
+        order_id, order_number, order_total_value, order_delivery_date,
+        customer_id, seller_id, product_id,
+        reason, return_type, total_refund_amount, restocking_fee,
+        description, reviewer_id, review_notes,
+        rejection_reason, warehouse_id,
+        condition_on_receipt, inspector_id, inspector_notes,
+        state_id, flow_id, created_time
+    )
+    SELECT
+        rr.id,
+        rr.tenant,
+        NOW(),
+        rr.order_id,
+        COALESCE(o.order_number, ''),
+        COALESCE(rr.order_total_value, o.total_amount, 0),
+        rr.order_delivery_date,
+        rr.customer_id,
+        COALESCE(rr.seller_id, ''),
+        rr.product_id,
+        rr.reason,
+        rr.return_type,
+        COALESCE(rr.total_refund_amount, 0),
+        COALESCE(rr.restocking_fee, 0),
+        rr.description,
+        rr.reviewer_id,
+        rr.review_notes,
+        rr.rejection_reason,
+        rr.warehouse_id,
+        rr.condition_on_receipt,
+        rr.inspector_id,
+        rr.inspector_notes,
+        rr.state_id,
+        rr.flow_id,
+        rr.created_time
+    FROM hm_returnrequest.returnrequest rr
+    LEFT JOIN hm_order.orders o ON rr.order_id = o.id
+</insert>
+
+<!-- ====== dim_customer (upsert) ====== -->
+<update id="syncDimCustomer">
+    INSERT INTO hm_query.dim_customer (customer_id, customer_name, customer_email, last_synced_at)
+    SELECT
+        u.id,
+        COALESCE(u.first_name || ' ' || COALESCE(u.last_name, ''), ''),
+        COALESCE(u.email, ''),
+        NOW()
+    FROM hm_user.user_profiles u
+    WHERE u.id IN (SELECT DISTINCT customer_id FROM hm_returnrequest.returnrequest WHERE customer_id IS NOT NULL)
+    ON CONFLICT (customer_id) DO UPDATE SET
+        customer_name = EXCLUDED.customer_name,
+        customer_email = EXCLUDED.customer_email,
+        last_synced_at = EXCLUDED.last_synced_at
+</insert>
+
+<!-- ====== dim_seller (upsert) ====== -->
+<update id="syncDimSeller">
+    INSERT INTO hm_query.dim_seller (seller_id, seller_name, seller_tier, last_synced_at)
+    SELECT
+        s.id,
+        COALESCE(s.business_name, ''),
+        COALESCE(s.tier, ''),
+        NOW()
+    FROM hm_supplier.supplier s
+    WHERE s.id IN (SELECT DISTINCT seller_id FROM hm_returnrequest.returnrequest WHERE seller_id IS NOT NULL)
+    ON CONFLICT (seller_id) DO UPDATE SET
+        seller_name = EXCLUDED.seller_name,
+        seller_tier = EXCLUDED.seller_tier,
+        last_synced_at = EXCLUDED.last_synced_at
+</update>
+
+<!-- ====== dim_product (upsert) ====== -->
+<update id="syncDimProduct">
+    INSERT INTO hm_query.dim_product (product_id, product_name, sku, brand, category_name, last_synced_at)
+    SELECT
+        p.id,
+        COALESCE(p.name, ''),
+        COALESCE(p.sku, ''),
+        COALESCE(p.brand, ''),
+        COALESCE(p.category_name, ''),
+        NOW()
+    FROM hm_product.products p
+    WHERE p.id IN (SELECT DISTINCT product_id FROM hm_returnrequest.returnrequest WHERE product_id IS NOT NULL)
+    ON CONFLICT (product_id) DO UPDATE SET
+        product_name = EXCLUDED.product_name,
+        sku = EXCLUDED.sku,
+        brand = EXCLUDED.brand,
+        category_name = EXCLUDED.category_name,
+        last_synced_at = EXCLUDED.last_synced_at
+</update>
+
+</mapper>

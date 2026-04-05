@@ -9,8 +9,6 @@
 		<module>compliance-infrastructure</module>
 		<module>compliance-service</module>
 		<module>compliance-client</module>
-		<module>compliance-query-api</module>
-		<module>compliance-query</module>
 	        <module>compliance-liquibase</module>
     </modules>
 	<parent>

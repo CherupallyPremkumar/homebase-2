@@ -23,14 +23,13 @@
   <modules>
     <module>db-migrations</module>
     <module>platform</module>
-    <module>identity-platform</module>
-    <module>product-catalog</module>
-    <module>commerce</module>
-    <module>order-platform</module>
-    <module>logistics</module>
+    <module>identity</module>
+    <module>catalog</module>
+    <module>buy-path</module>
+    <module>order-management</module>
+    <module>supply-chain</module>
     <module>engagement</module>
-    <module>analytics-platform</module>
-    <module>query-modules</module>
+    <module>analytics</module>
     <module>query-build</module>
     <module>root-build</module>
   </modules>

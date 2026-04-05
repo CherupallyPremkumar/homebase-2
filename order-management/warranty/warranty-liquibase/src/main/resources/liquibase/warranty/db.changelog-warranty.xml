@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <property name="schemaName" value="hm_warranty"/>
+
+    <!-- ======================================== -->
+    <!-- Create schema                            -->
+    <!-- ======================================== -->
+    <changeSet id="warranty-001-create-schema" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><sqlCheck expectedResult="1">SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = 'hm_warranty'</sqlCheck></not>
+        </preConditions>
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_warranty</sql>
+    </changeSet>
+
+    <!-- ======================================== -->
+    <!-- 1. warranty_plans                        -->
+    <!-- ======================================== -->
+    <changeSet id="warranty-002-create-warranty-plans" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="${schemaName}" tableName="warranty_plans"/></not>
+        </preConditions>
+        <createTable schemaName="${schemaName}" tableName="warranty_plans">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="plan_name" type="VARCHAR(255)"/>
+            <column name="plan_code" type="VARCHAR(50)">
+                <constraints unique="true" uniqueConstraintName="uk_warranty_plans_code"/>
+            </column>
+            <column name="plan_type" type="VARCHAR(50)"/>
+            <column name="description" type="VARCHAR(1000)"/>
+            <column name="coverage_duration_months" type="INT"/>
+            <column name="price" type="BIGINT"/>
+            <column name="terms_conditions" type="TEXT"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="warranty-003-idx-plans-code" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="${schemaName}" indexName="idx_plans_code"/></not>
+        </preConditions>
+        <createIndex schemaName="${schemaName}" tableName="warranty_plans" indexName="idx_plans_code">
+            <column name="plan_code"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ======================================== -->
+    <!-- 2. warranty_coverages                    -->
+    <!-- ======================================== -->
+    <changeSet id="warranty-004-create-warranty-coverages" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="${schemaName}" tableName="warranty_coverages"/></not>
+        </preConditions>
+        <createTable schemaName="${schemaName}" tableName="warranty_coverages">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="plan_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_coverages_plan" references="${schemaName}.warranty_plans(id)"/>
+            </column>
+            <column name="coverage_type" type="VARCHAR(100)"/>
+            <column name="coverage_description" type="VARCHAR(500)"/>
+            <column name="deductible_amount" type="BIGINT"/>
+            <column name="coverage_limit" type="BIGINT"/>
+            <column name="exclusions" type="VARCHAR(2000)"/>
+            <column name="max_claims_per_year" type="INT"/>
+            <column name="is_included" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="warranty-005-idx-coverages-plan" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="${schemaName}" indexName="idx_coverages_plan"/></not>
+        </preConditions>
+        <createIndex schemaName="${schemaName}" tableName="warranty_coverages" indexName="idx_coverages_plan">
+            <column name="plan_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ======================================== -->
+    <!-- 3. warranty_purchases (STM entity)       -->
+    <!-- ======================================== -->
+    <changeSet id="warranty-006-create-warranty-purchases" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="${schemaName}" tableName="warranty_purchases"/></not>
+        </preConditions>
+        <createTable schemaName="${schemaName}" tableName="warranty_purchases">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="plan_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_purchases_plan" references="${schemaName}.warranty_plans(id)"/>
+            </column>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="serial_number" type="VARCHAR(255)"/>
+            <column name="purchase_date" type="DATE"/>
+            <column name="coverage_start_date" type="DATE"/>
+            <column name="coverage_end_date" type="DATE"/>
+            <column name="purchase_price" type="BIGINT"/>
+            <column name="proof_of_purchase" type="VARCHAR(500)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="warranty-007-idx-purchases-customer" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="${schemaName}" indexName="idx_purchases_customer"/></not>
+        </preConditions>
+        <createIndex schemaName="${schemaName}" tableName="warranty_purchases" indexName="idx_purchases_customer">
+            <column name="customer_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="warranty-008-idx-purchases-product" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="${schemaName}" indexName="idx_purchases_product"/></not>
+        </preConditions>
+        <createIndex schemaName="${schemaName}" tableName="warranty_purchases" indexName="idx_purchases_product">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="warranty-009-idx-purchases-order" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="${schemaName}" indexName="idx_purchases_order"/></not>
+        </preConditions>
+        <createIndex schemaName="${schemaName}" tableName="warranty_purchases" indexName="idx_purchases_order">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ======================================== -->
+    <!-- 4. warranty_claims (STM entity)          -->
+    <!-- ======================================== -->
+    <changeSet id="warranty-010-create-warranty-claims" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="${schemaName}" tableName="warranty_claims"/></not>
+        </preConditions>
+        <createTable schemaName="${schemaName}" tableName="warranty_claims">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="purchase_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_claims_purchase" references="${schemaName}.warranty_purchases(id)"/>
+            </column>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="claim_number" type="VARCHAR(50)">
+                <constraints unique="true" uniqueConstraintName="uk_warranty_claims_number"/>
+            </column>
+            <column name="claim_date" type="DATE"/>
+            <column name="issue_description" type="VARCHAR(2000)"/>
+            <column name="failure_mode" type="VARCHAR(255)"/>
+            <column name="claim_type" type="VARCHAR(50)"/>
+            <column name="total_claim_amount" type="BIGINT"/>
+            <column name="deductible_applied" type="BIGINT"/>
+            <column name="approved_amount" type="BIGINT"/>
+            <column name="denial_reason" type="VARCHAR(1000)"/>
+            <column name="supporting_documents" type="VARCHAR(2000)"/>
+            <column name="decision_date" type="TIMESTAMP"/>
+            <column name="reviewed_by" type="VARCHAR(100)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="warranty-011-idx-claims-purchase" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="${schemaName}" indexName="idx_claims_purchase"/></not>
+        </preConditions>
+        <createIndex schemaName="${schemaName}" tableName="warranty_claims" indexName="idx_claims_purchase">
+            <column name="purchase_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="warranty-012-idx-claims-customer" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="${schemaName}" indexName="idx_claims_customer"/></not>
+        </preConditions>
+        <createIndex schemaName="${schemaName}" tableName="warranty_claims" indexName="idx_claims_customer">
+            <column name="customer_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="warranty-013-idx-claims-number" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="${schemaName}" indexName="idx_claims_number"/></not>
+        </preConditions>
+        <createIndex schemaName="${schemaName}" tableName="warranty_claims" indexName="idx_claims_number">
+            <column name="claim_number"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ======================================== -->
+    <!-- 5. warranty_claim_items                  -->
+    <!-- ======================================== -->
+    <changeSet id="warranty-014-create-warranty-claim-items" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="${schemaName}" tableName="warranty_claim_items"/></not>
+        </preConditions>
+        <createTable schemaName="${schemaName}" tableName="warranty_claim_items">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="claim_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_claim_items_claim" references="${schemaName}.warranty_claims(id)"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="item_description" type="VARCHAR(255)"/>
+            <column name="item_cost" type="BIGINT"/>
+            <column name="damage_type" type="VARCHAR(100)"/>
+            <column name="repair_cost" type="BIGINT"/>
+            <column name="replacement_cost" type="BIGINT"/>
+            <column name="refund_amount" type="BIGINT"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="decision_notes" type="VARCHAR(500)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="warranty-015-idx-claim-items-claim" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="${schemaName}" indexName="idx_claim_items_claim"/></not>
+        </preConditions>
+        <createIndex schemaName="${schemaName}" tableName="warranty_claim_items" indexName="idx_claim_items_claim">
+            <column name="claim_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ======================================== -->
+    <!-- 6. service_providers                     -->
+    <!-- ======================================== -->
+    <changeSet id="warranty-016-create-service-providers" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="${schemaName}" tableName="service_providers"/></not>
+        </preConditions>
+        <createTable schemaName="${schemaName}" tableName="service_providers">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="provider_name" type="VARCHAR(255)"/>
+            <column name="provider_type" type="VARCHAR(50)"/>
+            <column name="contact_name" type="VARCHAR(255)"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="phone" type="VARCHAR(20)"/>
+            <column name="address" type="VARCHAR(500)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="state" type="VARCHAR(100)"/>
+            <column name="postal_code" type="VARCHAR(20)"/>
+            <column name="country" type="VARCHAR(2)" defaultValue="IN"/>
+            <column name="is_verified" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="service_categories" type="VARCHAR(1000)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="warranty-017-idx-providers-type" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="${schemaName}" indexName="idx_providers_type"/></not>
+        </preConditions>
+        <createIndex schemaName="${schemaName}" tableName="service_providers" indexName="idx_providers_type">
+            <column name="provider_type"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

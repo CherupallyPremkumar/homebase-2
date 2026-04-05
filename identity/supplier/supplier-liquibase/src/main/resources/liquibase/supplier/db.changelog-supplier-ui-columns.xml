@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- UI-driven column additions for supplier table                      -->
+    <!-- Fills schema gaps from seller admin pages (payout-calendar, detail) -->
+    <!-- ================================================================== -->
+
+    <changeSet id="supplier-ui-001-payout-and-bank-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="supplier" schemaName="hm_supplier"/>
+                <not><columnExists tableName="supplier" schemaName="hm_supplier" columnName="payout_frequency"/></not>
+            </and>
+        </preConditions>
+        <addColumn tableName="supplier" schemaName="hm_supplier">
+            <column name="payout_frequency" type="VARCHAR(20)" defaultValue="BIWEEKLY" remarks="WEEKLY, BIWEEKLY, or MONTHLY payout schedule"/>
+            <column name="bank_account_verified" type="BOOLEAN" defaultValueBoolean="false" remarks="Whether bank account has been verified"/>
+            <column name="bank_verification_date" type="TIMESTAMP" remarks="When bank account verification was completed"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

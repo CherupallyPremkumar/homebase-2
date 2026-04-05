@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Search">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL READS FROM hm_query.* OLAP SCHEMA ONLY — NEVER FROM OLTP          -->
+<!-- Source: hm_query.dim_product + hm_query.dim_category                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+    <!-- ================================================================ -->
+    <!-- Product Search                                                    -->
+    <!-- ================================================================ -->
+
+    <select id="searchProducts-count" resultType="int">
+        SELECT COUNT(*)
+        FROM hm_query.dim_product p
+        <where>
+            AND p.product_status = 'PUBLISHED'
+            <if test="keyword != null">AND (LOWER(p.product_name) LIKE LOWER(CONCAT('%', #{keyword}, '%')) OR LOWER(p.brand) LIKE LOWER(CONCAT('%', #{keyword}, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', #{keyword}, '%')))</if>
+            <if test="category != null">AND p.category_name = #{category}</if>
+            <if test="brand != null">AND p.brand = #{brand}</if>
+            <if test="inStock != null">
+                AND CASE WHEN CAST(#{inStock} AS boolean) = true THEN p.stock_status != 'OUT_OF_STOCK' ELSE p.stock_status = 'OUT_OF_STOCK' END
+            </if>
+            <if test="minPrice != null">AND p.base_price &gt;= CAST(#{minPrice} AS decimal)</if>
+            <if test="maxPrice != null">AND p.base_price &lt;= CAST(#{maxPrice} AS decimal)</if>
+            <if test="q != null">AND (LOWER(p.product_name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR LOWER(p.brand) LIKE LOWER(CONCAT('%', #{q}, '%')))</if>
+        </where>
+    </select>
+
+    <select id="searchProducts" resultType="com.homebase.ecom.search.dto.ProductSearchDto">
+        SELECT
+            p.product_id AS id,
+            p.product_id AS "productId",
+            p.product_name AS name,
+            p.brand AS brand,
+            p.category_name AS category,
+            p.base_price AS price,
+            p.selling_price AS "sellingPrice",
+            p.primary_image_url AS "imageUrl",
+            p.avg_rating AS "averageRating",
+            p.review_count AS "totalReviews",
+            CASE WHEN p.stock_status != 'OUT_OF_STOCK' THEN true ELSE false END AS "inStock",
+            p.total_available_qty AS "availableQty"
+        FROM hm_query.dim_product p
+        <where>
+            AND p.product_status = 'PUBLISHED'
+            <if test="keyword != null">AND (LOWER(p.product_name) LIKE LOWER(CONCAT('%', #{keyword}, '%')) OR LOWER(p.brand) LIKE LOWER(CONCAT('%', #{keyword}, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', #{keyword}, '%')))</if>
+            <if test="category != null">AND p.category_name = #{category}</if>
+            <if test="brand != null">AND p.brand = #{brand}</if>
+            <if test="inStock != null">
+                AND CASE WHEN CAST(#{inStock} AS boolean) = true THEN p.stock_status != 'OUT_OF_STOCK' ELSE p.stock_status = 'OUT_OF_STOCK' END
+            </if>
+            <if test="minPrice != null">AND p.base_price &gt;= CAST(#{minPrice} AS decimal)</if>
+            <if test="maxPrice != null">AND p.base_price &lt;= CAST(#{maxPrice} AS decimal)</if>
+            <if test="q != null">AND (LOWER(p.product_name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR LOWER(p.brand) LIKE LOWER(CONCAT('%', #{q}, '%')))</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- ================================================================ -->
+    <!-- Search Suggestions (Autocomplete)                                 -->
+    <!-- ================================================================ -->
+
+    <select id="searchSuggestions-count" resultType="int">
+        SELECT COUNT(*)
+        FROM hm_query.dim_product p
+        <where>
+            AND p.product_status = 'PUBLISHED'
+            <if test="keyword != null">AND LOWER(p.product_name) LIKE LOWER(CONCAT('%', #{keyword}, '%'))</if>
+            <if test="q != null">AND LOWER(p.product_name) LIKE LOWER(CONCAT('%', #{q}, '%'))</if>
+        </where>
+    </select>
+
+    <select id="searchSuggestions" resultType="com.homebase.ecom.search.dto.SearchSuggestionDto">
+        SELECT
+            p.product_id AS id,
+            p.product_name AS name,
+            p.category_name AS category
+        FROM hm_query.dim_product p
+        <where>
+            AND p.product_status = 'PUBLISHED'
+            <if test="keyword != null">AND LOWER(p.product_name) LIKE LOWER(CONCAT('%', #{keyword}, '%'))</if>
+            <if test="q != null">AND LOWER(p.product_name) LIKE LOWER(CONCAT('%', #{q}, '%'))</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+</mapper>

@@ -2594,6 +2594,8 @@
     <!-- ================================================================== -->
     <changeSet id="testdata-cms" author="homebase-seed">
         <preConditions onFail="MARK_RAN">
+            <tableExists tableName="cms_pages"/>
+            <tableExists tableName="banners"/>
             <sqlCheck expectedResult="0">SELECT COUNT(*) FROM cms_pages WHERE id = 'cms-001'</sqlCheck>
         </preConditions>
 

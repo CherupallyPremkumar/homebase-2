@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Pricing">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source tables: pricing_rule_flat, price_change_log_flat                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== PRICING RULES LISTING ====== -->
+<select id="getRules-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.pricing_rule_flat
+    <where>
+        <if test="ruleType != null">AND rule_type = #{ruleType}</if>
+        <if test="active != null">AND active = #{active}</if>
+        <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="hasConflict != null">AND has_conflict = #{hasConflict}</if>
+    </where>
+</select>
+
+<select id="getRules" resultType="com.homebase.ecom.pricing.dto.PricingRuleQueryDto">
+    SELECT
+        rule_id             as "id",
+        name                as "ruleName",
+        rule_type           as "ruleType",
+        priority            as "priority",
+        discount_type       as "discountType",
+        discount_value      as "discountValue",
+        active              as "active",
+        active_from         as "activeFrom",
+        active_to           as "activeTo",
+        products_affected   as "productsAffected",
+        conversions_30d     as "conversions30d",
+        conversion_rate     as "conversionRate",
+        revenue_impact      as "revenueImpact",
+        has_conflict        as "hasConflict",
+        conflict_details    as "conflictDetails",
+        created_time        as "createdAt",
+        created_by          as "createdBy"
+    FROM hm_query.pricing_rule_flat
+    <where>
+        <if test="ruleType != null">AND rule_type = #{ruleType}</if>
+        <if test="active != null">AND active = #{active}</if>
+        <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="hasConflict != null">AND has_conflict = #{hasConflict}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Stat cards -->
+<select id="getRuleStats" resultType="map">
+    SELECT
+        COUNT(CASE WHEN active THEN 1 END) as "activeRules",
+        SUM(products_affected)             as "totalProductsAffected",
+        AVG(CASE WHEN active THEN discount_value END) as "avgDiscount",
+        SUM(CASE WHEN active THEN revenue_impact END) as "totalRevenueImpact",
+        COUNT(CASE WHEN has_conflict THEN 1 END) as "conflictCount"
+    FROM hm_query.pricing_rule_flat
+</select>
+
+<!-- Count per rule type (for filter button badges: All 12 / Markup 3 / Discount 5 / Floor 2 / Ceiling 2) -->
+<select id="getRuleTypeCounts" resultType="map">
+    SELECT
+        rule_type as "ruleType",
+        COUNT(*)  as "count"
+    FROM hm_query.pricing_rule_flat
+    WHERE active = true
+    GROUP BY rule_type
+    ORDER BY rule_type
+</select>
+
+<!-- Rules with conflicts only -->
+<select id="getConflicts" resultType="com.homebase.ecom.pricing.dto.PricingRuleQueryDto">
+    SELECT
+        rule_id          as "id",
+        name             as "ruleName",
+        rule_type        as "ruleType",
+        conflict_details as "conflictDetails"
+    FROM hm_query.pricing_rule_flat
+    WHERE has_conflict = true
+    ORDER BY priority
+</select>
+
+<!-- ====== PRICE CHANGE HISTORY ====== -->
+<select id="getHistory-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.price_change_log_flat
+    <where>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="productName != null">AND product_name LIKE CONCAT('%', #{productName}, '%')</if>
+        <if test="changedBy != null">AND changed_by = #{changedBy}</if>
+        <if test="q != null">AND (product_name LIKE CONCAT('%', #{q}, '%') OR sku LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getHistory" resultType="com.homebase.ecom.pricing.dto.PriceHistoryDto">
+    SELECT
+        id,
+        product_id    as "productId",
+        product_name  as "productName",
+        sku           as "sku",
+        old_price     as "oldPrice",
+        new_price     as "newPrice",
+        change_pct    as "changePct",
+        change_reason as "changeReason",
+        changed_by    as "changedBy",
+        change_time   as "createdAt"
+    FROM hm_query.price_change_log_flat
+    <where>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="productName != null">AND product_name LIKE CONCAT('%', #{productName}, '%')</if>
+        <if test="changedBy != null">AND changed_by = #{changedBy}</if>
+        <if test="q != null">AND (product_name LIKE CONCAT('%', #{q}, '%') OR sku LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

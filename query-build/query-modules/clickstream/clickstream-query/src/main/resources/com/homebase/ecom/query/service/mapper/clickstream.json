@@ -1,0 +1,39 @@
+[
+  {
+    "id": "Clickstream.getPageViews",
+    "name": "pageViews",
+    "description": "Page view events from OLAP (last 90 days)",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "userId": { "name": "userId", "filterable": true, "columnType": "Text" },
+      "sessionId": { "name": "sessionId", "filterable": true, "columnType": "Text" },
+      "pageType": { "name": "pageType", "filterable": true, "columnType": "Text" },
+      "deviceType": { "name": "deviceType", "filterable": true, "columnType": "Text" },
+      "country": { "name": "country", "filterable": true, "columnType": "Text" },
+      "durationMs": { "name": "durationMs", "columnType": "Number", "sortable": true },
+      "startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+      "endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+      "q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+      "createdTime": { "name": "createdTime", "filterable": true, "columnType": "Date", "sortable": true }
+    },
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "Clickstream.getClickEvents",
+    "name": "clickEvents",
+    "description": "Click events from OLAP (last 90 days)",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "userId": { "name": "userId", "filterable": true, "columnType": "Text" },
+      "sessionId": { "name": "sessionId", "filterable": true, "columnType": "Text" },
+      "elementType": { "name": "elementType", "filterable": true, "columnType": "Text" },
+      "elementId": { "name": "elementId", "filterable": true, "columnType": "Text" },
+      "startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+      "endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+      "createdTime": { "name": "createdTime", "filterable": true, "columnType": "Date", "sortable": true }
+    },
+    "paginated": true,
+    "sortable": true
+  }
+]

@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="deals-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_deals</sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- deals (STM entity)                                                 -->
+    <!-- ================================================================== -->
+    <changeSet id="deals-001-create-deals" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="deals" schemaName="hm_deals"/></not></preConditions>
+        <createTable tableName="deals" schemaName="hm_deals">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="deal_name" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(1000)"/>
+            <column name="discount_type" type="VARCHAR(50)"/>
+            <column name="discount_value" type="BIGINT"/>
+            <column name="original_price" type="BIGINT"/>
+            <column name="deal_price" type="BIGINT"/>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="end_date" type="TIMESTAMP"/>
+            <column name="total_quantity" type="INT"/>
+            <column name="claimed_quantity" type="INT" defaultValueNumeric="0"/>
+            <column name="minimum_order_value" type="BIGINT"/>
+            <column name="maximum_discount" type="BIGINT"/>
+            <column name="visibility" type="VARCHAR(50)" defaultValue="public"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- deal_products                                                      -->
+    <!-- ================================================================== -->
+    <changeSet id="deals-002-create-deal-products" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="deal_products" schemaName="hm_deals"/></not></preConditions>
+        <createTable tableName="deal_products" schemaName="hm_deals">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="deal_id" type="VARCHAR(255)"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="product_sku" type="VARCHAR(100)"/>
+            <column name="quantity_available" type="INT"/>
+            <column name="quantity_claimed" type="INT" defaultValueNumeric="0"/>
+            <column name="priority" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- deal_claims (STM entity)                                           -->
+    <!-- ================================================================== -->
+    <changeSet id="deals-003-create-deal-claims" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="deal_claims" schemaName="hm_deals"/></not></preConditions>
+        <createTable tableName="deal_claims" schemaName="hm_deals">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="deal_id" type="VARCHAR(255)"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="claimed_quantity" type="INT"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+            <column name="cart_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="coupon_code_used" type="VARCHAR(100)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- deal_schedules                                                     -->
+    <!-- ================================================================== -->
+    <changeSet id="deals-004-create-deal-schedules" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="deal_schedules" schemaName="hm_deals"/></not></preConditions>
+        <createTable tableName="deal_schedules" schemaName="hm_deals">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="deal_id" type="VARCHAR(255)"/>
+            <column name="start_time" type="TIMESTAMP"/>
+            <column name="end_time" type="TIMESTAMP"/>
+            <column name="recurrence_type" type="VARCHAR(50)"/>
+            <column name="recurrence_pattern" type="VARCHAR(255)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="timezone" type="VARCHAR(50)" defaultValue="Asia/Kolkata"/>
+            <column name="notification_enabled" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="notification_minutes_before" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- coupons                                                            -->
+    <!-- ================================================================== -->
+    <changeSet id="deals-005-create-coupons" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="coupons" schemaName="hm_deals"/></not></preConditions>
+        <createTable tableName="coupons" schemaName="hm_deals">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="code" type="VARCHAR(50)"/>
+            <column name="coupon_type" type="VARCHAR(50)"/>
+            <column name="discount_value" type="BIGINT"/>
+            <column name="min_order_value" type="BIGINT"/>
+            <column name="max_discount_amount" type="BIGINT"/>
+            <column name="max_usage_count" type="INT"/>
+            <column name="max_uses_per_user" type="INT"/>
+            <column name="usage_count" type="INT" defaultValueNumeric="0"/>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="expiry_date" type="TIMESTAMP"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="is_stackable" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="applicable_categories" type="VARCHAR(1000)"/>
+            <column name="applicable_products" type="VARCHAR(1000)"/>
+            <column name="description" type="VARCHAR(500)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- coupon_usage                                                       -->
+    <!-- ================================================================== -->
+    <changeSet id="deals-006-create-coupon-usage" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="coupon_usage" schemaName="hm_deals"/></not></preConditions>
+        <createTable tableName="coupon_usage" schemaName="hm_deals">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="coupon_id" type="VARCHAR(255)"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="deal_id" type="VARCHAR(255)"/>
+            <column name="discount_applied" type="BIGINT"/>
+            <column name="redemption_status" type="VARCHAR(50)"/>
+            <column name="redeemed_at" type="TIMESTAMP"/>
+            <column name="refunded_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Indexes                                                            -->
+    <!-- ================================================================== -->
+    <changeSet id="deals-007-add-deals-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="deals" schemaName="hm_deals"/>
+            <not><indexExists indexName="idx_deals_state" schemaName="hm_deals"/></not>
+        </preConditions>
+        <createIndex indexName="idx_deals_state" tableName="deals" schemaName="hm_deals">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex indexName="idx_deals_start_date" tableName="deals" schemaName="hm_deals">
+            <column name="start_date"/>
+        </createIndex>
+        <createIndex indexName="idx_deals_end_date" tableName="deals" schemaName="hm_deals">
+            <column name="end_date"/>
+        </createIndex>
+        <createIndex indexName="idx_deals_visibility" tableName="deals" schemaName="hm_deals">
+            <column name="visibility"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="deals-008-add-deal-products-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="deal_products" schemaName="hm_deals"/>
+            <not><indexExists indexName="idx_deal_products_deal" schemaName="hm_deals"/></not>
+        </preConditions>
+        <createIndex indexName="idx_deal_products_deal" tableName="deal_products" schemaName="hm_deals">
+            <column name="deal_id"/>
+        </createIndex>
+        <createIndex indexName="idx_deal_products_product" tableName="deal_products" schemaName="hm_deals">
+            <column name="product_id"/>
+        </createIndex>
+        <createIndex indexName="idx_deal_products_sku" tableName="deal_products" schemaName="hm_deals">
+            <column name="product_sku"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="deals-009-add-deal-claims-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="deal_claims" schemaName="hm_deals"/>
+            <not><indexExists indexName="idx_deal_claims_deal" schemaName="hm_deals"/></not>
+        </preConditions>
+        <createIndex indexName="idx_deal_claims_deal" tableName="deal_claims" schemaName="hm_deals">
+            <column name="deal_id"/>
+        </createIndex>
+        <createIndex indexName="idx_deal_claims_user" tableName="deal_claims" schemaName="hm_deals">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_deal_claims_state" tableName="deal_claims" schemaName="hm_deals">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex indexName="idx_deal_claims_order" tableName="deal_claims" schemaName="hm_deals">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="deals-010-add-deal-schedules-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="deal_schedules" schemaName="hm_deals"/>
+            <not><indexExists indexName="idx_deal_schedules_deal" schemaName="hm_deals"/></not>
+        </preConditions>
+        <createIndex indexName="idx_deal_schedules_deal" tableName="deal_schedules" schemaName="hm_deals">
+            <column name="deal_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="deals-011-add-coupons-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="coupons" schemaName="hm_deals"/>
+            <not><indexExists indexName="idx_coupons_code" schemaName="hm_deals"/></not>
+        </preConditions>
+        <createIndex indexName="idx_coupons_code" tableName="coupons" schemaName="hm_deals" unique="true">
+            <column name="code"/>
+        </createIndex>
+        <createIndex indexName="idx_coupons_active" tableName="coupons" schemaName="hm_deals">
+            <column name="is_active"/>
+        </createIndex>
+        <createIndex indexName="idx_coupons_expiry" tableName="coupons" schemaName="hm_deals">
+            <column name="expiry_date"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="deals-012-add-coupon-usage-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="coupon_usage" schemaName="hm_deals"/>
+            <not><indexExists indexName="idx_coupon_usage_coupon" schemaName="hm_deals"/></not>
+        </preConditions>
+        <createIndex indexName="idx_coupon_usage_coupon" tableName="coupon_usage" schemaName="hm_deals">
+            <column name="coupon_id"/>
+        </createIndex>
+        <createIndex indexName="idx_coupon_usage_user" tableName="coupon_usage" schemaName="hm_deals">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_coupon_usage_order" tableName="coupon_usage" schemaName="hm_deals">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Foreign keys                                                       -->
+    <!-- ================================================================== -->
+    <changeSet id="deals-013-add-foreign-keys" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><foreignKeyConstraintExists foreignKeyName="fk_deal_products_deal" schemaName="hm_deals"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="deal_products" baseTableSchemaName="hm_deals" baseColumnNames="deal_id"
+            referencedTableName="deals" referencedTableSchemaName="hm_deals" referencedColumnNames="id"
+            constraintName="fk_deal_products_deal"/>
+        <addForeignKeyConstraint baseTableName="deal_claims" baseTableSchemaName="hm_deals" baseColumnNames="deal_id"
+            referencedTableName="deals" referencedTableSchemaName="hm_deals" referencedColumnNames="id"
+            constraintName="fk_deal_claims_deal"/>
+        <addForeignKeyConstraint baseTableName="deal_schedules" baseTableSchemaName="hm_deals" baseColumnNames="deal_id"
+            referencedTableName="deals" referencedTableSchemaName="hm_deals" referencedColumnNames="id"
+            constraintName="fk_deal_schedules_deal"/>
+        <addForeignKeyConstraint baseTableName="coupon_usage" baseTableSchemaName="hm_deals" baseColumnNames="coupon_id"
+            referencedTableName="coupons" referencedTableSchemaName="hm_deals" referencedColumnNames="id"
+            constraintName="fk_coupon_usage_coupon"/>
+    </changeSet>
+
+</databaseChangeLog>

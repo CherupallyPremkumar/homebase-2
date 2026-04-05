@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CartSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SYNC: OLTP → OLAP                                                      -->
+<!-- Reads from hm_cart.*, hm_user.*, hm_product.*, hm_inventory.*          -->
+<!-- Writes to hm_query.cart_flat, cart_items_flat, cart_activity_flat       -->
+<!-- ═══════════��═══════════════════════════════════════════════════════════ -->
+
+<!-- ====== cart_flat ====== -->
+<update id="truncateCartFlat">
+    TRUNCATE TABLE hm_query.cart_flat
+</update>
+
+<insert id="syncCartFlat">
+    INSERT INTO hm_query.cart_flat (
+        id, tenant, last_synced_at,
+        cart_id, customer_id, customer_name, customer_email,
+        session_id, subtotal, currency, coupon_codes, discount_amount,
+        total, item_count, expires_at, notes, description,
+        state_id, flow_id, state_entry_time,
+        sla_yellow_date, sla_red_date, sla_tending_late, sla_late,
+        created_time, last_modified_time, last_modified_by, created_by, version
+    )
+    SELECT
+        c.id, c.tenant, NOW(),
+        c.id, c.customer_id,
+        COALESCE(u.first_name || ' ' || COALESCE(u.last_name, ''), ''),
+        u.email,
+        c.session_id, c.subtotal, c.currency, c.coupon_codes, c.discount_amount,
+        c.total,
+        (SELECT COUNT(*) FROM hm_cart.cart_item ci2 WHERE ci2.cart_id = c.id),
+        c.expires_at, c.notes, c.description,
+        c.state_id, c.flow_id, c.state_entry_time,
+        c.sla_yellow_date, c.sla_red_date, c.sla_tending_late, c.sla_late,
+        c.created_time, c.last_modified_time, c.last_modified_by, c.created_by, c.version
+    FROM hm_cart.cart c
+    LEFT JOIN hm_user.user_profiles u ON c.customer_id = u.id
+</insert>
+
+<!-- ====== cart_items_flat ====== -->
+<update id="truncateCartItemsFlat">
+    TRUNCATE TABLE hm_query.cart_items_flat
+</update>
+
+<insert id="syncCartItemsFlat">
+    INSERT INTO hm_query.cart_items_flat (
+        id, tenant, last_synced_at,
+        item_id, cart_id, customer_id,
+        cart_state, cart_subtotal, cart_currency, cart_coupon_codes, cart_discount, cart_total,
+        product_id, variant_id, sku, product_name, brand, product_slug,
+        category_name, supplier_id,
+        quantity, unit_price, line_total,
+        variant_color, variant_size, image_url,
+        available_quantity, stock_status,
+        created_time, last_modified_time
+    )
+    SELECT
+        ci.id, c.tenant, NOW(),
+        ci.id, ci.cart_id, c.customer_id,
+        c.state_id, c.subtotal, c.currency, c.coupon_codes, c.discount_amount, c.total,
+        ci.product_id, ci.variant_id, ci.sku, COALESCE(p.name, ci.product_name), p.brand, p.slug,
+        cat.name, ci.supplier_id,
+        ci.quantity, ci.unit_price, ci.line_total,
+        va_color.attribute_value,
+        va_size.attribute_value,
+        COALESCE(vma.cdn_url, vma.original_url, pma.cdn_url, pma.original_url),
+        inv.available_quantity,
+        inv.status,
+        ci.created_time, ci.last_modified_time
+    FROM hm_cart.cart_item ci
+    JOIN hm_cart.cart c ON ci.cart_id = c.id
+    LEFT JOIN hm_product.products p ON p.id = ci.product_id
+    LEFT JOIN hm_product.categories cat ON cat.id = p.category_id
+    LEFT JOIN hm_product.variant_attributes va_color
+        ON va_color.variant_id = ci.variant_id AND va_color.attribute_key = 'color'
+    LEFT JOIN hm_product.variant_attributes va_size
+        ON va_size.variant_id = ci.variant_id AND va_size.attribute_key = 'size'
+    LEFT JOIN hm_product.variant_media vm
+        ON vm.variant_id = ci.variant_id AND vm.is_primary = true
+    LEFT JOIN hm_product.media_assets vma ON vma.id = vm.asset_id
+    LEFT JOIN hm_product.product_media pm
+        ON pm.product_id = ci.product_id AND pm.is_primary = true
+    LEFT JOIN hm_product.media_assets pma ON pma.id = pm.asset_id
+    LEFT JOIN hm_inventory.inventory_item inv ON inv.variant_id = ci.variant_id
+</insert>
+
+<!-- ====== cart_activity_flat ====== -->
+<update id="truncateCartActivityFlat">
+    TRUNCATE TABLE hm_query.cart_activity_flat
+</update>
+
+<insert id="syncCartActivityFlat">
+    INSERT INTO hm_query.cart_activity_flat (
+        id, tenant, cart_id,
+        activity_name, activity_success, activity_comment,
+        created_time, created_by
+    )
+    SELECT
+        a.id, c.tenant, a.cart_id,
+        a.activity_name, a.activity_success, a.activity_comment,
+        a.created_time, a.created_by
+    FROM hm_cart.cart_activity_log a
+    JOIN hm_cart.cart c ON a.cart_id = c.id
+    WHERE a.created_time >= NOW() - INTERVAL '90 days'
+</insert>
+
+</mapper>

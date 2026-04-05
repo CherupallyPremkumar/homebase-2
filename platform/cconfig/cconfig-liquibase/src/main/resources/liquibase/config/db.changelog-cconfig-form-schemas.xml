@@ -24,7 +24,7 @@
         <!-- ============================================================ -->
         <!-- USER: Registration Form                                      -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-form-user-registration"/>
             <column name="module_name" value="user"/>
             <column name="key_name" value="registration.form.schema"/>
@@ -36,7 +36,7 @@
         <!-- ============================================================ -->
         <!-- USER: Address Form                                           -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-form-user-address"/>
             <column name="module_name" value="user"/>
             <column name="key_name" value="address.form.schema"/>
@@ -48,7 +48,7 @@
         <!-- ============================================================ -->
         <!-- PRODUCT: Listing Form (Seller)                               -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-form-product-listing"/>
             <column name="module_name" value="product"/>
             <column name="key_name" value="listing.form.schema"/>
@@ -60,7 +60,7 @@
         <!-- ============================================================ -->
         <!-- PRODUCT: Variant Form                                        -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-form-product-variant"/>
             <column name="module_name" value="product"/>
             <column name="key_name" value="variant.form.schema"/>
@@ -72,7 +72,7 @@
         <!-- ============================================================ -->
         <!-- OFFER: Create Offer Form (Seller)                            -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-form-offer-create"/>
             <column name="module_name" value="offer"/>
             <column name="key_name" value="create.form.schema"/>
@@ -84,7 +84,7 @@
         <!-- ============================================================ -->
         <!-- SUPPLIER: Application Form (Onboarding)                      -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-form-supplier-application"/>
             <column name="module_name" value="supplier"/>
             <column name="key_name" value="application.form.schema"/>
@@ -96,7 +96,7 @@
         <!-- ============================================================ -->
         <!-- SUPPORT: Create Ticket Form                                  -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-form-support-ticket"/>
             <column name="module_name" value="support"/>
             <column name="key_name" value="ticket.form.schema"/>
@@ -108,7 +108,7 @@
         <!-- ============================================================ -->
         <!-- REVIEW: Submit Review Form                                   -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-form-review-submit"/>
             <column name="module_name" value="review"/>
             <column name="key_name" value="submit.form.schema"/>
@@ -120,7 +120,7 @@
         <!-- ============================================================ -->
         <!-- PROMO: Create Coupon Form (Admin)                            -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-form-promo-coupon"/>
             <column name="module_name" value="promo"/>
             <column name="key_name" value="coupon.form.schema"/>
@@ -132,7 +132,7 @@
         <!-- ============================================================ -->
         <!-- CHECKOUT: Address Step Form                                  -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-form-checkout-address"/>
             <column name="module_name" value="checkout"/>
             <column name="key_name" value="address.form.schema"/>
@@ -144,7 +144,7 @@
         <!-- ============================================================ -->
         <!-- PAYMENT: UPI Form                                            -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-form-payment-upi"/>
             <column name="module_name" value="payment"/>
             <column name="key_name" value="upi.form.schema"/>
@@ -156,7 +156,7 @@
         <!-- ============================================================ -->
         <!-- RETURNREQUEST: Return Request Form                           -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-form-returnrequest"/>
             <column name="module_name" value="returnrequest"/>
             <column name="key_name" value="request.form.schema"/>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="onboarding-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_onboarding</sql>
+    </changeSet>
+
+    <!-- supplier_onboarding (OnboardingSagaEntity extends AbstractJpaStateEntity) -->
+    <changeSet id="onboarding-001-create-supplier-onboarding" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="supplier_onboarding" schemaName="hm_onboarding"/></not>
+        </preConditions>
+        <createTable tableName="supplier_onboarding" schemaName="hm_onboarding">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="supplier_id" type="VARCHAR(255)"/>
+            <column name="applicant_name" type="VARCHAR(255)"/>
+            <column name="business_name" type="VARCHAR(255)"/>
+            <column name="business_type" type="VARCHAR(255)"/>
+            <column name="documents_json" type="TEXT"/>
+            <column name="verification_notes" type="TEXT"/>
+            <column name="training_progress" type="INT" defaultValueNumeric="0"/>
+            <column name="training_completed_modules_json" type="TEXT"/>
+            <column name="resubmission_count" type="INT" defaultValueNumeric="0"/>
+            <column name="submitted_at" type="TIMESTAMP"/>
+            <column name="rejection_reason" type="TEXT"/>
+        </createTable>
+        <createIndex indexName="idx_onboarding_supplier" tableName="supplier_onboarding" schemaName="hm_onboarding">
+            <column name="supplier_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- onboarding_activity (OnboardingSagaActivityLogEntity extends BaseJpaEntity) -->
+    <changeSet id="onboarding-002-create-onboarding-activity" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="onboarding_activity" schemaName="hm_onboarding"/></not>
+        </preConditions>
+        <createTable tableName="onboarding_activity" schemaName="hm_onboarding">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="onboarding_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_comment" type="VARCHAR(2000)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

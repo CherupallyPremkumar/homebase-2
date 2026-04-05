@@ -88,4 +88,15 @@
         </addColumn>
     </changeSet>
 
+    <!-- Add deleted_at column (soft delete per entity) -->
+    <changeSet id="supplier-005-add-deleted-at" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="supplier"/>
+            <not><columnExists tableName="supplier" columnName="deleted_at"/></not>
+        </preConditions>
+        <addColumn tableName="supplier">
+            <column name="deleted_at" type="TIMESTAMP"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

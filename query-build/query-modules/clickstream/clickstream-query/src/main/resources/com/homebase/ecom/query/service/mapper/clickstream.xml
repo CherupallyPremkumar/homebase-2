@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Clickstream">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: page_views_flat, click_events_flat                             -->
+<!-- Populated by ClickstreamSyncService ETL.                               -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ================================================================ -->
+<!-- Page Views                                                        -->
+<!-- ================================================================ -->
+
+<select id="getPageViews-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.page_views_flat
+    <where>
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="sessionId != null">AND session_id = #{sessionId}</if>
+        <if test="pageType != null">AND page_type = #{pageType}</if>
+        <if test="deviceType != null">AND device_type = #{deviceType}</if>
+        <if test="country != null">AND country = #{country}</if>
+        <if test="startDate != null">AND created_time &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_time &lt;= #{endDate}</if>
+        <if test="q != null">AND (page_url LIKE CONCAT('%', #{q}, '%') OR referrer_url LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getPageViews" resultType="com.homebase.ecom.clickstream.dto.PageViewQueryDto">
+    SELECT id, session_id AS "sessionId", user_id AS "userId",
+           page_url AS "pageUrl", page_type AS "pageType",
+           referrer_url AS "referrerUrl", device_type AS "deviceType",
+           browser, ip_address AS "ipAddress", country,
+           duration_ms AS "durationMs", created_time AS "createdTime"
+    FROM hm_query.page_views_flat
+    <where>
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="sessionId != null">AND session_id = #{sessionId}</if>
+        <if test="pageType != null">AND page_type = #{pageType}</if>
+        <if test="deviceType != null">AND device_type = #{deviceType}</if>
+        <if test="country != null">AND country = #{country}</if>
+        <if test="startDate != null">AND created_time &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_time &lt;= #{endDate}</if>
+        <if test="q != null">AND (page_url LIKE CONCAT('%', #{q}, '%') OR referrer_url LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Click Events                                                      -->
+<!-- ================================================================ -->
+
+<select id="getClickEvents-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.click_events_flat
+    <where>
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="sessionId != null">AND session_id = #{sessionId}</if>
+        <if test="elementType != null">AND element_type = #{elementType}</if>
+        <if test="elementId != null">AND element_id = #{elementId}</if>
+        <if test="startDate != null">AND created_time &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_time &lt;= #{endDate}</if>
+    </where>
+</select>
+
+<select id="getClickEvents" resultType="com.homebase.ecom.clickstream.dto.ClickEventQueryDto">
+    SELECT id, session_id AS "sessionId", user_id AS "userId",
+           element_type AS "elementType", element_id AS "elementId",
+           page_url AS "pageUrl", event_data_json AS "eventDataJson",
+           created_time AS "createdTime"
+    FROM hm_query.click_events_flat
+    <where>
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="sessionId != null">AND session_id = #{sessionId}</if>
+        <if test="elementType != null">AND element_type = #{elementType}</if>
+        <if test="elementId != null">AND element_id = #{elementId}</if>
+        <if test="startDate != null">AND created_time &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_time &lt;= #{endDate}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

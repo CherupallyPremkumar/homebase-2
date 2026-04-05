@@ -8,7 +8,6 @@
 		<module>disputes-domain</module>
 		<module>disputes-infrastructure</module>
 		<module>disputes-service</module>
-		<module>disputes-query</module>
 		<module>disputes-app</module>
 	        <module>disputes-liquibase</module>
     </modules>

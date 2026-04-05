@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="InvoiceSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query.invoice_flat from OLTP                    -->
+<!-- Source: invoices + orders + user_profiles + order_addresses             -->
+<!-- Called by InvoiceSyncService                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateInvoiceFlat">
+    TRUNCATE TABLE hm_query.invoice_flat
+</update>
+
+<insert id="syncInvoiceFlat">
+    INSERT INTO hm_query.invoice_flat (
+        id, tenant, last_synced_at,
+        order_id, order_number,
+        invoice_number, customer_id, customer_name, customer_email,
+        total_amount, tax_amount, subtotal,
+        shipping_amount, discount_amount,
+        status, gstin,
+        billing_address, shipping_address,
+        created_time
+    )
+    SELECT
+        inv.id,
+        inv.tenant,
+        NOW(),
+        inv.order_id,
+        COALESCE(o.order_number, ''),
+        inv.invoice_number,
+        COALESCE(o.customer_id, ''),
+        COALESCE(u.first_name || ' ' || COALESCE(u.last_name, ''), ''),
+        COALESCE(u.email, ''),
+        COALESCE(inv.total_amount, 0),
+        COALESCE(inv.tax_amount, 0),
+        COALESCE(o.subtotal, 0),
+        COALESCE(o.shipping_amount, 0),
+        COALESCE(o.discount_amount, 0),
+        inv.status,
+        inv.gstin,
+        COALESCE(ba.address_line1 || ', ' || ba.city || ' ' || ba.postal_code, ''),
+        COALESCE(sa.address_line1 || ', ' || sa.city || ' ' || sa.postal_code, ''),
+        inv.created_time
+    FROM hm_invoice.invoices inv
+    LEFT JOIN hm_order.orders o ON inv.order_id = o.id
+    LEFT JOIN hm_user.user_profiles u ON o.customer_id = u.id
+    LEFT JOIN hm_order.order_addresses ba ON ba.order_id = o.id AND ba.address_type = 'BILLING'
+    LEFT JOIN hm_order.order_addresses sa ON sa.order_id = o.id AND sa.address_type = 'SHIPPING'
+</insert>
+
+</mapper>

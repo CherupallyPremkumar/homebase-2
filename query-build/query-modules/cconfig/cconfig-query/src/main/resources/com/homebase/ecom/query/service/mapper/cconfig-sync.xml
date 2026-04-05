@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CconfigSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SYNC: OLTP -> OLAP                                                     -->
+<!-- Reads from cconfig (shared schema, no prefix)                          -->
+<!-- Writes to hm_query.cconfig_flat                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateCconfigFlat">
+    TRUNCATE TABLE hm_query.cconfig_flat
+</update>
+
+<insert id="syncCconfigFlat">
+    INSERT INTO hm_query.cconfig_flat (
+        id, tenant, last_synced_at,
+        module_name, key_name, avalue,
+        custom_attribute, created_time, last_modified_time
+    )
+    SELECT
+        c.id, c.tenant, NOW(),
+        c.module_name, c.key_name, c.avalue,
+        c.custom_attribute, c.created_time, c.last_modified_time
+    FROM cconfig c
+</insert>
+
+</mapper>

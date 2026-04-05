@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="InventorySync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query OLAP from OLTP source tables              -->
+<!-- Called by InventorySyncService (Spring Batch / scheduler)              -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateInventoryHealthFlat">
+    TRUNCATE TABLE hm_query.inventory_health_flat
+</update>
+
+<update id="truncateStockMovementFlat">
+    TRUNCATE TABLE hm_query.stock_movement_flat
+</update>
+
+<!-- SYNC: inventory_health_flat -->
+<!-- Source: inventory_item + products + supplier + warehouses + order_items (velocity) -->
+<insert id="syncInventoryHealthFlat">
+    INSERT INTO hm_query.inventory_health_flat (
+        id, tenant, last_synced_at,
+        sku, product_id, product_name, category_name,
+        seller_id, seller_name,
+        warehouse_name, warehouse_code,
+        available_qty, reserved_qty, damaged_qty, inbound_qty,
+        stock_status, low_stock_threshold,
+        days_of_supply, avg_daily_sales,
+        last_sale_at, last_restock_at,
+        cost_price, locked_capital, days_without_sale,
+        stm_state, variant_id, primary_fc, batch_number, expiry_date
+    )
+    SELECT
+        inv.id,
+        inv.tenant,
+        NOW(),
+        inv.sku,
+        inv.product_id,
+        COALESCE(p.name, ''),
+        COALESCE(c.name, ''),
+        inv.supplier_id,
+        COALESCE(s.business_name, ''),
+        COALESCE(w.warehouse_name, inv.primary_fc),
+        COALESCE(w.warehouse_code, ''),
+        COALESCE(inv.available_quantity, 0),
+        COALESCE(inv.reserved_quantity, 0),
+        COALESCE(inv.damaged_quantity, 0),
+        COALESCE(inv.inbound_quantity, 0),
+        CASE
+            WHEN COALESCE(inv.available_quantity, 0) = 0 THEN 'OUT_OF_STOCK'
+            WHEN COALESCE(inv.available_quantity, 0) &lt;= COALESCE(inv.low_stock_threshold, 5) THEN 'LOW_STOCK'
+            ELSE 'IN_STOCK'
+        END,
+        COALESCE(inv.low_stock_threshold, 5),
+        -- days_of_supply: available / avg daily sales
+        CASE WHEN COALESCE(
+            (SELECT COALESCE(SUM(oi.quantity), 0) / NULLIF(30, 0)
+             FROM hm_order.order_items oi
+             JOIN hm_order.orders o ON o.id = oi.order_id
+             WHERE oi.sku = inv.sku
+             AND o.created_time >= NOW() - INTERVAL '30 days'), 0) > 0
+        THEN COALESCE(inv.available_quantity, 0) /
+            (SELECT COALESCE(SUM(oi.quantity), 0) / NULLIF(30, 0)
+             FROM hm_order.order_items oi
+             JOIN hm_order.orders o ON o.id = oi.order_id
+             WHERE oi.sku = inv.sku
+             AND o.created_time >= NOW() - INTERVAL '30 days')
+        ELSE 999 END,
+        -- avg_daily_sales
+        COALESCE(
+            (SELECT COALESCE(SUM(oi.quantity), 0) / NULLIF(30, 0)
+             FROM hm_order.order_items oi
+             JOIN hm_order.orders o ON o.id = oi.order_id
+             WHERE oi.sku = inv.sku
+             AND o.created_time >= NOW() - INTERVAL '30 days'), 0)::INT,
+        inv.last_sale_at,
+        inv.last_restock_at,
+        inv.cost_price,
+        COALESCE(inv.available_quantity, 0) * COALESCE(inv.cost_price, 0),
+        CASE WHEN inv.last_sale_at IS NOT NULL
+             THEN EXTRACT(DAY FROM NOW() - inv.last_sale_at)::INT
+             ELSE 999 END,
+        inv.state_id,
+        inv.variant_id,
+        inv.primary_fc,
+        inv.batch_number,
+        inv.expiry_date
+    FROM hm_inventory.inventory_item inv
+    LEFT JOIN hm_product.products p ON inv.product_id = p.id
+    LEFT JOIN hm_product.categories c ON p.category_id = c.id
+    LEFT JOIN hm_supplier.supplier s ON inv.supplier_id = s.id
+    LEFT JOIN hm_warehouse.warehouses w ON w.warehouse_code = inv.primary_fc
+</insert>
+
+<!-- SYNC: stock_movement_flat (last 30 days only) -->
+<insert id="syncStockMovementFlat">
+    INSERT INTO hm_query.stock_movement_flat (
+        id, tenant, movement_time,
+        movement_type, sku, product_name, quantity,
+        warehouse_name, warehouse_code, reason,
+        reference_id, performed_by
+    )
+    SELECT
+        CONCAT(m.inventory_item_id, '-', m.movement_time),
+        inv.tenant,
+        m.movement_time,
+        m.type,
+        inv.sku,
+        COALESCE(p.name, ''),
+        m.quantity,
+        COALESCE(w.warehouse_name, m.fulfillment_center_id),
+        COALESCE(w.warehouse_code, ''),
+        m.reason,
+        m.reference_id,
+        '' -- performed_by not in OLTP yet
+    FROM hm_inventory.inventory_movements m
+    JOIN hm_inventory.inventory_item inv ON m.inventory_item_id = inv.id
+    LEFT JOIN hm_product.products p ON inv.product_id = p.id
+    LEFT JOIN hm_warehouse.warehouses w ON w.warehouse_code = m.fulfillment_center_id
+    WHERE m.movement_time >= NOW() - INTERVAL '30 days'
+</insert>
+
+</mapper>

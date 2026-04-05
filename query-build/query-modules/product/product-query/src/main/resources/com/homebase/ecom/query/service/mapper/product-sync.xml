@@ -1,0 +1,373 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ProductSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC QUERIES — populate hm_query OLAP from OLTP source tables     -->
+<!-- Called by ProductCatalogSyncService (Spring Batch / scheduler)         -->
+<!-- Strategy: TRUNCATE + INSERT (full refresh for consistency)             -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== TRUNCATE targets before full refresh ====== -->
+<update id="truncateProductCatalogFlat">
+    TRUNCATE TABLE hm_query.product_catalog_flat
+</update>
+
+<update id="truncateProductVariantFlat">
+    TRUNCATE TABLE hm_query.product_variant_flat
+</update>
+
+<update id="truncateCategoryConfigFlat">
+    TRUNCATE TABLE hm_query.category_config_flat
+</update>
+
+<!-- ====== SYNC: product_catalog_flat ====== -->
+<!-- Source: hm_product.products + categories + hm_inventory.inventory_item
+            + hm_supplier.supplier + hm_review.product_reviews
+            + hm_order.order_items (30d aggregation) -->
+<insert id="syncProductCatalogFlat">
+    INSERT INTO hm_query.product_catalog_flat (
+        id, tenant, last_synced_at,
+        product_id, product_name, slug, brand, product_status,
+        category_id, category_name, hsn_code, base_price,
+        weight_grams, is_returnable, return_window_days, created_date,
+        description, short_description, country_of_origin, warranty_months,
+        primary_sku, variant_count,
+        total_available_qty, total_reserved_qty, stock_status, primary_fc,
+        seller_id, seller_name, seller_tier, seller_rating,
+        avg_rating, review_count,
+        rating_5_pct, rating_4_pct, rating_3_pct, rating_2_pct, rating_1_pct,
+        sentiment_positive_pct, sentiment_neutral_pct, sentiment_negative_pct,
+        units_sold_30d, revenue_30d, conversion_rate, return_rate, views_30d,
+        violations_count, report_count
+    )
+    SELECT
+        p.id,
+        p.tenant,
+        NOW(),
+        -- Product core
+        p.id,
+        p.name,
+        p.slug,
+        p.brand,
+        p.state_id,
+        p.category_id,
+        c.name,
+        p.hsn_code,
+        p.base_price,
+        p.weight_grams,
+        p.is_returnable,
+        p.return_window_days,
+        p.created_time,
+        p.description,
+        p.short_description,
+        p.country_of_origin,
+        p.warranty_months,
+        -- Primary variant
+        (SELECT pv.sku FROM hm_product.product_variants pv
+         WHERE pv.product_id = p.id ORDER BY pv.sku LIMIT 1),
+        (SELECT COUNT(*) FROM hm_product.product_variants pv
+         WHERE pv.product_id = p.id),
+        -- Inventory (aggregated across all FCs)
+        COALESCE((SELECT SUM(inv.available_quantity) FROM hm_inventory.inventory_item inv
+         WHERE inv.product_id = p.id), 0),
+        COALESCE((SELECT SUM(inv.reserved_quantity) FROM hm_inventory.inventory_item inv
+         WHERE inv.product_id = p.id), 0),
+        CASE
+            WHEN COALESCE((SELECT SUM(inv.available_quantity) FROM hm_inventory.inventory_item inv
+                 WHERE inv.product_id = p.id), 0) = 0 THEN 'OUT_OF_STOCK'
+            WHEN COALESCE((SELECT SUM(inv.available_quantity) FROM hm_inventory.inventory_item inv
+                 WHERE inv.product_id = p.id), 0) &lt;
+                 COALESCE((SELECT MIN(inv.low_stock_threshold) FROM hm_inventory.inventory_item inv
+                 WHERE inv.product_id = p.id), 5) THEN 'LOW_STOCK'
+            ELSE 'IN_STOCK'
+        END,
+        (SELECT inv.primary_fc FROM hm_inventory.inventory_item inv
+         WHERE inv.product_id = p.id LIMIT 1),
+        -- Seller
+        p.supplier_id,
+        s.business_name,
+        s.tier,
+        s.rating,
+        -- Reviews (aggregated)
+        COALESCE((SELECT AVG(r.rating) * 100 FROM hm_review.product_reviews r
+         WHERE r.product_id = p.id)::INT, 0),
+        COALESCE((SELECT COUNT(*) FROM hm_review.product_reviews r
+         WHERE r.product_id = p.id), 0),
+        -- Star distribution (basis points)
+        COALESCE((SELECT COUNT(CASE WHEN r.rating = 5 THEN 1 END) * 10000
+                  / NULLIF(COUNT(*), 0)
+         FROM hm_review.product_reviews r WHERE r.product_id = p.id)::INT, 0),
+        COALESCE((SELECT COUNT(CASE WHEN r.rating = 4 THEN 1 END) * 10000
+                  / NULLIF(COUNT(*), 0)
+         FROM hm_review.product_reviews r WHERE r.product_id = p.id)::INT, 0),
+        COALESCE((SELECT COUNT(CASE WHEN r.rating = 3 THEN 1 END) * 10000
+                  / NULLIF(COUNT(*), 0)
+         FROM hm_review.product_reviews r WHERE r.product_id = p.id)::INT, 0),
+        COALESCE((SELECT COUNT(CASE WHEN r.rating = 2 THEN 1 END) * 10000
+                  / NULLIF(COUNT(*), 0)
+         FROM hm_review.product_reviews r WHERE r.product_id = p.id)::INT, 0),
+        COALESCE((SELECT COUNT(CASE WHEN r.rating = 1 THEN 1 END) * 10000
+                  / NULLIF(COUNT(*), 0)
+         FROM hm_review.product_reviews r WHERE r.product_id = p.id)::INT, 0),
+        -- Sentiment (rating >= 4 = positive, 3 = neutral, <= 2 = negative)
+        COALESCE((SELECT COUNT(CASE WHEN r.rating >= 4 THEN 1 END) * 10000
+                  / NULLIF(COUNT(*), 0)
+         FROM hm_review.product_reviews r WHERE r.product_id = p.id)::INT, 0),
+        COALESCE((SELECT COUNT(CASE WHEN r.rating = 3 THEN 1 END) * 10000
+                  / NULLIF(COUNT(*), 0)
+         FROM hm_review.product_reviews r WHERE r.product_id = p.id)::INT, 0),
+        COALESCE((SELECT COUNT(CASE WHEN r.rating &lt;= 2 THEN 1 END) * 10000
+                  / NULLIF(COUNT(*), 0)
+         FROM hm_review.product_reviews r WHERE r.product_id = p.id)::INT, 0),
+        -- Performance (last 30 days from order_items)
+        COALESCE((SELECT SUM(oi.quantity) FROM hm_order.order_items oi
+         JOIN hm_order.orders o ON o.id = oi.order_id
+         WHERE oi.product_id = p.id AND o.created_time >= NOW() - INTERVAL '30 days'), 0),
+        COALESCE((SELECT SUM(oi.total_price) FROM hm_order.order_items oi
+         JOIN hm_order.orders o ON o.id = oi.order_id
+         WHERE oi.product_id = p.id AND o.created_time >= NOW() - INTERVAL '30 days'), 0),
+        0, -- conversion_rate: requires clickstream data, computed separately
+        0, -- return_rate: requires return data, computed separately
+        0, -- views_30d: requires clickstream data, computed separately
+        -- Compliance
+        COALESCE((SELECT COUNT(*) FROM hm_product.product_activity_log pal
+         WHERE pal.product_id = p.id AND pal.action = 'VIOLATION'), 0),
+        COALESCE((SELECT SUM(r.report_count) FROM hm_review.product_reviews r
+         WHERE r.product_id = p.id), 0)
+    FROM hm_product.products p
+    LEFT JOIN hm_product.categories c ON p.category_id = c.id
+    LEFT JOIN hm_supplier.supplier s ON p.supplier_id = s.id
+</insert>
+
+<!-- ====== SYNC: product_variant_flat ====== -->
+<insert id="syncProductVariantFlat">
+    INSERT INTO hm_query.product_variant_flat (
+        id, tenant, last_synced_at,
+        product_id, variant_id, variant_name, sku, ean,
+        mrp, selling_price, available_qty, reserved_qty, inbound_qty,
+        variant_status, attributes_json
+    )
+    SELECT
+        pv.id,
+        p.tenant,
+        NOW(),
+        pv.product_id,
+        pv.id,
+        COALESCE(
+            (SELECT STRING_AGG(va.attribute_value, ' / ' ORDER BY va.attribute_key)
+             FROM hm_product.variant_attributes va WHERE va.variant_id = pv.id),
+            pv.sku
+        ),
+        pv.sku,
+        pv.ean,
+        pv.mrp,
+        pv.selling_price,
+        COALESCE(inv.available_quantity, 0),
+        COALESCE(inv.reserved_quantity, 0),
+        COALESCE(inv.inbound_quantity, 0),
+        COALESCE(inv.status, 'UNKNOWN'),
+        (SELECT JSON_OBJECT_AGG(va.attribute_key, va.attribute_value)
+         FROM hm_product.variant_attributes va WHERE va.variant_id = pv.id)::TEXT
+    FROM hm_product.product_variants pv
+    JOIN hm_product.products p ON pv.product_id = p.id
+    LEFT JOIN hm_inventory.inventory_item inv ON inv.variant_id = pv.id
+</insert>
+
+<!-- ====== SYNC: category_config_flat ====== -->
+<insert id="syncCategoryConfigFlat">
+    INSERT INTO hm_query.category_config_flat (
+        id, tenant, last_synced_at,
+        category_id, name, slug, parent_id, path, depth, display_order, active,
+        commission_rate_bps, is_gated, return_policy_days,
+        max_shipping_weight_grams, listing_min_images, listing_min_desc_length,
+        hsn_code, gst_rate_pct, cess_rate_pct,
+        required_attributes_json, required_attributes_count,
+        product_count, active_product_count, seller_count,
+        gmv_30d, orders_30d, return_rate_30d
+    )
+    SELECT
+        c.id,
+        c.tenant,
+        NOW(),
+        c.id,
+        c.name,
+        c.slug,
+        c.parent_id,
+        c.path,
+        c.depth,
+        c.display_order,
+        c.active,
+        c.commission_rate_bps,
+        c.is_gated,
+        c.return_policy_days,
+        c.max_shipping_weight_grams,
+        c.listing_min_images,
+        c.listing_min_desc_length,
+        -- Tax (JOIN tax_category_mapping → tax_rates)
+        COALESCE(tcm.hsn_code, ''),
+        COALESCE((SELECT tr.gst_rate FROM hm_tax.tax_rates tr
+                  WHERE tr.hsn_code = tcm.hsn_code LIMIT 1), 0),
+        COALESCE((SELECT tr.cess_rate FROM hm_tax.tax_rates tr
+                  WHERE tr.hsn_code = tcm.hsn_code LIMIT 1), 0),
+        -- Required attributes
+        COALESCE(
+            (SELECT JSON_AGG(ad.label)
+             FROM hm_product.category_attribute_mapping cam
+             JOIN hm_product.attribute_definitions ad ON cam.attribute_id = ad.id
+             WHERE cam.category_id = c.id)::TEXT,
+            '[]'
+        ),
+        COALESCE(
+            (SELECT COUNT(*)
+             FROM hm_product.category_attribute_mapping cam
+             WHERE cam.category_id = c.id), 0
+        ),
+        -- Product counts
+        COALESCE((SELECT COUNT(*) FROM hm_product.products p
+                  WHERE p.category_id = c.id), 0),
+        COALESCE((SELECT COUNT(*) FROM hm_product.products p
+                  WHERE p.category_id = c.id AND p.state_id = 'PUBLISHED'), 0),
+        COALESCE((SELECT COUNT(DISTINCT p.supplier_id) FROM hm_product.products p
+                  WHERE p.category_id = c.id AND p.state_id = 'PUBLISHED'), 0),
+        -- Performance (last 30 days)
+        COALESCE(
+            (SELECT SUM(oi.total_price) FROM hm_order.order_items oi
+             JOIN hm_order.orders o ON o.id = oi.order_id
+             JOIN hm_product.products p2 ON oi.product_id = p2.id
+             WHERE p2.category_id = c.id
+             AND o.created_time >= NOW() - INTERVAL '30 days'), 0),
+        COALESCE(
+            (SELECT COUNT(DISTINCT oi.order_id) FROM hm_order.order_items oi
+             JOIN hm_order.orders o ON o.id = oi.order_id
+             JOIN hm_product.products p2 ON oi.product_id = p2.id
+             WHERE p2.category_id = c.id
+             AND o.created_time >= NOW() - INTERVAL '30 days'), 0),
+        0 -- return_rate_30d: computed separately
+    FROM hm_product.categories c
+    LEFT JOIN hm_tax.tax_category_mapping tcm ON tcm.product_category = c.name
+</insert>
+
+<!-- ====== TRUNCATE brand target ====== -->
+<update id="truncateBrandRegistryFlat">
+    TRUNCATE TABLE hm_query.brand_registry_flat
+</update>
+
+<!-- ====== SYNC: brand_registry_flat ====== -->
+<insert id="syncBrandRegistryFlat">
+    INSERT INTO hm_query.brand_registry_flat (
+        id, tenant, last_synced_at,
+        brand_id, brand_name, brand_slug, company_name, country_of_origin,
+        industry_category, brand_website, contact_email, brand_status,
+        verified_at, created_time,
+        product_count, authorized_seller_count, trademark_count,
+        violation_count, active_violation_count, brand_health_score, counterfeit_removed
+    )
+    SELECT
+        b.id,
+        b.tenant,
+        NOW(),
+        b.id,
+        b.brand_name,
+        b.brand_slug,
+        b.company_name,
+        b.country_of_origin,
+        b.industry_category,
+        b.brand_website,
+        b.contact_email,
+        b.state_id,
+        b.verified_at,
+        b.created_time,
+        -- Cross-schema: product count
+        COALESCE((SELECT COUNT(*) FROM hm_product.products p
+                  WHERE p.brand = b.brand_name), 0),
+        -- Authorized sellers
+        COALESCE((SELECT COUNT(*) FROM hm_brand_registry.authorized_sellers ase
+                  WHERE ase.brand_id = b.id AND ase.status = 'APPROVED'), 0),
+        -- Trademarks
+        COALESCE((SELECT COUNT(*) FROM hm_brand_registry.brand_trademarks bt
+                  WHERE bt.brand_id = b.id), 0),
+        -- Violations (all)
+        COALESCE((SELECT COUNT(*) FROM hm_brand_registry.ip_violations iv
+                  WHERE iv.brand_id = b.id), 0),
+        -- Active violations
+        COALESCE((SELECT COUNT(*) FROM hm_brand_registry.ip_violations iv
+                  WHERE iv.brand_id = b.id AND iv.state_id NOT IN ('RESOLVED', 'DISMISSED')), 0),
+        -- Brand health score (latest analytics)
+        COALESCE((SELECT ba.brand_health_score FROM hm_brand_registry.brand_analytics ba
+                  WHERE ba.brand_id = b.id ORDER BY ba.reporting_period DESC LIMIT 1), 0),
+        -- Counterfeit removed (latest period)
+        COALESCE((SELECT ba.counterfeit_listings_removed FROM hm_brand_registry.brand_analytics ba
+                  WHERE ba.brand_id = b.id ORDER BY ba.reporting_period DESC LIMIT 1), 0)
+    FROM hm_brand_registry.brands b
+</insert>
+
+<!-- ====== TRUNCATE attribute targets ====== -->
+<update id="truncateAttributeDefinitionFlat">
+    TRUNCATE TABLE hm_query.attribute_definition_flat
+</update>
+
+<update id="truncateAttributeSetFlat">
+    TRUNCATE TABLE hm_query.attribute_set_flat
+</update>
+
+<!-- ====== SYNC: attribute_definition_flat ====== -->
+<insert id="syncAttributeDefinitionFlat">
+    INSERT INTO hm_query.attribute_definition_flat (
+        id, tenant, last_synced_at,
+        attribute_id, code, label, input_type, filterable, searchable, required, display_order,
+        variation_count, product_count, category_count,
+        options_json, options_count
+    )
+    SELECT
+        ad.id,
+        'homebase',
+        NOW(),
+        ad.id,
+        ad.code,
+        ad.label,
+        ad.input_type,
+        ad.filterable,
+        ad.searchable,
+        ad.required,
+        ad.display_order,
+        COALESCE((SELECT COUNT(DISTINCT va.variant_id) FROM hm_product.variant_attributes va
+                  WHERE va.attribute_key = ad.code), 0),
+        COALESCE((SELECT COUNT(DISTINCT pav.product_id) FROM hm_product.product_attribute_values pav
+                  WHERE pav.attribute_id = ad.id), 0),
+        COALESCE((SELECT COUNT(*) FROM hm_product.category_attribute_mapping cam
+                  WHERE cam.attribute_id = ad.id), 0),
+        COALESCE((SELECT JSON_AGG(ao.label ORDER BY ao.sort_order)
+                  FROM hm_product.attribute_options ao WHERE ao.attribute_id = ad.id)::TEXT, '[]'),
+        COALESCE((SELECT COUNT(*) FROM hm_product.attribute_options ao
+                  WHERE ao.attribute_id = ad.id), 0)
+    FROM hm_product.attribute_definitions ad
+</insert>
+
+<!-- ====== SYNC: attribute_set_flat ====== -->
+<insert id="syncAttributeSetFlat">
+    INSERT INTO hm_query.attribute_set_flat (
+        id, tenant, last_synced_at,
+        set_id, name, attribute_count, group_count, product_count,
+        categories_json, attributes_json, created_time
+    )
+    SELECT
+        ast.id,
+        ast.tenant,
+        NOW(),
+        ast.id,
+        ast.name,
+        COALESCE((SELECT COUNT(*) FROM hm_product.attribute_set_attributes asa
+                  WHERE asa.attribute_set_id = ast.id), 0),
+        COALESCE((SELECT COUNT(DISTINCT asg.attribute_group_id) FROM hm_product.attribute_set_groups asg
+                  WHERE asg.attribute_set_id = ast.id), 0),
+        0, -- product_count: computed separately (needs product→set mapping)
+        '[]', -- categories_json: computed separately
+        COALESCE((SELECT JSON_AGG(ad.label ORDER BY asa2.sort_order)
+                  FROM hm_product.attribute_set_attributes asa2
+                  JOIN hm_product.attribute_definitions ad ON asa2.attribute_id = ad.id
+                  WHERE asa2.attribute_set_id = ast.id)::TEXT, '[]'),
+        ast.created_time
+    FROM hm_product.attribute_sets ast
+</insert>
+
+</mapper>

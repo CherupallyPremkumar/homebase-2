@@ -1,0 +1,105 @@
+[
+    {
+        "id": "Notification.getAll",
+        "name": "notifications",
+        "description": "Admin notification listing from OLAP notification_flat",
+        "acls": ["ADMIN"],
+        "workflowName": "notification",
+        "stateColumn": "stateId",
+        "flowColumn": "flowId",
+        "columnMetadata": {
+            "customerId": { "name": "customerId", "filterable": true, "columnType": "Text", "sortable": true },
+            "channel": { "name": "channel", "filterable": true, "columnType": "Text" },
+            "templateId": { "name": "templateId", "filterable": true, "columnType": "Text" },
+            "recipientAddress": { "name": "recipientAddress", "filterable": true, "likeQuery": true, "columnType": "Text" },
+            "stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+            "startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+            "endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+            "q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+            "sentAt": { "name": "sentAt", "columnType": "Date", "sortable": true }
+        },
+        "paginated": true,
+        "sortable": true
+    },
+    {
+        "id": "Notification.getById",
+        "name": "notification",
+        "description": "Single notification detail from OLAP",
+        "acls": ["ADMIN"],
+        "workflowName": "notification",
+        "stateColumn": "stateId",
+        "flowColumn": "flowId",
+        "columnMetadata": {
+            "id": { "name": "id", "filterable": true, "columnType": "Text" }
+        },
+        "paginated": false
+    },
+    {
+        "id": "Notification.getStateCounts",
+        "name": "notificationStateCounts",
+        "description": "Notification count by state for tab badges",
+        "acls": ["ADMIN"],
+        "columnMetadata": {
+            "stateId": { "name": "stateId", "filterable": true, "columnType": "Text" }
+        },
+        "paginated": false
+    },
+    {
+        "id": "Notification.getFailedNotifications",
+        "name": "failedNotifications",
+        "description": "Failed/bounced notifications for retry management",
+        "acls": ["ADMIN"],
+        "columnMetadata": {
+            "customerId": { "name": "customerId", "filterable": true, "columnType": "Text" },
+            "channel": { "name": "channel", "filterable": true, "columnType": "Text" }
+        },
+        "paginated": true,
+        "sortable": true
+    },
+    {
+        "id": "Notification.getDeliveryStats",
+        "name": "notificationDeliveryStats",
+        "description": "Delivery statistics by channel and state",
+        "acls": ["ADMIN"],
+        "columnMetadata": {
+            "channel": { "name": "channel", "filterable": true, "columnType": "Text" }
+        },
+        "paginated": false
+    },
+    {
+        "id": "Notification.getByCustomerId",
+        "name": "notificationsByCustomer",
+        "description": "Notifications for a specific customer",
+        "acls": ["ADMIN"],
+        "columnMetadata": {
+            "customerId": { "name": "customerId", "filterable": true, "columnType": "Text" },
+            "stateId": { "name": "stateId", "filterable": true, "columnType": "Text" }
+        },
+        "paginated": true,
+        "sortable": true
+    },
+    {
+        "id": "Notification.getByChannel",
+        "name": "notificationsByChannel",
+        "description": "Notifications filtered by channel",
+        "acls": ["ADMIN"],
+        "columnMetadata": {
+            "channel": { "name": "channel", "filterable": true, "columnType": "Text" },
+            "stateId": { "name": "stateId", "filterable": true, "columnType": "Text" }
+        },
+        "paginated": true,
+        "sortable": true
+    },
+    {
+        "id": "Notification.getByTemplate",
+        "name": "notificationsByTemplate",
+        "description": "Notifications filtered by template",
+        "acls": ["ADMIN"],
+        "columnMetadata": {
+            "templateId": { "name": "templateId", "filterable": true, "columnType": "Text" },
+            "stateId": { "name": "stateId", "filterable": true, "columnType": "Text" }
+        },
+        "paginated": true,
+        "sortable": true
+    }
+]

@@ -1,0 +1,3 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://sit-inventory-db.homebase.internal:5432/homebase_inventory

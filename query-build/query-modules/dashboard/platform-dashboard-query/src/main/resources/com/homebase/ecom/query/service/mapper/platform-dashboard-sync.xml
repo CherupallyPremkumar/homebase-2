@@ -1,0 +1,86 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PlatformDashboardSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — Platform Dashboard reads entirely from pre-computed         -->
+<!-- aggregation tables in hm_query (computed by DashboardAnalyticsService).-->
+<!-- This sync refreshes inventory_health_flat and product_catalog_flat     -->
+<!-- which feed platform-level dashboards.                                  -->
+<!-- Strategy: TRUNCATE + INSERT (full refresh)                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateInventoryHealthFlat">TRUNCATE TABLE hm_query.inventory_health_flat</update>
+<update id="truncateProductCatalogFlat">TRUNCATE TABLE hm_query.product_catalog_flat</update>
+
+<!-- ====== SYNC: inventory_health_flat ====== -->
+<insert id="syncInventoryHealthFlat">
+    INSERT INTO hm_query.inventory_health_flat (
+        id, tenant, last_synced_at,
+        variant_id, sku, product_id, product_name,
+        available_qty, reserved_qty, low_stock_threshold,
+        stock_status
+    )
+    SELECT
+        inv.id, inv.tenant, NOW(),
+        inv.variant_id, inv.sku, inv.product_id,
+        COALESCE(p.name, ''),
+        inv.available_quantity, inv.reserved_quantity,
+        inv.low_stock_threshold,
+        CASE
+            WHEN inv.available_quantity = 0 THEN 'OUT_OF_STOCK'
+            WHEN inv.available_quantity &lt; COALESCE(inv.low_stock_threshold, 5) THEN 'LOW_STOCK'
+            ELSE 'IN_STOCK'
+        END
+    FROM hm_inventory.inventory_item inv
+    LEFT JOIN hm_product.products p ON inv.product_id = p.id
+    WHERE inv.state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+</insert>
+
+<!-- ====== SYNC: product_catalog_flat ====== -->
+<insert id="syncProductCatalogFlat">
+    INSERT INTO hm_query.product_catalog_flat (
+        id, tenant, last_synced_at,
+        product_id, product_name, slug, brand, product_status,
+        category_id, category_name,
+        base_price, selling_price, primary_sku, primary_image_url,
+        seller_id, seller_name,
+        avg_rating, review_count, total_available_qty, stock_status,
+        conversion_rate, views_30d
+    )
+    SELECT
+        p.id, p.tenant, NOW(),
+        p.id, p.name, p.slug, p.brand, p.state_id,
+        p.category_id, COALESCE(c.name, ''),
+        p.base_price,
+        COALESCE((SELECT o.selling_price FROM hm_offer.offer o
+                  WHERE o.product_id = p.id AND o.state_id = 'LIVE'
+                  ORDER BY o.selling_price ASC LIMIT 1), p.base_price),
+        (SELECT pv.sku FROM hm_product.product_variants pv
+         WHERE pv.product_id = p.id ORDER BY pv.sku LIMIT 1),
+        (SELECT ma.cdn_url FROM hm_media.media_assets ma
+         JOIN hm_media.product_media pm ON pm.asset_id = ma.id
+         WHERE pm.product_id = p.id AND pm.is_primary = true LIMIT 1),
+        p.supplier_id,
+        COALESCE(s.business_name, ''),
+        COALESCE((SELECT AVG(r.rating) * 100 FROM hm_review.product_reviews r
+                  WHERE r.product_id = p.id AND r.state_id = 'PUBLISHED')::INT, 0),
+        COALESCE((SELECT COUNT(*) FROM hm_review.product_reviews r
+                  WHERE r.product_id = p.id AND r.state_id = 'PUBLISHED'), 0),
+        COALESCE((SELECT SUM(inv.available_quantity) FROM hm_inventory.inventory_item inv
+                  WHERE inv.product_id = p.id), 0),
+        CASE
+            WHEN COALESCE((SELECT SUM(inv.available_quantity) FROM hm_inventory.inventory_item inv
+                 WHERE inv.product_id = p.id), 0) = 0 THEN 'OUT_OF_STOCK'
+            WHEN COALESCE((SELECT SUM(inv.available_quantity) FROM hm_inventory.inventory_item inv
+                 WHERE inv.product_id = p.id), 0) &lt;
+                 COALESCE((SELECT MIN(inv.low_stock_threshold) FROM hm_inventory.inventory_item inv
+                 WHERE inv.product_id = p.id), 5) THEN 'LOW_STOCK'
+            ELSE 'IN_STOCK'
+        END,
+        0, 0
+    FROM hm_product.products p
+    LEFT JOIN hm_product.categories c ON p.category_id = c.id
+    LEFT JOIN hm_supplier.supplier s ON p.supplier_id = s.id
+</insert>
+
+</mapper>

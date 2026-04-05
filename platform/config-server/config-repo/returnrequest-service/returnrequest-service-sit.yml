@@ -1,0 +1,3 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://sit-returnrequest-db.homebase.internal:5432/homebase_returnrequest

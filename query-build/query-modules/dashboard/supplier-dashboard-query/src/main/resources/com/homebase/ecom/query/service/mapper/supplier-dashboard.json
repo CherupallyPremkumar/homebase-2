@@ -1,0 +1,111 @@
+[
+	{
+		"id": "SupplierDashboard.supplierOverview",
+		"name": "supplier-overview",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "SupplierDashboard.supplierDailySales",
+		"name": "supplier-daily-sales",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "SupplierDashboard.supplierTopProducts",
+		"name": "supplier-top-products",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "SupplierDashboard.supplierOrders",
+		"name": "supplier-orders",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "SupplierDashboard.supplierProducts",
+		"name": "supplier-products",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"stockStatus": { "name": "stockStatus", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "SupplierDashboard.supplierInventoryHealth",
+		"name": "supplier-inventory-health",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" },
+			"stockStatus": { "name": "stockStatus", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "SupplierDashboard.supplierSettlements",
+		"name": "supplier-settlements",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "SupplierDashboard.supplierReturns",
+		"name": "supplier-returns",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "SupplierDashboard.supplierFulfillments",
+		"name": "supplier-fulfillments",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

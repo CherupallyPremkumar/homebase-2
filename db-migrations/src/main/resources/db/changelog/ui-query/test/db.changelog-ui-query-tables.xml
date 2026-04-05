@@ -18,6 +18,10 @@
                 id VARCHAR(255) NOT NULL PRIMARY KEY,
                 name VARCHAR(255), description VARCHAR(2000), short_description VARCHAR(500),
                 brand VARCHAR(255), category_id VARCHAR(255), slug VARCHAR(300),
+                base_price NUMERIC(12,2), hsn_code VARCHAR(20),
+                country_of_origin VARCHAR(100), weight_grams INT,
+                warranty_months INT, is_returnable BOOLEAN DEFAULT TRUE,
+                return_window_days INT DEFAULT 7,
                 meta_title VARCHAR(200), meta_description VARCHAR(500),
                 state_id VARCHAR(100), flow_id VARCHAR(100),
                 version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
@@ -284,7 +288,7 @@
                 shipping_address_id VARCHAR(255), billing_address_id VARCHAR(255),
                 payment_method_id VARCHAR(255), notes TEXT, cancel_reason VARCHAR(1000),
                 description VARCHAR(2000), item_count INT DEFAULT 0,
-                shipping_address TEXT,
+                shipping_address TEXT, tenant VARCHAR(255),
                 state_id VARCHAR(100), flow_id VARCHAR(100),
                 created_time TIMESTAMP, updated_time TIMESTAMP,
                 state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
@@ -307,6 +311,8 @@
             <column name="unit_price" type="DECIMAL(12,2)"><constraints nullable="false"/></column>
             <column name="total_price" type="DECIMAL(12,2)"><constraints nullable="false"/></column>
             <column name="supplier_id" type="VARCHAR(255)"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
         </createTable>
     </changeSet>
 
@@ -339,7 +345,8 @@
         <sql>
             CREATE TABLE supplier (
                 id VARCHAR(255) NOT NULL PRIMARY KEY,
-                name VARCHAR(255) NOT NULL, description TEXT, email VARCHAR(255),
+                name VARCHAR(255) NOT NULL, business_name VARCHAR(255),
+                description TEXT, email VARCHAR(255),
                 status VARCHAR(50) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -377,6 +384,7 @@
             <column name="flow_id" type="VARCHAR(100)"/>
             <column name="created_at" type="TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP"/>
+            <column name="created_time" type="TIMESTAMP"/>
         </createTable>
     </changeSet>
 
@@ -398,6 +406,272 @@
                 quantity INT DEFAULT 1, refund_amount NUMERIC(10,2), return_type VARCHAR(50)
             )
         </sql>
+    </changeSet>
+
+    <!-- Audit Log -->
+    <changeSet id="ui-query-test-audit-log" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="audit_log"/></not></preConditions>
+        <createTable tableName="audit_log">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="entity_type" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="entity_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="action" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="old_value" type="VARCHAR(2000)"/>
+            <column name="new_value" type="VARCHAR(2000)"/>
+            <column name="changed_by" type="VARCHAR(255)"/>
+            <column name="ip_address" type="VARCHAR(45)"/>
+            <column name="user_agent" type="VARCHAR(500)"/>
+            <column name="correlation_id" type="VARCHAR(255)"/>
+            <column name="is_critical" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="details" type="VARCHAR(1000)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- User Profiles -->
+    <changeSet id="ui-query-test-user-profiles" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="user_profiles"/></not></preConditions>
+        <sql>
+            CREATE TABLE user_profiles (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                first_name VARCHAR(255), last_name VARCHAR(255),
+                email VARCHAR(255), phone VARCHAR(20),
+                role VARCHAR(50), keycloak_id VARCHAR(255),
+                default_address_id VARCHAR(255),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0,
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255),
+                test_entity BOOLEAN DEFAULT FALSE
+            )
+        </sql>
+    </changeSet>
+
+    <!-- User Addresses -->
+    <changeSet id="ui-query-test-user-address" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="user_address"/></not></preConditions>
+        <createTable tableName="user_address">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="user_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="address_line1" type="VARCHAR(500)"><constraints nullable="false"/></column>
+            <column name="address_line2" type="VARCHAR(500)"/>
+            <column name="city" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="state" type="VARCHAR(255)"/>
+            <column name="postal_code" type="VARCHAR(20)"/>
+            <column name="country" type="VARCHAR(100)" defaultValue="India"/>
+            <column name="phone" type="VARCHAR(20)"/>
+            <column name="label" type="VARCHAR(50)"/>
+            <column name="is_default" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Offer (singular — production table name; aliases to "offer" not "offers") -->
+    <changeSet id="ui-query-test-offer-singular" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="offer"/></not></preConditions>
+        <sql>
+            CREATE TABLE offer (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                product_id VARCHAR(255) NOT NULL,
+                variant_id VARCHAR(255),
+                supplier_id VARCHAR(255),
+                selling_price NUMERIC(10,2),
+                mrp NUMERIC(10,2),
+                discount_percent NUMERIC(5,2) DEFAULT 0,
+                currency VARCHAR(3) DEFAULT 'INR',
+                active BOOLEAN DEFAULT TRUE,
+                state_id VARCHAR(100),
+                flow_id VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255),
+                test_entity BOOLEAN DEFAULT FALSE
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Catalog Items (storefront read model) -->
+    <changeSet id="ui-query-test-catalog-items" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="catalog_items"/></not></preConditions>
+        <sql>
+            CREATE TABLE catalog_items (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                product_id VARCHAR(255), name VARCHAR(500),
+                description VARCHAR(2000), brand VARCHAR(255),
+                image_url VARCHAR(1000), price NUMERIC(12,2),
+                mrp NUMERIC(12,2), offer_price NUMERIC(12,2),
+                discount_percent NUMERIC(5,2), in_stock BOOLEAN DEFAULT TRUE,
+                available_qty INT DEFAULT 0, average_rating NUMERIC(3,2) DEFAULT 0,
+                review_count INT DEFAULT 0, category_id VARCHAR(255),
+                supplier_id VARCHAR(255), featured BOOLEAN DEFAULT FALSE,
+                country_of_origin VARCHAR(100), active BOOLEAN DEFAULT TRUE
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Catalog Categories -->
+    <changeSet id="ui-query-test-catalog-categories" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="catalog_categories"/></not></preConditions>
+        <createTable tableName="catalog_categories">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="slug" type="VARCHAR(255)"/>
+            <column name="parent_id" type="VARCHAR(255)"/>
+            <column name="image_url" type="VARCHAR(1000)"/>
+            <column name="description" type="VARCHAR(2000)"/>
+            <column name="level" type="INT" defaultValueNumeric="0"/>
+            <column name="display_order" type="INT" defaultValueNumeric="0"/>
+            <column name="product_count" type="INT" defaultValueNumeric="0"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Banners -->
+    <changeSet id="ui-query-test-banners" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="banners"/></not></preConditions>
+        <createTable tableName="banners">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="image_url" type="VARCHAR(1000)"/>
+            <column name="mobile_image_url" type="VARCHAR(1000)"/>
+            <column name="link_url" type="VARCHAR(1000)"/>
+            <column name="position" type="VARCHAR(50)"/>
+            <column name="display_order" type="INT" defaultValueNumeric="0"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="active_from" type="TIMESTAMP"/>
+            <column name="active_to" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Payment -->
+    <changeSet id="ui-query-test-payment" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="payment"/></not></preConditions>
+        <sql>
+            CREATE TABLE payment (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_id VARCHAR(255), amount NUMERIC(12,2),
+                currency VARCHAR(3) DEFAULT 'INR',
+                payment_method VARCHAR(50),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Settlements -->
+    <changeSet id="ui-query-test-settlements" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="settlements"/></not></preConditions>
+        <sql>
+            CREATE TABLE settlements (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_id VARCHAR(255), supplier_id VARCHAR(255),
+                net_amount NUMERIC(12,2), gross_amount NUMERIC(12,2),
+                commission_amount NUMERIC(12,2),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Daily Sales Summary (analytics read model) -->
+    <changeSet id="ui-query-test-daily-sales-summary" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="daily_sales_summary"/></not></preConditions>
+        <createTable tableName="daily_sales_summary">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="summary_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="total_revenue" type="NUMERIC(12,2)" defaultValueNumeric="0"/>
+            <column name="total_orders" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Order Tax Lines -->
+    <changeSet id="ui-query-test-order-tax-lines" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="order_tax_lines"/></not></preConditions>
+        <createTable tableName="order_tax_lines">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="tax_type" type="VARCHAR(50)"/>
+            <column name="rate_applied" type="NUMERIC(5,2)"/>
+            <column name="tax_amount" type="NUMERIC(12,2)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Shipping Tracking Events -->
+    <changeSet id="ui-query-test-shipping-tracking-events" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="shipping_tracking_events"/></not></preConditions>
+        <createTable tableName="shipping_tracking_events">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="shipment_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="event_type" type="VARCHAR(100)"/>
+            <column name="event_description" type="VARCHAR(500)"/>
+            <column name="location" type="VARCHAR(255)"/>
+            <column name="event_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Cart -->
+    <changeSet id="ui-query-test-cart" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cart"/></not></preConditions>
+        <sql>
+            CREATE TABLE cart (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                customer_id VARCHAR(255), subtotal NUMERIC(12,2),
+                currency VARCHAR(3) DEFAULT 'INR', coupon_codes VARCHAR(500),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Cart Item -->
+    <changeSet id="ui-query-test-cart-item" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cart_item"/></not></preConditions>
+        <createTable tableName="cart_item">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="cart_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(500)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT"/>
+            <column name="unit_price" type="NUMERIC(12,2)"/>
+            <column name="total_price" type="NUMERIC(12,2)"/>
+            <column name="image_url" type="VARCHAR(1000)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Wishlist Items -->
+    <changeSet id="ui-query-test-wishlist-items" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wishlist_items"/></not></preConditions>
+        <createTable tableName="wishlist_items">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="user_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="added_at" type="TIMESTAMP"/>
+            <column name="price_when_added" type="NUMERIC(12,2)"/>
+            <column name="notify_on_price_drop" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Customer Notifications -->
+    <changeSet id="ui-query-test-customer-notifications" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="customer_notifications"/></not></preConditions>
+        <createTable tableName="customer_notifications">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="customer_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="type" type="VARCHAR(50)"/>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="message" type="VARCHAR(2000)"/>
+            <column name="is_read" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="reference_id" type="VARCHAR(255)"/>
+            <column name="reference_type" type="VARCHAR(100)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
     </changeSet>
 
 </databaseChangeLog>

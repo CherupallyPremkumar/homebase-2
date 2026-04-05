@@ -1,0 +1,105 @@
+[
+	{
+		"id": "Review.getAll",
+		"name": "reviews",
+		"description": "Admin review listing from OLAP fact_reviews_flat",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" },
+			"rating": { "name": "rating", "filterable": true, "columnType": "Number", "sortable": true },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"verifiedPurchase": { "name": "verifiedPurchase", "filterable": true, "columnType": "Text" },
+			"helpfulCount": { "name": "helpfulCount", "columnType": "Number", "sortable": true },
+			"reportCount": { "name": "reportCount", "columnType": "Number", "sortable": true },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+			"createdAt": { "name": "createdAt", "columnType": "Date", "sortable": true }
+		},
+		"paginated": true,
+		"sortable": true,
+		"workflowName": "review",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId"
+	},
+	{
+		"id": "Review.getById",
+		"name": "review",
+		"description": "Single review detail from OLAP",
+		"acls": ["ADMIN"],
+		"workflowName": "review",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Review.getStateCounts",
+		"name": "reviewStateCounts",
+		"description": "Review count by state for tab badges",
+		"acls": ["ADMIN"],
+		"paginated": false
+	},
+	{
+		"id": "Review.getFlaggedReviews",
+		"name": "flaggedReviews",
+		"description": "Flagged reviews requiring moderation",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"productId": { "name": "productId", "columnType": "Text", "filterable": true },
+			"reportCount": { "name": "reportCount", "columnType": "Number", "sortable": true },
+			"createdAt": { "name": "createdAt", "columnType": "Date", "sortable": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Review.getByModeration",
+		"name": "moderationQueue",
+		"description": "Reviews under moderation or flagged",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"createdAt": { "name": "createdAt", "columnType": "Date", "sortable": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Review.getByProductId",
+		"name": "productReviews",
+		"description": "Published reviews for a product (storefront)",
+		"acls": [],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
+			"rating": { "name": "rating", "columnType": "Number", "sortable": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Review.getAverageRating",
+		"name": "reviewSummary",
+		"description": "Average rating and count for a product",
+		"acls": [],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Review.getRecentReviews",
+		"name": "recentReviews",
+		"description": "Most recent published reviews for a product",
+		"acls": [],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
+			"createdAt": { "name": "createdAt", "columnType": "Date", "sortable": true }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

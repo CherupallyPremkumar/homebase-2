@@ -1,0 +1,79 @@
+[
+	{
+		"id": "Campaign.getAll",
+		"name": "campaigns",
+		"acls": ["ADMIN"],
+		"workflowName": "campaign",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"name": {
+				"name": "name",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true,
+				"sortable": true
+			},
+			"campaignType": {
+				"name": "campaign_type",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"discountType": {
+				"name": "discount_type",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"discountValue": {
+				"name": "discount_value",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"startDate": {
+				"name": "start_date",
+				"columnType": "Date",
+				"sortable": true
+			},
+			"endDate": {
+				"name": "end_date",
+				"columnType": "Date",
+				"sortable": true
+			},
+			"budget": {
+				"name": "budget",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"spent": {
+				"name": "spent",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"revenue": {
+				"name": "revenue",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"usageCount": {
+				"name": "usage_count",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"stateId": {
+				"name": "state_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Campaign.stats",
+		"name": "campaignStats",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": false
+	}
+]

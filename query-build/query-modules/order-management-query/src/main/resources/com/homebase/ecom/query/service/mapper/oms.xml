@@ -1,0 +1,426 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Oms">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL READS FROM hm_query.* OLAP SCHEMA ONLY — NEVER FROM OLTP          -->
+<!-- Source: hm_query.order_details_flat + hm_query.order_items_flat        -->
+<!--         + hm_query.settlement_flat + hm_query.support_ticket_flat     -->
+<!--         + hm_query.return_detail_flat + hm_query.fulfillment_flat     -->
+<!--         + hm_query.order_activity_flat                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- OMS OVERVIEW STATS (KPIs for order management dashboard)              -->
+<!-- Source: hm_query.order_details_flat + related flat tables             -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="omsOverviewStats" resultType="com.homebase.ecom.oms.dto.OmsOverviewStatsQueryDto">
+    SELECT
+        (SELECT COUNT(*) FROM hm_query.order_details_flat WHERE order_status NOT IN ('CANCELLED', 'PAYMENT_FAILED')) as "totalActiveOrders",
+        (SELECT COUNT(*) FROM hm_query.order_details_flat WHERE order_status IN ('CREATED', 'CONFIRMED')) as "pendingOrders",
+        (SELECT COUNT(*) FROM hm_query.order_details_flat WHERE order_status = 'SHIPPED') as "shippedOrders",
+        (SELECT COUNT(*) FROM hm_query.order_details_flat WHERE order_status = 'DELIVERED') as "deliveredOrders",
+        (SELECT COUNT(*) FROM hm_query.order_details_flat WHERE order_status = 'CANCELLED') as "cancelledOrders",
+        (SELECT COUNT(*) FROM hm_query.return_detail_flat WHERE return_status NOT IN ('COMPLETED', 'REJECTED', 'CANCELLED')) as "openReturns",
+        (SELECT COUNT(*) FROM hm_query.support_ticket_flat WHERE ticket_status NOT IN ('CLOSED', 'RESOLVED')) as "openTickets",
+        (SELECT COUNT(*) FROM hm_query.order_details_flat WHERE payment_status = 'FAILED') as "failedPayments",
+        (SELECT COUNT(*) FROM hm_query.settlement_flat WHERE settlement_status = 'PENDING') as "pendingSettlements",
+        (SELECT COALESCE(SUM(total_amount), 0) FROM hm_query.order_details_flat
+         WHERE order_status NOT IN ('CANCELLED', 'PAYMENT_FAILED')
+           AND order_date::DATE = CURRENT_DATE) as "todayRevenue"
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ORDERS WITH CUSTOMER (cross-BC joined view)                           -->
+<!-- Source: hm_query.order_details_flat                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="ordersWithCustomer-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.order_details_flat o
+    <where>
+        <if test="id != null">AND o.order_id = #{id}</if>
+        <if test="orderNumber != null">AND o.order_number = #{orderNumber}</if>
+        <if test="customerId != null">AND o.customer_id = #{customerId}</if>
+        <if test="customerEmail != null">AND o.customer_email ILIKE CONCAT('%', #{customerEmail}, '%')</if>
+        <if test="customerPhone != null">AND o.customer_phone = #{customerPhone}</if>
+        <if test="stateId != null">AND o.order_status = #{stateId}</if>
+        <if test="paymentStatus != null">AND o.payment_status = #{paymentStatus}</if>
+        <if test="shippingStatus != null">AND o.shipping_status = #{shippingStatus}</if>
+        <if test="startDate != null">AND o.order_date &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+        <if test="endDate != null">AND o.order_date &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+        <if test="q != null">AND (o.order_number ILIKE CONCAT('%', #{q}, '%') OR o.customer_email ILIKE CONCAT('%', #{q}, '%') OR o.customer_first_name ILIKE CONCAT('%', #{q}, '%') OR o.customer_last_name ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="ordersWithCustomer" resultType="com.homebase.ecom.oms.dto.OrderWithCustomerQueryDto">
+    SELECT
+        o.order_id as "orderId",
+        o.order_number as "orderNumber",
+        o.order_status as "orderState",
+        o.total_amount as "totalAmount",
+        o.currency as "currency",
+        o.total_items as "itemCount",
+        o.order_date as "createdTime",
+        o.customer_id as "customerId",
+        o.customer_first_name as "customerFirstName",
+        o.customer_last_name as "customerLastName",
+        o.customer_email as "customerEmail",
+        o.customer_phone as "customerPhone",
+        o.payment_status as "paymentStatus",
+        o.payment_method as "paymentMethod",
+        o.total_amount as "paymentAmount",
+        o.shipping_status as "shippingStatus",
+        o.carrier as "carrier",
+        o.tracking_number as "trackingNumber",
+        o.estimated_delivery as "estimatedDeliveryDate"
+    FROM hm_query.order_details_flat o
+    <where>
+        <if test="id != null">AND o.order_id = #{id}</if>
+        <if test="orderNumber != null">AND o.order_number = #{orderNumber}</if>
+        <if test="customerId != null">AND o.customer_id = #{customerId}</if>
+        <if test="customerEmail != null">AND o.customer_email ILIKE CONCAT('%', #{customerEmail}, '%')</if>
+        <if test="customerPhone != null">AND o.customer_phone = #{customerPhone}</if>
+        <if test="stateId != null">AND o.order_status = #{stateId}</if>
+        <if test="paymentStatus != null">AND o.payment_status = #{paymentStatus}</if>
+        <if test="shippingStatus != null">AND o.shipping_status = #{shippingStatus}</if>
+        <if test="startDate != null">AND o.order_date &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+        <if test="endDate != null">AND o.order_date &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+        <if test="q != null">AND (o.order_number ILIKE CONCAT('%', #{q}, '%') OR o.customer_email ILIKE CONCAT('%', #{q}, '%') OR o.customer_first_name ILIKE CONCAT('%', #{q}, '%') OR o.customer_last_name ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ORDER FULL DETAIL (single order with all cross-BC data)               -->
+<!-- Source: hm_query.order_details_flat + hm_query.fulfillment_flat       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="orderFullDetail" resultType="com.homebase.ecom.oms.dto.OrderFullDetailQueryDto">
+    SELECT
+        o.order_id as "orderId",
+        o.order_number as "orderNumber",
+        o.order_status as "orderState",
+        o.total_amount as "totalAmount",
+        o.currency as "currency",
+        o.total_items as "itemCount",
+        o.order_date as "orderCreatedTime",
+        o.last_modified_time as "orderModifiedTime",
+        o.customer_id as "customerId",
+        o.customer_first_name as "customerFirstName",
+        o.customer_last_name as "customerLastName",
+        o.customer_email as "customerEmail",
+        o.customer_phone as "customerPhone",
+        o.payment_id as "paymentId",
+        o.payment_status as "paymentStatus",
+        o.payment_method as "paymentMethod",
+        o.total_amount as "paymentAmount",
+        o.currency as "paymentCurrency",
+        o.gateway_transaction_id as "gatewayTransactionId",
+        o.payment_failure_reason as "paymentFailureReason",
+        o.order_date as "paymentTime",
+        o.shipment_id as "shipmentId",
+        o.shipping_status as "shippingStatus",
+        o.carrier as "carrier",
+        o.tracking_number as "trackingNumber",
+        o.shipping_method as "shippingMethod",
+        o.estimated_delivery as "estimatedDeliveryDate",
+        o.actual_delivery as "actualDeliveryDate",
+        '' as "currentLocation",
+        0 as "deliveryAttempts",
+        ff.fulfillment_id as "fulfillmentId",
+        ff.fulfillment_status as "fulfillmentStatus",
+        ff.warehouse_id as "warehouseId",
+        ff.priority as "fulfillmentPriority",
+        ff.assigned_picker_id as "assignedPicker",
+        ff.assigned_packer_id as "assignedPacker"
+    FROM hm_query.order_details_flat o
+    LEFT JOIN hm_query.fulfillment_flat ff ON ff.order_id = o.order_id
+    WHERE o.order_id = #{orderId}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ORDER ITEMS WITH PRODUCT (cross-BC: items + product + inventory)      -->
+<!-- Source: hm_query.order_items_flat                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="orderItemsWithProduct-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.order_items_flat oi
+    <where>
+        <if test="orderId != null">AND oi.order_id = #{orderId}</if>
+        <if test="supplierId != null">AND oi.supplier_id = #{supplierId}</if>
+        <if test="fulfillmentStatus != null">AND oi.fulfillment_status = #{fulfillmentStatus}</if>
+        <if test="q != null">AND (oi.product_name ILIKE CONCAT('%', #{q}, '%') OR oi.sku ILIKE CONCAT('%', #{q}, '%') OR oi.brand ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="orderItemsWithProduct" resultType="com.homebase.ecom.oms.dto.OrderItemWithProductQueryDto">
+    SELECT
+        oi.item_id as "itemId",
+        oi.order_id as "orderId",
+        oi.product_id as "productId",
+        oi.product_name as "productName",
+        oi.variant_id as "variantId",
+        oi.sku as "sku",
+        oi.quantity as "quantity",
+        oi.unit_price as "unitPrice",
+        oi.total_price as "totalPrice",
+        oi.fulfillment_status as "fulfillmentStatus",
+        oi.supplier_id as "supplierId",
+        oi.brand as "brand",
+        oi.product_slug as "productSlug",
+        '' as "productState",
+        oi.category_id as "categoryId",
+        oi.category_name as "categoryName",
+        0 as "currentStock",
+        oi.supplier_name as "supplierName"
+    FROM hm_query.order_items_flat oi
+    <where>
+        <if test="orderId != null">AND oi.order_id = #{orderId}</if>
+        <if test="supplierId != null">AND oi.supplier_id = #{supplierId}</if>
+        <if test="fulfillmentStatus != null">AND oi.fulfillment_status = #{fulfillmentStatus}</if>
+        <if test="q != null">AND (oi.product_name ILIKE CONCAT('%', #{q}, '%') OR oi.sku ILIKE CONCAT('%', #{q}, '%') OR oi.brand ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- RETURNS WITH ORDER DETAIL                                             -->
+<!-- Source: hm_query.return_detail_flat + hm_query.order_details_flat     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="returnsWithOrderDetail-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.return_detail_flat rr
+    <where>
+        <if test="customerId != null">AND rr.customer_id = #{customerId}</if>
+        <if test="orderId != null">AND rr.order_id = #{orderId}</if>
+        <if test="stateId != null">AND rr.return_status = #{stateId}</if>
+        <if test="returnType != null">AND rr.return_type = #{returnType}</if>
+        <if test="startDate != null">AND rr.created_time &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+        <if test="endDate != null">AND rr.created_time &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+        <if test="q != null">AND (rr.reason ILIKE CONCAT('%', #{q}, '%') OR rr.product_name ILIKE CONCAT('%', #{q}, '%') OR rr.sku ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="returnsWithOrderDetail" resultType="com.homebase.ecom.oms.dto.ReturnWithOrderDetailQueryDto">
+    SELECT
+        rr.return_id as "returnId",
+        rr.order_id as "orderId",
+        rr.customer_id as "customerId",
+        rr.reason as "returnReason",
+        rr.return_type as "returnType",
+        rr.refund_amount as "refundAmount",
+        rr.return_status as "returnState",
+        rr.created_time as "returnCreatedTime",
+        o.order_number as "orderNumber",
+        o.total_amount as "orderAmount",
+        o.currency as "orderCurrency",
+        o.order_status as "orderState",
+        o.order_date as "orderCreatedTime",
+        o.customer_first_name as "customerFirstName",
+        o.customer_last_name as "customerLastName",
+        o.customer_email as "customerEmail",
+        o.customer_phone as "customerPhone",
+        o.payment_status as "paymentStatus",
+        o.payment_method as "paymentMethod"
+    FROM hm_query.return_detail_flat rr
+    LEFT JOIN hm_query.order_details_flat o ON rr.order_id = o.order_id
+    <where>
+        <if test="customerId != null">AND rr.customer_id = #{customerId}</if>
+        <if test="orderId != null">AND rr.order_id = #{orderId}</if>
+        <if test="stateId != null">AND rr.return_status = #{stateId}</if>
+        <if test="returnType != null">AND rr.return_type = #{returnType}</if>
+        <if test="startDate != null">AND rr.created_time &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+        <if test="endDate != null">AND rr.created_time &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+        <if test="q != null">AND (rr.reason ILIKE CONCAT('%', #{q}, '%') OR rr.product_name ILIKE CONCAT('%', #{q}, '%') OR rr.sku ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- TICKETS WITH ORDER CONTEXT                                            -->
+<!-- Source: hm_query.support_ticket_flat + hm_query.order_details_flat    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="ticketsWithOrderContext-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.support_ticket_flat t
+    <where>
+        <if test="customerId != null">AND t.customer_id = #{customerId}</if>
+        <if test="orderId != null">AND t.order_id = #{orderId}</if>
+        <if test="stateId != null">AND t.ticket_status = #{stateId}</if>
+        <if test="priority != null">AND t.priority = #{priority}</if>
+        <if test="assignedAgentId != null">AND t.assigned_agent_id = #{assignedAgentId}</if>
+        <if test="category != null">AND t.category = #{category}</if>
+        <if test="q != null">AND (t.subject ILIKE CONCAT('%', #{q}, '%') OR t.ticket_id ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="ticketsWithOrderContext" resultType="com.homebase.ecom.oms.dto.TicketWithOrderContextQueryDto">
+    SELECT
+        t.ticket_id as "ticketId",
+        t.subject as "subject",
+        t.ticket_status as "ticketState",
+        t.priority as "priority",
+        t.category as "category",
+        t.assigned_agent_id as "assignedAgentId",
+        t.created_time as "ticketCreatedTime",
+        t.customer_id as "customerId",
+        o.customer_first_name as "customerFirstName",
+        o.customer_last_name as "customerLastName",
+        o.customer_email as "customerEmail",
+        t.order_id as "orderId",
+        o.order_number as "orderNumber",
+        o.order_status as "orderState",
+        o.total_amount as "orderAmount",
+        o.currency as "orderCurrency",
+        o.payment_status as "paymentStatus",
+        o.shipping_status as "shippingStatus",
+        o.tracking_number as "trackingNumber"
+    FROM hm_query.support_ticket_flat t
+    LEFT JOIN hm_query.order_details_flat o ON t.order_id = o.order_id
+    <where>
+        <if test="customerId != null">AND t.customer_id = #{customerId}</if>
+        <if test="orderId != null">AND t.order_id = #{orderId}</if>
+        <if test="stateId != null">AND t.ticket_status = #{stateId}</if>
+        <if test="priority != null">AND t.priority = #{priority}</if>
+        <if test="assignedAgentId != null">AND t.assigned_agent_id = #{assignedAgentId}</if>
+        <if test="category != null">AND t.category = #{category}</if>
+        <if test="q != null">AND (t.subject ILIKE CONCAT('%', #{q}, '%') OR t.ticket_id ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SETTLEMENT WITH BREAKDOWN                                             -->
+<!-- Source: hm_query.settlement_flat + hm_query.order_details_flat        -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="settlementWithBreakdown-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.settlement_flat st
+    <where>
+        <if test="orderId != null">AND st.order_id = #{orderId}</if>
+        <if test="supplierId != null">AND st.supplier_id = #{supplierId}</if>
+        <if test="stateId != null">AND st.settlement_status = #{stateId}</if>
+        <if test="startDate != null">AND st.period_start &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+        <if test="endDate != null">AND st.period_end &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+        <if test="q != null">AND (st.supplier_name ILIKE CONCAT('%', #{q}, '%') OR st.order_id ILIKE CONCAT('%', #{q}, '%') OR st.settlement_id ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="settlementWithBreakdown" resultType="com.homebase.ecom.oms.dto.SettlementWithBreakdownQueryDto">
+    SELECT
+        st.settlement_id as "settlementId",
+        st.order_id as "orderId",
+        st.supplier_id as "supplierId",
+        st.settlement_status as "settlementState",
+        st.order_amount as "orderAmount",
+        st.commission_amount as "commissionAmount",
+        st.commission_rate as "commissionRate",
+        st.platform_fee as "platformFee",
+        st.tds_amount as "tdsAmount",
+        st.gst_on_commission as "gstOnCommission",
+        st.net_payout as "netAmount",
+        st.currency as "currency",
+        st.period_start as "periodStart",
+        st.period_end as "periodEnd",
+        st.created_time as "settlementCreatedTime",
+        o.order_number as "orderNumber",
+        o.order_status as "orderState",
+        o.total_amount as "orderTotal",
+        o.order_date as "orderCreatedTime",
+        st.supplier_name as "supplierName",
+        o.payment_status as "paymentStatus",
+        o.payment_method as "paymentMethod",
+        o.total_amount as "paymentAmount"
+    FROM hm_query.settlement_flat st
+    LEFT JOIN hm_query.order_details_flat o ON st.order_id = o.order_id
+    <where>
+        <if test="orderId != null">AND st.order_id = #{orderId}</if>
+        <if test="supplierId != null">AND st.supplier_id = #{supplierId}</if>
+        <if test="stateId != null">AND st.settlement_status = #{stateId}</if>
+        <if test="startDate != null">AND st.period_start &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+        <if test="endDate != null">AND st.period_end &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+        <if test="q != null">AND (st.supplier_name ILIKE CONCAT('%', #{q}, '%') OR st.order_id ILIKE CONCAT('%', #{q}, '%') OR st.settlement_id ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ORDER FULFILLMENT STATUS                                              -->
+<!-- Source: hm_query.fulfillment_flat + hm_query.order_details_flat       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="orderFulfillmentStatus-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.fulfillment_flat ff
+    <where>
+        <if test="orderId != null">AND ff.order_id = #{orderId}</if>
+        <if test="stateId != null">AND ff.fulfillment_status = #{stateId}</if>
+        <if test="warehouseId != null">AND ff.warehouse_id = #{warehouseId}</if>
+        <if test="q != null">AND (ff.warehouse_name ILIKE CONCAT('%', #{q}, '%') OR ff.tracking_number ILIKE CONCAT('%', #{q}, '%') OR ff.fulfillment_id ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="orderFulfillmentStatus" resultType="com.homebase.ecom.oms.dto.OrderFulfillmentStatusQueryDto">
+    SELECT
+        ff.fulfillment_id as "fulfillmentId",
+        ff.order_id as "orderId",
+        ff.fulfillment_status as "fulfillmentState",
+        ff.priority as "priority",
+        ff.fulfillment_type as "fulfillmentType",
+        ff.total_items as "totalItems",
+        ff.assigned_picker_id as "assignedPicker",
+        ff.assigned_packer_id as "assignedPacker",
+        ff.pick_started_at as "pickStartedAt",
+        ff.pick_completed_at as "pickCompletedAt",
+        ff.pack_started_at as "packStartedAt",
+        ff.pack_completed_at as "packCompletedAt",
+        ff.shipped_at as "shippedAt",
+        ff.carrier as "carrier",
+        ff.tracking_number as "trackingNumber",
+        ff.estimated_ship_date as "estimatedShipDate",
+        ff.estimated_delivery_date as "estimatedDeliveryDate",
+        ff.created_time as "fulfillmentCreatedTime",
+        ff.warehouse_id as "warehouseId",
+        ff.warehouse_name as "warehouseName",
+        ff.warehouse_code as "warehouseCode",
+        ff.warehouse_city as "warehouseCity",
+        o.order_number as "orderNumber",
+        o.order_status as "orderState",
+        o.total_amount as "orderAmount",
+        o.customer_id as "customerId"
+    FROM hm_query.fulfillment_flat ff
+    LEFT JOIN hm_query.order_details_flat o ON ff.order_id = o.order_id
+    <where>
+        <if test="orderId != null">AND ff.order_id = #{orderId}</if>
+        <if test="stateId != null">AND ff.fulfillment_status = #{stateId}</if>
+        <if test="warehouseId != null">AND ff.warehouse_id = #{warehouseId}</if>
+        <if test="q != null">AND (ff.warehouse_name ILIKE CONCAT('%', #{q}, '%') OR ff.tracking_number ILIKE CONCAT('%', #{q}, '%') OR ff.fulfillment_id ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ORDER STATUS TIMELINE (activity log for an order)                     -->
+<!-- Source: hm_query.order_activity_flat                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="orderStatusTimeline" resultType="com.homebase.ecom.oms.dto.OrderStatusTimelineQueryDto">
+    SELECT
+        oa.activity_id as "activityId",
+        oa.order_id as "orderId",
+        oa.activity_name as "activityName",
+        oa.activity_comment as "comment",
+        oa.activity_success as "success",
+        oa.created_by as "performedBy",
+        oa.created_time as "activityTime"
+    FROM hm_query.order_activity_flat oa
+    WHERE oa.order_id = #{orderId}
+    ORDER BY oa.created_time ASC
+</select>
+
+</mapper>

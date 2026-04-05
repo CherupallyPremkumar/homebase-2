@@ -6,7 +6,6 @@
 	<modules>
 		<module>cconfig-api</module>
 		<module>cconfig-service</module>
-		<module>cconfig-query</module>
 		<module>cconfig-liquibase</module>
 	</modules>
 	<parent>

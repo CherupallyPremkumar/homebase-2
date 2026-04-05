@@ -1,0 +1,111 @@
+[
+	{
+		"id": "ReturnProcessing.getAll",
+		"name": "returnProcessing",
+		"acls": ["ADMIN", "AGENT", "WAREHOUSE"],
+		"workflowName": "returnProcessing",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"returnRequestId": {
+				"name": "return_request_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"orderId": {
+				"name": "order_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "state_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"warehouseId": {
+				"name": "warehouse_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"returnType": {
+				"name": "return_type",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"inspectionResult": {
+				"name": "inspection_result",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"refundAmount": {
+				"name": "refund_amount",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"createdAt": {
+				"name": "created_time",
+				"filterable": true,
+				"columnType": "Date",
+				"sortable": true
+			},
+			"q": {
+				"name": "q",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "ReturnProcessing.getById",
+		"name": "returnProcessingById",
+		"acls": ["ADMIN", "AGENT", "WAREHOUSE"],
+		"workflowName": "returnProcessing",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "ReturnProcessing.getStateCounts",
+		"name": "returnProcessingStateCounts",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {},
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "ReturnProcessing.getByWarehouse",
+		"name": "returnProcessingByWarehouse",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"warehouseId": {
+				"name": "warehouse_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "state_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

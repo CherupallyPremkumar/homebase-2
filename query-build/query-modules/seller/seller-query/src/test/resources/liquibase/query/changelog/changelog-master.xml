@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Seller schema -->
+    <include file="liquibase/seller/db.changelog-seller.xml"/>
+
+    <!-- Test data -->
+    <changeSet id="seller-query-testdata-001" author="homebase">
+        <insert tableName="sellers">
+            <column name="id" value="seller-001"/>
+            <column name="created_time" valueDate="2025-01-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-03-01T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="1"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="seller-flow"/>
+            <column name="user_id" value="user-001"/>
+            <column name="business_name" value="TechWorld Electronics"/>
+            <column name="display_name" value="TechWorld"/>
+            <column name="email" value="tech@example.com"/>
+            <column name="phone" value="9876543210"/>
+            <column name="gstin" value="29AABCU9603R1ZP"/>
+            <column name="commission_rate" valueNumeric="12.5"/>
+            <column name="rating" valueNumeric="4.5"/>
+            <column name="total_products" valueNumeric="150"/>
+            <column name="total_orders" valueNumeric="5000"/>
+            <column name="city" value="Bangalore"/>
+            <column name="state" value="Karnataka"/>
+            <column name="pincode" value="560001"/>
+        </insert>
+        <insert tableName="sellers">
+            <column name="id" value="seller-002"/>
+            <column name="created_time" valueDate="2025-02-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-03-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="1"/>
+            <column name="state_id" value="PENDING_APPROVAL"/>
+            <column name="flow_id" value="seller-flow"/>
+            <column name="user_id" value="user-002"/>
+            <column name="business_name" value="FashionHub India"/>
+            <column name="display_name" value="FashionHub"/>
+            <column name="email" value="fashion@example.com"/>
+            <column name="phone" value="9876543211"/>
+            <column name="commission_rate" valueNumeric="15.0"/>
+            <column name="rating" valueNumeric="3.8"/>
+            <column name="total_products" valueNumeric="75"/>
+            <column name="total_orders" valueNumeric="1200"/>
+            <column name="city" value="Mumbai"/>
+            <column name="state" value="Maharashtra"/>
+            <column name="pincode" value="400001"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

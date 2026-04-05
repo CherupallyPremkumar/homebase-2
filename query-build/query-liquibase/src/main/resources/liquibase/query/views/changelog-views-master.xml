@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+      OLAP Read Database — Query Views Master Changelog
+      ══════════════════════════════════════════════════
+
+      Schema: hm_query (separate from all OLTP microservice schemas)
+
+      Architecture: STAR SCHEMA + Aggregation Tables
+
+      1. Schema creation
+      2. Star Schema — Dimension tables (entities you GROUP BY)
+      3. Star Schema — Fact tables (events you SUM/COUNT/AVG)
+      4. Flat tables — Denormalized views (for pages needing zero-JOIN reads)
+      5. Dashboard aggregation tables (pre-computed daily rollups)
+      6. Live/real-time tables (refreshed every 1-5 min)
+
+      Data flow:
+        OLTP ──► CDC/Batch ETL ──► Dimensions + Facts ──► Dashboard Analytics ──► Aggregation Tables
+                                                                                        │
+        Platform UI ◄── Query Modules ◄── Dimensions + Facts + Aggregation Tables ◄─────┘
+    -->
+
+    <!-- 1. Schema creation -->
+    <include file="db.changelog-query-schema.xml" relativeToChangelogFile="true"/>
+
+    <!-- 2. Star Schema — Dimensions -->
+    <include file="db.changelog-query-star-dimensions.xml" relativeToChangelogFile="true"/>
+
+    <!-- 3. Star Schema — Facts -->
+    <include file="db.changelog-query-star-facts.xml" relativeToChangelogFile="true"/>
+
+    <!-- 4. Flat tables (denormalized views for specific pages) -->
+    <include file="db.changelog-query-flat-tables.xml" relativeToChangelogFile="true"/>
+
+    <!-- 5. Dashboard aggregation tables (batch-computed daily) -->
+    <include file="db.changelog-query-dashboards.xml" relativeToChangelogFile="true"/>
+
+    <!-- 6. Module-specific flat tables (base structure — columns added page-by-page) -->
+    <include file="db.changelog-query-module-flat-tables.xml" relativeToChangelogFile="true"/>
+
+    <!-- 7. Live / near-real-time tables -->
+    <include file="db.changelog-query-live.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

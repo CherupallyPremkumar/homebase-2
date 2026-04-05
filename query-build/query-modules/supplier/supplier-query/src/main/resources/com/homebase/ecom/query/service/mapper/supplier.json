@@ -1,0 +1,164 @@
+[
+	{
+		"id": "Supplier.getAll",
+		"name": "suppliers",
+		"acls": ["ADMIN"],
+		"workflowName": "supplier",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "seller_key",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"businessName": {
+				"name": "business_name",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"businessType": {
+				"name": "business_type",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"contactEmail": {
+				"name": "contact_email",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"tier": {
+				"name": "tier",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"rating": {
+				"name": "rating",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"fulfillmentRate": {
+				"name": "fulfillment_rate",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"healthScore": {
+				"name": "health_score",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"commissionRate": {
+				"name": "commission_rate",
+				"columnType": "Number"
+			},
+			"stateId": {
+				"name": "seller_status",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdAt": {
+				"name": "active_date",
+				"columnType": "Date",
+				"sortable": true
+			},
+			"city": { "name": "city", "filterable": true, "columnType": "Text", "likeQuery": true },
+			"state": { "name": "state", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Supplier.getById",
+		"name": "supplierById",
+		"acls": ["ADMIN", "SUPPLIER"],
+		"workflowName": "supplier",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "seller_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Supplier.getStateCounts",
+		"name": "supplierStateCounts",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Supplier.getPendingApproval",
+		"name": "suppliersPendingApproval",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"createdAt": {
+				"name": "active_date",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Supplier.getTopSuppliers",
+		"name": "topSuppliers",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Supplier.getUnderperforming",
+		"name": "underperformingSuppliers",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Supplier.getProfile",
+		"name": "supplierProfile",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"userId": {
+				"name": "user_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Supplier.getPerformanceMetrics",
+		"name": "performance",
+		"acls": ["ADMIN", "SUPPLIER"],
+		"columnMetadata": {
+			"id": {
+				"name": "seller_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	}
+]

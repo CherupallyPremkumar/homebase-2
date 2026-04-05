@@ -1,0 +1,190 @@
+[
+	{
+		"id": "Settlement.getAll",
+		"name": "settlements",
+		"acls": ["ADMIN", "SUPPLIER"],
+		"workflowName": "settlement",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "fs.id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"supplierId": {
+				"name": "fs.supplier_id",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"supplierName": {
+				"name": "ds.seller_name",
+				"columnType": "Text",
+				"filterable": true,
+				"likeQuery": true
+			},
+			"orderId": {
+				"name": "fs.order_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "fs.state_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"orderAmount": {
+				"name": "fs.order_amount",
+				"filterable": true,
+				"columnType": "Number",
+				"sortable": true
+			},
+			"commissionAmount": {
+				"name": "fs.commission_amount",
+				"filterable": true,
+				"columnType": "Number",
+				"sortable": true
+			},
+			"platformFee": {
+				"name": "fs.platform_fee",
+				"filterable": true,
+				"columnType": "Number"
+			},
+			"netAmount": {
+				"name": "fs.net_amount",
+				"filterable": true,
+				"columnType": "Number",
+				"sortable": true
+			},
+			"currency": {
+				"name": "fs.currency",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"settlementPeriodStart": {
+				"name": "fs.settlement_period_start",
+				"filterable": true,
+				"columnType": "Date",
+				"sortable": true
+			},
+			"settlementPeriodEnd": {
+				"name": "fs.settlement_period_end",
+				"filterable": true,
+				"columnType": "Date"
+			},
+			"createdTime": {
+				"name": "fs.created_time",
+				"filterable": true,
+				"columnType": "Date",
+				"sortable": true
+			},
+			"q": {
+				"name": "q",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Settlement.getById",
+		"name": "settlementById",
+		"acls": ["ADMIN", "SUPPLIER"],
+		"workflowName": "settlement",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "fs.id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Settlement.getStateCounts",
+		"name": "settlementStateCounts",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Settlement.getBySupplier",
+		"name": "settlementsBySupplier",
+		"acls": ["ADMIN", "SUPPLIER"],
+		"columnMetadata": {
+			"supplierId": {
+				"name": "fs.supplier_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "fs.state_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Settlement.getPendingSettlements",
+		"name": "pendingSettlements",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"supplierId": {
+				"name": "fs.supplier_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Settlement.getSettlementSummary",
+		"name": "settlementSummary",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"supplierId": {
+				"name": "fs.supplier_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Settlement.getByVendorId",
+		"name": "settlementsByVendor",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"supplierId": {
+				"name": "fs.supplier_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "fs.state_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	}
+]

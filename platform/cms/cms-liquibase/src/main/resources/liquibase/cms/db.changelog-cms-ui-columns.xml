@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- UI-driven column additions for banners table                       -->
+    <!-- Fills schema gaps from banners admin page (promotions/banners)      -->
+    <!-- ================================================================== -->
+
+    <changeSet id="cms-ui-001-banner-impressions" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="banners" schemaName="hm_cms"/>
+                <not><columnExists tableName="banners" schemaName="hm_cms" columnName="impressions"/></not>
+            </and>
+        </preConditions>
+        <addColumn tableName="banners" schemaName="hm_cms">
+            <column name="impressions" type="INT" defaultValueNumeric="0" remarks="Total impressions served (for CTR = click_count / impressions)"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

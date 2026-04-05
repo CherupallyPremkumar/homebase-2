@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Returnrequest">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read ONLY from hm_query OLAP schema.                      -->
+<!-- Star schema: fact_returns JOIN dim_customer JOIN dim_seller            -->
+<!--              JOIN dim_product                                          -->
+<!-- Populated by ReturnRequestSyncService ETL.                            -->
+<!-- NEVER reference any OLTP schema here.                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN LISTING ====== -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*)
+    FROM hm_query.fact_returns fr
+    LEFT JOIN hm_query.dim_customer dc ON fr.customer_id = dc.customer_id
+    LEFT JOIN hm_query.dim_seller ds ON fr.seller_id = ds.seller_id
+    LEFT JOIN hm_query.dim_product dp ON fr.product_id = dp.product_id
+    <where>
+        <if test="orderId != null">AND fr.order_id = #{orderId}</if>
+        <if test="customerId != null">AND fr.customer_id = #{customerId}</if>
+        <if test="sellerId != null">AND fr.seller_id = #{sellerId}</if>
+        <if test="productId != null">AND fr.product_id = #{productId}</if>
+        <if test="stateId != null">AND fr.state_id = #{stateId}</if>
+        <if test="returnType != null">AND fr.return_type = #{returnType}</if>
+        <if test="q != null">AND (
+            fr.order_id LIKE CONCAT('%', #{q}, '%')
+            OR dc.customer_name LIKE CONCAT('%', #{q}, '%')
+            OR ds.seller_name LIKE CONCAT('%', #{q}, '%')
+            OR dp.product_name LIKE CONCAT('%', #{q}, '%')
+            OR fr.reason LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.returnrequest.dto.ReturnRequestDto">
+    SELECT
+        fr.id,
+        fr.order_id              as "orderId",
+        fr.order_number          as "orderNumber",
+        fr.customer_id           as "customerId",
+        dc.customer_name         as "customerName",
+        dc.customer_email        as "customerEmail",
+        fr.seller_id             as "sellerId",
+        ds.seller_name           as "sellerName",
+        fr.product_id            as "productId",
+        dp.product_name          as "productName",
+        dp.sku                   as "productSku",
+        fr.reason,
+        fr.return_type           as "returnType",
+        fr.total_refund_amount   as "totalRefundAmount",
+        fr.order_total_value     as "orderTotalValue",
+        fr.state_id              as "stateId",
+        fr.flow_id               as "flowId",
+        fr.created_time          as "createdTime"
+    FROM hm_query.fact_returns fr
+    LEFT JOIN hm_query.dim_customer dc ON fr.customer_id = dc.customer_id
+    LEFT JOIN hm_query.dim_seller ds ON fr.seller_id = ds.seller_id
+    LEFT JOIN hm_query.dim_product dp ON fr.product_id = dp.product_id
+    <where>
+        <if test="orderId != null">AND fr.order_id = #{orderId}</if>
+        <if test="customerId != null">AND fr.customer_id = #{customerId}</if>
+        <if test="sellerId != null">AND fr.seller_id = #{sellerId}</if>
+        <if test="productId != null">AND fr.product_id = #{productId}</if>
+        <if test="stateId != null">AND fr.state_id = #{stateId}</if>
+        <if test="returnType != null">AND fr.return_type = #{returnType}</if>
+        <if test="q != null">AND (
+            fr.order_id LIKE CONCAT('%', #{q}, '%')
+            OR dc.customer_name LIKE CONCAT('%', #{q}, '%')
+            OR ds.seller_name LIKE CONCAT('%', #{q}, '%')
+            OR dp.product_name LIKE CONCAT('%', #{q}, '%')
+            OR fr.reason LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== DETAIL ====== -->
+<select id="getById" resultType="com.homebase.ecom.returnrequest.dto.ReturnRequestDto">
+    SELECT
+        fr.id,
+        fr.order_id              as "orderId",
+        fr.order_number          as "orderNumber",
+        fr.customer_id           as "customerId",
+        dc.customer_name         as "customerName",
+        dc.customer_email        as "customerEmail",
+        fr.seller_id             as "sellerId",
+        ds.seller_name           as "sellerName",
+        fr.product_id            as "productId",
+        dp.product_name          as "productName",
+        dp.sku                   as "productSku",
+        dp.brand                 as "productBrand",
+        fr.reason,
+        fr.return_type           as "returnType",
+        fr.total_refund_amount   as "totalRefundAmount",
+        fr.restocking_fee        as "restockingFee",
+        fr.description,
+        fr.reviewer_id           as "reviewerId",
+        fr.review_notes          as "reviewNotes",
+        fr.rejection_reason      as "rejectionReason",
+        fr.warehouse_id          as "warehouseId",
+        fr.condition_on_receipt  as "conditionOnReceipt",
+        fr.inspector_id          as "inspectorId",
+        fr.inspector_notes       as "inspectorNotes",
+        fr.order_total_value     as "orderTotalValue",
+        fr.order_delivery_date   as "orderDeliveryDate",
+        fr.state_id              as "stateId",
+        fr.flow_id               as "flowId",
+        fr.created_time          as "createdTime"
+    FROM hm_query.fact_returns fr
+    LEFT JOIN hm_query.dim_customer dc ON fr.customer_id = dc.customer_id
+    LEFT JOIN hm_query.dim_seller ds ON fr.seller_id = ds.seller_id
+    LEFT JOIN hm_query.dim_product dp ON fr.product_id = dp.product_id
+    WHERE fr.id = #{id}
+</select>
+
+<!-- ====== STATE COUNTS ====== -->
+<select id="getStateCounts" resultType="map">
+    SELECT
+        state_id as "stateId",
+        count(*) as "count"
+    FROM hm_query.fact_returns
+    GROUP BY state_id
+    ORDER BY count(*) DESC
+</select>
+
+<!-- ====== PENDING RETURNS ====== -->
+<select id="getPendingReturns-count" resultType="int">
+    SELECT count(*) FROM hm_query.fact_returns
+    WHERE state_id IN ('REQUESTED', 'UNDER_REVIEW', 'ITEM_RECEIVED', 'INSPECTED')
+</select>
+
+<select id="getPendingReturns" resultType="com.homebase.ecom.returnrequest.dto.ReturnRequestDto">
+    SELECT
+        fr.id,
+        fr.order_id              as "orderId",
+        fr.order_number          as "orderNumber",
+        fr.customer_id           as "customerId",
+        dc.customer_name         as "customerName",
+        fr.product_id            as "productId",
+        dp.product_name          as "productName",
+        fr.reason,
+        fr.return_type           as "returnType",
+        fr.total_refund_amount   as "totalRefundAmount",
+        fr.state_id              as "stateId",
+        fr.flow_id               as "flowId",
+        fr.created_time          as "createdTime"
+    FROM hm_query.fact_returns fr
+    LEFT JOIN hm_query.dim_customer dc ON fr.customer_id = dc.customer_id
+    LEFT JOIN hm_query.dim_product dp ON fr.product_id = dp.product_id
+    WHERE fr.state_id IN ('REQUESTED', 'UNDER_REVIEW', 'ITEM_RECEIVED', 'INSPECTED')
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== CUSTOMER: My Returns ====== -->
+<select id="getByCustomerId-count" resultType="int">
+    SELECT count(*) FROM hm_query.fact_returns WHERE customer_id = #{customerId}
+</select>
+
+<select id="getByCustomerId" resultType="com.homebase.ecom.returnrequest.dto.ReturnRequestDto">
+    SELECT
+        fr.id,
+        fr.order_id              as "orderId",
+        fr.order_number          as "orderNumber",
+        fr.customer_id           as "customerId",
+        fr.product_id            as "productId",
+        dp.product_name          as "productName",
+        fr.reason,
+        fr.return_type           as "returnType",
+        fr.total_refund_amount   as "totalRefundAmount",
+        fr.state_id              as "stateId",
+        fr.flow_id               as "flowId",
+        fr.created_time          as "createdTime"
+    FROM hm_query.fact_returns fr
+    LEFT JOIN hm_query.dim_product dp ON fr.product_id = dp.product_id
+    WHERE fr.customer_id = #{customerId}
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== ORDER RETURNS ====== -->
+<select id="getByOrderId-count" resultType="int">
+    SELECT count(*) FROM hm_query.fact_returns WHERE order_id = #{orderId}
+</select>
+
+<select id="getByOrderId" resultType="com.homebase.ecom.returnrequest.dto.ReturnRequestDto">
+    SELECT
+        fr.id,
+        fr.order_id              as "orderId",
+        fr.order_number          as "orderNumber",
+        fr.customer_id           as "customerId",
+        dc.customer_name         as "customerName",
+        fr.seller_id             as "sellerId",
+        ds.seller_name           as "sellerName",
+        fr.product_id            as "productId",
+        dp.product_name          as "productName",
+        dp.sku                   as "productSku",
+        fr.reason,
+        fr.return_type           as "returnType",
+        fr.total_refund_amount   as "totalRefundAmount",
+        fr.state_id              as "stateId",
+        fr.flow_id               as "flowId",
+        fr.created_time          as "createdTime"
+    FROM hm_query.fact_returns fr
+    LEFT JOIN hm_query.dim_customer dc ON fr.customer_id = dc.customer_id
+    LEFT JOIN hm_query.dim_seller ds ON fr.seller_id = ds.seller_id
+    LEFT JOIN hm_query.dim_product dp ON fr.product_id = dp.product_id
+    WHERE fr.order_id = #{orderId}
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== SELLER RETURNS ====== -->
+<select id="getBySellerId-count" resultType="int">
+    SELECT count(*) FROM hm_query.fact_returns
+    WHERE seller_id = #{sellerId}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+</select>
+
+<select id="getBySellerId" resultType="com.homebase.ecom.returnrequest.dto.ReturnRequestDto">
+    SELECT
+        fr.id,
+        fr.order_id              as "orderId",
+        fr.order_number          as "orderNumber",
+        fr.customer_id           as "customerId",
+        dc.customer_name         as "customerName",
+        fr.product_id            as "productId",
+        dp.product_name          as "productName",
+        dp.sku                   as "productSku",
+        fr.reason,
+        fr.return_type           as "returnType",
+        fr.total_refund_amount   as "totalRefundAmount",
+        fr.state_id              as "stateId",
+        fr.flow_id               as "flowId",
+        fr.created_time          as "createdTime"
+    FROM hm_query.fact_returns fr
+    LEFT JOIN hm_query.dim_customer dc ON fr.customer_id = dc.customer_id
+    LEFT JOIN hm_query.dim_product dp ON fr.product_id = dp.product_id
+    WHERE fr.seller_id = #{sellerId}
+    <if test="stateId != null">AND fr.state_id = #{stateId}</if>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

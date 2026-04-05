@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Settlement">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read ONLY from hm_query OLAP schema.                      -->
+<!-- Star schema: fact_settlements JOIN dim_seller                          -->
+<!-- Populated by SettlementSyncService ETL.                               -->
+<!-- NEVER reference any OLTP schema here.                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN LISTING ====== -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*)
+    FROM hm_query.fact_settlements fs
+    LEFT JOIN hm_query.dim_seller ds ON fs.supplier_id = ds.seller_id
+    <where>
+        <if test="supplierId != null">AND fs.supplier_id = #{supplierId}</if>
+        <if test="stateId != null">AND fs.state_id = #{stateId}</if>
+        <if test="orderId != null">AND fs.order_id = #{orderId}</if>
+        <if test="currency != null">AND fs.currency = #{currency}</if>
+        <if test="q != null">AND (
+            ds.seller_name LIKE CONCAT('%', #{q}, '%')
+            OR fs.order_id LIKE CONCAT('%', #{q}, '%')
+            OR fs.disbursement_reference LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.dto.SettlementDto">
+    SELECT
+        fs.id,
+        fs.supplier_id             as "supplierId",
+        ds.seller_name             as "supplierName",
+        ds.seller_tier             as "supplierTier",
+        fs.order_id                as "orderId",
+        fs.state_id                as "stateId",
+        fs.flow_id                 as "flowId",
+        fs.order_amount            as "orderAmount",
+        fs.commission_amount       as "commissionAmount",
+        fs.platform_fee            as "platformFee",
+        fs.net_amount              as "netAmount",
+        fs.currency,
+        fs.settlement_period_start as "settlementPeriodStart",
+        fs.settlement_period_end   as "settlementPeriodEnd",
+        fs.disbursement_reference  as "disbursementReference",
+        fs.created_time            as "createdTime"
+    FROM hm_query.fact_settlements fs
+    LEFT JOIN hm_query.dim_seller ds ON fs.supplier_id = ds.seller_id
+    <where>
+        <if test="supplierId != null">AND fs.supplier_id = #{supplierId}</if>
+        <if test="stateId != null">AND fs.state_id = #{stateId}</if>
+        <if test="orderId != null">AND fs.order_id = #{orderId}</if>
+        <if test="currency != null">AND fs.currency = #{currency}</if>
+        <if test="q != null">AND (
+            ds.seller_name LIKE CONCAT('%', #{q}, '%')
+            OR fs.order_id LIKE CONCAT('%', #{q}, '%')
+            OR fs.disbursement_reference LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== DETAIL ====== -->
+<select id="getById" resultType="com.homebase.ecom.dto.SettlementDto">
+    SELECT
+        fs.id,
+        fs.supplier_id             as "supplierId",
+        ds.seller_name             as "supplierName",
+        ds.seller_tier             as "supplierTier",
+        fs.order_id                as "orderId",
+        fs.state_id                as "stateId",
+        fs.flow_id                 as "flowId",
+        fs.order_amount            as "orderAmount",
+        fs.commission_amount       as "commissionAmount",
+        fs.platform_fee            as "platformFee",
+        fs.net_amount              as "netAmount",
+        fs.currency,
+        fs.settlement_period_start as "settlementPeriodStart",
+        fs.settlement_period_end   as "settlementPeriodEnd",
+        fs.disbursement_reference  as "disbursementReference",
+        fs.created_time            as "createdTime"
+    FROM hm_query.fact_settlements fs
+    LEFT JOIN hm_query.dim_seller ds ON fs.supplier_id = ds.seller_id
+    WHERE fs.id = #{id}
+</select>
+
+<!-- ====== STATE COUNTS ====== -->
+<select id="getStateCounts" resultType="map">
+    SELECT state_id as "stateId", count(*) as "count"
+    FROM hm_query.fact_settlements
+    GROUP BY state_id
+    ORDER BY count(*) DESC
+</select>
+
+<!-- ====== BY SUPPLIER ====== -->
+<select id="getBySupplier-count" resultType="int">
+    SELECT count(*) FROM hm_query.fact_settlements
+    WHERE supplier_id = #{supplierId}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+</select>
+
+<select id="getBySupplier" resultType="com.homebase.ecom.dto.SettlementDto">
+    SELECT
+        fs.id,
+        fs.supplier_id             as "supplierId",
+        ds.seller_name             as "supplierName",
+        fs.order_id                as "orderId",
+        fs.state_id                as "stateId",
+        fs.flow_id                 as "flowId",
+        fs.order_amount            as "orderAmount",
+        fs.commission_amount       as "commissionAmount",
+        fs.platform_fee            as "platformFee",
+        fs.net_amount              as "netAmount",
+        fs.currency,
+        fs.settlement_period_start as "settlementPeriodStart",
+        fs.settlement_period_end   as "settlementPeriodEnd",
+        fs.disbursement_reference  as "disbursementReference",
+        fs.created_time            as "createdTime"
+    FROM hm_query.fact_settlements fs
+    LEFT JOIN hm_query.dim_seller ds ON fs.supplier_id = ds.seller_id
+    WHERE fs.supplier_id = #{supplierId}
+    <if test="stateId != null">AND fs.state_id = #{stateId}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== PENDING SETTLEMENTS ====== -->
+<select id="getPendingSettlements-count" resultType="int">
+    SELECT count(*) FROM hm_query.fact_settlements
+    WHERE state_id IN ('PENDING', 'CALCULATING', 'CALCULATED', 'APPROVED')
+    <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+</select>
+
+<select id="getPendingSettlements" resultType="com.homebase.ecom.dto.SettlementDto">
+    SELECT
+        fs.id,
+        fs.supplier_id             as "supplierId",
+        ds.seller_name             as "supplierName",
+        fs.order_id                as "orderId",
+        fs.state_id                as "stateId",
+        fs.flow_id                 as "flowId",
+        fs.order_amount            as "orderAmount",
+        fs.net_amount              as "netAmount",
+        fs.currency,
+        fs.settlement_period_start as "settlementPeriodStart",
+        fs.settlement_period_end   as "settlementPeriodEnd",
+        fs.created_time            as "createdTime"
+    FROM hm_query.fact_settlements fs
+    LEFT JOIN hm_query.dim_seller ds ON fs.supplier_id = ds.seller_id
+    WHERE fs.state_id IN ('PENDING', 'CALCULATING', 'CALCULATED', 'APPROVED')
+    <if test="supplierId != null">AND fs.supplier_id = #{supplierId}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== SETTLEMENT SUMMARY ====== -->
+<select id="getSettlementSummary" resultType="com.homebase.ecom.dto.SettlementDto">
+    SELECT
+        fs.supplier_id            as "supplierId",
+        ds.seller_name            as "supplierName",
+        count(*)                  as "orderAmount",
+        sum(fs.net_amount)        as "netAmount",
+        sum(fs.commission_amount) as "commissionAmount",
+        sum(fs.platform_fee)      as "platformFee"
+    FROM hm_query.fact_settlements fs
+    LEFT JOIN hm_query.dim_seller ds ON fs.supplier_id = ds.seller_id
+    <where>
+        <if test="supplierId != null">AND fs.supplier_id = #{supplierId}</if>
+    </where>
+    GROUP BY fs.supplier_id, ds.seller_name
+</select>
+
+<!-- ====== BY VENDOR (aliased for backward compat) ====== -->
+<select id="getByVendorId-count" resultType="int">
+    SELECT count(*) FROM hm_query.fact_settlements
+    WHERE supplier_id = #{supplierId}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+</select>
+
+<select id="getByVendorId" resultType="com.homebase.ecom.dto.SettlementDto">
+    SELECT
+        fs.id,
+        fs.supplier_id             as "supplierId",
+        ds.seller_name             as "supplierName",
+        fs.order_id                as "orderId",
+        fs.state_id                as "stateId",
+        fs.flow_id                 as "flowId",
+        fs.order_amount            as "orderAmount",
+        fs.commission_amount       as "commissionAmount",
+        fs.platform_fee            as "platformFee",
+        fs.net_amount              as "netAmount",
+        fs.currency,
+        fs.settlement_period_start as "settlementPeriodStart",
+        fs.settlement_period_end   as "settlementPeriodEnd",
+        fs.disbursement_reference  as "disbursementReference",
+        fs.created_time            as "createdTime"
+    FROM hm_query.fact_settlements fs
+    LEFT JOIN hm_query.dim_seller ds ON fs.supplier_id = ds.seller_id
+    WHERE fs.supplier_id = #{supplierId}
+    <if test="stateId != null">AND fs.state_id = #{stateId}</if>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

@@ -1,0 +1,3 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://prod-payment-db.homebase.internal:5432/homebase_payment

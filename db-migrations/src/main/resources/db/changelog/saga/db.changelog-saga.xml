@@ -54,6 +54,7 @@
             <column name="tenant" type="VARCHAR(50)"/>
             <column name="created_by" type="VARCHAR(100)"/>
             <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="fulfillment_saga_id" type="VARCHAR(255)"/>
             <column name="activity_name" type="VARCHAR(255)"/>
             <column name="activity_success" type="BOOLEAN"/>
             <column name="activity_comment" type="VARCHAR(2000)"/>
@@ -112,6 +113,7 @@
             <column name="tenant" type="VARCHAR(50)"/>
             <column name="created_by" type="VARCHAR(100)"/>
             <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="saga_id" type="VARCHAR(255)"/>
             <column name="activity_name" type="VARCHAR(255)"/>
             <column name="activity_success" type="BOOLEAN"/>
             <column name="activity_comment" type="VARCHAR(2000)"/>
@@ -170,6 +172,7 @@
             <column name="tenant" type="VARCHAR(50)"/>
             <column name="created_by" type="VARCHAR(100)"/>
             <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="saga_id" type="VARCHAR(255)"/>
             <column name="activity_name" type="VARCHAR(255)"/>
             <column name="activity_success" type="BOOLEAN"/>
             <column name="activity_comment" type="VARCHAR(2000)"/>

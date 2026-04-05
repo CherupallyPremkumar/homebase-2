@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Test-only: creates all cross-module tables needed by WMS query BDD tests.
+        Uses preConditions so safe to run alongside production changelogs.
+        Tables: warehouses, warehouse_locations, warehouse_inventory, inventory_item,
+                products, categories, orders, order_items, user_profiles,
+                fulfillment_orders, fulfillment_line_items, pick_lists,
+                shipments, supplier, inventory_movements, fulfillment_centers
+    -->
+
+    <!-- Warehouses -->
+    <changeSet id="wms-query-test-warehouses" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="warehouses"/></not></preConditions>
+        <sql>
+            CREATE TABLE warehouses (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                warehouse_code VARCHAR(20), warehouse_name VARCHAR(255),
+                warehouse_type VARCHAR(30) DEFAULT 'FULFILLMENT_CENTER',
+                city VARCHAR(100), state VARCHAR(100),
+                pincode VARCHAR(10), country VARCHAR(2) DEFAULT 'IN',
+                max_capacity_units INT, current_utilization_pct DECIMAL(5,2),
+                is_active BOOLEAN DEFAULT TRUE, is_returns_center BOOLEAN DEFAULT FALSE,
+                manager_id VARCHAR(255),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(100), last_modified_by VARCHAR(100), tenant VARCHAR(50)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Warehouse Locations -->
+    <changeSet id="wms-query-test-warehouse-locations" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="warehouse_locations"/></not></preConditions>
+        <sql>
+            CREATE TABLE warehouse_locations (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                warehouse_id VARCHAR(255) NOT NULL,
+                location_code VARCHAR(30), zone VARCHAR(10),
+                aisle VARCHAR(10), shelf VARCHAR(10), bin VARCHAR(10),
+                location_type VARCHAR(30) DEFAULT 'PICKABLE',
+                capacity_units INT, current_units INT DEFAULT 0,
+                is_active BOOLEAN DEFAULT TRUE,
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                tenant VARCHAR(50)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Warehouse Inventory -->
+    <changeSet id="wms-query-test-warehouse-inventory" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="warehouse_inventory"/></not></preConditions>
+        <sql>
+            CREATE TABLE warehouse_inventory (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                warehouse_id VARCHAR(255) NOT NULL,
+                location_id VARCHAR(255),
+                product_id VARCHAR(255) NOT NULL,
+                variant_id VARCHAR(255), sku VARCHAR(100) NOT NULL,
+                quantity_on_hand INT DEFAULT 0, quantity_reserved INT DEFAULT 0,
+                quantity_available INT DEFAULT 0, quantity_damaged INT DEFAULT 0,
+                quantity_in_transit INT DEFAULT 0,
+                last_counted_at TIMESTAMP,
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                tenant VARCHAR(50)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Products -->
+    <changeSet id="wms-query-test-products" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="products"/></not></preConditions>
+        <sql>
+            CREATE TABLE products (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                name VARCHAR(255), brand VARCHAR(255), category_id VARCHAR(255),
+                slug VARCHAR(300), weight_grams INT,
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Categories -->
+    <changeSet id="wms-query-test-categories" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="categories"/></not></preConditions>
+        <createTable tableName="categories">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="slug" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Inventory Item -->
+    <changeSet id="wms-query-test-inventory-item" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="inventory_item"/></not></preConditions>
+        <sql>
+            CREATE TABLE inventory_item (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                sku VARCHAR(255), product_id VARCHAR(255), variant_id VARCHAR(255),
+                quantity INT DEFAULT 0, available_quantity INT DEFAULT 0,
+                reserved_quantity INT DEFAULT 0, damaged_quantity INT DEFAULT 0,
+                inbound_quantity INT DEFAULT 0, primary_fc VARCHAR(255),
+                low_stock_threshold INT DEFAULT 10, status VARCHAR(50),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                supplier_id VARCHAR(255),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                tenant VARCHAR(255)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Orders -->
+    <changeSet id="wms-query-test-orders" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="orders"/></not></preConditions>
+        <sql>
+            CREATE TABLE orders (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_number VARCHAR(255), customer_id VARCHAR(255),
+                total_amount DECIMAL(12,2), currency VARCHAR(3) DEFAULT 'INR',
+                item_count INT DEFAULT 0,
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                created_time TIMESTAMP, last_modified_time TIMESTAMP
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Order Items -->
+    <changeSet id="wms-query-test-order-items" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="order_items"/></not></preConditions>
+        <createTable tableName="order_items">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(500)"/>
+            <column name="quantity" type="INT"/>
+            <column name="unit_price" type="DECIMAL(12,2)"/>
+            <column name="total_price" type="DECIMAL(12,2)"/>
+            <column name="supplier_id" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- User Profiles -->
+    <changeSet id="wms-query-test-user-profiles" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="user_profiles"/></not></preConditions>
+        <sql>
+            CREATE TABLE user_profiles (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                email VARCHAR(255), first_name VARCHAR(255), last_name VARCHAR(255),
+                phone VARCHAR(255), role VARCHAR(255),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                tenant VARCHAR(255), created_time TIMESTAMP
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Shipments -->
+    <changeSet id="wms-query-test-shipments" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="shipments"/></not></preConditions>
+        <sql>
+            CREATE TABLE shipments (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_id VARCHAR(255) NOT NULL,
+                carrier VARCHAR(50), tracking_number VARCHAR(255),
+                shipping_method VARCHAR(20), current_location VARCHAR(255),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                created_time TIMESTAMP
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Supplier -->
+    <changeSet id="wms-query-test-supplier" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="supplier"/></not></preConditions>
+        <sql>
+            CREATE TABLE supplier (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                business_name VARCHAR(255), name VARCHAR(255),
+                email VARCHAR(255), status VARCHAR(50),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                tenant VARCHAR(255), created_time TIMESTAMP
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Fulfillment Orders -->
+    <changeSet id="wms-query-test-fulfillment-orders" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="fulfillment_orders"/></not></preConditions>
+        <sql>
+            CREATE TABLE fulfillment_orders (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_id VARCHAR(255) NOT NULL, warehouse_id VARCHAR(255),
+                user_id VARCHAR(255),
+                priority VARCHAR(20) DEFAULT 'STANDARD',
+                fulfillment_type VARCHAR(50) DEFAULT 'SHIP_TO_CUSTOMER',
+                assigned_picker_id VARCHAR(255), assigned_packer_id VARCHAR(255),
+                pick_started_at TIMESTAMP, pick_completed_at TIMESTAMP,
+                pack_started_at TIMESTAMP, pack_completed_at TIMESTAMP,
+                shipped_at TIMESTAMP, total_items INT DEFAULT 0,
+                total_weight_grams INT,
+                carrier VARCHAR(100), tracking_number VARCHAR(255),
+                shipping_method VARCHAR(50),
+                estimated_ship_date DATE, estimated_delivery_date DATE,
+                notes VARCHAR(2000),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                tenant VARCHAR(50)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Fulfillment Line Items -->
+    <changeSet id="wms-query-test-fulfillment-line-items" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="fulfillment_line_items"/></not></preConditions>
+        <sql>
+            CREATE TABLE fulfillment_line_items (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                fulfillment_order_id VARCHAR(255) NOT NULL,
+                order_item_id VARCHAR(255) NOT NULL,
+                product_id VARCHAR(255) NOT NULL,
+                variant_id VARCHAR(255), sku VARCHAR(100) NOT NULL,
+                product_name VARCHAR(500),
+                quantity_ordered INT NOT NULL, quantity_allocated INT DEFAULT 0,
+                quantity_picked INT DEFAULT 0, quantity_packed INT DEFAULT 0,
+                quantity_shipped INT DEFAULT 0, quantity_short INT DEFAULT 0,
+                bin_location VARCHAR(50), barcode VARCHAR(100),
+                weight_grams INT, status VARCHAR(30) DEFAULT 'PENDING',
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                tenant VARCHAR(50)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Pick Lists -->
+    <changeSet id="wms-query-test-pick-lists" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="pick_lists"/></not></preConditions>
+        <sql>
+            CREATE TABLE pick_lists (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                fulfillment_order_id VARCHAR(255) NOT NULL,
+                warehouse_id VARCHAR(255) NOT NULL,
+                assigned_to VARCHAR(255),
+                status VARCHAR(30) DEFAULT 'PENDING',
+                item_count INT DEFAULT 0, picked_count INT DEFAULT 0,
+                started_at TIMESTAMP, completed_at TIMESTAMP,
+                notes VARCHAR(1000),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                tenant VARCHAR(50)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Inventory Movements -->
+    <changeSet id="wms-query-test-inventory-movements" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="inventory_movements"/></not></preConditions>
+        <sql>
+            CREATE TABLE inventory_movements (
+                inventory_item_id VARCHAR(255) NOT NULL,
+                type VARCHAR(50), quantity INT,
+                reference_id VARCHAR(255),
+                fulfillment_center_id VARCHAR(255),
+                movement_time TIMESTAMP, reason VARCHAR(255)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Fulfillment Centers -->
+    <changeSet id="wms-query-test-fulfillment-centers" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="fulfillment_centers"/></not></preConditions>
+        <sql>
+            CREATE TABLE fulfillment_centers (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL, code VARCHAR(50) NOT NULL,
+                city VARCHAR(100), state VARCHAR(100), pincode VARCHAR(10),
+                active BOOLEAN DEFAULT TRUE, capacity INT,
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                tenant VARCHAR(50)
+            )
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SellerSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SYNC: OLTP → OLAP                                                      -->
+<!-- Reads from hm_seller.sellers, hm_seller_lifecycle.*,                   -->
+<!--          hm_seller_analytics.*                                         -->
+<!-- Writes to hm_query.seller_dashboard_flat                               -->
+<!-- NOTE: dim_seller is synced by SupplierSyncService.                     -->
+<!--       This sync handles seller-specific detail (store-level data).     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Seller sync shares seller_dashboard_flat with SupplierSync.            -->
+<!-- This service syncs the store-level seller rows from hm_seller.sellers. -->
+<!-- If a seller doesn't exist as a supplier, we create the flat row here.  -->
+
+<update id="truncateSellerFlat">
+    DELETE FROM hm_query.seller_dashboard_flat
+    WHERE seller_id IN (
+        SELECT id FROM hm_seller.sellers
+        WHERE id NOT IN (SELECT id FROM hm_supplier.supplier)
+    )
+</update>
+
+<insert id="syncSellerFlat">
+    INSERT INTO hm_query.seller_dashboard_flat (
+        id, tenant, last_synced_at,
+        seller_id, business_name, store_name, seller_status,
+        contact_email, contact_phone,
+        gst_verified, pan_verified, bank_account_verified,
+        health_score, rating, fulfillment_rate
+    )
+    SELECT
+        s.id, s.tenant, NOW(),
+        s.id, s.store_name, s.store_name, s.state_id,
+        s.email, s.phone,
+        CASE WHEN s.kyc_status = 'VERIFIED' THEN true ELSE false END,
+        false, false,
+        0, 0, 0
+    FROM hm_seller.sellers s
+    WHERE s.id NOT IN (SELECT id FROM hm_supplier.supplier)
+      AND s.id NOT IN (SELECT seller_id FROM hm_query.seller_dashboard_flat)
+    ON CONFLICT (id) DO UPDATE SET
+        last_synced_at = NOW(),
+        store_name = EXCLUDED.store_name,
+        seller_status = EXCLUDED.seller_status,
+        contact_email = EXCLUDED.contact_email,
+        contact_phone = EXCLUDED.contact_phone,
+        gst_verified = EXCLUDED.gst_verified
+</insert>
+
+<!-- Sync seller_performance data into seller_dashboard_flat -->
+<update id="syncSellerPerformance">
+    UPDATE hm_query.seller_dashboard_flat sdf SET
+        rating = COALESCE(sp.avg_rating, sdf.rating),
+        fulfillment_rate = sdf.fulfillment_rate,
+        last_synced_at = NOW()
+    FROM hm_seller_lifecycle.seller_performance_metrics sp
+    WHERE sp.seller_id = sdf.seller_id
+</update>
+
+</mapper>

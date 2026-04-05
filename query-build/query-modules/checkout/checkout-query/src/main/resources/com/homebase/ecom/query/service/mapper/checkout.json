@@ -1,0 +1,94 @@
+[
+	{
+		"id": "Checkout.getAll",
+		"name": "checkouts",
+		"acls": ["ADMIN", "AGENT"],
+		"workflowName": "checkout",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "checkout_id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"customerId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"customerName": {
+				"name": "customer_name",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"customerEmail": {
+				"name": "customer_email",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"stateId": {
+				"name": "state_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"total": {
+				"name": "total",
+				"filterable": true,
+				"columnType": "Number",
+				"sortable": true
+			},
+			"paymentMethod": {
+				"name": "payment_method",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"shippingState": {
+				"name": "shipping_state",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdAt": {
+				"name": "created_at",
+				"filterable": true,
+				"columnType": "Date",
+				"sortable": true
+			},
+			"minTotal": { "name": "minTotal", "filterable": true, "columnType": "Number" },
+			"maxTotal": { "name": "maxTotal", "filterable": true, "columnType": "Number" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Checkout.getStateCounts",
+		"name": "checkoutStateCounts",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Checkout.getById",
+		"name": "checkout",
+		"acls": ["ADMIN", "AGENT"],
+		"workflowName": "checkout",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "checkout_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false,
+		"sortable": false
+	}
+]

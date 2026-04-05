@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Shipping">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read ONLY from hm_query OLAP schema.                      -->
+<!-- Star schema: fact_shipments JOIN dim_carrier JOIN dim_geography        -->
+<!-- Populated by ShippingSyncService ETL.                                 -->
+<!-- NEVER reference any OLTP schema here.                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN LISTING ====== -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*)
+    FROM hm_query.fact_shipments fs
+    LEFT JOIN hm_query.dim_carrier dca ON fs.carrier = dca.carrier_code
+    LEFT JOIN hm_query.dim_geography dg ON fs.destination_pincode = dg.pincode
+    <where>
+        <if test="orderId != null">AND fs.order_id = #{orderId}</if>
+        <if test="customerId != null">AND fs.customer_id = #{customerId}</if>
+        <if test="carrier != null">AND fs.carrier = #{carrier}</if>
+        <if test="shippingMethod != null">AND fs.shipping_method = #{shippingMethod}</if>
+        <if test="stateId != null">AND fs.state_id = #{stateId}</if>
+        <if test="q != null">AND (
+            fs.order_id LIKE CONCAT('%', #{q}, '%')
+            OR fs.tracking_number LIKE CONCAT('%', #{q}, '%')
+            OR fs.customer_name LIKE CONCAT('%', #{q}, '%')
+            OR dca.carrier_name LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.shipping.dto.ShippingDto">
+    SELECT
+        fs.id,
+        fs.order_id                as "orderId",
+        fs.order_number            as "orderNumber",
+        fs.customer_id             as "customerId",
+        fs.customer_name           as "customerName",
+        fs.carrier,
+        dca.carrier_name           as "carrierName",
+        fs.tracking_number         as "trackingNumber",
+        fs.shipping_method         as "shippingMethod",
+        fs.state_id                as "stateId",
+        fs.flow_id                 as "flowId",
+        fs.delivery_attempts       as "deliveryAttempts",
+        fs.estimated_delivery_date as "estimatedDeliveryDate",
+        fs.actual_delivery_date    as "actualDeliveryDate",
+        fs.current_location        as "currentLocation",
+        dg.city                    as "destinationCity",
+        dg.state                   as "destinationState",
+        fs.created_time            as "createdAt"
+    FROM hm_query.fact_shipments fs
+    LEFT JOIN hm_query.dim_carrier dca ON fs.carrier = dca.carrier_code
+    LEFT JOIN hm_query.dim_geography dg ON fs.destination_pincode = dg.pincode
+    <where>
+        <if test="orderId != null">AND fs.order_id = #{orderId}</if>
+        <if test="customerId != null">AND fs.customer_id = #{customerId}</if>
+        <if test="carrier != null">AND fs.carrier = #{carrier}</if>
+        <if test="shippingMethod != null">AND fs.shipping_method = #{shippingMethod}</if>
+        <if test="stateId != null">AND fs.state_id = #{stateId}</if>
+        <if test="q != null">AND (
+            fs.order_id LIKE CONCAT('%', #{q}, '%')
+            OR fs.tracking_number LIKE CONCAT('%', #{q}, '%')
+            OR fs.customer_name LIKE CONCAT('%', #{q}, '%')
+            OR dca.carrier_name LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== DETAIL ====== -->
+<select id="getById" resultType="com.homebase.ecom.shipping.dto.ShippingDto">
+    SELECT
+        fs.id,
+        fs.order_id                as "orderId",
+        fs.order_number            as "orderNumber",
+        fs.customer_id             as "customerId",
+        fs.customer_name           as "customerName",
+        fs.carrier,
+        dca.carrier_name           as "carrierName",
+        fs.tracking_number         as "trackingNumber",
+        fs.shipping_method         as "shippingMethod",
+        fs.state_id                as "stateId",
+        fs.flow_id                 as "flowId",
+        fs.delivery_attempts       as "deliveryAttempts",
+        fs.estimated_delivery_date as "estimatedDeliveryDate",
+        fs.actual_delivery_date    as "actualDeliveryDate",
+        fs.current_location        as "currentLocation",
+        fs.from_address            as "fromAddress",
+        fs.to_address              as "toAddress",
+        fs.weight,
+        fs.dimensions,
+        fs.delivery_instructions   as "deliveryInstructions",
+        dg.city                    as "destinationCity",
+        dg.state                   as "destinationState",
+        dg.country                 as "destinationCountry",
+        fs.created_time            as "createdAt"
+    FROM hm_query.fact_shipments fs
+    LEFT JOIN hm_query.dim_carrier dca ON fs.carrier = dca.carrier_code
+    LEFT JOIN hm_query.dim_geography dg ON fs.destination_pincode = dg.pincode
+    WHERE fs.id = #{id}
+</select>
+
+<!-- ====== STATE COUNTS ====== -->
+<select id="getStateCounts" resultType="map">
+    SELECT state_id as "stateId", count(*) as "count"
+    FROM hm_query.fact_shipments
+    GROUP BY state_id
+    ORDER BY count(*) DESC
+</select>
+
+<!-- ====== BY CARRIER ====== -->
+<select id="getByCarrier-count" resultType="int">
+    SELECT count(*) FROM hm_query.fact_shipments
+    WHERE carrier = #{carrier}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+</select>
+
+<select id="getByCarrier" resultType="com.homebase.ecom.shipping.dto.ShippingDto">
+    SELECT
+        fs.id,
+        fs.order_id                as "orderId",
+        fs.carrier,
+        dca.carrier_name           as "carrierName",
+        fs.tracking_number         as "trackingNumber",
+        fs.shipping_method         as "shippingMethod",
+        fs.state_id                as "stateId",
+        fs.flow_id                 as "flowId",
+        fs.current_location        as "currentLocation",
+        fs.created_time            as "createdAt"
+    FROM hm_query.fact_shipments fs
+    LEFT JOIN hm_query.dim_carrier dca ON fs.carrier = dca.carrier_code
+    WHERE fs.carrier = #{carrier}
+    <if test="stateId != null">AND fs.state_id = #{stateId}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== PENDING SHIPMENTS ====== -->
+<select id="getPendingShipments-count" resultType="int">
+    SELECT count(*) FROM hm_query.fact_shipments
+    WHERE state_id IN ('PENDING', 'LABEL_CREATED')
+</select>
+
+<select id="getPendingShipments" resultType="com.homebase.ecom.shipping.dto.ShippingDto">
+    SELECT
+        fs.id,
+        fs.order_id                as "orderId",
+        fs.carrier,
+        dca.carrier_name           as "carrierName",
+        fs.tracking_number         as "trackingNumber",
+        fs.shipping_method         as "shippingMethod",
+        fs.state_id                as "stateId",
+        fs.flow_id                 as "flowId",
+        fs.current_location        as "currentLocation",
+        fs.created_time            as "createdAt"
+    FROM hm_query.fact_shipments fs
+    LEFT JOIN hm_query.dim_carrier dca ON fs.carrier = dca.carrier_code
+    WHERE fs.state_id IN ('PENDING', 'LABEL_CREATED')
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== BY ORDER ID ====== -->
+<select id="getByOrderId" resultType="com.homebase.ecom.shipping.dto.ShippingDto">
+    SELECT
+        fs.id,
+        fs.order_id                as "orderId",
+        fs.carrier,
+        dca.carrier_name           as "carrierName",
+        fs.tracking_number         as "trackingNumber",
+        fs.shipping_method         as "shippingMethod",
+        fs.state_id                as "stateId",
+        fs.flow_id                 as "flowId",
+        fs.estimated_delivery_date as "estimatedDeliveryDate",
+        fs.actual_delivery_date    as "actualDeliveryDate",
+        fs.current_location        as "currentLocation"
+    FROM hm_query.fact_shipments fs
+    LEFT JOIN hm_query.dim_carrier dca ON fs.carrier = dca.carrier_code
+    WHERE fs.order_id = #{orderId}
+</select>
+
+<!-- ====== TRACK SHIPMENT ====== -->
+<select id="trackShipment" resultType="com.homebase.ecom.shipping.dto.ShippingDto">
+    SELECT
+        fs.id,
+        fs.order_id                as "orderId",
+        fs.carrier,
+        dca.carrier_name           as "carrierName",
+        fs.tracking_number         as "trackingNumber",
+        fs.shipping_method         as "shippingMethod",
+        fs.state_id                as "stateId",
+        fs.flow_id                 as "flowId",
+        fs.estimated_delivery_date as "estimatedDeliveryDate",
+        fs.actual_delivery_date    as "actualDeliveryDate",
+        fs.current_location        as "currentLocation",
+        fs.delivery_attempts       as "deliveryAttempts",
+        dg.city                    as "destinationCity",
+        dg.state                   as "destinationState"
+    FROM hm_query.fact_shipments fs
+    LEFT JOIN hm_query.dim_carrier dca ON fs.carrier = dca.carrier_code
+    LEFT JOIN hm_query.dim_geography dg ON fs.destination_pincode = dg.pincode
+    WHERE fs.tracking_number = #{trackingNumber}
+</select>
+
+</mapper>

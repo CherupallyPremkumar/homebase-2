@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Create dedicated schema for messaging bounded context -->
+    <changeSet id="messaging-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_messaging</sql>
+    </changeSet>
+
+    <!-- conversations (STM entity: ConversationEntity extends AbstractJpaStateEntity) -->
+    <changeSet id="messaging-001-create-conversations" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="conversations" schemaName="hm_messaging"/></not>
+        </preConditions>
+        <createTable tableName="conversations" schemaName="hm_messaging">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="subject" type="VARCHAR(255)"/>
+            <column name="conversation_type" type="VARCHAR(50)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="last_message_preview" type="VARCHAR(500)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- messages (MessageEntity extends BaseJpaEntity, FK to conversations) -->
+    <changeSet id="messaging-002-create-messages" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="messages" schemaName="hm_messaging"/></not>
+        </preConditions>
+        <createTable tableName="messages" schemaName="hm_messaging">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="conversation_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="sender_id" type="VARCHAR(255)"/>
+            <column name="content" type="TEXT"/>
+            <column name="is_read" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="read_at" type="TIMESTAMP"/>
+            <column name="parent_message_id" type="VARCHAR(255)"/>
+            <column name="is_system_message" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="is_edited" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="messages" baseTableSchemaName="hm_messaging" baseColumnNames="conversation_id"
+            referencedTableName="conversations" referencedTableSchemaName="hm_messaging" referencedColumnNames="id" constraintName="fk_messages_conversation"/>
+    </changeSet>
+
+    <!-- message_attachments (MessageAttachmentEntity extends BaseJpaEntity, FK to messages) -->
+    <changeSet id="messaging-003-create-message-attachments" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="message_attachments" schemaName="hm_messaging"/></not>
+        </preConditions>
+        <createTable tableName="message_attachments" schemaName="hm_messaging">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="message_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="file_name" type="VARCHAR(255)"/>
+            <column name="file_type" type="VARCHAR(100)"/>
+            <column name="file_size" type="BIGINT"/>
+            <column name="file_url" type="VARCHAR(500)"/>
+            <column name="thumbnail_url" type="VARCHAR(500)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="message_attachments" baseTableSchemaName="hm_messaging" baseColumnNames="message_id"
+            referencedTableName="messages" referencedTableSchemaName="hm_messaging" referencedColumnNames="id" constraintName="fk_attachments_message"/>
+    </changeSet>
+
+    <!-- conversation_participants (ConversationParticipantEntity extends BaseJpaEntity, FK to conversations) -->
+    <changeSet id="messaging-004-create-conversation-participants" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="conversation_participants" schemaName="hm_messaging"/></not>
+        </preConditions>
+        <createTable tableName="conversation_participants" schemaName="hm_messaging">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="conversation_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="role" type="VARCHAR(50)"/>
+            <column name="is_muted" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="unread_count" type="INT" defaultValueNumeric="0"/>
+            <column name="last_read_message_id" type="VARCHAR(255)"/>
+            <column name="joined_at" type="TIMESTAMP"/>
+            <column name="left_at" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="conversation_participants" baseTableSchemaName="hm_messaging" baseColumnNames="conversation_id"
+            referencedTableName="conversations" referencedTableSchemaName="hm_messaging" referencedColumnNames="id" constraintName="fk_participants_conversation"/>
+        <addUniqueConstraint tableName="conversation_participants" schemaName="hm_messaging" columnNames="conversation_id, user_id" constraintName="uk_participant_conversation_user"/>
+    </changeSet>
+
+    <!-- auto_responses (AutoResponseEntity extends BaseJpaEntity) -->
+    <changeSet id="messaging-005-create-auto-responses" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="auto_responses" schemaName="hm_messaging"/></not>
+        </preConditions>
+        <createTable tableName="auto_responses" schemaName="hm_messaging">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="is_enabled" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="response_type" type="VARCHAR(50)"/>
+            <column name="trigger_keyword" type="VARCHAR(100)"/>
+            <column name="response_content" type="TEXT"/>
+            <column name="response_delay_seconds" type="INT" defaultValueNumeric="0"/>
+            <column name="applicable_hours_start" type="VARCHAR(10)"/>
+            <column name="applicable_hours_end" type="VARCHAR(10)"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Indexes for messaging tables -->
+    <changeSet id="messaging-006-create-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="messages" schemaName="hm_messaging"/>
+            <not><indexExists indexName="idx_messages_conversation" schemaName="hm_messaging"/></not>
+        </preConditions>
+        <createIndex indexName="idx_messages_conversation" tableName="messages" schemaName="hm_messaging">
+            <column name="conversation_id"/>
+        </createIndex>
+        <createIndex indexName="idx_messages_sender" tableName="messages" schemaName="hm_messaging">
+            <column name="sender_id"/>
+        </createIndex>
+        <createIndex indexName="idx_participants_conversation" tableName="conversation_participants" schemaName="hm_messaging">
+            <column name="conversation_id"/>
+        </createIndex>
+        <createIndex indexName="idx_participants_user" tableName="conversation_participants" schemaName="hm_messaging">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_attachments_message" tableName="message_attachments" schemaName="hm_messaging">
+            <column name="message_id"/>
+        </createIndex>
+        <createIndex indexName="idx_conversations_order" tableName="conversations" schemaName="hm_messaging">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

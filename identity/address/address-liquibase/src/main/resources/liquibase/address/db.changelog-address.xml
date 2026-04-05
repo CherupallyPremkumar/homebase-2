@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ===================== SCHEMA ===================== -->
+    <changeSet id="address-001-schema" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><sqlCheck expectedResult="1">SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = 'hm_address'</sqlCheck></not>
+        </preConditions>
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_address</sql>
+    </changeSet>
+
+    <!-- ===================== TABLE: addresses ===================== -->
+    <changeSet id="address-002-addresses" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="hm_address" tableName="addresses"/></not>
+        </preConditions>
+        <createTable schemaName="hm_address" tableName="addresses">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- Domain columns -->
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="address_type" type="VARCHAR(50)"/>
+            <column name="label" type="VARCHAR(100)"/>
+            <column name="recipient_name" type="VARCHAR(200)"/>
+            <column name="phone" type="VARCHAR(20)"/>
+            <column name="street_line1" type="VARCHAR(255)"/>
+            <column name="street_line2" type="VARCHAR(255)"/>
+            <column name="landmark" type="VARCHAR(255)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="state" type="VARCHAR(100)"/>
+            <column name="postal_code" type="VARCHAR(20)"/>
+            <column name="country" type="VARCHAR(2)" defaultValue="IN"/>
+            <column name="is_default" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="latitude" type="DECIMAL(10,7)"/>
+            <column name="longitude" type="DECIMAL(10,7)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ===================== TABLE: address_verifications ===================== -->
+    <changeSet id="address-003-address-verifications" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="hm_address" tableName="address_verifications"/></not>
+        </preConditions>
+        <createTable schemaName="hm_address" tableName="address_verifications">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- Domain columns -->
+            <column name="address_id" type="VARCHAR(255)">
+                <constraints nullable="false" foreignKeyName="fk_verification_address" references="hm_address.addresses(id)"/>
+            </column>
+            <column name="verification_status" type="VARCHAR(50)"/>
+            <column name="verification_method" type="VARCHAR(50)"/>
+            <column name="standardized_address" type="VARCHAR(500)"/>
+            <column name="confidence_score" type="INT"/>
+            <column name="is_residential" type="BOOLEAN"/>
+            <column name="address_components" type="VARCHAR(2000)"/>
+            <column name="verified_at" type="TIMESTAMP"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+            <column name="error_message" type="VARCHAR(500)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ===================== TABLE: delivery_zones ===================== -->
+    <changeSet id="address-004-delivery-zones" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="hm_address" tableName="delivery_zones"/></not>
+        </preConditions>
+        <createTable schemaName="hm_address" tableName="delivery_zones">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- Domain columns -->
+            <column name="zone_name" type="VARCHAR(100)"/>
+            <column name="zone_code" type="VARCHAR(20)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_delivery_zones_zone_code"/>
+            </column>
+            <column name="center_latitude" type="DECIMAL(10,7)"/>
+            <column name="center_longitude" type="DECIMAL(10,7)"/>
+            <column name="radius_km" type="INT"/>
+            <column name="delivery_carrier_id" type="VARCHAR(255)"/>
+            <column name="service_type" type="VARCHAR(50)"/>
+            <column name="average_delivery_days" type="INT"/>
+            <column name="base_shipping_cost" type="BIGINT"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ===================== TABLE: delivery_carriers ===================== -->
+    <changeSet id="address-005-delivery-carriers" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="hm_address" tableName="delivery_carriers"/></not>
+        </preConditions>
+        <createTable schemaName="hm_address" tableName="delivery_carriers">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- Domain columns -->
+            <column name="carrier_name" type="VARCHAR(100)"/>
+            <column name="carrier_code" type="VARCHAR(20)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_delivery_carriers_carrier_code"/>
+            </column>
+            <column name="carrier_type" type="VARCHAR(50)"/>
+            <column name="contact_email" type="VARCHAR(255)"/>
+            <column name="contact_phone" type="VARCHAR(20)"/>
+            <column name="tracking_url_template" type="VARCHAR(500)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="supported_service_types" type="VARCHAR(500)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ===================== TABLE: serviceability_pincodes ===================== -->
+    <changeSet id="address-006-serviceability-pincodes" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="hm_address" tableName="serviceability_pincodes"/></not>
+        </preConditions>
+        <createTable schemaName="hm_address" tableName="serviceability_pincodes">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- Domain columns -->
+            <column name="pincode" type="VARCHAR(10)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="state" type="VARCHAR(100)"/>
+            <column name="zone_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_pincode_zone" references="hm_address.delivery_zones(id)"/>
+            </column>
+            <column name="region_type" type="VARCHAR(50)"/>
+            <column name="is_serviceable" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="cash_on_delivery_available" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="prepaid_required" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="estimated_days" type="INT"/>
+            <column name="data_source" type="VARCHAR(100)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ===================== INDEXES ===================== -->
+    <changeSet id="address-007-indexes" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="hm_address" indexName="idx_addresses_user"/></not>
+        </preConditions>
+        <createIndex schemaName="hm_address" tableName="addresses" indexName="idx_addresses_user">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="address-008-indexes" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="hm_address" indexName="idx_addresses_postal"/></not>
+        </preConditions>
+        <createIndex schemaName="hm_address" tableName="addresses" indexName="idx_addresses_postal">
+            <column name="postal_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="address-009-indexes" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="hm_address" indexName="idx_pincodes_pincode"/></not>
+        </preConditions>
+        <createIndex schemaName="hm_address" tableName="serviceability_pincodes" indexName="idx_pincodes_pincode">
+            <column name="pincode"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="address-010-indexes" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="hm_address" indexName="idx_pincodes_zone"/></not>
+        </preConditions>
+        <createIndex schemaName="hm_address" tableName="serviceability_pincodes" indexName="idx_pincodes_zone">
+            <column name="zone_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="address-011-indexes" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="hm_address" indexName="idx_verifications_address"/></not>
+        </preConditions>
+        <createIndex schemaName="hm_address" tableName="address_verifications" indexName="idx_verifications_address">
+            <column name="address_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="address-012-indexes" author="premkumar">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists schemaName="hm_address" indexName="idx_zones_code"/></not>
+        </preConditions>
+        <createIndex schemaName="hm_address" tableName="delivery_zones" indexName="idx_zones_code">
+            <column name="zone_code"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

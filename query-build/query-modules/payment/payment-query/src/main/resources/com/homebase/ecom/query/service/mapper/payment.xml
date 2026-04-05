@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Payment">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read ONLY from hm_query OLAP schema.                      -->
+<!-- Star schema: fact_payments JOIN dim_customer JOIN dim_payment_method   -->
+<!-- + payment_refunds_flat, payment_webhook_log_flat                       -->
+<!-- Populated by PaymentSyncService ETL.                                  -->
+<!-- NEVER reference any OLTP schema here.                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN LISTING ====== -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*)
+    FROM hm_query.fact_payments fp
+    LEFT JOIN hm_query.dim_customer dc ON fp.customer_id = dc.customer_id
+    LEFT JOIN hm_query.dim_payment_method dpm ON fp.payment_method = dpm.method_code
+    <where>
+        <if test="orderId != null">AND fp.order_id = #{orderId}</if>
+        <if test="customerId != null">AND fp.customer_id = #{customerId}</if>
+        <if test="paymentMethod != null">AND fp.payment_method = #{paymentMethod}</if>
+        <if test="stateId != null">AND fp.state_id = #{stateId}</if>
+        <if test="currency != null">AND fp.currency = #{currency}</if>
+        <if test="q != null">AND (
+            fp.order_id LIKE CONCAT('%', #{q}, '%')
+            OR dc.customer_name LIKE CONCAT('%', #{q}, '%')
+            OR fp.gateway_transaction_id LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.payment.dto.PaymentQueryDto">
+    SELECT
+        fp.id                      as "id",
+        fp.order_id                as "orderId",
+        fp.customer_id             as "customerId",
+        dc.customer_name           as "customerName",
+        fp.amount                  as "amount",
+        fp.currency                as "currency",
+        fp.payment_method          as "paymentMethod",
+        dpm.method_display_name    as "paymentMethodDisplay",
+        fp.gateway_transaction_id  as "gatewayTransactionId",
+        fp.retry_count             as "retryCount",
+        fp.failure_reason          as "failureReason",
+        fp.state_id                as "stateId",
+        fp.flow_id                 as "flowId",
+        fp.created_time            as "createdTime"
+    FROM hm_query.fact_payments fp
+    LEFT JOIN hm_query.dim_customer dc ON fp.customer_id = dc.customer_id
+    LEFT JOIN hm_query.dim_payment_method dpm ON fp.payment_method = dpm.method_code
+    <where>
+        <if test="orderId != null">AND fp.order_id = #{orderId}</if>
+        <if test="customerId != null">AND fp.customer_id = #{customerId}</if>
+        <if test="paymentMethod != null">AND fp.payment_method = #{paymentMethod}</if>
+        <if test="stateId != null">AND fp.state_id = #{stateId}</if>
+        <if test="currency != null">AND fp.currency = #{currency}</if>
+        <if test="q != null">AND (
+            fp.order_id LIKE CONCAT('%', #{q}, '%')
+            OR dc.customer_name LIKE CONCAT('%', #{q}, '%')
+            OR fp.gateway_transaction_id LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== DETAIL ====== -->
+<select id="getById" resultType="com.homebase.ecom.payment.dto.PaymentQueryDto">
+    SELECT
+        fp.id                      as "id",
+        fp.order_id                as "orderId",
+        fp.customer_id             as "customerId",
+        dc.customer_name           as "customerName",
+        dc.customer_email          as "customerEmail",
+        fp.amount                  as "amount",
+        fp.currency                as "currency",
+        fp.payment_method          as "paymentMethod",
+        dpm.method_display_name    as "paymentMethodDisplay",
+        dpm.method_type            as "paymentMethodType",
+        fp.gateway_transaction_id  as "gatewayTransactionId",
+        fp.gateway_name            as "gatewayName",
+        fp.gateway_response        as "gatewayResponse",
+        fp.retry_count             as "retryCount",
+        fp.failure_reason          as "failureReason",
+        fp.state_id                as "stateId",
+        fp.flow_id                 as "flowId",
+        fp.created_time            as "createdTime",
+        fp.last_modified_time      as "lastModifiedTime"
+    FROM hm_query.fact_payments fp
+    LEFT JOIN hm_query.dim_customer dc ON fp.customer_id = dc.customer_id
+    LEFT JOIN hm_query.dim_payment_method dpm ON fp.payment_method = dpm.method_code
+    WHERE fp.id = #{id}
+</select>
+
+<!-- ====== STATE COUNTS ====== -->
+<select id="getStateCounts" resultType="com.homebase.ecom.payment.dto.PaymentStateCountDto">
+    SELECT
+        state_id as "stateId",
+        COUNT(*) as "count"
+    FROM hm_query.fact_payments
+    GROUP BY state_id
+    ORDER BY "count" DESC
+</select>
+
+<!-- ====== BY METHOD ====== -->
+<select id="getByMethod-count" resultType="int">
+    SELECT count(*) FROM hm_query.fact_payments
+    WHERE payment_method = #{paymentMethod}
+</select>
+
+<select id="getByMethod" resultType="com.homebase.ecom.payment.dto.PaymentQueryDto">
+    SELECT
+        fp.id                      as "id",
+        fp.order_id                as "orderId",
+        fp.customer_id             as "customerId",
+        dc.customer_name           as "customerName",
+        fp.amount                  as "amount",
+        fp.currency                as "currency",
+        fp.payment_method          as "paymentMethod",
+        dpm.method_display_name    as "paymentMethodDisplay",
+        fp.state_id                as "stateId",
+        fp.flow_id                 as "flowId",
+        fp.created_time            as "createdTime"
+    FROM hm_query.fact_payments fp
+    LEFT JOIN hm_query.dim_customer dc ON fp.customer_id = dc.customer_id
+    LEFT JOIN hm_query.dim_payment_method dpm ON fp.payment_method = dpm.method_code
+    WHERE fp.payment_method = #{paymentMethod}
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== FAILED PAYMENTS ====== -->
+<select id="getFailedPayments-count" resultType="int">
+    SELECT count(*) FROM hm_query.fact_payments
+    WHERE state_id IN ('FAILED', 'ABANDONED')
+</select>
+
+<select id="getFailedPayments" resultType="com.homebase.ecom.payment.dto.PaymentQueryDto">
+    SELECT
+        fp.id                      as "id",
+        fp.order_id                as "orderId",
+        fp.customer_id             as "customerId",
+        dc.customer_name           as "customerName",
+        fp.amount                  as "amount",
+        fp.payment_method          as "paymentMethod",
+        fp.failure_reason          as "failureReason",
+        fp.retry_count             as "retryCount",
+        fp.state_id                as "stateId",
+        fp.flow_id                 as "flowId",
+        fp.created_time            as "createdTime"
+    FROM hm_query.fact_payments fp
+    LEFT JOIN hm_query.dim_customer dc ON fp.customer_id = dc.customer_id
+    WHERE fp.state_id IN ('FAILED', 'ABANDONED')
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== DAILY REVENUE ====== -->
+<select id="getDailyRevenue" resultType="com.homebase.ecom.payment.dto.DailyRevenueDto">
+    SELECT
+        CAST(created_time AS DATE) as "paymentDate",
+        COUNT(*)                   as "transactionCount",
+        SUM(amount)                as "totalRevenue",
+        currency                   as "currency"
+    FROM hm_query.fact_payments
+    WHERE state_id IN ('SUCCEEDED', 'SETTLED')
+    GROUP BY CAST(created_time AS DATE), currency
+    ORDER BY "paymentDate" DESC
+</select>
+
+<!-- ====== BY ORDER ID ====== -->
+<select id="getByOrderId" resultType="com.homebase.ecom.payment.dto.PaymentQueryDto">
+    SELECT
+        fp.id                      as "id",
+        fp.order_id                as "orderId",
+        fp.amount                  as "amount",
+        fp.currency                as "currency",
+        fp.payment_method          as "paymentMethod",
+        dpm.method_display_name    as "paymentMethodDisplay",
+        fp.state_id                as "stateId",
+        fp.flow_id                 as "flowId",
+        fp.created_time            as "createdTime"
+    FROM hm_query.fact_payments fp
+    LEFT JOIN hm_query.dim_payment_method dpm ON fp.payment_method = dpm.method_code
+    WHERE fp.order_id = #{orderId}
+</select>
+
+<!-- ====== PAYMENT DETAIL ====== -->
+<select id="getPaymentDetail" resultType="com.homebase.ecom.payment.dto.PaymentQueryDto">
+    SELECT
+        fp.id                      as "id",
+        fp.order_id                as "orderId",
+        fp.customer_id             as "customerId",
+        dc.customer_name           as "customerName",
+        fp.amount                  as "amount",
+        fp.currency                as "currency",
+        fp.payment_method          as "paymentMethod",
+        dpm.method_display_name    as "paymentMethodDisplay",
+        fp.gateway_transaction_id  as "gatewayTransactionId",
+        fp.gateway_name            as "gatewayName",
+        fp.state_id                as "stateId",
+        fp.flow_id                 as "flowId",
+        fp.created_time            as "createdTime",
+        fp.last_modified_time      as "lastModifiedTime"
+    FROM hm_query.fact_payments fp
+    LEFT JOIN hm_query.dim_customer dc ON fp.customer_id = dc.customer_id
+    LEFT JOIN hm_query.dim_payment_method dpm ON fp.payment_method = dpm.method_code
+    WHERE fp.id = #{id}
+</select>
+
+<!-- ====== REFUNDS ====== -->
+<select id="getRefunds-count" resultType="int">
+    SELECT count(*) FROM hm_query.payment_refunds_flat
+    <where>
+        <if test="paymentId != null">AND payment_id = #{paymentId}</if>
+        <if test="status != null">AND status = #{status}</if>
+    </where>
+</select>
+
+<select id="getRefunds" resultType="com.homebase.ecom.payment.dto.RefundQueryDto">
+    SELECT
+        id             as "id",
+        payment_id     as "paymentId",
+        amount         as "amount",
+        reason         as "reason",
+        status         as "status",
+        created_time   as "createdTime"
+    FROM hm_query.payment_refunds_flat
+    <where>
+        <if test="paymentId != null">AND payment_id = #{paymentId}</if>
+        <if test="status != null">AND status = #{status}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== WEBHOOK LOGS ====== -->
+<select id="getWebhookLogs-count" resultType="int">
+    SELECT count(*) FROM hm_query.payment_webhook_log_flat
+    <where>
+        <if test="paymentId != null">AND payment_id = #{paymentId}</if>
+        <if test="eventType != null">AND event_type = #{eventType}</if>
+        <if test="provider != null">AND provider = #{provider}</if>
+        <if test="status != null">AND status = #{status}</if>
+    </where>
+</select>
+
+<select id="getWebhookLogs" resultType="com.homebase.ecom.payment.dto.WebhookLogQueryDto">
+    SELECT
+        id             as "id",
+        payment_id     as "paymentId",
+        event_type     as "eventType",
+        provider       as "provider",
+        status         as "status",
+        created_time   as "createdTime"
+    FROM hm_query.payment_webhook_log_flat
+    <where>
+        <if test="paymentId != null">AND payment_id = #{paymentId}</if>
+        <if test="eventType != null">AND event_type = #{eventType}</if>
+        <if test="provider != null">AND provider = #{provider}</if>
+        <if test="status != null">AND status = #{status}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-service
+  namespace: config-server
+  labels:
+    app: config-server
+    component: app
+spec:
+  type: ClusterIP
+  selector:
+    app: config-server
+    component: app
+  ports:
+    - name: http
+      port: 8888
+      targetPort: 8888
+      protocol: TCP

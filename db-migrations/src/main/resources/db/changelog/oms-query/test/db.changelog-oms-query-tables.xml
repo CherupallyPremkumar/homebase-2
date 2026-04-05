@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Test-only: creates all cross-module tables needed by OMS query BDD tests.
+        Uses preConditions so safe to run alongside production changelogs.
+        Tables: orders, order_items, order_activity, user_profiles, payment,
+                shipments, fulfillment_orders, support_tickets, returnrequest,
+                settlements, supplier, products, categories, inventory_item
+    -->
+
+    <!-- User Profiles -->
+    <changeSet id="oms-query-test-user-profiles" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="user_profiles"/></not></preConditions>
+        <sql>
+            CREATE TABLE user_profiles (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                email VARCHAR(255), first_name VARCHAR(255), last_name VARCHAR(255),
+                phone VARCHAR(255), role VARCHAR(255),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255),
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Orders -->
+    <changeSet id="oms-query-test-orders" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="orders"/></not></preConditions>
+        <sql>
+            CREATE TABLE orders (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_number VARCHAR(255), customer_id VARCHAR(255) NOT NULL,
+                subtotal DECIMAL(12,2), tax_amount DECIMAL(12,2),
+                shipping_amount DECIMAL(12,2), discount_amount DECIMAL(12,2) DEFAULT 0,
+                total_amount DECIMAL(12,2) NOT NULL, currency VARCHAR(3) DEFAULT 'INR',
+                item_count INT DEFAULT 0, notes TEXT, cancel_reason VARCHAR(1000),
+                description VARCHAR(2000),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Order Items -->
+    <changeSet id="oms-query-test-order-items" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="order_items"/></not></preConditions>
+        <createTable tableName="order_items">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(500)"/>
+            <column name="quantity" type="INT"><constraints nullable="false"/></column>
+            <column name="unit_price" type="DECIMAL(12,2)"><constraints nullable="false"/></column>
+            <column name="total_price" type="DECIMAL(12,2)"><constraints nullable="false"/></column>
+            <column name="supplier_id" type="VARCHAR(255)"/>
+            <column name="fulfillment_status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Order Activity -->
+    <changeSet id="oms-query-test-order-activity" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="order_activity"/></not></preConditions>
+        <createTable tableName="order_activity">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="VARCHAR(2000)"/>
+            <column name="created_by" type="VARCHAR(255)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Payment -->
+    <changeSet id="oms-query-test-payment" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="payment"/></not></preConditions>
+        <sql>
+            CREATE TABLE payment (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_id VARCHAR(255) NOT NULL,
+                customer_id VARCHAR(255),
+                amount DECIMAL(12,2) NOT NULL, currency VARCHAR(3) DEFAULT 'INR',
+                payment_method VARCHAR(20),
+                gateway_transaction_id VARCHAR(255),
+                failure_reason TEXT,
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255),
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Shipments -->
+    <changeSet id="oms-query-test-shipments" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="shipments"/></not></preConditions>
+        <sql>
+            CREATE TABLE shipments (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_id VARCHAR(255) NOT NULL,
+                carrier VARCHAR(50), tracking_number VARCHAR(255),
+                shipping_method VARCHAR(20) DEFAULT 'STANDARD',
+                delivery_attempts INT DEFAULT 0, current_location VARCHAR(255),
+                estimated_delivery_date TIMESTAMP, actual_delivery_date TIMESTAMP,
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Products -->
+    <changeSet id="oms-query-test-products" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="products"/></not></preConditions>
+        <sql>
+            CREATE TABLE products (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                name VARCHAR(255), brand VARCHAR(255), category_id VARCHAR(255),
+                slug VARCHAR(300),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Categories -->
+    <changeSet id="oms-query-test-categories" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="categories"/></not></preConditions>
+        <createTable tableName="categories">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="slug" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Inventory Item -->
+    <changeSet id="oms-query-test-inventory-item" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="inventory_item"/></not></preConditions>
+        <sql>
+            CREATE TABLE inventory_item (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                sku VARCHAR(255), product_id VARCHAR(255), variant_id VARCHAR(255),
+                quantity INT DEFAULT 0, available_quantity INT DEFAULT 0,
+                reserved_quantity INT DEFAULT 0, damaged_quantity INT DEFAULT 0,
+                inbound_quantity INT DEFAULT 0, primary_fc VARCHAR(255),
+                low_stock_threshold INT DEFAULT 10, status VARCHAR(50),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                supplier_id VARCHAR(255),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                tenant VARCHAR(255)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Supplier -->
+    <changeSet id="oms-query-test-supplier" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="supplier"/></not></preConditions>
+        <sql>
+            CREATE TABLE supplier (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                business_name VARCHAR(255),
+                name VARCHAR(255), email VARCHAR(255), status VARCHAR(50),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255)
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Return Requests -->
+    <changeSet id="oms-query-test-returnrequest" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="returnrequest"/></not></preConditions>
+        <sql>
+            CREATE TABLE returnrequest (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_id VARCHAR(255), customer_id VARCHAR(255),
+                reason VARCHAR(1000), return_type VARCHAR(50),
+                total_refund_amount DECIMAL(19,2),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255),
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP,
+                sla_tending_late INT DEFAULT 0, sla_late INT DEFAULT 0
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Support Tickets -->
+    <changeSet id="oms-query-test-support-tickets" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="support_tickets"/></not></preConditions>
+        <createTable tableName="support_tickets">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="customer_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="subject" type="VARCHAR(500)"/>
+            <column name="category" type="VARCHAR(50)"/>
+            <column name="priority" type="VARCHAR(20)"/>
+            <column name="description" type="VARCHAR(4000)"/>
+            <column name="assigned_agent_id" type="VARCHAR(255)"/>
+            <column name="state_id" type="VARCHAR(50)"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Settlements -->
+    <changeSet id="oms-query-test-settlements" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="settlements"/></not></preConditions>
+        <sql>
+            CREATE TABLE settlements (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                supplier_id VARCHAR(255), order_id VARCHAR(255),
+                order_amount BIGINT, commission_amount BIGINT,
+                commission_rate DECIMAL(5,2),
+                platform_fee BIGINT, tds_amount DECIMAL(12,2),
+                gst_on_commission DECIMAL(12,2),
+                net_amount BIGINT, currency VARCHAR(3),
+                settlement_period_start DATE, settlement_period_end DATE,
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255),
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Fulfillment Orders -->
+    <changeSet id="oms-query-test-fulfillment-orders" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="fulfillment_orders"/></not></preConditions>
+        <sql>
+            CREATE TABLE fulfillment_orders (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_id VARCHAR(255) NOT NULL, warehouse_id VARCHAR(255),
+                user_id VARCHAR(255),
+                priority VARCHAR(20) DEFAULT 'STANDARD',
+                fulfillment_type VARCHAR(50) DEFAULT 'SHIP_TO_CUSTOMER',
+                assigned_picker_id VARCHAR(255), assigned_packer_id VARCHAR(255),
+                pick_started_at TIMESTAMP, pick_completed_at TIMESTAMP,
+                pack_started_at TIMESTAMP, pack_completed_at TIMESTAMP,
+                shipped_at TIMESTAMP, total_items INT DEFAULT 0,
+                total_weight_grams INT,
+                carrier VARCHAR(100), tracking_number VARCHAR(255),
+                shipping_method VARCHAR(50),
+                estimated_ship_date DATE, estimated_delivery_date DATE,
+                notes VARCHAR(2000),
+                state_id VARCHAR(100), flow_id VARCHAR(100),
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                created_by VARCHAR(255), last_modified_by VARCHAR(255), tenant VARCHAR(255),
+                state_entry_time TIMESTAMP, sla_yellow_date TIMESTAMP, sla_red_date TIMESTAMP
+            )
+        </sql>
+    </changeSet>
+
+    <!-- Warehouses (for fulfillment join) -->
+    <changeSet id="oms-query-test-warehouses" author="homebase-test">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="warehouses"/></not></preConditions>
+        <sql>
+            CREATE TABLE warehouses (
+                id VARCHAR(255) NOT NULL PRIMARY KEY,
+                warehouse_code VARCHAR(20), warehouse_name VARCHAR(255),
+                warehouse_type VARCHAR(30) DEFAULT 'FULFILLMENT_CENTER',
+                city VARCHAR(100), state VARCHAR(100),
+                max_capacity_units INT, current_utilization_pct DECIMAL(5,2),
+                is_active BOOLEAN DEFAULT TRUE,
+                version BIGINT DEFAULT 0, created_time TIMESTAMP, last_modified_time TIMESTAMP,
+                tenant VARCHAR(255)
+            )
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

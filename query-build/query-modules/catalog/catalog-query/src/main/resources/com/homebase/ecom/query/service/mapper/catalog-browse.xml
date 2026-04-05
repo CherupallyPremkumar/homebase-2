@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CatalogBrowse">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL READS FROM hm_query.* OLAP SCHEMA ONLY — NEVER FROM OLTP          -->
+<!-- Source: hm_query.dim_product + hm_query.dim_category                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+    <resultMap id="catalogItemResult" type="map">
+        <result property="id" column="ID"/>
+        <result property="productId" column="product_id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="brand" column="brand"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="price" column="price"/>
+        <result property="sellingPrice" column="selling_price"/>
+        <result property="featured" column="featured"/>
+        <result property="active" column="active"/>
+        <result property="displayOrder" column="display_order"/>
+        <result property="inStock" column="in_stock"/>
+        <result property="availableQty" column="available_qty"/>
+        <result property="averageRating" column="average_rating"/>
+        <result property="reviewCount" column="review_count"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="categoryName" column="category_name"/>
+    </resultMap>
+
+    <!-- browseCatalog: Active catalog items with optional filters -->
+    <select id='browse-count' resultType="int">
+        SELECT COUNT(*) FROM hm_query.dim_product
+        <where>
+            AND product_status = 'PUBLISHED'
+            <if test="featured != null">
+                AND featured = #{featured}
+            </if>
+            <if test="name != null">
+                AND product_name ILIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="productId != null">
+                AND product_id = #{productId}
+            </if>
+            <if test="brand != null">
+                AND brand ILIKE CONCAT('%', #{brand}, '%')
+            </if>
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+            <if test="q != null">
+                AND (product_name ILIKE CONCAT('%', #{q}, '%') OR brand ILIKE CONCAT('%', #{q}, '%') OR description ILIKE CONCAT('%', #{q}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="browse" resultMap="catalogItemResult">
+        SELECT
+            p.product_id as ID,
+            p.product_id as product_id,
+            p.product_name as name,
+            p.description as description,
+            p.brand as brand,
+            p.primary_image_url as image_url,
+            p.base_price as price,
+            p.selling_price as selling_price,
+            p.featured as featured,
+            CASE WHEN p.product_status = 'PUBLISHED' THEN true ELSE false END as active,
+            0 as display_order,
+            CASE WHEN p.stock_status != 'OUT_OF_STOCK' THEN true ELSE false END as in_stock,
+            p.total_available_qty as available_qty,
+            p.avg_rating as average_rating,
+            p.review_count as review_count,
+            p.category_id as category_id,
+            p.category_name as category_name
+        FROM hm_query.dim_product p
+        <where>
+            AND p.product_status = 'PUBLISHED'
+            <if test="featured != null">
+                AND p.featured = #{featured}
+            </if>
+            <if test="name != null">
+                AND p.product_name ILIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="productId != null">
+                AND p.product_id = #{productId}
+            </if>
+            <if test="brand != null">
+                AND p.brand ILIKE CONCAT('%', #{brand}, '%')
+            </if>
+            <if test="categoryId != null">
+                AND p.category_id = #{categoryId}
+            </if>
+            <if test="q != null">
+                AND (p.product_name ILIKE CONCAT('%', #{q}, '%') OR p.brand ILIKE CONCAT('%', #{q}, '%') OR p.description ILIKE CONCAT('%', #{q}, '%'))
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- userPicks: Featured catalog items -->
+    <select id='getUserPicks-count' resultType="int">
+        SELECT COUNT(*) FROM hm_query.dim_product
+        <where>
+            <if test="featured != null">
+                AND featured = #{featured}
+            </if>
+            <if test="active != null">
+                AND CASE WHEN #{active} = true THEN product_status = 'PUBLISHED' ELSE product_status != 'PUBLISHED' END
+            </if>
+            <if test="name != null">
+                AND product_name ILIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="productId != null">
+                AND product_id = #{productId}
+            </if>
+            <if test="q != null">
+                AND (product_name ILIKE CONCAT('%', #{q}, '%') OR brand ILIKE CONCAT('%', #{q}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="getUserPicks" resultMap="catalogItemResult">
+        SELECT
+            p.product_id as ID,
+            p.product_id as product_id,
+            p.product_name as name,
+            p.description as description,
+            p.brand as brand,
+            p.primary_image_url as image_url,
+            p.base_price as price,
+            p.selling_price as selling_price,
+            p.featured as featured,
+            CASE WHEN p.product_status = 'PUBLISHED' THEN true ELSE false END as active,
+            0 as display_order,
+            CASE WHEN p.stock_status != 'OUT_OF_STOCK' THEN true ELSE false END as in_stock,
+            p.total_available_qty as available_qty,
+            p.avg_rating as average_rating,
+            p.review_count as review_count,
+            p.category_id as category_id,
+            p.category_name as category_name
+        FROM hm_query.dim_product p
+        <where>
+            <if test="featured != null">
+                AND p.featured = #{featured}
+            </if>
+            <if test="active != null">
+                AND CASE WHEN #{active} = true THEN p.product_status = 'PUBLISHED' ELSE p.product_status != 'PUBLISHED' END
+            </if>
+            <if test="name != null">
+                AND p.product_name ILIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="productId != null">
+                AND p.product_id = #{productId}
+            </if>
+            <if test="q != null">
+                AND (p.product_name ILIKE CONCAT('%', #{q}, '%') OR p.brand ILIKE CONCAT('%', #{q}, '%'))
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- itemSuggestions: Items by tags -->
+    <select id='getSuggestions-count' resultType="int">
+        SELECT COUNT(DISTINCT p.product_id) FROM hm_query.dim_product p
+        LEFT JOIN hm_query.product_tag_flat pt ON p.product_id = pt.product_id
+        <where>
+            <if test="tags != null">
+                AND pt.tag IN
+                <foreach item="item" index="index" collection="tags"
+                         open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="active != null">
+                AND CASE WHEN #{active} = true THEN p.product_status = 'PUBLISHED' ELSE p.product_status != 'PUBLISHED' END
+            </if>
+            <if test="q != null">
+                AND (p.product_name ILIKE CONCAT('%', #{q}, '%') OR p.brand ILIKE CONCAT('%', #{q}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="getSuggestions" resultMap="catalogItemResult">
+        SELECT DISTINCT
+            p.product_id as ID,
+            p.product_id as product_id,
+            p.product_name as name,
+            p.description as description,
+            p.brand as brand,
+            p.primary_image_url as image_url,
+            p.base_price as price,
+            p.selling_price as selling_price,
+            p.featured as featured,
+            CASE WHEN p.product_status = 'PUBLISHED' THEN true ELSE false END as active,
+            0 as display_order,
+            CASE WHEN p.stock_status != 'OUT_OF_STOCK' THEN true ELSE false END as in_stock,
+            p.total_available_qty as available_qty,
+            p.avg_rating as average_rating,
+            p.review_count as review_count,
+            p.category_id as category_id,
+            p.category_name as category_name
+        FROM hm_query.dim_product p
+        LEFT JOIN hm_query.product_tag_flat pt ON p.product_id = pt.product_id
+        <where>
+            <if test="tags != null">
+                AND pt.tag IN
+                <foreach item="item" index="index" collection="tags"
+                         open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="active != null">
+                AND CASE WHEN #{active} = true THEN p.product_status = 'PUBLISHED' ELSE p.product_status != 'PUBLISHED' END
+            </if>
+            <if test="q != null">
+                AND (p.product_name ILIKE CONCAT('%', #{q}, '%') OR p.brand ILIKE CONCAT('%', #{q}, '%'))
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- catalogByCategory: Items in a specific category -->
+    <select id='getByCategory-count' resultType="int">
+        SELECT COUNT(*) FROM hm_query.dim_product p
+        <where>
+            <if test="categoryId != null">
+                AND p.category_id = #{categoryId}
+            </if>
+            <if test="active != null">
+                AND CASE WHEN #{active} = true THEN p.product_status = 'PUBLISHED' ELSE p.product_status != 'PUBLISHED' END
+            </if>
+            <if test="name != null">
+                AND p.product_name ILIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="productId != null">
+                AND p.product_id = #{productId}
+            </if>
+            <if test="q != null">
+                AND (p.product_name ILIKE CONCAT('%', #{q}, '%') OR p.brand ILIKE CONCAT('%', #{q}, '%') OR p.description ILIKE CONCAT('%', #{q}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="getByCategory" resultMap="catalogItemResult">
+        SELECT
+            p.product_id as ID,
+            p.product_id as product_id,
+            p.product_name as name,
+            p.description as description,
+            p.brand as brand,
+            p.primary_image_url as image_url,
+            p.base_price as price,
+            p.selling_price as selling_price,
+            p.featured as featured,
+            CASE WHEN p.product_status = 'PUBLISHED' THEN true ELSE false END as active,
+            0 as display_order,
+            CASE WHEN p.stock_status != 'OUT_OF_STOCK' THEN true ELSE false END as in_stock,
+            p.total_available_qty as available_qty,
+            p.avg_rating as average_rating,
+            p.review_count as review_count,
+            p.category_id as category_id,
+            p.category_name as category_name
+        FROM hm_query.dim_product p
+        <where>
+            <if test="categoryId != null">
+                AND p.category_id = #{categoryId}
+            </if>
+            <if test="active != null">
+                AND CASE WHEN #{active} = true THEN p.product_status = 'PUBLISHED' ELSE p.product_status != 'PUBLISHED' END
+            </if>
+            <if test="name != null">
+                AND p.product_name ILIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="productId != null">
+                AND p.product_id = #{productId}
+            </if>
+            <if test="q != null">
+                AND (p.product_name ILIKE CONCAT('%', #{q}, '%') OR p.brand ILIKE CONCAT('%', #{q}, '%') OR p.description ILIKE CONCAT('%', #{q}, '%'))
+            </if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+</mapper>

@@ -525,6 +525,8 @@
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="seller_document"/>
             <sqlCheck expectedResult="0">SELECT COUNT(*) FROM seller_document WHERE id = 'sdoc-001'</sqlCheck>
+            <!-- Supplier rows must exist before inserting seller_documents (FK constraint) -->
+            <sqlCheck expectedResult="1">SELECT CASE WHEN COUNT(*) >= 3 THEN 1 ELSE 0 END FROM supplier WHERE id IN ('sup-001','sup-002','sup-003')</sqlCheck>
         </preConditions>
 
         <!-- sup-001 (TechZone India) — GST Certificate — VERIFIED -->

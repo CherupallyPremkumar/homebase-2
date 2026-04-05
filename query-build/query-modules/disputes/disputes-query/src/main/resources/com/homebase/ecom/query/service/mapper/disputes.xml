@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Disputes">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read ONLY from hm_query OLAP schema.                      -->
+<!-- Source: disputes_flat (denormalized flat table)                        -->
+<!-- Populated by DisputeSyncService ETL.                                  -->
+<!-- NEVER reference any OLTP schema here.                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN LISTING ====== -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.disputes_flat
+    <where>
+        <if test="orderId != null">AND order_id = #{orderId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="priority != null">AND priority = #{priority}</if>
+        <if test="disputeType != null">AND dispute_type = #{disputeType}</if>
+        <if test="assignedTo != null">AND assigned_to = #{assignedTo}</if>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="sellerId != null">AND seller_id = #{sellerId}</if>
+        <if test="q != null">AND (
+            order_id LIKE CONCAT('%', #{q}, '%')
+            OR customer_name LIKE CONCAT('%', #{q}, '%')
+            OR seller_name LIKE CONCAT('%', #{q}, '%')
+            OR reason LIKE CONCAT('%', #{q}, '%')
+            OR order_number LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.disputes.dto.DisputeQueryDto">
+    SELECT
+        id,
+        order_id           as "orderId",
+        order_number       as "orderNumber",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        seller_id          as "sellerId",
+        seller_name        as "sellerName",
+        dispute_type       as "disputeType",
+        reason,
+        disputed_amount    as "disputedAmount",
+        priority,
+        assigned_to        as "assignedTo",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        resolution_outcome as "resolution",
+        created_time       as "createdAt"
+    FROM hm_query.disputes_flat
+    <where>
+        <if test="orderId != null">AND order_id = #{orderId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="priority != null">AND priority = #{priority}</if>
+        <if test="disputeType != null">AND dispute_type = #{disputeType}</if>
+        <if test="assignedTo != null">AND assigned_to = #{assignedTo}</if>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="sellerId != null">AND seller_id = #{sellerId}</if>
+        <if test="q != null">AND (
+            order_id LIKE CONCAT('%', #{q}, '%')
+            OR customer_name LIKE CONCAT('%', #{q}, '%')
+            OR seller_name LIKE CONCAT('%', #{q}, '%')
+            OR reason LIKE CONCAT('%', #{q}, '%')
+            OR order_number LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== DETAIL ====== -->
+<select id="getById" resultType="com.homebase.ecom.disputes.dto.DisputeQueryDto">
+    SELECT
+        id,
+        order_id             as "orderId",
+        order_number         as "orderNumber",
+        customer_id          as "customerId",
+        customer_name        as "customerName",
+        customer_email       as "customerEmail",
+        seller_id            as "sellerId",
+        seller_name          as "sellerName",
+        dispute_type         as "disputeType",
+        reason,
+        disputed_amount      as "disputedAmount",
+        priority,
+        assigned_to          as "assignedTo",
+        customer_complaint   as "customerComplaint",
+        seller_response      as "sellerResponse",
+        evidence_links       as "evidenceLinks",
+        investigator_id      as "investigatorId",
+        investigation_notes  as "investigationNotes",
+        resolution_outcome   as "resolution",
+        resolution_notes     as "resolutionNotes",
+        resolution_date      as "resolutionDate",
+        refund_amount        as "refundAmount",
+        sla_target_days      as "slaTargetDays",
+        state_id             as "stateId",
+        flow_id              as "flowId",
+        created_time         as "createdAt"
+    FROM hm_query.disputes_flat
+    WHERE id = #{id}
+</select>
+
+<!-- ====== STATE COUNTS ====== -->
+<select id="getStateCounts" resultType="map">
+    SELECT state_id as "stateId", count(*) as "count"
+    FROM hm_query.disputes_flat
+    GROUP BY state_id
+    ORDER BY count(*) DESC
+</select>
+
+<!-- ====== BY PRIORITY ====== -->
+<select id="getByPriority-count" resultType="int">
+    SELECT count(*) FROM hm_query.disputes_flat
+    WHERE priority = #{priority}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+</select>
+
+<select id="getByPriority" resultType="com.homebase.ecom.disputes.dto.DisputeQueryDto">
+    SELECT
+        id,
+        order_id           as "orderId",
+        order_number       as "orderNumber",
+        customer_name      as "customerName",
+        seller_name        as "sellerName",
+        dispute_type       as "disputeType",
+        reason,
+        disputed_amount    as "disputedAmount",
+        priority,
+        assigned_to        as "assignedTo",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_time       as "createdAt"
+    FROM hm_query.disputes_flat
+    WHERE priority = #{priority}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== OPEN DISPUTES ====== -->
+<select id="getOpenDisputes-count" resultType="int">
+    SELECT count(*) FROM hm_query.disputes_flat
+    WHERE state_id NOT IN ('RESOLVED', 'CLOSED', 'WITHDRAWN')
+    <if test="assignedTo != null">AND assigned_to = #{assignedTo}</if>
+</select>
+
+<select id="getOpenDisputes" resultType="com.homebase.ecom.disputes.dto.DisputeQueryDto">
+    SELECT
+        id,
+        order_id           as "orderId",
+        order_number       as "orderNumber",
+        customer_name      as "customerName",
+        seller_name        as "sellerName",
+        dispute_type       as "disputeType",
+        reason,
+        disputed_amount    as "disputedAmount",
+        priority,
+        assigned_to        as "assignedTo",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_time       as "createdAt"
+    FROM hm_query.disputes_flat
+    WHERE state_id NOT IN ('RESOLVED', 'CLOSED', 'WITHDRAWN')
+    <if test="assignedTo != null">AND assigned_to = #{assignedTo}</if>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

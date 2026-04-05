@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Create dedicated schema for pricing bounded context -->
+    <changeSet id="pricing-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_pricing</sql>
+    </changeSet>
+
+    <!-- pricing_rules (no entity class — stateless module, kept for future use) -->
+    <changeSet id="pricing-001-create-pricing-rules" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="pricing_rules" schemaName="hm_pricing"/></not>
+        </preConditions>
+        <createTable tableName="pricing_rules" schemaName="hm_pricing">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="rule_type" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="priority" type="INT" defaultValueNumeric="0"/>
+            <column name="conditions" type="TEXT"/>
+            <column name="discount_type" type="VARCHAR(50)"/>
+            <column name="discount_value" type="DECIMAL(10,2)"/>
+            <column name="active_from" type="TIMESTAMP"/>
+            <column name="active_to" type="TIMESTAMP"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="applicable_products" type="TEXT"/>
+            <column name="applicable_categories" type="TEXT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- price_history (no entity class — kept for future use) -->
+    <changeSet id="pricing-002-create-price-history" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="price_history" schemaName="hm_pricing"/></not>
+        </preConditions>
+        <createTable tableName="price_history" schemaName="hm_pricing">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="old_price" type="DECIMAL(19,2)"/>
+            <column name="new_price" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
+            <column name="change_reason" type="VARCHAR(255)"/>
+            <column name="changed_by" type="VARCHAR(100)"/>
+        </createTable>
+        <createIndex indexName="idx_price_history_product" tableName="price_history" schemaName="hm_pricing">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

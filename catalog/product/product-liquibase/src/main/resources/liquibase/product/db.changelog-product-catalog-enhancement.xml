@@ -1,0 +1,667 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ============================================================ -->
+    <!-- PART 1: ALTER EXISTING TABLES                                 -->
+    <!-- ============================================================ -->
+
+    <!-- 1A. attribute_definitions: Add Magento-standard catalog EAV columns -->
+    <changeSet id="product-100-enhance-attribute-definitions" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="attribute_definitions" schemaName="hm_product"/>
+            <not><columnExists tableName="attribute_definitions" schemaName="hm_product" columnName="backend_type"/></not>
+        </preConditions>
+        <addColumn tableName="attribute_definitions" schemaName="hm_product">
+            <!-- Data type the attribute stores (varchar, int, decimal, text, datetime, static) -->
+            <column name="backend_type" type="VARCHAR(20)" defaultValue="varchar"/>
+            <!-- Validation type (email, url, date, alphanumeric) -->
+            <column name="validation_class" type="VARCHAR(100)"/>
+            <!-- Default value for the attribute -->
+            <column name="default_value" type="TEXT"/>
+            <!-- Whether values must be unique across products -->
+            <column name="is_unique" type="BOOLEAN" defaultValueBoolean="false"/>
+            <!-- Admin notes about the attribute -->
+            <column name="note" type="VARCHAR(500)"/>
+            <!-- Scope: 0=store, 1=global, 2=website -->
+            <column name="scope" type="SMALLINT" defaultValueNumeric="1"/>
+            <!-- Visibility in storefront -->
+            <column name="is_visible" type="BOOLEAN" defaultValueBoolean="true"/>
+            <!-- Show in product comparison -->
+            <column name="is_comparable" type="BOOLEAN" defaultValueBoolean="false"/>
+            <!-- Show on product detail page -->
+            <column name="is_visible_on_front" type="BOOLEAN" defaultValueBoolean="false"/>
+            <!-- Allow HTML in frontend display -->
+            <column name="is_html_allowed_on_front" type="BOOLEAN" defaultValueBoolean="false"/>
+            <!-- Used by pricing rules engine -->
+            <column name="is_used_for_price_rules" type="BOOLEAN" defaultValueBoolean="false"/>
+            <!-- Used by promo/coupon rules -->
+            <column name="is_used_for_promo_rules" type="BOOLEAN" defaultValueBoolean="false"/>
+            <!-- Comma-separated product types this applies to (simple, configurable, bundle) -->
+            <column name="apply_to" type="VARCHAR(500)"/>
+            <!-- Whether attribute is system-defined or user-created -->
+            <column name="is_user_defined" type="BOOLEAN" defaultValueBoolean="true"/>
+            <!-- Used in product listing/grid views -->
+            <column name="used_in_product_listing" type="BOOLEAN" defaultValueBoolean="false"/>
+            <!-- Can be used for sorting in listing -->
+            <column name="used_for_sort_by" type="BOOLEAN" defaultValueBoolean="false"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- 1B. product_variants: Add pricing, inventory, and visibility columns -->
+    <changeSet id="product-101-enhance-product-variants" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="product_variants" schemaName="hm_product"/>
+            <not><columnExists tableName="product_variants" schemaName="hm_product" columnName="price"/></not>
+        </preConditions>
+        <addColumn tableName="product_variants" schemaName="hm_product">
+            <!-- Each variant carries its own price (Magento 2 pattern) -->
+            <column name="price" type="DECIMAL(19,2)"/>
+            <column name="special_price" type="DECIMAL(19,2)"/>
+            <column name="special_from_date" type="TIMESTAMP"/>
+            <column name="special_to_date" type="TIMESTAMP"/>
+            <column name="cost" type="DECIMAL(19,2)"/>
+            <column name="weight_grams" type="INT"/>
+            <!-- ACTIVE / INACTIVE -->
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE"/>
+            <!-- VISIBLE / NOT_VISIBLE / SEARCH_ONLY / CATALOG_ONLY -->
+            <column name="visibility" type="VARCHAR(30)" defaultValue="VISIBLE"/>
+            <column name="tax_class_id" type="VARCHAR(255)"/>
+            <column name="manage_stock" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="stock_qty" type="INT" defaultValueNumeric="0"/>
+        </addColumn>
+        <createIndex indexName="idx_variants_status" tableName="product_variants" schemaName="hm_product">
+            <column name="status"/>
+        </createIndex>
+        <addUniqueConstraint tableName="product_variants" schemaName="hm_product"
+                             columnNames="sku" constraintName="uk_product_variants_sku"/>
+    </changeSet>
+
+    <!-- 1C. product_attribute_values: Add typed value columns + store scoping -->
+    <changeSet id="product-102-enhance-product-attribute-values" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="product_attribute_values" schemaName="hm_product"/>
+            <not><columnExists tableName="product_attribute_values" schemaName="hm_product" columnName="value_varchar"/></not>
+        </preConditions>
+        <addColumn tableName="product_attribute_values" schemaName="hm_product">
+            <!-- Typed value columns (Magento pattern - avoids single raw_value string) -->
+            <column name="value_varchar" type="VARCHAR(255)"/>
+            <column name="value_int" type="INT"/>
+            <column name="value_decimal" type="DECIMAL(20,6)"/>
+            <column name="value_text" type="TEXT"/>
+            <column name="value_datetime" type="TIMESTAMP"/>
+            <!-- Store-scoped values (0 = default/global) -->
+            <column name="store_id" type="VARCHAR(50)" defaultValue="default"/>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"/>
+        </addColumn>
+        <addUniqueConstraint tableName="product_attribute_values" schemaName="hm_product"
+                             columnNames="product_id, attribute_id, store_id"
+                             constraintName="uk_pav_product_attr_store"/>
+        <createIndex indexName="idx_pav_attribute" tableName="product_attribute_values" schemaName="hm_product">
+            <column name="attribute_id"/>
+        </createIndex>
+        <createIndex indexName="idx_pav_product" tableName="product_attribute_values" schemaName="hm_product">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- 1D. attribute_options: Add is_default and swatch_type -->
+    <changeSet id="product-103-enhance-attribute-options" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="attribute_options" schemaName="hm_product"/>
+            <not><columnExists tableName="attribute_options" schemaName="hm_product" columnName="is_default"/></not>
+        </preConditions>
+        <addColumn tableName="attribute_options" schemaName="hm_product">
+            <column name="is_default" type="BOOLEAN" defaultValueBoolean="false"/>
+            <!-- NONE, COLOR, IMAGE, TEXT -->
+            <column name="swatch_type" type="VARCHAR(20)" defaultValue="NONE"/>
+        </addColumn>
+        <createIndex indexName="idx_attr_options_attribute" tableName="attribute_options" schemaName="hm_product">
+            <column name="attribute_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- PART 2: ATTRIBUTE SET / GROUP SYSTEM (4 tables)               -->
+    <!-- ============================================================ -->
+
+    <!-- 2A. attribute_groups: Logical groupings of attributes (General, Pricing, Design, etc.) -->
+    <changeSet id="product-110-create-attribute-groups" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="attribute_groups" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="attribute_groups" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="code" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"/>
+            <column name="tab_group_code" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+        </createTable>
+        <addUniqueConstraint tableName="attribute_groups" schemaName="hm_product"
+                             columnNames="code" constraintName="uk_attr_groups_code"/>
+    </changeSet>
+
+    <!-- 2B. attribute_sets: Product type templates (Default, Apparel, Electronics, etc.) -->
+    <changeSet id="product-111-create-attribute-sets" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="attribute_sets" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="attribute_sets" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+        </createTable>
+        <addUniqueConstraint tableName="attribute_sets" schemaName="hm_product"
+                             columnNames="name, tenant" constraintName="uk_attr_sets_name_tenant"/>
+    </changeSet>
+
+    <!-- 2C. attribute_set_groups: Which groups appear in which sets (with sort order) -->
+    <changeSet id="product-112-create-attribute-set-groups" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="attribute_set_groups" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="attribute_set_groups" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="attribute_set_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="attribute_group_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <addUniqueConstraint tableName="attribute_set_groups" schemaName="hm_product"
+                             columnNames="attribute_set_id, attribute_group_id"
+                             constraintName="uk_asg_set_group"/>
+        <addForeignKeyConstraint baseTableName="attribute_set_groups" baseTableSchemaName="hm_product" baseColumnNames="attribute_set_id"
+                                 referencedTableName="attribute_sets" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_asg_attribute_set" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="attribute_set_groups" baseTableSchemaName="hm_product" baseColumnNames="attribute_group_id"
+                                 referencedTableName="attribute_groups" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_asg_attribute_group" onDelete="CASCADE"/>
+    </changeSet>
+
+    <!-- 2D. attribute_set_attributes: Which attributes belong to which set+group -->
+    <changeSet id="product-113-create-attribute-set-attributes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="attribute_set_attributes" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="attribute_set_attributes" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="attribute_set_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="attribute_group_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="attribute_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <addUniqueConstraint tableName="attribute_set_attributes" schemaName="hm_product"
+                             columnNames="attribute_set_id, attribute_id"
+                             constraintName="uk_asa_set_attr"/>
+        <addForeignKeyConstraint baseTableName="attribute_set_attributes" baseTableSchemaName="hm_product" baseColumnNames="attribute_set_id"
+                                 referencedTableName="attribute_sets" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_asa_attribute_set" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="attribute_set_attributes" baseTableSchemaName="hm_product" baseColumnNames="attribute_group_id"
+                                 referencedTableName="attribute_groups" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_asa_attribute_group" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="attribute_set_attributes" baseTableSchemaName="hm_product" baseColumnNames="attribute_id"
+                                 referencedTableName="attribute_definitions" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_asa_attribute_def" onDelete="CASCADE"/>
+        <createIndex indexName="idx_asa_group_sort" tableName="attribute_set_attributes" schemaName="hm_product">
+            <column name="attribute_group_id"/>
+            <column name="sort_order"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- PART 3: CATEGORY-ATTRIBUTE MAPPING                            -->
+    <!-- ============================================================ -->
+
+    <!-- 3A. category_attribute_mapping: Which attributes are relevant/required per category -->
+    <changeSet id="product-120-create-category-attribute-mapping" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="category_attribute_mapping" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="category_attribute_mapping" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="category_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="attribute_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="is_required" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"/>
+            <column name="is_filterable" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+        <addUniqueConstraint tableName="category_attribute_mapping" schemaName="hm_product"
+                             columnNames="category_id, attribute_id"
+                             constraintName="uk_cam_category_attr"/>
+        <addForeignKeyConstraint baseTableName="category_attribute_mapping" baseTableSchemaName="hm_product" baseColumnNames="category_id"
+                                 referencedTableName="categories" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_cam_category" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="category_attribute_mapping" baseTableSchemaName="hm_product" baseColumnNames="attribute_id"
+                                 referencedTableName="attribute_definitions" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_cam_attribute_def" onDelete="CASCADE"/>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- PART 4: LOCALIZATION (2 tables)                               -->
+    <!-- ============================================================ -->
+
+    <!-- 4A. attribute_definition_locales: Store-scoped attribute labels -->
+    <changeSet id="product-130-create-attribute-definition-locales" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="attribute_definition_locales" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="attribute_definition_locales" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="attribute_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="locale" type="VARCHAR(10)"><constraints nullable="false"/></column>
+            <column name="label" type="VARCHAR(255)"><constraints nullable="false"/></column>
+        </createTable>
+        <addUniqueConstraint tableName="attribute_definition_locales" schemaName="hm_product"
+                             columnNames="attribute_id, locale"
+                             constraintName="uk_adl_attr_locale"/>
+        <addForeignKeyConstraint baseTableName="attribute_definition_locales" baseTableSchemaName="hm_product" baseColumnNames="attribute_id"
+                                 referencedTableName="attribute_definitions" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_adl_attribute_def" onDelete="CASCADE"/>
+    </changeSet>
+
+    <!-- 4B. attribute_option_locales: Store-scoped option labels -->
+    <changeSet id="product-131-create-attribute-option-locales" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="attribute_option_locales" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="attribute_option_locales" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="option_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="locale" type="VARCHAR(10)"><constraints nullable="false"/></column>
+            <column name="label" type="VARCHAR(255)"><constraints nullable="false"/></column>
+        </createTable>
+        <addUniqueConstraint tableName="attribute_option_locales" schemaName="hm_product"
+                             columnNames="option_id, locale"
+                             constraintName="uk_aol_option_locale"/>
+        <addForeignKeyConstraint baseTableName="attribute_option_locales" baseTableSchemaName="hm_product" baseColumnNames="option_id"
+                                 referencedTableName="attribute_options" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_aol_attribute_option" onDelete="CASCADE"/>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- PART 5: PRODUCT RELATIONSHIPS (2 tables)                      -->
+    <!-- ============================================================ -->
+
+    <!-- 5A. product_relationship_types: related, upsell, crosssell, etc. -->
+    <changeSet id="product-140-create-product-relationship-types" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_relationship_types" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="product_relationship_types" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="code" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="label" type="VARCHAR(100)"><constraints nullable="false"/></column>
+        </createTable>
+        <addUniqueConstraint tableName="product_relationship_types" schemaName="hm_product"
+                             columnNames="code" constraintName="uk_prt_code"/>
+        <!-- Seed standard relationship types -->
+        <insert tableName="product_relationship_types" schemaName="hm_product">
+            <column name="id" value="prt-related"/>
+            <column name="code" value="related"/>
+            <column name="label" value="Related Products"/>
+        </insert>
+        <insert tableName="product_relationship_types" schemaName="hm_product">
+            <column name="id" value="prt-upsell"/>
+            <column name="code" value="upsell"/>
+            <column name="label" value="Up-Sell Products"/>
+        </insert>
+        <insert tableName="product_relationship_types" schemaName="hm_product">
+            <column name="id" value="prt-crosssell"/>
+            <column name="code" value="crosssell"/>
+            <column name="label" value="Cross-Sell Products"/>
+        </insert>
+        <insert tableName="product_relationship_types" schemaName="hm_product">
+            <column name="id" value="prt-accessory"/>
+            <column name="code" value="accessory"/>
+            <column name="label" value="Accessories"/>
+        </insert>
+    </changeSet>
+
+    <!-- 5B. product_relationships: Product-to-product links -->
+    <changeSet id="product-141-create-product-relationships" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_relationships" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="product_relationships" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="linked_product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="relationship_type_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <addUniqueConstraint tableName="product_relationships" schemaName="hm_product"
+                             columnNames="product_id, linked_product_id, relationship_type_id"
+                             constraintName="uk_pr_product_linked_type"/>
+        <addForeignKeyConstraint baseTableName="product_relationships" baseTableSchemaName="hm_product" baseColumnNames="product_id"
+                                 referencedTableName="products" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_pr_product" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="product_relationships" baseTableSchemaName="hm_product" baseColumnNames="linked_product_id"
+                                 referencedTableName="products" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_pr_linked_product" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="product_relationships" baseTableSchemaName="hm_product" baseColumnNames="relationship_type_id"
+                                 referencedTableName="product_relationship_types" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_pr_type" onDelete="CASCADE"/>
+        <createIndex indexName="idx_pr_linked_product" tableName="product_relationships" schemaName="hm_product">
+            <column name="linked_product_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- PART 6: BUNDLE PRODUCTS (2 tables)                            -->
+    <!-- ============================================================ -->
+
+    <!-- 6A. product_bundle_options: Option slots in a bundle product -->
+    <changeSet id="product-150-create-product-bundle-options" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_bundle_options" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="product_bundle_options" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="title" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="is_required" type="BOOLEAN" defaultValueBoolean="true"/>
+            <!-- SELECT, RADIO, CHECKBOX, MULTISELECT -->
+            <column name="type" type="VARCHAR(30)" defaultValue="SELECT"/>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="product_bundle_options" baseTableSchemaName="hm_product" baseColumnNames="product_id"
+                                 referencedTableName="products" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_pbo_product" onDelete="CASCADE"/>
+        <createIndex indexName="idx_pbo_product" tableName="product_bundle_options" schemaName="hm_product">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- 6B. product_bundle_selections: Products within each bundle option slot -->
+    <changeSet id="product-151-create-product-bundle-selections" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_bundle_selections" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="product_bundle_selections" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="bundle_option_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="qty" type="DECIMAL(12,4)" defaultValueNumeric="1"/>
+            <column name="is_default" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="can_change_qty" type="BOOLEAN" defaultValueBoolean="true"/>
+            <!-- FIXED or PERCENT -->
+            <column name="price_type" type="VARCHAR(10)" defaultValue="FIXED"/>
+            <column name="price_value" type="DECIMAL(19,2)" defaultValueNumeric="0"/>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="product_bundle_selections" baseTableSchemaName="hm_product" baseColumnNames="bundle_option_id"
+                                 referencedTableName="product_bundle_options" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_pbs_bundle_option" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="product_bundle_selections" baseTableSchemaName="hm_product" baseColumnNames="product_id"
+                                 referencedTableName="products" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_pbs_product" onDelete="CASCADE"/>
+        <createIndex indexName="idx_pbs_bundle_option" tableName="product_bundle_selections" schemaName="hm_product">
+            <column name="bundle_option_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- PART 7: CUSTOM OPTIONS (2 tables)                             -->
+    <!-- ============================================================ -->
+
+    <!-- 7A. product_custom_options: Per-product customizable options (engraving, gift wrap, etc.) -->
+    <changeSet id="product-160-create-product-custom-options" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_custom_options" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="product_custom_options" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="title" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <!-- TEXT, TEXTAREA, FILE, DATE, DATETIME, TIME, SELECT, RADIO, CHECKBOX, MULTISELECT -->
+            <column name="type" type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <column name="is_required" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="sku" type="VARCHAR(64)"/>
+            <column name="max_characters" type="INT"/>
+            <column name="file_extension" type="VARCHAR(100)"/>
+            <column name="image_size_x" type="INT"/>
+            <column name="image_size_y" type="INT"/>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"/>
+            <!-- FIXED or PERCENT -->
+            <column name="price_type" type="VARCHAR(10)" defaultValue="FIXED"/>
+            <column name="price" type="DECIMAL(19,2)" defaultValueNumeric="0"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="product_custom_options" baseTableSchemaName="hm_product" baseColumnNames="product_id"
+                                 referencedTableName="products" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_pco_product" onDelete="CASCADE"/>
+        <createIndex indexName="idx_pco_product" tableName="product_custom_options" schemaName="hm_product">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- 7B. product_custom_option_values: Values for select/radio/checkbox custom options -->
+    <changeSet id="product-161-create-product-custom-option-values" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_custom_option_values" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="product_custom_option_values" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="custom_option_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="title" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="sku" type="VARCHAR(64)"/>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"/>
+            <!-- FIXED or PERCENT -->
+            <column name="price_type" type="VARCHAR(10)" defaultValue="FIXED"/>
+            <column name="price" type="DECIMAL(19,2)" defaultValueNumeric="0"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="product_custom_option_values" baseTableSchemaName="hm_product" baseColumnNames="custom_option_id"
+                                 referencedTableName="product_custom_options" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_pcov_custom_option" onDelete="CASCADE"/>
+        <createIndex indexName="idx_pcov_custom_option" tableName="product_custom_option_values" schemaName="hm_product">
+            <column name="custom_option_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- PART 8: VARIANT ATTRIBUTE VALUES                              -->
+    <!-- ============================================================ -->
+
+    <!-- 8A. variant_attribute_values: Typed attribute values specifically for variants -->
+    <changeSet id="product-170-create-variant-attribute-values" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="variant_attribute_values" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="variant_attribute_values" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="variant_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="attribute_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="option_id" type="VARCHAR(255)"/>
+            <column name="value_varchar" type="VARCHAR(255)"/>
+            <column name="value_int" type="INT"/>
+            <column name="value_decimal" type="DECIMAL(20,6)"/>
+        </createTable>
+        <addUniqueConstraint tableName="variant_attribute_values" schemaName="hm_product"
+                             columnNames="variant_id, attribute_id"
+                             constraintName="uk_vav_variant_attr"/>
+        <addForeignKeyConstraint baseTableName="variant_attribute_values" baseTableSchemaName="hm_product" baseColumnNames="variant_id"
+                                 referencedTableName="product_variants" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_vav_variant" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="variant_attribute_values" baseTableSchemaName="hm_product" baseColumnNames="attribute_id"
+                                 referencedTableName="attribute_definitions" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_vav_attribute_def" onDelete="CASCADE"/>
+        <createIndex indexName="idx_vav_variant" tableName="variant_attribute_values" schemaName="hm_product">
+            <column name="variant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- PART 9: UNITS OF MEASURE                                      -->
+    <!-- ============================================================ -->
+
+    <changeSet id="product-180-create-units-of-measure" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="units_of_measure" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="units_of_measure" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="code" type="VARCHAR(20)"><constraints nullable="false"/></column>
+            <column name="name" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <!-- WEIGHT, LENGTH, VOLUME, AREA, COUNT -->
+            <column name="unit_type" type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <!-- Factor to convert to base unit (e.g., 1000 for kg->g) -->
+            <column name="conversion_factor" type="DECIMAL(15,6)" defaultValueNumeric="1"/>
+            <column name="base_unit_code" type="VARCHAR(20)"/>
+        </createTable>
+        <addUniqueConstraint tableName="units_of_measure" schemaName="hm_product"
+                             columnNames="code" constraintName="uk_uom_code"/>
+        <!-- Seed standard units -->
+        <insert tableName="units_of_measure" schemaName="hm_product">
+            <column name="id" value="uom-g"/><column name="code" value="g"/><column name="name" value="Gram"/><column name="unit_type" value="WEIGHT"/><column name="conversion_factor" value="1"/><column name="base_unit_code" value="g"/>
+        </insert>
+        <insert tableName="units_of_measure" schemaName="hm_product">
+            <column name="id" value="uom-kg"/><column name="code" value="kg"/><column name="name" value="Kilogram"/><column name="unit_type" value="WEIGHT"/><column name="conversion_factor" value="1000"/><column name="base_unit_code" value="g"/>
+        </insert>
+        <insert tableName="units_of_measure" schemaName="hm_product">
+            <column name="id" value="uom-mm"/><column name="code" value="mm"/><column name="name" value="Millimetre"/><column name="unit_type" value="LENGTH"/><column name="conversion_factor" value="1"/><column name="base_unit_code" value="mm"/>
+        </insert>
+        <insert tableName="units_of_measure" schemaName="hm_product">
+            <column name="id" value="uom-cm"/><column name="code" value="cm"/><column name="name" value="Centimetre"/><column name="unit_type" value="LENGTH"/><column name="conversion_factor" value="10"/><column name="base_unit_code" value="mm"/>
+        </insert>
+        <insert tableName="units_of_measure" schemaName="hm_product">
+            <column name="id" value="uom-m"/><column name="code" value="m"/><column name="name" value="Metre"/><column name="unit_type" value="LENGTH"/><column name="conversion_factor" value="1000"/><column name="base_unit_code" value="mm"/>
+        </insert>
+        <insert tableName="units_of_measure" schemaName="hm_product">
+            <column name="id" value="uom-ml"/><column name="code" value="ml"/><column name="name" value="Millilitre"/><column name="unit_type" value="VOLUME"/><column name="conversion_factor" value="1"/><column name="base_unit_code" value="ml"/>
+        </insert>
+        <insert tableName="units_of_measure" schemaName="hm_product">
+            <column name="id" value="uom-l"/><column name="code" value="l"/><column name="name" value="Litre"/><column name="unit_type" value="VOLUME"/><column name="conversion_factor" value="1000"/><column name="base_unit_code" value="ml"/>
+        </insert>
+        <insert tableName="units_of_measure" schemaName="hm_product">
+            <column name="id" value="uom-pcs"/><column name="code" value="pcs"/><column name="name" value="Pieces"/><column name="unit_type" value="COUNT"/><column name="conversion_factor" value="1"/><column name="base_unit_code" value="pcs"/>
+        </insert>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- PART 10: EXTERNAL TAXONOMY MAPPING (2 tables)                 -->
+    <!-- ============================================================ -->
+
+    <!-- 10A. external_category_mapping: Map internal categories to Google/Amazon taxonomy -->
+    <changeSet id="product-190-create-external-category-mapping" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="external_category_mapping" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="external_category_mapping" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="category_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <!-- GOOGLE, AMAZON, FLIPKART, FACEBOOK, etc. -->
+            <column name="platform" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="external_category_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="external_category_path" type="VARCHAR(1000)"/>
+            <column name="confidence_score" type="DECIMAL(3,2)"/>
+            <column name="is_manual" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="external_category_mapping" schemaName="hm_product"
+                             columnNames="category_id, platform"
+                             constraintName="uk_ecm_category_platform"/>
+        <addForeignKeyConstraint baseTableName="external_category_mapping" baseTableSchemaName="hm_product" baseColumnNames="category_id"
+                                 referencedTableName="categories" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_ecm_category" onDelete="CASCADE"/>
+        <createIndex indexName="idx_ecm_platform" tableName="external_category_mapping" schemaName="hm_product">
+            <column name="platform"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- 10B. external_attribute_mapping: Map internal attributes to platform-specific attribute codes -->
+    <changeSet id="product-191-create-external-attribute-mapping" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="external_attribute_mapping" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="external_attribute_mapping" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="attribute_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <!-- GOOGLE, AMAZON, FLIPKART, FACEBOOK, etc. -->
+            <column name="platform" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="external_attribute_code" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="external_attribute_label" type="VARCHAR(255)"/>
+            <!-- Transformation rules: DIRECT, MAP_VALUES, CONCATENATE, FORMULA -->
+            <column name="transform_type" type="VARCHAR(30)" defaultValue="DIRECT"/>
+            <column name="transform_config" type="TEXT"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="external_attribute_mapping" schemaName="hm_product"
+                             columnNames="attribute_id, platform"
+                             constraintName="uk_eam_attr_platform"/>
+        <addForeignKeyConstraint baseTableName="external_attribute_mapping" baseTableSchemaName="hm_product" baseColumnNames="attribute_id"
+                                 referencedTableName="attribute_definitions" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_eam_attribute_def" onDelete="CASCADE"/>
+        <createIndex indexName="idx_eam_platform" tableName="external_attribute_mapping" schemaName="hm_product">
+            <column name="platform"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- PART 11: ENHANCE EXISTING CATEGORIES TABLE                    -->
+    <!-- ============================================================ -->
+
+    <changeSet id="product-200-enhance-categories" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="categories" schemaName="hm_product"/>
+            <not><columnExists tableName="categories" schemaName="hm_product" columnName="description"/></not>
+        </preConditions>
+        <addColumn tableName="categories" schemaName="hm_product">
+            <column name="description" type="VARCHAR(2000)"/>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <column name="meta_title" type="VARCHAR(200)"/>
+            <column name="meta_description" type="VARCHAR(500)"/>
+            <column name="meta_keywords" type="VARCHAR(500)"/>
+            <column name="include_in_menu" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="is_anchor" type="BOOLEAN" defaultValueBoolean="true"/>
+            <!-- Which attribute set products in this category default to -->
+            <column name="default_attribute_set_id" type="VARCHAR(255)"/>
+            <column name="product_count" type="INT" defaultValueNumeric="0"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+        </addColumn>
+        <createIndex indexName="idx_categories_parent" tableName="categories" schemaName="hm_product">
+            <column name="parent_id"/>
+        </createIndex>
+        <createIndex indexName="idx_categories_path" tableName="categories" schemaName="hm_product">
+            <column name="path"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- PART 12: ADD attribute_set_id TO PRODUCTS TABLE               -->
+    <!-- ============================================================ -->
+
+    <changeSet id="product-201-add-attribute-set-to-products" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="products" schemaName="hm_product"/>
+            <not><columnExists tableName="products" schemaName="hm_product" columnName="attribute_set_id"/></not>
+        </preConditions>
+        <addColumn tableName="products" schemaName="hm_product">
+            <!-- Links product to its attribute set (determines which attributes appear) -->
+            <column name="attribute_set_id" type="VARCHAR(255)"/>
+            <!-- Product type: simple, configurable, bundle, grouped, virtual, downloadable -->
+            <column name="product_type" type="VARCHAR(30)" defaultValue="simple"/>
+            <!-- Has custom options flag -->
+            <column name="has_options" type="BOOLEAN" defaultValueBoolean="false"/>
+            <!-- Requires selection of options before add-to-cart -->
+            <column name="required_options" type="BOOLEAN" defaultValueBoolean="false"/>
+            <!-- VISIBLE / NOT_VISIBLE / SEARCH_ONLY / CATALOG_ONLY -->
+            <column name="visibility" type="VARCHAR(30)" defaultValue="VISIBLE"/>
+        </addColumn>
+        <createIndex indexName="idx_products_attr_set" tableName="products" schemaName="hm_product">
+            <column name="attribute_set_id"/>
+        </createIndex>
+        <createIndex indexName="idx_products_type" tableName="products" schemaName="hm_product">
+            <column name="product_type"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

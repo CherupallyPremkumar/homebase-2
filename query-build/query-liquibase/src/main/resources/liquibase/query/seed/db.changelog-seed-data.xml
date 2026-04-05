@@ -1,0 +1,1442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- HomeBase Ecommerce — Comprehensive Seed Data                       -->
+    <!-- 41 changesets seeding 41 tables with 10,000+ realistic rows        -->
+    <!-- Uses PostgreSQL generate_series() for bulk generation              -->
+    <!-- Idempotent: preConditions check if seed data already exists        -->
+    <!-- All IDs prefixed with 'seed-' for easy identification              -->
+    <!-- Indian ecommerce data: INR prices, Indian names/cities/states      -->
+    <!-- ================================================================== -->
+
+
+    <!-- ================================================================== -->
+    <!-- TIER 1 — No foreign key dependencies                               -->
+    <!-- ================================================================== -->
+
+    <!-- ===== 1. user_profiles (100 rows) ===== -->
+    <changeSet id="query-seed-001-users" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_user.user_profiles WHERE id LIKE 'seed-user-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_user.user_profiles (
+                id, created_time, last_modified_time, last_modified_by, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                first_name, last_name, email, phone, gender, role,
+                kyc_status, email_verified, phone_verified, customer_tier,
+                pref_language, pref_currency, pref_email_notif, pref_sms_notif, pref_timezone,
+                date_of_birth, referral_code
+            )
+            SELECT
+                'seed-user-' || LPAD(i::text, 4, '0'),
+                NOW() - ((i * 3.65) * INTERVAL '1 day'),
+                NOW() - (random() * 7 * INTERVAL '1 day'),
+                'system', 'homebase', 'system', 1,
+                (ARRAY['ACTIVE','ACTIVE','ACTIVE','ACTIVE','ACTIVE','ACTIVE','ACTIVE','SUSPENDED','PENDING_VERIFICATION','LOCKED'])[1 + (i % 10)],
+                'user-flow',
+                NOW() - (random() * 30 * INTERVAL '1 day'),
+                0, 0,
+                (ARRAY['Aarav','Vivaan','Aditya','Vihaan','Arjun','Sai','Reyansh','Ayaan','Krishna','Ishaan',
+                       'Ananya','Diya','Myra','Sara','Aanya','Aadhya','Pari','Kiara','Riya','Priya'])[1 + (i % 20)],
+                (ARRAY['Sharma','Patel','Kumar','Singh','Gupta','Reddy','Nair','Joshi','Mehta','Verma',
+                       'Shah','Rao','Das','Iyer','Chopra','Kapoor','Malhotra','Bhat','Pillai','Menon'])[1 + (i % 20)],
+                'seeduser' || i || '@' || (ARRAY['gmail.com','yahoo.co.in','outlook.com','rediffmail.com','hotmail.com'])[1 + (i % 5)],
+                '9' || LPAD((800000000 + i * 73)::text, 9, '0'),
+                (ARRAY['MALE','FEMALE','MALE','FEMALE','OTHER'])[1 + (i % 5)],
+                (ARRAY['CUSTOMER','CUSTOMER','CUSTOMER','CUSTOMER','ADMIN'])[1 + (i % 5)],
+                CASE WHEN i % 10 &lt; 7 THEN 'VERIFIED' WHEN i % 10 &lt; 9 THEN 'PENDING' ELSE 'NOT_STARTED' END,
+                (i % 10 &lt; 8),
+                (i % 10 &lt; 6),
+                (ARRAY['REGULAR','REGULAR','REGULAR','SILVER','SILVER','GOLD','PLATINUM'])[1 + (i % 7)],
+                'en',
+                'INR',
+                true,
+                (i % 3 = 0),
+                'Asia/Kolkata',
+                DATE '1985-01-01' + (i * 100 * INTERVAL '1 day'),
+                'HB' || LPAD(i::text, 6, '0')
+            FROM generate_series(1, 100) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 2. supplier (50 rows) ===== -->
+    <changeSet id="query-seed-002-suppliers" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_supplier.supplier WHERE id LIKE 'seed-sup-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_supplier.supplier (
+                id, created_time, last_modified_time, last_modified_by, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                business_name, business_type, contact_email, contact_phone, tax_id,
+                rating, fulfillment_rate, total_orders, total_returns, commission_rate,
+                store_name, tier, description, gstin, pan, address
+            )
+            SELECT
+                'seed-sup-' || LPAD(i::text, 3, '0'),
+                NOW() - ((i * 7) * INTERVAL '1 day'),
+                NOW() - (random() * 3 * INTERVAL '1 day'),
+                'system', 'homebase', 'system', 1,
+                (ARRAY['ACTIVE','ACTIVE','ACTIVE','ACTIVE','PENDING_APPROVAL','SUSPENDED'])[1 + (i % 6)],
+                'supplier-flow',
+                NOW() - (random() * 15 * INTERVAL '1 day'),
+                0, 0,
+                (ARRAY['TechZone','FashionHub','HomeStyle','GadgetWorld','KitchenKing','BookMart','SportsFit',
+                       'BeautyBliss','ToyLand','GreenGarden'])[1 + (i % 10)] || ' ' ||
+                (ARRAY['India Pvt Ltd','Enterprises','Trading Co','Solutions LLP','Retail'])[1 + (i % 5)],
+                (ARRAY['INDIVIDUAL','COMPANY','PARTNERSHIP','COMPANY','COMPANY'])[1 + (i % 5)],
+                'seller' || i || '@business.com',
+                '98' || LPAD((10000000 + i * 111)::text, 8, '0'),
+                'SEEDTAX' || LPAD(i::text, 8, '0'),
+                (3.0 + random() * 2.0)::numeric(3,2),
+                (80 + random() * 20)::numeric(5,2),
+                (100 + i * 50),
+                (i * 3),
+                (8 + random() * 12)::numeric(5,2),
+                (ARRAY['TechZone Store','FashionHub Official','HomeStyle Mall','GadgetWorld Shop','KitchenKing Mart',
+                       'BookMart Online','SportsFit Hub','BeautyBliss Store','ToyLand India','GreenGarden Shop'])[1 + (i % 10)],
+                (ARRAY['STANDARD','STANDARD','PREMIUM','PREMIUM','ELITE'])[1 + (i % 5)],
+                'Premium seller on HomeBase marketplace since ' || (2020 + (i % 4))::text,
+                '29ABCDE' || LPAD(i::text, 4, '0') || 'F1Z' || (i % 10)::text,
+                'ABCDE' || LPAD(i::text, 4, '0') || (ARRAY['A','B','C','D','E'])[1 + (i % 5)],
+                (ARRAY['Electronic City, Bengaluru','Andheri West, Mumbai','Sector 62, Noida','Guindy, Chennai','Salt Lake, Kolkata',
+                       'Banjara Hills, Hyderabad','SG Highway, Ahmedabad','Viman Nagar, Pune','Whitefield, Bengaluru','Malad, Mumbai'])[1 + (i % 10)]
+            FROM generate_series(1, 50) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 3. categories (20 rows) ===== -->
+    <changeSet id="query-seed-003-categories" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_product.categories WHERE id LIKE 'seed-cat-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_product.categories (id, name, slug, depth, display_order, active)
+            VALUES
+                ('seed-cat-001', 'Electronics', 'electronics', 0, 1, true),
+                ('seed-cat-002', 'Fashion', 'fashion', 0, 2, true),
+                ('seed-cat-003', 'Home &amp; Kitchen', 'home-kitchen', 0, 3, true),
+                ('seed-cat-004', 'Beauty &amp; Personal Care', 'beauty-personal-care', 0, 4, true),
+                ('seed-cat-005', 'Sports &amp; Fitness', 'sports-fitness', 0, 5, true),
+                ('seed-cat-006', 'Books', 'books', 0, 6, true),
+                ('seed-cat-007', 'Toys &amp; Games', 'toys-games', 0, 7, true),
+                ('seed-cat-008', 'Grocery', 'grocery', 0, 8, true),
+                ('seed-cat-009', 'Health &amp; Wellness', 'health-wellness', 0, 9, true),
+                ('seed-cat-010', 'Automotive', 'automotive', 0, 10, true),
+                ('seed-cat-011', 'Mobiles', 'mobiles', 1, 11, true),
+                ('seed-cat-012', 'Laptops', 'laptops', 1, 12, true),
+                ('seed-cat-013', 'Men Clothing', 'men-clothing', 1, 13, true),
+                ('seed-cat-014', 'Women Clothing', 'women-clothing', 1, 14, true),
+                ('seed-cat-015', 'Kitchen Appliances', 'kitchen-appliances', 1, 15, true),
+                ('seed-cat-016', 'Footwear', 'footwear', 1, 16, true),
+                ('seed-cat-017', 'Watches', 'watches', 1, 17, true),
+                ('seed-cat-018', 'Bags &amp; Luggage', 'bags-luggage', 1, 18, true),
+                ('seed-cat-019', 'Furniture', 'furniture', 1, 19, true),
+                ('seed-cat-020', 'Stationery', 'stationery', 1, 20, true);
+        </sql>
+    </changeSet>
+
+    <!-- ===== 4. brands (30 rows) ===== -->
+    <changeSet id="query-seed-004-brands" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_product.brands WHERE id LIKE 'seed-brd-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_product.brands (id, created_time, last_modified_time, tenant, created_by, version,
+                name, slug, logo_url, description, active)
+            VALUES
+                ('seed-brd-001', NOW(), NOW(), 'homebase', 'system', 1, 'Samsung', 'samsung', '/brands/samsung.png', 'Global electronics leader', true),
+                ('seed-brd-002', NOW(), NOW(), 'homebase', 'system', 1, 'Apple', 'apple', '/brands/apple.png', 'Premium consumer electronics', true),
+                ('seed-brd-003', NOW(), NOW(), 'homebase', 'system', 1, 'Xiaomi', 'xiaomi', '/brands/xiaomi.png', 'Value electronics brand', true),
+                ('seed-brd-004', NOW(), NOW(), 'homebase', 'system', 1, 'Nike', 'nike', '/brands/nike.png', 'Sports and athletic wear', true),
+                ('seed-brd-005', NOW(), NOW(), 'homebase', 'system', 1, 'Puma', 'puma', '/brands/puma.png', 'Sports lifestyle brand', true),
+                ('seed-brd-006', NOW(), NOW(), 'homebase', 'system', 1, 'Boat', 'boat', '/brands/boat.png', 'Audio wearables brand', true),
+                ('seed-brd-007', NOW(), NOW(), 'homebase', 'system', 1, 'Prestige', 'prestige', '/brands/prestige.png', 'Kitchen appliances', true),
+                ('seed-brd-008', NOW(), NOW(), 'homebase', 'system', 1, 'HP', 'hp', '/brands/hp.png', 'Computing solutions', true),
+                ('seed-brd-009', NOW(), NOW(), 'homebase', 'system', 1, 'Sony', 'sony', '/brands/sony.png', 'Electronics and entertainment', true),
+                ('seed-brd-010', NOW(), NOW(), 'homebase', 'system', 1, 'Titan', 'titan', '/brands/titan.png', 'Indian watch brand', true),
+                ('seed-brd-011', NOW(), NOW(), 'homebase', 'system', 1, 'Levis', 'levis', '/brands/levis.png', 'Denim and casual wear', true),
+                ('seed-brd-012', NOW(), NOW(), 'homebase', 'system', 1, 'OnePlus', 'oneplus', '/brands/oneplus.png', 'Premium smartphones', true),
+                ('seed-brd-013', NOW(), NOW(), 'homebase', 'system', 1, 'Bajaj', 'bajaj', '/brands/bajaj.png', 'Home appliances', true),
+                ('seed-brd-014', NOW(), NOW(), 'homebase', 'system', 1, 'LG', 'lg', '/brands/lg.png', 'Home electronics', true),
+                ('seed-brd-015', NOW(), NOW(), 'homebase', 'system', 1, 'Fastrack', 'fastrack', '/brands/fastrack.png', 'Youth fashion accessories', true),
+                ('seed-brd-016', NOW(), NOW(), 'homebase', 'system', 1, 'Wildcraft', 'wildcraft', '/brands/wildcraft.png', 'Outdoor and adventure gear', true),
+                ('seed-brd-017', NOW(), NOW(), 'homebase', 'system', 1, 'Philips', 'philips', '/brands/philips.png', 'Personal care and lighting', true),
+                ('seed-brd-018', NOW(), NOW(), 'homebase', 'system', 1, 'Canon', 'canon', '/brands/canon.png', 'Cameras and imaging', true),
+                ('seed-brd-019', NOW(), NOW(), 'homebase', 'system', 1, 'Dell', 'dell', '/brands/dell.png', 'Computing and IT', true),
+                ('seed-brd-020', NOW(), NOW(), 'homebase', 'system', 1, 'Bose', 'bose', '/brands/bose.png', 'Premium audio', true),
+                ('seed-brd-021', NOW(), NOW(), 'homebase', 'system', 1, 'Godrej', 'godrej', '/brands/godrej.png', 'Consumer goods and appliances', true),
+                ('seed-brd-022', NOW(), NOW(), 'homebase', 'system', 1, 'Fabindia', 'fabindia', '/brands/fabindia.png', 'Ethnic Indian wear', true),
+                ('seed-brd-023', NOW(), NOW(), 'homebase', 'system', 1, 'Noise', 'noise', '/brands/noise.png', 'Smart wearables', true),
+                ('seed-brd-024', NOW(), NOW(), 'homebase', 'system', 1, 'Realme', 'realme', '/brands/realme.png', 'Budget smartphones', true),
+                ('seed-brd-025', NOW(), NOW(), 'homebase', 'system', 1, 'Bata', 'bata', '/brands/bata.png', 'Footwear brand', true),
+                ('seed-brd-026', NOW(), NOW(), 'homebase', 'system', 1, 'Raymond', 'raymond', '/brands/raymond.png', 'Formal and casual menswear', true),
+                ('seed-brd-027', NOW(), NOW(), 'homebase', 'system', 1, 'Havells', 'havells', '/brands/havells.png', 'Electrical equipment', true),
+                ('seed-brd-028', NOW(), NOW(), 'homebase', 'system', 1, 'Croma', 'croma', '/brands/croma.png', 'Consumer electronics retail', true),
+                ('seed-brd-029', NOW(), NOW(), 'homebase', 'system', 1, 'Jockey', 'jockey', '/brands/jockey.png', 'Innerwear and loungewear', true),
+                ('seed-brd-030', NOW(), NOW(), 'homebase', 'system', 1, 'IFB', 'ifb', '/brands/ifb.png', 'Home appliances', true);
+        </sql>
+    </changeSet>
+
+    <!-- ===== 5. warehouses (10 rows) ===== -->
+    <changeSet id="query-seed-005-warehouses" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_warehouse.warehouses WHERE id LIKE 'seed-wh-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_warehouse.warehouses (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                warehouse_code, warehouse_name, warehouse_type,
+                address_line1, city, state, pincode, country,
+                latitude, longitude, contact_phone, contact_email,
+                max_capacity_units, current_utilization_pct, is_active, is_returns_center
+            )
+            VALUES
+                ('seed-wh-001', NOW(), NOW(), 'homebase', 'system', 1, 'WH-BLR-01', 'Bengaluru Hub', 'FULFILLMENT_CENTER', 'Electronic City Phase 2', 'Bengaluru', 'Karnataka', '560100', 'IN', 12.8399700, 77.6772900, '9180001001', 'blr-hub@homebase.in', 100000, 72.50, true, false),
+                ('seed-wh-002', NOW(), NOW(), 'homebase', 'system', 1, 'WH-MUM-01', 'Mumbai Central Hub', 'FULFILLMENT_CENTER', 'Bhiwandi Industrial Area', 'Mumbai', 'Maharashtra', '421302', 'IN', 19.2811700, 73.0481500, '9122001001', 'mum-hub@homebase.in', 150000, 81.30, true, false),
+                ('seed-wh-003', NOW(), NOW(), 'homebase', 'system', 1, 'WH-DEL-01', 'Delhi NCR Hub', 'FULFILLMENT_CENTER', 'IMT Manesar Sector 8', 'Gurugram', 'Haryana', '122051', 'IN', 28.3586900, 76.9360500, '9124001001', 'del-hub@homebase.in', 120000, 68.90, true, false),
+                ('seed-wh-004', NOW(), NOW(), 'homebase', 'system', 1, 'WH-HYD-01', 'Hyderabad Hub', 'FULFILLMENT_CENTER', 'Shamshabad Logistics Park', 'Hyderabad', 'Telangana', '501218', 'IN', 17.2377700, 78.4291100, '9140001001', 'hyd-hub@homebase.in', 80000, 55.20, true, false),
+                ('seed-wh-005', NOW(), NOW(), 'homebase', 'system', 1, 'WH-CHE-01', 'Chennai Hub', 'FULFILLMENT_CENTER', 'Sriperumbudur Industrial Park', 'Chennai', 'Tamil Nadu', '602105', 'IN', 12.9665900, 79.9428300, '9144001001', 'che-hub@homebase.in', 90000, 63.70, true, false),
+                ('seed-wh-006', NOW(), NOW(), 'homebase', 'system', 1, 'WH-KOL-01', 'Kolkata Hub', 'FULFILLMENT_CENTER', 'Dankuni Industrial Estate', 'Kolkata', 'West Bengal', '712311', 'IN', 22.6660500, 88.2920700, '9133001001', 'kol-hub@homebase.in', 60000, 48.10, true, false),
+                ('seed-wh-007', NOW(), NOW(), 'homebase', 'system', 1, 'WH-PUN-01', 'Pune Hub', 'FULFILLMENT_CENTER', 'Chakan MIDC', 'Pune', 'Maharashtra', '410501', 'IN', 18.7631500, 73.8556300, '9120001001', 'pun-hub@homebase.in', 70000, 59.80, true, false),
+                ('seed-wh-008', NOW(), NOW(), 'homebase', 'system', 1, 'WH-AHM-01', 'Ahmedabad Hub', 'FULFILLMENT_CENTER', 'Sanand GIDC', 'Ahmedabad', 'Gujarat', '382110', 'IN', 22.9908200, 72.3707500, '9179001001', 'ahm-hub@homebase.in', 50000, 42.40, true, false),
+                ('seed-wh-009', NOW(), NOW(), 'homebase', 'system', 1, 'WH-BLR-RET', 'Bengaluru Returns Center', 'RETURNS_CENTER', 'Peenya Industrial Area', 'Bengaluru', 'Karnataka', '560058', 'IN', 13.0270200, 77.5211300, '9180002001', 'blr-ret@homebase.in', 30000, 35.60, true, true),
+                ('seed-wh-010', NOW(), NOW(), 'homebase', 'system', 1, 'WH-MUM-RET', 'Mumbai Returns Center', 'RETURNS_CENTER', 'Taloja MIDC', 'Navi Mumbai', 'Maharashtra', '410208', 'IN', 19.0644600, 73.1260800, '9122002001', 'mum-ret@homebase.in', 25000, 29.80, true, true);
+        </sql>
+    </changeSet>
+
+    <!-- ===== 6. cconfig (30 rows) ===== -->
+    <changeSet id="query-seed-006-cconfig" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_cconfig.cconfig WHERE id LIKE 'seed-cfg-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_cconfig.cconfig (id, created_time, last_modified_time, tenant, created_by, version,
+                module_name, key_name, avalue, custom_attribute)
+            VALUES
+                ('seed-cfg-001', NOW(), NOW(), 'homebase', 'system', 1, 'cart', 'maxItemsPerCart', '50', '__GLOBAL__'),
+                ('seed-cfg-002', NOW(), NOW(), 'homebase', 'system', 1, 'cart', 'cartExpiryHours', '72', '__GLOBAL__'),
+                ('seed-cfg-003', NOW(), NOW(), 'homebase', 'system', 1, 'cart', 'maxQuantityPerItem', '10', '__GLOBAL__'),
+                ('seed-cfg-004', NOW(), NOW(), 'homebase', 'system', 1, 'order', 'cancellationWindowMinutes', '30', '__GLOBAL__'),
+                ('seed-cfg-005', NOW(), NOW(), 'homebase', 'system', 1, 'order', 'maxOrderAmount', '500000', '__GLOBAL__'),
+                ('seed-cfg-006', NOW(), NOW(), 'homebase', 'system', 1, 'order', 'invoicePrefix', 'HB-INV', '__GLOBAL__'),
+                ('seed-cfg-007', NOW(), NOW(), 'homebase', 'system', 1, 'payment', 'maxRetryCount', '3', '__GLOBAL__'),
+                ('seed-cfg-008', NOW(), NOW(), 'homebase', 'system', 1, 'payment', 'paymentTimeoutSeconds', '300', '__GLOBAL__'),
+                ('seed-cfg-009', NOW(), NOW(), 'homebase', 'system', 1, 'payment', 'defaultGateway', 'RAZORPAY', '__GLOBAL__'),
+                ('seed-cfg-010', NOW(), NOW(), 'homebase', 'system', 1, 'shipping', 'freeShippingThreshold', '999', '__GLOBAL__'),
+                ('seed-cfg-011', NOW(), NOW(), 'homebase', 'system', 1, 'shipping', 'defaultCarrier', 'DELHIVERY', '__GLOBAL__'),
+                ('seed-cfg-012', NOW(), NOW(), 'homebase', 'system', 1, 'shipping', 'maxDeliveryDays', '10', '__GLOBAL__'),
+                ('seed-cfg-013', NOW(), NOW(), 'homebase', 'system', 1, 'returnrequest', 'returnWindowDays', '7', '__GLOBAL__'),
+                ('seed-cfg-014', NOW(), NOW(), 'homebase', 'system', 1, 'returnrequest', 'autoApproveBelow', '1000', '__GLOBAL__'),
+                ('seed-cfg-015', NOW(), NOW(), 'homebase', 'system', 1, 'review', 'autoPublishThreshold', '3', '__GLOBAL__'),
+                ('seed-cfg-016', NOW(), NOW(), 'homebase', 'system', 1, 'review', 'maxReviewLength', '2000', '__GLOBAL__'),
+                ('seed-cfg-017', NOW(), NOW(), 'homebase', 'system', 1, 'notification', 'emailEnabled', 'true', '__GLOBAL__'),
+                ('seed-cfg-018', NOW(), NOW(), 'homebase', 'system', 1, 'notification', 'smsEnabled', 'true', '__GLOBAL__'),
+                ('seed-cfg-019', NOW(), NOW(), 'homebase', 'system', 1, 'notification', 'pushEnabled', 'true', '__GLOBAL__'),
+                ('seed-cfg-020', NOW(), NOW(), 'homebase', 'system', 1, 'promo', 'maxCouponsPerOrder', '2', '__GLOBAL__'),
+                ('seed-cfg-021', NOW(), NOW(), 'homebase', 'system', 1, 'promo', 'maxDiscountPercent', '50', '__GLOBAL__'),
+                ('seed-cfg-022', NOW(), NOW(), 'homebase', 'system', 1, 'settlement', 'settlementCycleDays', '14', '__GLOBAL__'),
+                ('seed-cfg-023', NOW(), NOW(), 'homebase', 'system', 1, 'settlement', 'minPayoutAmount', '500', '__GLOBAL__'),
+                ('seed-cfg-024', NOW(), NOW(), 'homebase', 'system', 1, 'support', 'slaHoursHigh', '4', '__GLOBAL__'),
+                ('seed-cfg-025', NOW(), NOW(), 'homebase', 'system', 1, 'support', 'slaHoursMedium', '24', '__GLOBAL__'),
+                ('seed-cfg-026', NOW(), NOW(), 'homebase', 'system', 1, 'support', 'autoCloseAfterDays', '7', '__GLOBAL__'),
+                ('seed-cfg-027', NOW(), NOW(), 'homebase', 'system', 1, 'inventory', 'lowStockDefaultThreshold', '10', '__GLOBAL__'),
+                ('seed-cfg-028', NOW(), NOW(), 'homebase', 'system', 1, 'inventory', 'outOfStockThreshold', '0', '__GLOBAL__'),
+                ('seed-cfg-029', NOW(), NOW(), 'homebase', 'system', 1, 'checkout', 'checkoutTimeoutMinutes', '30', '__GLOBAL__'),
+                ('seed-cfg-030', NOW(), NOW(), 'homebase', 'system', 1, 'checkout', 'maxCheckoutAmount', '500000', '__GLOBAL__');
+        </sql>
+    </changeSet>
+
+    <!-- ===== 7. tax_rates (20 rows) ===== -->
+    <changeSet id="query-seed-007-tax-rates" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_tax.tax_rates WHERE id LIKE 'seed-tax-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_tax.tax_rates (id, created_time, last_modified_time, tenant, created_by, version,
+                hsn_code, description, gst_rate, cess_rate, tcs_rate, effective_from, active)
+            VALUES
+                ('seed-tax-001', NOW(), NOW(), 'homebase', 'system', 1, '04011000', 'Milk - fresh, pasteurised', 0.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-002', NOW(), NOW(), 'homebase', 'system', 1, '10063090', 'Rice - semi-milled or wholly milled', 5.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-003', NOW(), NOW(), 'homebase', 'system', 1, '61091000', 'T-shirts, singlets - cotton knitted', 5.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-004', NOW(), NOW(), 'homebase', 'system', 1, '62034200', 'Men trousers - cotton woven', 12.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-005', NOW(), NOW(), 'homebase', 'system', 1, '85171300', 'Smartphones - cellular phones', 18.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-006', NOW(), NOW(), 'homebase', 'system', 1, '84713010', 'Laptops - portable digital computers', 18.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-007', NOW(), NOW(), 'homebase', 'system', 1, '85287300', 'Television receivers - LED/LCD', 18.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-008', NOW(), NOW(), 'homebase', 'system', 1, '87032290', 'Motor cars - petrol 1500cc-3000cc', 28.00, 15.00, 1.00, '2024-01-01', true),
+                ('seed-tax-009', NOW(), NOW(), 'homebase', 'system', 1, '85183000', 'Headphones and earphones', 18.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-010', NOW(), NOW(), 'homebase', 'system', 1, '64041100', 'Sports footwear - rubber/plastic', 12.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-011', NOW(), NOW(), 'homebase', 'system', 1, '73211100', 'Cooking appliances - gas stoves', 12.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-012', NOW(), NOW(), 'homebase', 'system', 1, '91022100', 'Wrist watches - automatic', 18.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-013', NOW(), NOW(), 'homebase', 'system', 1, '42021290', 'Suitcases and trunks - plastic/textile', 18.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-014', NOW(), NOW(), 'homebase', 'system', 1, '90065900', 'Digital cameras - other', 18.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-015', NOW(), NOW(), 'homebase', 'system', 1, '85094010', 'Mixer grinders - domestic use', 18.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-016', NOW(), NOW(), 'homebase', 'system', 1, '85166040', 'Air fryers - electric cooking', 18.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-017', NOW(), NOW(), 'homebase', 'system', 1, '42029290', 'Backpacks and rucksacks - other', 18.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-018', NOW(), NOW(), 'homebase', 'system', 1, '85165000', 'Microwave ovens - domestic', 18.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-019', NOW(), NOW(), 'homebase', 'system', 1, '33049990', 'Beauty and skincare products', 28.00, 0.00, 1.00, '2024-01-01', true),
+                ('seed-tax-020', NOW(), NOW(), 'homebase', 'system', 1, '49011010', 'Printed books - educational', 0.00, 0.00, 1.00, '2024-01-01', true);
+        </sql>
+    </changeSet>
+
+    <!-- ===== 8. fulfillment_centers (5 rows) ===== -->
+    <changeSet id="query-seed-008-fulfillment-centers" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_inventory.fulfillment_centers WHERE id LIKE 'seed-fc-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_inventory.fulfillment_centers (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                name, code, address_line1, city, state, pincode, active, capacity, contact_phone, contact_email
+            )
+            VALUES
+                ('seed-fc-001', NOW(), NOW(), 'homebase', 'system', 1, 'Bengaluru Fulfillment Center', 'FC-BLR-01', 'Electronic City Phase 2', 'Bengaluru', 'Karnataka', '560100', true, 50000, '9180010001', 'fc-blr@homebase.in'),
+                ('seed-fc-002', NOW(), NOW(), 'homebase', 'system', 1, 'Mumbai Fulfillment Center', 'FC-MUM-01', 'Bhiwandi MIDC', 'Mumbai', 'Maharashtra', '421302', true, 75000, '9122010001', 'fc-mum@homebase.in'),
+                ('seed-fc-003', NOW(), NOW(), 'homebase', 'system', 1, 'Delhi NCR Fulfillment Center', 'FC-DEL-01', 'IMT Manesar', 'Gurugram', 'Haryana', '122051', true, 60000, '9124010001', 'fc-del@homebase.in'),
+                ('seed-fc-004', NOW(), NOW(), 'homebase', 'system', 1, 'Hyderabad Fulfillment Center', 'FC-HYD-01', 'Shamshabad Logistics Park', 'Hyderabad', 'Telangana', '501218', true, 40000, '9140010001', 'fc-hyd@homebase.in'),
+                ('seed-fc-005', NOW(), NOW(), 'homebase', 'system', 1, 'Chennai Fulfillment Center', 'FC-CHE-01', 'Sriperumbudur Industrial Park', 'Chennai', 'Tamil Nadu', '602105', true, 35000, '9144010001', 'fc-che@homebase.in');
+        </sql>
+    </changeSet>
+
+    <!-- ===== 9. notification_templates (10 rows) ===== -->
+    <changeSet id="query-seed-009-notification-templates" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_notification.notification_templates WHERE id LIKE 'seed-ntpl-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_notification.notification_templates (id, created_time, last_modified_time, tenant, created_by, version,
+                code, channel, subject_template, body_template, active)
+            VALUES
+                ('seed-ntpl-001', NOW(), NOW(), 'homebase', 'system', 1, 'ORDER_PLACED_EMAIL', 'EMAIL', 'Order Confirmed - {{orderNumber}}', 'Dear {{customerName}}, your order {{orderNumber}} has been placed successfully. Total: Rs.{{totalAmount}}', true),
+                ('seed-ntpl-002', NOW(), NOW(), 'homebase', 'system', 1, 'ORDER_PLACED_SMS', 'SMS', NULL, 'HomeBase: Order {{orderNumber}} confirmed. Amount: Rs.{{totalAmount}}. Track at homebase.in/orders', true),
+                ('seed-ntpl-003', NOW(), NOW(), 'homebase', 'system', 1, 'ORDER_SHIPPED_EMAIL', 'EMAIL', 'Your Order Has Shipped - {{orderNumber}}', 'Dear {{customerName}}, your order {{orderNumber}} has been shipped via {{carrier}}. Tracking: {{trackingNumber}}', true),
+                ('seed-ntpl-004', NOW(), NOW(), 'homebase', 'system', 1, 'ORDER_DELIVERED_EMAIL', 'EMAIL', 'Order Delivered - {{orderNumber}}', 'Dear {{customerName}}, your order {{orderNumber}} has been delivered. Please rate your experience.', true),
+                ('seed-ntpl-005', NOW(), NOW(), 'homebase', 'system', 1, 'PAYMENT_SUCCESS_EMAIL', 'EMAIL', 'Payment Successful - Rs.{{amount}}', 'Dear {{customerName}}, payment of Rs.{{amount}} has been received for order {{orderNumber}}.', true),
+                ('seed-ntpl-006', NOW(), NOW(), 'homebase', 'system', 1, 'PAYMENT_FAILED_SMS', 'SMS', NULL, 'HomeBase: Payment of Rs.{{amount}} failed for order {{orderNumber}}. Please retry. Ref: {{paymentId}}', true),
+                ('seed-ntpl-007', NOW(), NOW(), 'homebase', 'system', 1, 'RETURN_APPROVED_EMAIL', 'EMAIL', 'Return Request Approved - {{returnId}}', 'Dear {{customerName}}, your return request {{returnId}} has been approved. Pickup will be scheduled shortly.', true),
+                ('seed-ntpl-008', NOW(), NOW(), 'homebase', 'system', 1, 'PROMO_NOTIFICATION_PUSH', 'PUSH', 'Special Offer!', 'Exclusive deal for you! Use code {{promoCode}} to get {{discountValue}} off on your next order.', true),
+                ('seed-ntpl-009', NOW(), NOW(), 'homebase', 'system', 1, 'SUPPORT_TICKET_UPDATE_EMAIL', 'EMAIL', 'Ticket Update - {{ticketId}}', 'Dear {{customerName}}, your support ticket {{ticketId}} has been updated. Status: {{status}}.', true),
+                ('seed-ntpl-010', NOW(), NOW(), 'homebase', 'system', 1, 'SETTLEMENT_READY_EMAIL', 'EMAIL', 'Settlement Ready - {{settlementNumber}}', 'Dear {{sellerName}}, your settlement {{settlementNumber}} of Rs.{{netPayout}} is ready for disbursement.', true);
+        </sql>
+    </changeSet>
+
+
+    <!-- ================================================================== -->
+    <!-- TIER 2 — Depends on Tier 1                                         -->
+    <!-- ================================================================== -->
+
+    <!-- ===== 10. products (500 rows) ===== -->
+    <changeSet id="query-seed-010-products" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_product.products WHERE id LIKE 'seed-prod-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_product.products (
+                id, created_time, last_modified_time, last_modified_by, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                name, description, brand, category_id, slug, base_price,
+                hsn_code, country_of_origin, weight_grams, warranty_months,
+                is_returnable, return_window_days, is_active
+            )
+            SELECT
+                'seed-prod-' || LPAD(i::text, 4, '0'),
+                NOW() - ((i * 0.6) * INTERVAL '1 day'),
+                NOW() - (random() * 7 * INTERVAL '1 day'),
+                'system', 'homebase', 'system', 1,
+                (ARRAY['ACTIVE','ACTIVE','ACTIVE','ACTIVE','ACTIVE','ACTIVE','ACTIVE','DRAFT','UNDER_REVIEW','DISABLED'])[1 + (i % 10)],
+                'product-flow',
+                NOW() - (random() * 30 * INTERVAL '1 day'),
+                0, 0,
+                (ARRAY['Samsung Galaxy M34 5G','iPhone 15 Pro Max','Xiaomi Redmi Note 13','OnePlus Nord CE 4','Realme Narzo 70',
+                       'HP Pavilion Laptop 15','Dell Inspiron 14','Lenovo IdeaPad Slim 3','Asus VivoBook 15','Acer Aspire 5',
+                       'Nike Air Max 270','Puma RS-X Sneakers','Bata Comfit Shoes','Adidas Ultraboost','Reebok Classic',
+                       'Levis 511 Slim Jeans','Raymond Formal Shirt','Allen Solly Polo','Peter England Trousers','Jockey T-Shirt',
+                       'Boat Airdopes 141','Sony WH-1000XM5','Bose QC45','JBL Flip 6','Noise ColorFit Pro',
+                       'Prestige Induction Cooktop','Bajaj Mixer Grinder','Philips Air Fryer','IFB Microwave','Havells Insta Cook',
+                       'Titan Octane Watch','Fastrack Reflex','Casio G-Shock','Fossil Gen 6','Sonata Stride',
+                       'Wildcraft Rucksack 45L','American Tourister Trolley','Safari Pentagon Bag','Skybags Brat','VIP Aristocrat',
+                       'Canon EOS R50','Nikon Z30','GoPro Hero 12','DJI Mini 3','Fujifilm Instax Mini',
+                       'LG 55 inch OLED TV','Samsung 43 inch Crystal','Sony Bravia 50 inch','TCL 32 inch HD','Xiaomi Smart TV 5A'])[1 + (i % 50)]
+                || ' (Variant ' || ((i / 50) + 1)::text || ')',
+                'High quality product with premium features. Perfect for Indian consumers. Free delivery available.',
+                (ARRAY['Samsung','Apple','Xiaomi','OnePlus','Realme','HP','Dell','Lenovo','Asus','Acer',
+                       'Nike','Puma','Bata','Adidas','Reebok','Levis','Raymond','Allen Solly','Peter England','Jockey',
+                       'Boat','Sony','Bose','JBL','Noise','Prestige','Bajaj','Philips','IFB','Havells'])[1 + (i % 30)],
+                'seed-cat-' || LPAD((1 + (i % 20))::text, 3, '0'),
+                'seed-product-' || i || '-variant-' || ((i / 50) + 1),
+                (500 + (random() * 49500))::numeric(12,2),
+                (ARRAY['85171300','84713010','85177900','84713020','85171200','84713041','84714190','84713049','84714190','84713041',
+                       '64041100','64029990','64039990','64041100','64029990','62034200','62052000','61099090','62034200','61091000',
+                       '85183000','85183000','85183000','85183000','91022100','73211100','85094010','85166040','85165000','73211100',
+                       '91022100','91022100','91022100','91022100','91022100','42029290','42021290','42029290','42021290','42029290',
+                       '90065900','90065900','85258090','88061000','90065900','85287300','85287300','85287300','85287300','85287300'])[1 + (i % 50)],
+                'India',
+                (100 + (random() * 5000))::int,
+                (ARRAY[6,12,12,24,6,12,24,12,24,12])[1 + (i % 10)],
+                (i % 10 != 9),
+                7,
+                (i % 10 &lt; 8)
+            FROM generate_series(1, 500) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 11. product_variants (1000 rows) ===== -->
+    <changeSet id="query-seed-011-product-variants" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_product.product_variants WHERE id LIKE 'seed-pv-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_product.product_variants (id, product_id, sku)
+            SELECT
+                'seed-pv-' || LPAD(i::text, 5, '0'),
+                'seed-prod-' || LPAD((1 + ((i - 1) / 2))::text, 4, '0'),
+                'SEED-SKU-' || LPAD(i::text, 6, '0')
+            FROM generate_series(1, 1000) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 12. user_address (200 rows) ===== -->
+    <changeSet id="query-seed-012-user-address" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_user.user_address WHERE id LIKE 'seed-addr-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_user.user_address (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                user_id, label, line1, line2, city, state, postal_code, country, is_default
+            )
+            SELECT
+                'seed-addr-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 180 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                'seed-user-' || LPAD((1 + ((i - 1) / 2))::text, 4, '0'),
+                CASE WHEN i % 2 = 1 THEN 'Home' ELSE 'Office' END,
+                (ARRAY['Flat 101, Prestige Towers','204, Raheja Arcade','B-12, DLF Phase 3','301, Hiranandani Gardens','15/2, Brigade Road',
+                       'A-7, Lodha Palava','501, Godrej Garden City','12, Phoenix Market City','G-5, Unitech Cyber Park','302, Oberoi Realty'])[1 + (i % 10)],
+                (ARRAY['Near Metro Station','Opp. City Mall','Behind IT Park','Next to School','Near Hospital',
+                       'Main Road','Cross Road','Ring Road Area','Highway Junction','Market Area'])[1 + (i % 10)],
+                (ARRAY['Bengaluru','Mumbai','Delhi','Hyderabad','Chennai','Kolkata','Pune','Ahmedabad','Jaipur','Lucknow',
+                       'Chandigarh','Kochi','Indore','Coimbatore','Nagpur','Thiruvananthapuram','Guwahati','Bhopal','Visakhapatnam','Surat'])[1 + (i % 20)],
+                (ARRAY['Karnataka','Maharashtra','Delhi','Telangana','Tamil Nadu','West Bengal','Maharashtra','Gujarat','Rajasthan','Uttar Pradesh',
+                       'Punjab','Kerala','Madhya Pradesh','Tamil Nadu','Maharashtra','Kerala','Assam','Madhya Pradesh','Andhra Pradesh','Gujarat'])[1 + (i % 20)],
+                (ARRAY['560001','400001','110001','500001','600001','700001','411001','380001','302001','226001',
+                       '160001','682001','452001','641001','440001','695001','781001','462001','530001','395001'])[1 + (i % 20)],
+                'India',
+                (i % 2 = 1)
+            FROM generate_series(1, 200) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 13. supplier_onboarding (50 rows) ===== -->
+    <changeSet id="query-seed-013-supplier-onboarding" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_onboarding.supplier_onboarding WHERE id LIKE 'seed-onb-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_onboarding.supplier_onboarding (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                supplier_id, applicant_name, business_name, business_type, training_progress
+            )
+            SELECT
+                'seed-onb-' || LPAD(i::text, 3, '0'),
+                NOW() - ((i * 5) * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                (ARRAY['COMPLETED','COMPLETED','COMPLETED','DOCUMENTS_VERIFIED','TRAINING_IN_PROGRESS','APPLICATION_SUBMITTED','DOCUMENTS_SUBMITTED'])[1 + (i % 7)],
+                'onboarding-flow',
+                NOW() - (random() * 10 * INTERVAL '1 day'),
+                0, 0,
+                'seed-sup-' || LPAD(i::text, 3, '0'),
+                (ARRAY['Rajesh Sharma','Amit Patel','Priya Singh','Deepak Kumar','Sunita Reddy',
+                       'Vikram Nair','Kavita Joshi','Manoj Mehta','Asha Verma','Rahul Shah'])[1 + (i % 10)],
+                (ARRAY['TechZone India Pvt Ltd','FashionHub Enterprises','HomeStyle Trading Co','GadgetWorld Solutions LLP','KitchenKing Retail',
+                       'BookMart India Pvt Ltd','SportsFit Enterprises','BeautyBliss Trading Co','ToyLand Solutions LLP','GreenGarden Retail'])[1 + (i % 10)],
+                (ARRAY['INDIVIDUAL','COMPANY','PARTNERSHIP','COMPANY','COMPANY'])[1 + (i % 5)],
+                CASE WHEN i % 7 &lt; 3 THEN 100 WHEN i % 7 = 4 THEN (40 + (i * 7) % 60) ELSE 0 END
+            FROM generate_series(1, 50) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 14. inventory_item (500 rows) ===== -->
+    <changeSet id="query-seed-014-inventory" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_inventory.inventory_item WHERE id LIKE 'seed-inv-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_inventory.inventory_item (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                product_id, variant_id, sku, description,
+                quantity, available_quantity, reserved_quantity, damaged_quantity,
+                low_stock_threshold, status, cost_price,
+                supplier_id, primary_fc
+            )
+            SELECT
+                'seed-inv-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 90 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                (ARRAY['IN_STOCK','IN_STOCK','IN_STOCK','IN_STOCK','LOW_STOCK','LOW_STOCK','OUT_OF_STOCK','DISCONTINUED'])[1 + (i % 8)],
+                'inventory-flow',
+                NOW() - (random() * 15 * INTERVAL '1 day'),
+                0, 0,
+                'seed-prod-' || LPAD(i::text, 4, '0'),
+                'seed-pv-' || LPAD(((i - 1) * 2 + 1)::text, 5, '0'),
+                'SEED-INV-SKU-' || LPAD(i::text, 5, '0'),
+                'Inventory item for product seed-prod-' || LPAD(i::text, 4, '0'),
+                (10 + (random() * 490))::int,
+                GREATEST(0, (10 + (random() * 490) - random() * 50)::int),
+                (random() * 20)::int,
+                (random() * 5)::int,
+                10,
+                CASE WHEN i % 8 &lt; 4 THEN 'AVAILABLE' WHEN i % 8 &lt; 6 THEN 'LOW' ELSE 'OUT_OF_STOCK' END,
+                (200 + random() * 30000)::numeric(12,2),
+                'seed-sup-' || LPAD((1 + (i % 50))::text, 3, '0'),
+                'seed-fc-' || LPAD((1 + (i % 5))::text, 3, '0')
+            FROM generate_series(1, 500) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 15. warehouse_locations (50 rows) ===== -->
+    <changeSet id="query-seed-015-warehouse-locations" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_warehouse.warehouse_locations WHERE id LIKE 'seed-wloc-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_warehouse.warehouse_locations (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                warehouse_id, location_code, zone, aisle, shelf, bin,
+                location_type, capacity_units, current_units, is_active
+            )
+            SELECT
+                'seed-wloc-' || LPAD(i::text, 3, '0'),
+                NOW(),
+                NOW(),
+                'homebase', 'system', 1,
+                'seed-wh-' || LPAD((1 + ((i - 1) / 5))::text, 3, '0'),
+                'LOC-' || LPAD(i::text, 4, '0'),
+                (ARRAY['A','B','C','D','E'])[1 + ((i - 1) % 5)],
+                LPAD((1 + ((i - 1) % 10))::text, 2, '0'),
+                (ARRAY['S1','S2','S3','S4','S5'])[1 + ((i - 1) % 5)],
+                (ARRAY['B01','B02','B03','B04','B05'])[1 + ((i - 1) % 5)],
+                (ARRAY['PICKABLE','PICKABLE','PICKABLE','BULK','OVERSIZE'])[1 + ((i - 1) % 5)],
+                (50 + (random() * 200))::int,
+                (10 + (random() * 100))::int,
+                true
+            FROM generate_series(1, 50) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- Changesets 16 (catalog_items) and 17 (catalog_categories) REMOVED.
+         Catalog seed data lives in catalog-liquibase/seed/db.changelog-seed-categories.xml
+         which contains 5,595 Google taxonomy categories, 96 HSN mappings, 55 rules, 21 attributes. -->
+
+    <!-- ===== 18. pricing_rules (50 rows) ===== -->
+    <changeSet id="query-seed-018-pricing-rules" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_pricing.pricing_rules WHERE id LIKE 'seed-pr-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_pricing.pricing_rules (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                name, rule_type, priority, discount_type, discount_value,
+                active_from, active_to, active
+            )
+            SELECT
+                'seed-pr-' || LPAD(i::text, 3, '0'),
+                NOW() - (random() * 60 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                (ARRAY['Diwali Sale Discount','Summer Sale','Clearance Markdown','New User Welcome','Loyalty Bonus',
+                       'Festival Special','Weekend Deal','Flash Sale','Bundle Discount','Category Promotion'])[1 + (i % 10)]
+                || ' Rule ' || i,
+                (ARRAY['PERCENTAGE','FIXED','PERCENTAGE','FIXED','PERCENTAGE'])[1 + (i % 5)],
+                i,
+                (ARRAY['PERCENTAGE','FLAT','PERCENTAGE','FLAT','PERCENTAGE'])[1 + (i % 5)],
+                CASE WHEN i % 2 = 0 THEN (5 + random() * 45)::numeric(10,2) ELSE (100 + random() * 2000)::numeric(10,2) END,
+                NOW() - (30 * INTERVAL '1 day'),
+                NOW() + (60 * INTERVAL '1 day'),
+                (i % 5 != 4)
+            FROM generate_series(1, 50) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 19. platform_policies (10 rows) ===== -->
+    <changeSet id="query-seed-019-platform-policies" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_compliance.platform_policies WHERE id LIKE 'seed-pp-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_compliance.platform_policies (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                name, policy_type, slug, title, category, display_order, is_footer_link,
+                version_number, effective_from, content_plain
+            )
+            VALUES
+                ('seed-pp-001', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Return and Refund Policy', 'RETURN_POLICY', 'return-refund-policy', 'Return and Refund Policy', 'CUSTOMER', 1, true, '2.0', '2024-01-01', 'Products can be returned within 7 days of delivery for a full refund.'),
+                ('seed-pp-002', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Privacy Policy', 'PRIVACY', 'privacy-policy', 'Privacy Policy', 'LEGAL', 2, true, '3.1', '2024-01-01', 'HomeBase is committed to protecting your personal information.'),
+                ('seed-pp-003', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Terms of Service', 'TERMS', 'terms-of-service', 'Terms of Service', 'LEGAL', 3, true, '2.5', '2024-01-01', 'By using HomeBase, you agree to these terms and conditions.'),
+                ('seed-pp-004', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Shipping Policy', 'SHIPPING', 'shipping-policy', 'Shipping Policy', 'CUSTOMER', 4, true, '1.8', '2024-01-01', 'Free shipping on orders above Rs.999. Standard delivery in 3-7 days.'),
+                ('seed-pp-005', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Seller Agreement', 'SELLER_TERMS', 'seller-agreement', 'Seller Agreement', 'SELLER', 5, false, '2.2', '2024-01-01', 'Terms governing the seller-platform relationship on HomeBase.'),
+                ('seed-pp-006', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Cookie Policy', 'COOKIE', 'cookie-policy', 'Cookie Policy', 'LEGAL', 6, true, '1.0', '2024-01-01', 'HomeBase uses cookies to improve your browsing experience.'),
+                ('seed-pp-007', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Grievance Redressal Policy', 'GRIEVANCE', 'grievance-redressal', 'Grievance Redressal Policy', 'CUSTOMER', 7, true, '1.5', '2024-01-01', 'For complaints, contact our Grievance Officer at grievance@homebase.in.'),
+                ('seed-pp-008', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Intellectual Property Policy', 'IP_POLICY', 'ip-policy', 'Intellectual Property Policy', 'LEGAL', 8, false, '1.2', '2024-01-01', 'HomeBase respects intellectual property rights and expects sellers to do the same.'),
+                ('seed-pp-009', NOW(), NOW(), 'homebase', 'system', 1, 'DRAFT', 'compliance-flow', NOW(), 0, 0, 'Data Retention Policy', 'DATA_RETENTION', 'data-retention-policy', 'Data Retention Policy', 'LEGAL', 9, false, '1.0', '2025-01-01', 'HomeBase retains personal data for as long as necessary to provide services.'),
+                ('seed-pp-010', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Anti-Counterfeiting Policy', 'ANTI_COUNTERFEIT', 'anti-counterfeit-policy', 'Anti-Counterfeiting Policy', 'SELLER', 10, false, '1.3', '2024-01-01', 'HomeBase has zero tolerance for counterfeit products on its platform.');
+        </sql>
+    </changeSet>
+
+    <!-- ===== 20. agreements (10 rows) ===== -->
+    <changeSet id="query-seed-020-agreements" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_compliance.agreements WHERE id LIKE 'seed-agr-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_compliance.agreements (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                name, title, agreement_type, version_number, effective_from,
+                requires_acceptance, acceptance_type, applicable_to, mandatory_acceptance,
+                content_plain
+            )
+            VALUES
+                ('seed-agr-001', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Customer Terms of Use', 'Customer Terms of Use', 'TERMS_OF_USE', '3.0', '2024-01-01', true, 'CLICK_THROUGH', 'CUSTOMER', true, 'By creating an account, you agree to HomeBase terms.'),
+                ('seed-agr-002', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Seller Marketplace Agreement', 'Seller Marketplace Agreement', 'SELLER_AGREEMENT', '2.5', '2024-01-01', true, 'ELECTRONIC_SIGNATURE', 'SELLER', true, 'Agreement governing seller operations on HomeBase marketplace.'),
+                ('seed-agr-003', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Privacy Consent', 'Privacy Consent', 'PRIVACY_CONSENT', '2.0', '2024-01-01', true, 'CLICK_THROUGH', 'ALL', true, 'Consent for data collection and processing as per privacy policy.'),
+                ('seed-agr-004', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Seller Commission Agreement', 'Seller Commission Agreement', 'COMMISSION_AGREEMENT', '1.5', '2024-01-01', true, 'ELECTRONIC_SIGNATURE', 'SELLER', true, 'Terms governing commission rates and settlement schedules.'),
+                ('seed-agr-005', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Shipping Service Level Agreement', 'Shipping SLA', 'SLA', '1.2', '2024-01-01', true, 'CLICK_THROUGH', 'SELLER', true, 'Delivery timelines and penalties for SLA breaches.'),
+                ('seed-agr-006', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Product Listing Guidelines', 'Product Listing Guidelines', 'GUIDELINES', '2.1', '2024-01-01', true, 'CLICK_THROUGH', 'SELLER', true, 'Guidelines for listing products on HomeBase marketplace.'),
+                ('seed-agr-007', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'Promotional Campaign Terms', 'Campaign Terms', 'CAMPAIGN_TERMS', '1.0', '2024-01-01', false, 'CLICK_THROUGH', 'ALL', false, 'Terms for participating in HomeBase promotional campaigns.'),
+                ('seed-agr-008', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'FBA Terms', 'Fulfilled by HomeBase Terms', 'FBA_TERMS', '1.3', '2024-01-01', true, 'ELECTRONIC_SIGNATURE', 'SELLER', true, 'Terms for using HomeBase fulfillment services.'),
+                ('seed-agr-009', NOW(), NOW(), 'homebase', 'system', 1, 'DRAFT', 'compliance-flow', NOW(), 0, 0, 'Advertising Terms', 'HomeBase Ads Terms', 'ADS_TERMS', '1.0', '2025-06-01', true, 'CLICK_THROUGH', 'SELLER', true, 'Terms for HomeBase advertising and sponsored listings.'),
+                ('seed-agr-010', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'compliance-flow', NOW(), 0, 0, 'NDA for API Partners', 'API Partner NDA', 'NDA', '1.1', '2024-01-01', true, 'ELECTRONIC_SIGNATURE', 'PARTNER', true, 'Non-disclosure agreement for API integration partners.');
+        </sql>
+    </changeSet>
+
+
+    <!-- ================================================================== -->
+    <!-- TIER 3 — Depends on Tier 2                                         -->
+    <!-- ================================================================== -->
+
+    <!-- ===== 21. orders (1000 rows) ===== -->
+    <changeSet id="query-seed-021-orders" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_order.orders WHERE id LIKE 'seed-ord-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_order.orders (
+                id, created_time, last_modified_time, last_modified_by, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                order_number, customer_id, total_amount, subtotal, tax_amount, shipping_amount, discount_amount,
+                currency, item_count, description, carrier,
+                estimated_delivery_date, invoice_number
+            )
+            SELECT
+                'seed-ord-' || LPAD(i::text, 5, '0'),
+                NOW() - ((i * 0.09) * INTERVAL '1 day'),
+                NOW() - (random() * 3 * INTERVAL '1 day'),
+                'system', 'homebase', 'system', 1,
+                (ARRAY['CREATED','PAID','PAID','CONFIRMED','PROCESSING','SHIPPED','SHIPPED','DELIVERED','DELIVERED','DELIVERED','DELIVERED','CANCELLED'])[1 + (i % 12)],
+                'order-flow',
+                NOW() - ((i * 0.05) * INTERVAL '1 day'),
+                0, 0,
+                'HB-' || TO_CHAR(NOW() - ((i * 0.09) * INTERVAL '1 day'), 'YYYYMMDD') || '-' || LPAD(i::text, 6, '0'),
+                'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'),
+                (500 + random() * 49500)::numeric(12,2),
+                (400 + random() * 45000)::numeric(12,2),
+                (50 + random() * 5000)::numeric(12,2),
+                CASE WHEN random() > 0.6 THEN 0 ELSE (49 + random() * 200)::numeric(12,2) END,
+                (random() * 2000)::numeric(12,2),
+                'INR',
+                1 + (i % 5),
+                'Order placed via HomeBase app',
+                (ARRAY['Delhivery','BlueDart','DTDC','Ecom Express','Shadowfax','XpressBees'])[1 + (i % 6)],
+                NOW() + ((3 + random() * 7) * INTERVAL '1 day'),
+                'HB-INV-' || LPAD(i::text, 8, '0')
+            FROM generate_series(1, 1000) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 22. cart (200 rows) ===== -->
+    <changeSet id="query-seed-022-carts" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_cart.cart WHERE id LIKE 'seed-cart-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_cart.cart (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                customer_id, subtotal, total, currency, discount_amount, expires_at
+            )
+            SELECT
+                'seed-cart-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 30 * INTERVAL '1 day'),
+                NOW() - (random() * 2 * INTERVAL '1 day'),
+                'homebase', 'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'), 1,
+                (ARRAY['ACTIVE','ACTIVE','ACTIVE','ACTIVE','ABANDONED','EXPIRED','CHECKED_OUT'])[1 + (i % 7)],
+                'cart-flow',
+                NOW() - (random() * 5 * INTERVAL '1 day'),
+                0, 0,
+                'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'),
+                (800 + random() * 30000)::bigint,
+                (750 + random() * 28000)::bigint,
+                'INR',
+                (random() * 1500)::bigint,
+                NOW() + ((24 + random() * 48) * INTERVAL '1 hour')
+            FROM generate_series(1, 200) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 23. cart_item (500 rows) ===== -->
+    <changeSet id="query-seed-023-cart-items" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_cart.cart_item WHERE id LIKE 'seed-citem-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_cart.cart_item (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                cart_id, product_id, variant_id, sku, product_name, supplier_id,
+                quantity, unit_price, line_total, available, image_url
+            )
+            SELECT
+                'seed-citem-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 15 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                'seed-cart-' || LPAD((1 + ((i - 1) / 3))::text, 4, '0'),
+                'seed-prod-' || LPAD((1 + (i % 500))::text, 4, '0'),
+                'seed-pv-' || LPAD((1 + (i % 1000))::text, 5, '0'),
+                'SEED-SKU-' || LPAD((1 + (i % 1000))::text, 6, '0'),
+                (ARRAY['Samsung Galaxy M34 5G','iPhone 15 Pro Max','Xiaomi Redmi Note 13','OnePlus Nord CE 4',
+                       'Nike Air Max 270','Puma RS-X Sneakers','Levis 511 Slim Jeans','Boat Airdopes 141',
+                       'Prestige Induction Cooktop','Titan Octane Watch'])[1 + (i % 10)],
+                'seed-sup-' || LPAD((1 + (i % 50))::text, 3, '0'),
+                1 + (i % 3),
+                (500 + random() * 15000)::bigint,
+                ((500 + random() * 15000) * (1 + (i % 3)))::bigint,
+                (i % 10 != 9),
+                '/images/products/seed-prod-' || LPAD((1 + (i % 500))::text, 4, '0') || '.jpg'
+            FROM generate_series(1, 500) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 24. coupon (50 rows) ===== -->
+    <changeSet id="query-seed-024-coupons" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_promo.coupon WHERE id LIKE 'seed-coup-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_promo.coupon (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                code, name, description, discount_type, discount_value,
+                min_order_value, max_discount_amount,
+                start_date, end_date, usage_limit, usage_count, usage_per_customer,
+                target_audience, auto_apply
+            )
+            SELECT
+                'seed-coup-' || LPAD(i::text, 3, '0'),
+                NOW() - (random() * 60 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                (ARRAY['ACTIVE','ACTIVE','ACTIVE','ACTIVE','EXPIRED','PAUSED'])[1 + (i % 6)],
+                'promo-flow',
+                NOW() - (random() * 10 * INTERVAL '1 day'),
+                0, 0,
+                'SEED' || (ARRAY['DIWALI','SUMMER','WELCOME','FLASH','MEGA','SAVE','SUPER','BIG','DEAL','FEST'])[1 + (i % 10)] || LPAD(i::text, 2, '0'),
+                (ARRAY['Diwali Special','Summer Sale','New User Welcome','Flash Deal','Mega Discount',
+                       'Save More','Super Saver','Big Basket','Deal of Day','Festival Offer'])[1 + (i % 10)] || ' #' || i,
+                'Exclusive HomeBase discount coupon. Limited period offer.',
+                (ARRAY['PERCENTAGE','FLAT','PERCENTAGE','FLAT','PERCENTAGE'])[1 + (i % 5)],
+                CASE WHEN i % 2 = 0 THEN (5 + (i % 40))::float ELSE (50 + (i * 20) % 2000)::float END,
+                (500 + (i * 100) % 5000)::float,
+                CASE WHEN i % 2 = 0 THEN (200 + (i * 50) % 5000)::float ELSE NULL END,
+                NOW() - (30 * INTERVAL '1 day'),
+                NOW() + (60 * INTERVAL '1 day'),
+                (100 + i * 50),
+                (i * 7 % 100),
+                CASE WHEN i % 3 = 0 THEN 1 ELSE 3 END,
+                (ARRAY['ALL','ALL','NEW_USER','ALL','PREMIUM'])[1 + (i % 5)],
+                (i % 10 = 0)
+            FROM generate_series(1, 50) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 25. offer (200 rows) ===== -->
+    <changeSet id="query-seed-025-offers" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_offer.offer WHERE id LIKE 'seed-ofr-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_offer.offer (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                product_id, supplier_id, title, offer_type,
+                original_price, offer_price, mrp, discount_percent,
+                start_date, end_date, max_quantity, sold_quantity,
+                seller_rating, buy_box_winner, fulfillment_type, shipping_cost, delivery_days,
+                sku, stock_quantity, active, currency
+            )
+            SELECT
+                'seed-ofr-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 60 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                (ARRAY['ACTIVE','ACTIVE','ACTIVE','ACTIVE','PENDING_APPROVAL','SUSPENDED','EXPIRED'])[1 + (i % 7)],
+                'offer-flow',
+                NOW() - (random() * 15 * INTERVAL '1 day'),
+                0, 0,
+                'seed-prod-' || LPAD((1 + (i % 500))::text, 4, '0'),
+                'seed-sup-' || LPAD((1 + (i % 50))::text, 3, '0'),
+                (ARRAY['Best Price Guarantee','Festive Special','Clearance Sale','Limited Time Offer','Exclusive Deal',
+                       'New Arrival Discount','Combo Offer','Weekend Special','Flash Sale','Member Exclusive'])[1 + (i % 10)],
+                (ARRAY['DISCOUNT','FLASH_SALE','BUNDLE','CLEARANCE','SEASONAL'])[1 + (i % 5)],
+                (1000 + random() * 49000)::numeric(19,2),
+                (800 + random() * 40000)::numeric(19,2),
+                (1200 + random() * 55000)::numeric(12,2),
+                (5 + random() * 40)::numeric(5,2),
+                NOW() - (15 * INTERVAL '1 day'),
+                NOW() + (45 * INTERVAL '1 day'),
+                (50 + (random() * 500))::int,
+                (random() * 200)::int,
+                (3.5 + random() * 1.5)::numeric(3,2),
+                (i % 5 = 0),
+                (ARRAY['MERCHANT','MERCHANT','FBA','MERCHANT','FBA'])[1 + (i % 5)],
+                CASE WHEN random() > 0.5 THEN 0 ELSE (49 + random() * 150)::numeric(10,2) END,
+                (2 + (i % 7)),
+                'SEED-OFR-SKU-' || LPAD(i::text, 5, '0'),
+                (10 + (random() * 300))::int,
+                (i % 7 &lt; 5),
+                'INR'
+            FROM generate_series(1, 200) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 26. policy (rules-engine, 20 rows) ===== -->
+    <changeSet id="query-seed-026-policy" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_rules_engine.policy WHERE id LIKE 'seed-pol-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_rules_engine.policy (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                name, description, default_effect, active, target_module
+            )
+            VALUES
+                ('seed-pol-001', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Cart Validation Rules', 'Validates cart items before checkout', 'DENY', true, 'cart'),
+                ('seed-pol-002', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Order Cancellation Policy', 'Rules for when orders can be cancelled', 'DENY', true, 'order'),
+                ('seed-pol-003', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Return Eligibility Rules', 'Determines if a product is eligible for return', 'DENY', true, 'returnrequest'),
+                ('seed-pol-004', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Pricing Floor Rules', 'Ensures prices dont drop below minimum', 'ALLOW', true, 'pricing'),
+                ('seed-pol-005', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Coupon Stacking Rules', 'Controls which coupons can be combined', 'DENY', true, 'promo'),
+                ('seed-pol-006', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Seller Listing Rules', 'Validates seller product listings', 'DENY', true, 'product'),
+                ('seed-pol-007', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Fraud Detection Rules', 'Flags suspicious orders for review', 'ALLOW', true, 'checkout'),
+                ('seed-pol-008', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Settlement Approval Rules', 'Auto-approve settlements below threshold', 'DENY', true, 'settlement'),
+                ('seed-pol-009', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Inventory Reorder Rules', 'Triggers reorder when stock drops below threshold', 'ALLOW', true, 'inventory'),
+                ('seed-pol-010', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Review Moderation Rules', 'Auto-publish reviews meeting criteria', 'DENY', true, 'review'),
+                ('seed-pol-011', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Shipping Rate Rules', 'Calculates shipping based on weight and distance', 'ALLOW', true, 'shipping'),
+                ('seed-pol-012', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Tax Exemption Rules', 'Identifies tax-exempt transactions', 'DENY', true, 'tax'),
+                ('seed-pol-013', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Support Escalation Rules', 'Auto-escalate tickets breaching SLA', 'ALLOW', true, 'support'),
+                ('seed-pol-014', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Seller Commission Rules', 'Category-based commission calculation', 'ALLOW', true, 'settlement'),
+                ('seed-pol-015', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Payment Retry Rules', 'Determines if payment retry is allowed', 'DENY', true, 'payment'),
+                ('seed-pol-016', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Notification Throttle Rules', 'Prevents notification spam', 'ALLOW', true, 'notification'),
+                ('seed-pol-017', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Offer Approval Rules', 'Auto-approve offers from verified sellers', 'DENY', true, 'offer'),
+                ('seed-pol-018', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Supplier Onboarding Rules', 'Validation rules for new seller onboarding', 'DENY', true, 'onboarding'),
+                ('seed-pol-019', NOW(), NOW(), 'homebase', 'system', 1, 'DRAFT', 'ruleSet-flow', NOW(), 0, 0, 'Dynamic Pricing Rules', 'Demand-based price adjustments', 'ALLOW', false, 'pricing'),
+                ('seed-pol-020', NOW(), NOW(), 'homebase', 'system', 1, 'ACTIVE', 'ruleSet-flow', NOW(), 0, 0, 'Reconciliation Match Rules', 'Tolerance thresholds for payment matching', 'ALLOW', true, 'reconciliation');
+        </sql>
+    </changeSet>
+
+
+    <!-- ================================================================== -->
+    <!-- TIER 4 — Depends on Tier 3                                         -->
+    <!-- ================================================================== -->
+
+    <!-- ===== 27. order_items (3000 rows) ===== -->
+    <changeSet id="query-seed-027-order-items" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_order.order_items WHERE id LIKE 'seed-oi-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_order.order_items (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                order_id, product_id, variant_id, sku, product_name,
+                quantity, unit_price, total_price, tax_amount, discount_amount,
+                supplier_id, supplier_name, image_url, hsn_code, return_eligible
+            )
+            SELECT
+                'seed-oi-' || LPAD(i::text, 5, '0'),
+                NOW() - (random() * 90 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                'seed-ord-' || LPAD(GREATEST(1, LEAST(1000, (1 + ((i - 1) / 3))))::text, 5, '0'),
+                'seed-prod-' || LPAD((1 + (i % 500))::text, 4, '0'),
+                'seed-pv-' || LPAD((1 + (i % 1000))::text, 5, '0'),
+                'SEED-SKU-' || LPAD((1 + (i % 1000))::text, 6, '0'),
+                (ARRAY['Samsung Galaxy M34 5G','iPhone 15 Pro Max','Xiaomi Redmi Note 13','OnePlus Nord CE 4','Realme Narzo 70',
+                       'HP Pavilion Laptop 15','Dell Inspiron 14','Nike Air Max 270','Puma RS-X Sneakers','Levis 511 Slim Jeans',
+                       'Boat Airdopes 141','Sony WH-1000XM5','Prestige Induction Cooktop','Titan Octane Watch','Wildcraft Rucksack',
+                       'Canon EOS R50','LG 55 inch OLED TV','Bajaj Mixer Grinder','Philips Air Fryer','Bata Comfit Shoes'])[1 + (i % 20)],
+                1 + (i % 4),
+                (200 + random() * 15000)::numeric(12,2),
+                ((200 + random() * 15000) * (1 + (i % 4)))::numeric(12,2),
+                ((200 + random() * 15000) * 0.18)::numeric(12,2),
+                (random() * 500)::numeric(12,2),
+                'seed-sup-' || LPAD((1 + (i % 50))::text, 3, '0'),
+                (ARRAY['TechZone India Pvt Ltd','FashionHub Enterprises','HomeStyle Trading Co','GadgetWorld Solutions LLP','KitchenKing Retail',
+                       'BookMart India Pvt Ltd','SportsFit Enterprises','BeautyBliss Trading Co','ToyLand Solutions LLP','GreenGarden Retail'])[1 + (i % 10)],
+                '/images/products/seed-prod-' || LPAD((1 + (i % 500))::text, 4, '0') || '.jpg',
+                '85171300',
+                (i % 10 != 9)
+            FROM generate_series(1, 3000) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 28. shipments (500 rows) ===== -->
+    <changeSet id="query-seed-028-shipments" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_shipping.shipments WHERE id LIKE 'seed-shp-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_shipping.shipments (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                order_id, customer_id, carrier, tracking_number, shipping_method,
+                estimated_delivery_date, delivery_attempts, shipping_cost,
+                current_location, package_weight_grams
+            )
+            SELECT
+                'seed-shp-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 60 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                (ARRAY['LABEL_CREATED','PICKED_UP','IN_TRANSIT','IN_TRANSIT','OUT_FOR_DELIVERY','OUT_FOR_DELIVERY','DELIVERED','DELIVERED','DELIVERED','RETURNED'])[1 + (i % 10)],
+                'shipping-flow',
+                NOW() - (random() * 7 * INTERVAL '1 day'),
+                0, 0,
+                'seed-ord-' || LPAD(GREATEST(1, LEAST(1000, i * 2))::text, 5, '0'),
+                'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'),
+                (ARRAY['Delhivery','BlueDart','DTDC','Ecom Express','Shadowfax','XpressBees'])[1 + (i % 6)],
+                'TRK' || (ARRAY['DEL','BLU','DTC','ECM','SHD','XPR'])[1 + (i % 6)] || LPAD(i::text, 8, '0'),
+                (ARRAY['STANDARD','STANDARD','EXPRESS','STANDARD','SAME_DAY'])[1 + (i % 5)],
+                NOW() + ((3 + random() * 7) * INTERVAL '1 day'),
+                CASE WHEN i % 10 >= 5 THEN 1 ELSE 0 END,
+                CASE WHEN random() > 0.6 THEN 0 ELSE (49 + random() * 200)::numeric(12,2) END,
+                (ARRAY['Bengaluru Hub','Mumbai Sortation','Delhi Gateway','Hyderabad DC','Chennai Sortation',
+                       'Kolkata Hub','Pune DC','Ahmedabad Gateway','Local Delivery Center','Out for Delivery'])[1 + (i % 10)],
+                (200 + (random() * 5000))::int
+            FROM generate_series(1, 500) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 29. payment (800 rows) ===== -->
+    <changeSet id="query-seed-029-payments" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_payment.payment WHERE id LIKE 'seed-pay-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_payment.payment (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                order_id, customer_id, amount, currency, payment_method,
+                gateway_transaction_id, gateway_name, payment_method_type,
+                card_last_four, card_brand, upi_id,
+                retry_count, idempotency_key, gateway_fee, gateway_fee_percent, gst_on_fee
+            )
+            SELECT
+                'seed-pay-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 90 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                (ARRAY['INITIATED','PROCESSING','SUCCEEDED','SUCCEEDED','SUCCEEDED','SUCCEEDED','SUCCEEDED','SETTLED','FAILED','REFUNDED'])[1 + (i % 10)],
+                'payment-flow',
+                NOW() - (random() * 7 * INTERVAL '1 day'),
+                0, 0,
+                'seed-ord-' || LPAD(GREATEST(1, LEAST(1000, i + (i / 4)))::text, 5, '0'),
+                'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'),
+                (500 + random() * 49500)::numeric(12,2),
+                'INR',
+                (ARRAY['UPI','UPI','CARD','CARD','NET_BANKING','WALLET','COD','UPI','CARD','EMI'])[1 + (i % 10)],
+                'pay_' || (ARRAY['rzp','rzp','razorpay','paytm','phonepe','razorpay'])[1 + (i % 6)] || '_' || LPAD(i::text, 10, '0'),
+                (ARRAY['RAZORPAY','RAZORPAY','PAYTM','PHONEPE','RAZORPAY','PAYTM'])[1 + (i % 6)],
+                CASE WHEN i % 10 IN (2,3,4,9) THEN 'CREDIT_CARD' WHEN i % 10 IN (0,1,7) THEN 'UPI' WHEN i % 10 = 5 THEN 'WALLET' ELSE 'NET_BANKING' END,
+                CASE WHEN i % 10 IN (2,3,4,9) THEN LPAD(((1000 + i * 7) % 9999)::text, 4, '0') ELSE NULL END,
+                CASE WHEN i % 10 IN (2,3,4,9) THEN (ARRAY['VISA','MASTERCARD','RUPAY','AMEX'])[1 + (i % 4)] ELSE NULL END,
+                CASE WHEN i % 10 IN (0,1,7) THEN 'seeduser' || (1 + (i % 100)) || '@' || (ARRAY['paytm','gpay','phonepe','ybl','okaxis'])[1 + (i % 5)] ELSE NULL END,
+                CASE WHEN i % 10 = 8 THEN 1 + (i % 3) ELSE 0 END,
+                'seed-idem-pay-' || LPAD(i::text, 6, '0'),
+                ((500 + random() * 49500) * 0.02)::numeric(12,2),
+                2.00,
+                ((500 + random() * 49500) * 0.02 * 0.18)::numeric(12,2)
+            FROM generate_series(1, 800) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 30. settlements (300 rows) ===== -->
+    <changeSet id="query-seed-030-settlements" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_settlement.settlements WHERE id LIKE 'seed-stl-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_settlement.settlements (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                supplier_id, order_id, order_amount, commission_amount, platform_fee, tax_amount, net_amount,
+                currency, settlement_number,
+                settlement_period_start, settlement_period_end, disbursement_method
+            )
+            SELECT
+                'seed-stl-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 60 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                (ARRAY['CALCULATED','CALCULATED','APPROVED','PROCESSING','COMPLETED','COMPLETED','COMPLETED','COMPLETED','DISPUTED','ON_HOLD'])[1 + (i % 10)],
+                'settlement-flow',
+                NOW() - (random() * 7 * INTERVAL '1 day'),
+                0, 0,
+                'seed-sup-' || LPAD((1 + (i % 50))::text, 3, '0'),
+                'seed-ord-' || LPAD(GREATEST(1, LEAST(1000, i * 3))::text, 5, '0'),
+                (5000 + (random() * 45000))::bigint,
+                (500 + (random() * 4500))::bigint,
+                (100 + (random() * 900))::bigint,
+                (200 + (random() * 2000))::bigint,
+                (4000 + (random() * 38000))::bigint,
+                'INR',
+                'HB-STL-' || LPAD(i::text, 8, '0'),
+                CURRENT_DATE - ((i / 5 + 1) * 14 * INTERVAL '1 day')::interval,
+                CURRENT_DATE - ((i / 5) * 14 * INTERVAL '1 day')::interval,
+                (ARRAY['NEFT','IMPS','RTGS','NEFT','IMPS'])[1 + (i % 5)]
+            FROM generate_series(1, 300) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 31. notifications (500 rows) ===== -->
+    <changeSet id="query-seed-031-notifications" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_notification.notifications WHERE id LIKE 'seed-ntf-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_notification.notifications (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                customer_id, channel, subject, body,
+                recipient_address, reference_type, reference_id, priority, category, is_read
+            )
+            SELECT
+                'seed-ntf-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 30 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                (ARRAY['CREATED','DISPATCHED','DISPATCHED','DELIVERED','DELIVERED','DELIVERED','DELIVERED','DELIVERED','FAILED','BOUNCED'])[1 + (i % 10)],
+                'notification-flow',
+                NOW() - (random() * 5 * INTERVAL '1 day'),
+                0, 0,
+                'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'),
+                (ARRAY['EMAIL','SMS','PUSH','EMAIL','SMS','PUSH','EMAIL'])[1 + (i % 7)],
+                (ARRAY['Your order has been placed','Payment confirmed','Order shipped','Out for delivery',
+                       'Order delivered','Refund processed','New offer for you','Review your purchase',
+                       'Flash sale starts now','Your cart is waiting'])[1 + (i % 10)],
+                'This is a notification regarding your recent activity on HomeBase.',
+                CASE WHEN i % 3 = 0 THEN 'seeduser' || (1 + (i % 100)) || '@gmail.com'
+                     WHEN i % 3 = 1 THEN '9' || LPAD((800000000 + (1 + (i % 100)) * 73)::text, 9, '0')
+                     ELSE NULL END,
+                (ARRAY['ORDER','ORDER','PAYMENT','SHIPMENT','RETURN','SUPPORT','PROMO'])[1 + (i % 7)],
+                'seed-ord-' || LPAD(GREATEST(1, LEAST(1000, i * 2))::text, 5, '0'),
+                (ARRAY['NORMAL','NORMAL','HIGH','NORMAL','LOW'])[1 + (i % 5)],
+                (ARRAY['TRANSACTIONAL','TRANSACTIONAL','TRANSACTIONAL','PROMOTIONAL','SYSTEM'])[1 + (i % 5)],
+                (i % 3 = 0)
+            FROM generate_series(1, 500) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 32. checkout (300 rows) ===== -->
+    <changeSet id="query-seed-032-checkout" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_checkout.checkout WHERE id LIKE 'seed-chk-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_checkout.checkout (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                customer_id, cart_id, subtotal, tax_amount, shipping_cost, discount_amount, total,
+                currency, shipping_method, idempotency_key,
+                expires_at, description
+            )
+            SELECT
+                'seed-chk-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 60 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                (ARRAY['INITIATED','ADDRESS_CONFIRMED','PROCESSING','COMPLETED','COMPLETED','COMPLETED','COMPLETED','FAILED','ABANDONED','EXPIRED'])[1 + (i % 10)],
+                'checkout-flow',
+                NOW() - (random() * 5 * INTERVAL '1 day'),
+                0, 0,
+                'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'),
+                'seed-cart-' || LPAD(GREATEST(1, LEAST(200, i))::text, 4, '0'),
+                (800 + random() * 40000)::bigint,
+                (100 + random() * 5000)::bigint,
+                CASE WHEN random() > 0.6 THEN 0 ELSE (49 + random() * 200)::bigint END,
+                (random() * 2000)::bigint,
+                (900 + random() * 45000)::bigint,
+                'INR',
+                (ARRAY['STANDARD','STANDARD','EXPRESS','SAME_DAY','STANDARD'])[1 + (i % 5)],
+                'seed-idem-chk-' || LPAD(i::text, 6, '0'),
+                NOW() + (30 * INTERVAL '1 minute'),
+                'Checkout session'
+            FROM generate_series(1, 300) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 33. support_tickets (200 rows) ===== -->
+    <changeSet id="query-seed-033-support-tickets" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_support.support_tickets WHERE id LIKE 'seed-tkt-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_support.support_tickets (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                customer_id, subject, category, priority, description,
+                order_id, channel, reopen_count, sla_breached
+            )
+            SELECT
+                'seed-tkt-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 30 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'), 1,
+                (ARRAY['OPEN','OPEN','IN_PROGRESS','IN_PROGRESS','WAITING_CUSTOMER','ESCALATED','RESOLVED','RESOLVED','CLOSED','CLOSED'])[1 + (i % 10)],
+                'support-flow',
+                NOW() - (random() * 5 * INTERVAL '1 day'),
+                0, 0,
+                'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'),
+                (ARRAY['Order not received','Wrong item delivered','Refund pending over 7 days','Payment failed but amount debited',
+                       'Product damaged in transit','Delivery delayed beyond SLA','Return pickup not scheduled','Account login issue',
+                       'Coupon code not working','App crashing on checkout'])[1 + (i % 10)],
+                (ARRAY['ORDER','DELIVERY','PAYMENT','RETURN','ACCOUNT','PRODUCT','DELIVERY','ACCOUNT','PROMO','TECHNICAL'])[1 + (i % 10)],
+                (ARRAY['HIGH','HIGH','MEDIUM','MEDIUM','MEDIUM','LOW','LOW','HIGH','MEDIUM','LOW'])[1 + (i % 10)],
+                'Customer reported an issue with their recent experience on HomeBase. Needs prompt attention and resolution.',
+                'seed-ord-' || LPAD(GREATEST(1, LEAST(1000, i * 5))::text, 5, '0'),
+                (ARRAY['WEB','APP','EMAIL','PHONE','CHAT'])[1 + (i % 5)],
+                CASE WHEN i % 10 = 5 THEN 1 ELSE 0 END,
+                (i % 15 = 0)
+            FROM generate_series(1, 200) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 34. product_reviews (300 rows) ===== -->
+    <changeSet id="query-seed-034-reviews" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_review.product_reviews WHERE id LIKE 'seed-rev-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_review.product_reviews (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                product_id, customer_id, order_id, rating, title, body,
+                verified_purchase, helpful_count, report_count, review_source
+            )
+            SELECT
+                'seed-rev-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 90 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'), 1,
+                (ARRAY['PENDING','PUBLISHED','PUBLISHED','PUBLISHED','PUBLISHED','PUBLISHED','PUBLISHED','PUBLISHED','FLAGGED','REJECTED'])[1 + (i % 10)],
+                'review-flow',
+                NOW() - (random() * 15 * INTERVAL '1 day'),
+                0, 0,
+                'seed-prod-' || LPAD((1 + (i % 500))::text, 4, '0'),
+                'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'),
+                'seed-ord-' || LPAD(GREATEST(1, LEAST(1000, i * 3))::text, 5, '0'),
+                1 + (i % 5),
+                (ARRAY['Great product!','Value for money','Average quality','Not as expected','Excellent purchase',
+                       'Good but expensive','Fast delivery','Poor packaging','Best in class','Decent product'])[1 + (i % 10)],
+                (ARRAY['Really happy with this purchase. Product quality is excellent. Highly recommend to everyone.',
+                       'Product is okay but could be better for the price. Packaging was decent though.',
+                       'Amazing quality and fast delivery. Will definitely buy again from HomeBase.',
+                       'Not what I expected from the images. Returning it. Delivery was fast though.',
+                       'Perfect fit and exactly as described. The seller was very responsive.',
+                       'Delivery was super fast. Product is good quality. Worth the price.',
+                       'Packaging was damaged but product inside was fine. HomeBase should improve packaging.',
+                       'Best product in this price range. Compared with many others before buying.',
+                       'Average experience overall. Nothing special about this product.',
+                       'Paisa vasool! Great quality at this price point. Very happy with HomeBase.'])[1 + (i % 10)],
+                (i % 5 &lt; 4),
+                (random() * 50)::int,
+                CASE WHEN i % 10 = 8 THEN (1 + (random() * 5)::int) ELSE 0 END,
+                (ARRAY['WEB','APP','WEB','APP','WEB'])[1 + (i % 5)]
+            FROM generate_series(1, 300) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 35. returnrequest (200 rows) ===== -->
+    <changeSet id="query-seed-035-return-requests" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_return_request.returnrequest WHERE id LIKE 'seed-ret-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_return_request.returnrequest (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                order_id, customer_id, reason, return_type,
+                total_refund_amount, description
+            )
+            SELECT
+                'seed-ret-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 30 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'), 1,
+                (ARRAY['REQUESTED','REQUESTED','APPROVED','APPROVED','PICKUP_SCHEDULED','RECEIVED','REFUNDED','REFUNDED','REJECTED','CLOSED'])[1 + (i % 10)],
+                'return-request-flow',
+                NOW() - (random() * 5 * INTERVAL '1 day'),
+                0, 0,
+                'seed-ord-' || LPAD(GREATEST(1, LEAST(1000, i * 5))::text, 5, '0'),
+                'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'),
+                (ARRAY['DEFECTIVE','WRONG_ITEM','NOT_AS_DESCRIBED','CHANGED_MIND','SIZE_ISSUE',
+                       'QUALITY_ISSUE','MISSING_PARTS','DAMAGED_IN_TRANSIT','LATE_DELIVERY','BETTER_PRICE_ELSEWHERE'])[1 + (i % 10)],
+                (ARRAY['REFUND','REFUND','REPLACEMENT','REFUND','REPLACEMENT'])[1 + (i % 5)],
+                (500 + random() * 20000)::numeric(19,2),
+                'Return requested by customer via HomeBase app'
+            FROM generate_series(1, 200) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 36. fulfillment_orders (300 rows) ===== -->
+    <changeSet id="query-seed-036-fulfillment-orders" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_fulfillment.fulfillment_orders WHERE id LIKE 'seed-fo-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_fulfillment.fulfillment_orders (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                order_id, warehouse_id, user_id, priority, fulfillment_type,
+                total_items, shipping_method, carrier, tracking_number,
+                estimated_ship_date, estimated_delivery_date
+            )
+            SELECT
+                'seed-fo-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 60 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                (ARRAY['CREATED','PICKING','PICKING','PACKING','READY_TO_SHIP','SHIPPED','SHIPPED','DELIVERED','DELIVERED','CANCELLED'])[1 + (i % 10)],
+                'fulfillment-flow',
+                NOW() - (random() * 7 * INTERVAL '1 day'),
+                0, 0,
+                'seed-ord-' || LPAD(GREATEST(1, LEAST(1000, i * 3))::text, 5, '0'),
+                'seed-wh-' || LPAD((1 + (i % 8))::text, 3, '0'),
+                'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'),
+                (ARRAY['STANDARD','STANDARD','STANDARD','EXPRESS','URGENT'])[1 + (i % 5)],
+                (ARRAY['SHIP_TO_CUSTOMER','SHIP_TO_CUSTOMER','SHIP_TO_CUSTOMER','PICKUP_IN_STORE','SHIP_TO_CUSTOMER'])[1 + (i % 5)],
+                1 + (i % 5),
+                (ARRAY['STANDARD','STANDARD','EXPRESS','SAME_DAY','STANDARD'])[1 + (i % 5)],
+                (ARRAY['Delhivery','BlueDart','DTDC','Ecom Express','Shadowfax','XpressBees'])[1 + (i % 6)],
+                'TRK-FO-' || LPAD(i::text, 8, '0'),
+                CURRENT_DATE + (1 + (i % 3)),
+                CURRENT_DATE + (4 + (i % 7))
+            FROM generate_series(1, 300) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 37. dispute (100 rows) ===== -->
+    <changeSet id="query-seed-037-disputes" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_dispute.dispute WHERE id LIKE 'seed-dsp-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_dispute.dispute (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                order_id, customer_id, seller_id, dispute_type, reason,
+                disputed_amount, priority, sla_target_days
+            )
+            SELECT
+                'seed-dsp-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 45 * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                (ARRAY['OPENED','OPENED','UNDER_INVESTIGATION','SELLER_RESPONDED','AWAITING_EVIDENCE','RESOLVED','RESOLVED','CLOSED','ESCALATED','REJECTED'])[1 + (i % 10)],
+                'dispute-flow',
+                NOW() - (random() * 10 * INTERVAL '1 day'),
+                0, 0,
+                'seed-ord-' || LPAD(GREATEST(1, LEAST(1000, i * 10))::text, 5, '0'),
+                'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'),
+                'seed-sup-' || LPAD((1 + (i % 50))::text, 3, '0'),
+                (ARRAY['ITEM_NOT_RECEIVED','ITEM_NOT_AS_DESCRIBED','COUNTERFEIT','DAMAGED','WRONG_ITEM',
+                       'OVERCHARGED','DUPLICATE_CHARGE','UNAUTHORIZED','SERVICE_ISSUE','SELLER_FRAUD'])[1 + (i % 10)],
+                (ARRAY['Item not received after 15 days of expected delivery.',
+                       'Product quality does not match the listing description.',
+                       'Suspected counterfeit product received.',
+                       'Product arrived broken and damaged.',
+                       'Received a completely different item than what was ordered.',
+                       'Amount charged was higher than the displayed price.',
+                       'Charged twice for the same order.',
+                       'Order placed without my authorization.',
+                       'Seller not responding to return request.',
+                       'Multiple complaints about this seller from different customers.'])[1 + (i % 10)],
+                (200 + random() * 20000)::numeric(19,2),
+                (ARRAY['HIGH','MEDIUM','MEDIUM','LOW','HIGH'])[1 + (i % 5)],
+                CASE WHEN i % 5 = 0 THEN 3 WHEN i % 5 &lt; 3 THEN 5 ELSE 7 END
+            FROM generate_series(1, 100) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 38. reconciliation_batches (50 rows) ===== -->
+    <changeSet id="query-seed-038-reconciliation" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_reconciliation.reconciliation_batches WHERE id LIKE 'seed-rb-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_reconciliation.reconciliation_batches (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                state_id, flow_id, state_entry_time, sla_late, sla_tending_late,
+                batch_date, period_start, period_end, gateway_type, reconciliation_method,
+                matched_count, mismatch_count, auto_resolved_count, unresolved_count,
+                total_gateway_amount, total_system_amount, variance_amount
+            )
+            SELECT
+                'seed-rb-' || LPAD(i::text, 3, '0'),
+                NOW() - (i * INTERVAL '1 day'),
+                NOW(),
+                'homebase', 'system', 1,
+                (ARRAY['INITIATED','FETCHING','MATCHING','MATCHED','MATCHED','REVIEWING','COMPLETED','COMPLETED','COMPLETED','FAILED'])[1 + (i % 10)],
+                'reconciliation-flow',
+                NOW() - (random() * 3 * INTERVAL '1 day'),
+                0, 0,
+                CURRENT_DATE - (i * INTERVAL '1 day'),
+                (NOW() - ((i + 1) * INTERVAL '1 day'))::timestamp,
+                (NOW() - (i * INTERVAL '1 day'))::timestamp,
+                (ARRAY['RAZORPAY','RAZORPAY','PAYTM','PHONEPE','RAZORPAY'])[1 + (i % 5)],
+                'FULL',
+                (80 + (random() * 120))::int,
+                (random() * 10)::int,
+                (random() * 5)::int,
+                (random() * 3)::int,
+                (500000 + random() * 2000000)::numeric(19,2),
+                (500000 + random() * 2000000)::numeric(19,2),
+                (random() * 5000)::numeric(19,2)
+            FROM generate_series(1, 50) AS i;
+        </sql>
+    </changeSet>
+
+
+    <!-- ================================================================== -->
+    <!-- TIER 5 — Aggregates and logs (no FK constraints)                   -->
+    <!-- ================================================================== -->
+
+    <!-- ===== 39. daily_sales_summary (365 rows) ===== -->
+    <changeSet id="query-seed-039-daily-sales" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_analytics.daily_sales_summary WHERE id LIKE 'seed-dss-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_analytics.daily_sales_summary (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                summary_date, total_orders, total_revenue, total_units_sold,
+                total_discount, total_tax, total_shipping, avg_order_value,
+                new_customers, returning_customers, currency
+            )
+            SELECT
+                'seed-dss-' || LPAD(i::text, 4, '0'),
+                NOW(),
+                NOW(),
+                'homebase', 'system', 1,
+                CURRENT_DATE - (i * INTERVAL '1 day'),
+                (15 + (random() * 85))::int,
+                (200000 + random() * 1800000)::numeric(19,2),
+                (30 + (random() * 270))::int,
+                (5000 + random() * 50000)::numeric(19,2),
+                (30000 + random() * 200000)::numeric(19,2),
+                (3000 + random() * 30000)::numeric(19,2),
+                (2000 + random() * 18000)::numeric(19,2),
+                (2 + (random() * 25))::int,
+                (10 + (random() * 60))::int,
+                'INR'
+            FROM generate_series(0, 364) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 40. product_performance (500 rows) ===== -->
+    <changeSet id="query-seed-040-product-performance" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_analytics.product_performance WHERE id LIKE 'seed-pp-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_analytics.product_performance (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                product_id, period_date, views, add_to_cart_count, purchases, units_sold,
+                revenue, returns_count, avg_rating
+            )
+            SELECT
+                'seed-pperf-' || LPAD(i::text, 4, '0'),
+                NOW(),
+                NOW(),
+                'homebase', 'system', 1,
+                'seed-prod-' || LPAD((1 + (i % 500))::text, 4, '0'),
+                CURRENT_DATE - ((i / 500) * INTERVAL '1 day'),
+                (50 + (random() * 5000))::int,
+                (5 + (random() * 200))::int,
+                (1 + (random() * 50))::int,
+                (1 + (random() * 80))::int,
+                (500 + random() * 500000)::numeric(19,2),
+                (random() * 5)::int,
+                (3.0 + random() * 2.0)::numeric(19,2)
+            FROM generate_series(1, 500) AS i;
+        </sql>
+    </changeSet>
+
+    <!-- ===== 41. user_activity_log (200 rows) ===== -->
+    <changeSet id="query-seed-041-user-activity-log" author="homebase-seed">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_user.user_activity_log WHERE id LIKE 'seed-ual-%'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO hm_user.user_activity_log (
+                id, created_time, last_modified_time, tenant, created_by, version,
+                user_id, activity_name, activity_success, activity_comment
+            )
+            SELECT
+                'seed-ual-' || LPAD(i::text, 4, '0'),
+                NOW() - (random() * 90 * INTERVAL '1 day'),
+                NOW() - (random() * 90 * INTERVAL '1 day'),
+                'homebase',
+                (ARRAY['system','system','admin','customer','seller','system','system','scheduler','admin','agent'])[1 + (i % 10)],
+                1,
+                'seed-user-' || LPAD((1 + (i % 100))::text, 4, '0'),
+                (ARRAY['ACCOUNT_CREATED','LOGIN','PASSWORD_CHANGED','PROFILE_UPDATED','ADDRESS_ADDED',
+                       'EMAIL_VERIFIED','PHONE_VERIFIED','KYC_SUBMITTED','TIER_UPGRADED','ACCOUNT_SUSPENDED',
+                       'LOGIN','ORDER_PLACED','REVIEW_SUBMITTED','RETURN_REQUESTED','TICKET_RAISED',
+                       'LOGIN','PROFILE_UPDATED','ADDRESS_UPDATED','WISHLIST_ADDED','LOGOUT'])[1 + (i % 20)],
+                (i % 12 != 9),
+                (ARRAY['Account created successfully via registration',
+                       'User logged in from web browser',
+                       'Password changed by user request',
+                       'Profile details updated - name, phone',
+                       'New delivery address added - Home',
+                       'Email verification completed via OTP',
+                       'Phone number verified via OTP',
+                       'KYC documents submitted for verification',
+                       'Customer tier upgraded from REGULAR to SILVER',
+                       'Account suspended due to policy violation',
+                       'User logged in from mobile app',
+                       'New order placed via checkout',
+                       'Product review submitted for order item',
+                       'Return request initiated for recent order',
+                       'Support ticket raised for delivery issue',
+                       'User logged in from new device',
+                       'Profile image updated',
+                       'Default address changed to Office',
+                       'Product added to wishlist',
+                       'User logged out from all sessions'])[1 + (i % 20)]
+            FROM generate_series(1, 200) AS i;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

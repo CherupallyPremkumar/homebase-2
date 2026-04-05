@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ReturnProcessingSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query.return_processing_flat from OLTP          -->
+<!-- Source: return_processing_saga + returnrequest + user_profiles +        -->
+<!--         warehouses                                                      -->
+<!-- Called by ReturnProcessingSyncService                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateReturnProcessingFlat">
+    TRUNCATE TABLE hm_query.return_processing_flat
+</update>
+
+<insert id="syncReturnProcessingFlat">
+    INSERT INTO hm_query.return_processing_flat (
+        id, tenant, last_synced_at,
+        return_request_id, order_id, customer_id, customer_name,
+        warehouse_id, warehouse_name,
+        return_type, refund_amount,
+        inspection_result, inspection_notes,
+        restocked_quantity, damaged_quantity,
+        state_id, flow_id, created_time
+    )
+    SELECT
+        rps.id,
+        rps.tenant,
+        NOW(),
+        rps.return_request_id,
+        COALESCE(rr.order_id, ''),
+        COALESCE(rr.customer_id, ''),
+        COALESCE(u.first_name || ' ' || COALESCE(u.last_name, ''), ''),
+        COALESCE(rr.warehouse_id, ''),
+        COALESCE(w.warehouse_name, ''),
+        COALESCE(rr.return_type, ''),
+        COALESCE(rr.total_refund_amount, 0),
+        rps.inspection_result,
+        rps.inspection_notes,
+        COALESCE(rps.restocked_quantity, 0),
+        COALESCE(rps.damaged_quantity, 0),
+        rps.state_id,
+        rps.flow_id,
+        rps.created_time
+    FROM hm_returnprocessing.return_processing_saga rps
+    LEFT JOIN hm_returnrequest.returnrequest rr ON rps.return_request_id = rr.id
+    LEFT JOIN hm_user.user_profiles u ON rr.customer_id = u.id
+    LEFT JOIN hm_warehouse.warehouses w ON rr.warehouse_id = w.id
+</insert>
+
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CheckoutSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SYNC: OLTP → OLAP                                                      -->
+<!-- Reads from hm_checkout.*, hm_user.*, hm_cart.*                         -->
+<!-- Writes to hm_query.checkout_flat                                       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateCheckoutFlat">
+    TRUNCATE TABLE hm_query.checkout_flat
+</update>
+
+<insert id="syncCheckoutFlat">
+    INSERT INTO hm_query.checkout_flat (
+        id, tenant, last_synced_at,
+        checkout_id, customer_id, customer_name, customer_email, customer_phone,
+        cart_id, state_id, flow_id,
+        subtotal, tax_amount, shipping_amount, discount_amount,
+        total, currency, coupon_codes, item_count,
+        payment_method,
+        shipping_address, shipping_city, shipping_state, shipping_pincode,
+        billing_address, order_id,
+        created_at, last_modified_time
+    )
+    SELECT
+        ch.id, ch.tenant, NOW(),
+        ch.id, ch.customer_id,
+        COALESCE(u.first_name || ' ' || COALESCE(u.last_name, ''), ''),
+        u.email,
+        u.phone,
+        ch.cart_id, ch.state_id, ch.flow_id,
+        ch.subtotal, ch.tax_amount, ch.shipping_amount, ch.discount_amount,
+        ch.total, ch.currency, ch.coupon_codes,
+        (SELECT COUNT(*) FROM hm_cart.cart_item ci WHERE ci.cart_id = ch.cart_id),
+        ch.payment_method,
+        ch.shipping_address, ch.shipping_city, ch.shipping_state, ch.shipping_pincode,
+        ch.billing_address, ch.order_id,
+        ch.created_time, ch.last_modified_time
+    FROM hm_checkout.checkout ch
+    LEFT JOIN hm_user.user_profiles u ON ch.customer_id = u.id
+</insert>
+
+</mapper>

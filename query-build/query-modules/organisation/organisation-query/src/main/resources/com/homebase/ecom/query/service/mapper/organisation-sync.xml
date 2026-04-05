@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="OrganisationSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SYNC: OLTP -> OLAP                                                     -->
+<!-- Reads from organisation + organisation_branding + organisation_contact  -->
+<!--          + organisation_address + organisation_locale                   -->
+<!--          + organisation_social                                         -->
+<!-- Writes to hm_query.organisation_flat                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateOrganisationFlat">
+    TRUNCATE TABLE hm_query.organisation_flat
+</update>
+
+<insert id="syncOrganisationFlat">
+    INSERT INTO hm_query.organisation_flat (
+        id, tenant, last_synced_at,
+        company_name, legal_name, registration_number,
+        gst_number, pan_number, domain, active,
+        logo_url, favicon_url, primary_color, copyright_text, founded_year,
+        primary_email, support_email, primary_phone, support_phone, website_url,
+        address_line1, address_line2, city, state, pincode, country,
+        currency, timezone, locale, date_format, country_code,
+        facebook_url, twitter_url, instagram_url, linkedin_url, youtube_url,
+        created_at
+    )
+    SELECT
+        o.id, o.tenant, NOW(),
+        o.company_name, o.legal_name, o.registration_number,
+        o.gst_number, o.pan_number, o.domain, o.active,
+        b.logo_url, b.favicon_url, b.primary_color, b.copyright_text, b.founded_year,
+        c.primary_email, c.support_email, c.primary_phone, c.support_phone, c.website_url,
+        a.address_line1, a.address_line2, a.city, a.state, a.pincode, a.country,
+        l.currency, l.timezone, l.locale, l.date_format, l.country_code,
+        s.facebook_url, s.twitter_url, s.instagram_url, s.linkedin_url, s.youtube_url,
+        o.created_time
+    FROM hm_organisation.organisation o
+    LEFT JOIN hm_organisation.organisation_branding b ON o.id = b.organisation_id
+    LEFT JOIN hm_organisation.organisation_contact c ON o.id = c.organisation_id
+    LEFT JOIN hm_organisation.organisation_address a ON o.id = a.organisation_id
+    LEFT JOIN hm_organisation.organisation_locale l ON o.id = l.organisation_id
+    LEFT JOIN hm_organisation.organisation_social s ON o.id = s.organisation_id
+</insert>
+
+</mapper>

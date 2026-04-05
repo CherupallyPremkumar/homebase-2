@@ -1,0 +1,147 @@
+[
+  {
+    "id": "CconfigEntries.getAll",
+    "name": "cconfigEntries",
+    "description": "All config entries from OLAP cconfig_flat",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "moduleName": {
+        "name": "moduleName",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "keyName": {
+        "name": "keyName",
+        "filterable": true,
+        "likeQuery": true,
+        "columnType": "Text"
+      },
+      "avalue": {
+        "name": "avalue",
+        "columnType": "Text"
+      },
+      "customAttribute": {
+        "name": "customAttribute",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "tenant": {
+        "name": "tenant",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "q": {
+        "name": "q",
+        "likeQuery": true,
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "createdTime": {
+        "name": "createdTime",
+        "columnType": "Date",
+        "sortable": true
+      },
+      "lastModifiedTime": {
+        "name": "lastModifiedTime",
+        "columnType": "Date",
+        "sortable": true
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "CconfigEntries.getByModule",
+    "name": "cconfigByModule",
+    "description": "Config entries for a specific module from OLAP",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "moduleName": {
+        "name": "moduleName",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "keyName": {
+        "name": "keyName",
+        "filterable": true,
+        "likeQuery": true,
+        "columnType": "Text"
+      },
+      "avalue": {
+        "name": "avalue",
+        "columnType": "Text"
+      },
+      "customAttribute": {
+        "name": "customAttribute",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "tenant": {
+        "name": "tenant",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "q": {
+        "name": "q",
+        "likeQuery": true,
+        "filterable": true,
+        "columnType": "Text"
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "CconfigEntries.getFormSchemas",
+    "name": "cconfigFormSchemas",
+    "description": "Form schema config entries from OLAP",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "id": {
+        "name": "id",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "moduleName": {
+        "name": "moduleName",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "keyName": {
+        "name": "keyName",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "avalue": {
+        "name": "avalue",
+        "columnType": "Text"
+      },
+      "tenant": {
+        "name": "tenant",
+        "filterable": true,
+        "columnType": "Text"
+      },
+      "q": {
+        "name": "q",
+        "likeQuery": true,
+        "filterable": true,
+        "columnType": "Text"
+      }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  }
+]

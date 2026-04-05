@@ -16,14 +16,14 @@
         <!-- SUPPLIERS (uses table "supplier", column state_id)          -->
         <!-- ============================================================ -->
         <sql>
-            INSERT INTO supplier (id, name, description, email, status, created_at, updated_at, state_id, flow_id, tenant)
-            VALUES ('seller-1', 'TechWorld Electronics', 'Premium electronics seller', 'seller1@example.com', 'ACTIVE', NOW(), NOW(), 'ACTIVE', 'supplier-flow', 'homebase');
+            INSERT INTO supplier (id, name, business_name, description, email, status, created_at, updated_at, state_id, flow_id, tenant)
+            VALUES ('seller-1', 'TechWorld Electronics', 'TechWorld Electronics', 'Premium electronics seller', 'seller1@example.com', 'ACTIVE', NOW(), NOW(), 'ACTIVE', 'supplier-flow', 'homebase');
 
-            INSERT INTO supplier (id, name, description, email, status, created_at, updated_at, state_id, flow_id, tenant)
-            VALUES ('seller-2', 'Fashion Hub', 'Apparel and accessories', 'seller2@example.com', 'ACTIVE', NOW(), NOW(), 'ACTIVE', 'supplier-flow', 'homebase');
+            INSERT INTO supplier (id, name, business_name, description, email, status, created_at, updated_at, state_id, flow_id, tenant)
+            VALUES ('seller-2', 'Fashion Hub', 'Fashion Hub', 'Apparel and accessories', 'seller2@example.com', 'ACTIVE', NOW(), NOW(), 'ACTIVE', 'supplier-flow', 'homebase');
 
-            INSERT INTO supplier (id, name, description, email, status, created_at, updated_at, state_id, flow_id, tenant)
-            VALUES ('seller-3', 'HomeGoods Plus', 'Home and kitchen products', 'seller3@example.com', 'ACTIVE', NOW(), NOW(), 'ACTIVE', 'supplier-flow', 'homebase');
+            INSERT INTO supplier (id, name, business_name, description, email, status, created_at, updated_at, state_id, flow_id, tenant)
+            VALUES ('seller-3', 'HomeGoods Plus', 'HomeGoods Plus', 'Home and kitchen products', 'seller3@example.com', 'ACTIVE', NOW(), NOW(), 'ACTIVE', 'supplier-flow', 'homebase');
         </sql>
 
         <!-- ============================================================ -->
@@ -126,20 +126,20 @@
         <!-- ORDERS + ORDER ITEMS                                         -->
         <!-- ============================================================ -->
         <sql>
-            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id)
-            VALUES ('ord-1', 'HB-2025-0001', 'cust-1', 3098.00, 557.64, 0.00, 0.00, 3655.64, 'INR', 2, TIMESTAMP '2025-02-10 14:30:00', TIMESTAMP '2025-02-12 10:00:00', 'DELIVERED', 'order-flow');
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id, tenant)
+            VALUES ('ord-1', 'HB-2025-0001', 'cust-1', 3098.00, 557.64, 0.00, 0.00, 3655.64, 'INR', 2, TIMESTAMP '2025-02-10 14:30:00', TIMESTAMP '2025-02-12 10:00:00', 'DELIVERED', 'order-flow', 'homebase');
 
-            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id)
-            VALUES ('ord-2', 'HB-2025-0002', 'cust-2', 2499.00, 449.82, 50.00, 250.00, 2748.82, 'INR', 1, TIMESTAMP '2025-02-15 09:00:00', TIMESTAMP '2025-02-15 09:00:00', 'CONFIRMED', 'order-flow');
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id, tenant)
+            VALUES ('ord-2', 'HB-2025-0002', 'cust-2', 2499.00, 449.82, 50.00, 250.00, 2748.82, 'INR', 1, TIMESTAMP '2025-02-15 09:00:00', TIMESTAMP '2025-02-15 09:00:00', 'CONFIRMED', 'order-flow', 'homebase');
 
-            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id)
-            VALUES ('ord-3', 'HB-2025-0003', 'cust-1', 1999.00, 359.82, 0.00, 0.00, 2358.82, 'INR', 1, TIMESTAMP '2025-03-01 16:00:00', TIMESTAMP '2025-03-02 08:00:00', 'SHIPPED', 'order-flow');
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id, tenant)
+            VALUES ('ord-3', 'HB-2025-0003', 'cust-1', 1999.00, 359.82, 0.00, 0.00, 2358.82, 'INR', 1, TIMESTAMP '2025-03-01 16:00:00', TIMESTAMP '2025-03-02 08:00:00', 'SHIPPED', 'order-flow', 'homebase');
 
-            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id)
-            VALUES ('ord-4', 'HB-2025-0004', 'cust-3', 599.00, 107.82, 0.00, 0.00, 706.82, 'INR', 1, TIMESTAMP '2025-03-05 11:00:00', TIMESTAMP '2025-03-05 11:00:00', 'CANCELLED', 'order-flow');
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id, tenant)
+            VALUES ('ord-4', 'HB-2025-0004', 'cust-3', 599.00, 107.82, 0.00, 0.00, 706.82, 'INR', 1, TIMESTAMP '2025-03-05 11:00:00', TIMESTAMP '2025-03-05 11:00:00', 'CANCELLED', 'order-flow', 'homebase');
 
-            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id)
-            VALUES ('ord-5', 'HB-2025-0005', 'cust-4', 4998.00, 899.64, 0.00, 500.00, 5397.64, 'INR', 2, TIMESTAMP '2025-03-10 13:00:00', TIMESTAMP '2025-03-10 13:00:00', 'CONFIRMED', 'order-flow');
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, currency, item_count, created_time, updated_time, state_id, flow_id, tenant)
+            VALUES ('ord-5', 'HB-2025-0005', 'cust-4', 4998.00, 899.64, 0.00, 500.00, 5397.64, 'INR', 2, TIMESTAMP '2025-03-10 13:00:00', TIMESTAMP '2025-03-10 13:00:00', 'CONFIRMED', 'order-flow', 'homebase');
         </sql>
 
         <!-- Order items (use product_id, variant_id, product_name from denormalized snapshot) -->
@@ -247,6 +247,117 @@
             INSERT INTO returnrequest (id, order_id, order_item_id, reason, description, created_time, last_modified_time, created_by, tenant, state_id, flow_id, quantity, refund_amount, return_type)
             VALUES ('ret-2', 'ord-1', 'oi-1a', 'Defective product', 'Left speaker not working', TIMESTAMP '2025-02-14 09:00:00', TIMESTAMP '2025-02-14 09:00:00', 'cust-1', 'homebase', 'REQUESTED', 'returnrequest-flow', 1, 2499.00, 'REFUND');
         </sql>
+
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- Additional test data for new queries                         -->
+    <!-- ============================================================ -->
+    <changeSet id="ui-query-test-data-extended" author="homebase-test">
+
+        <!-- USER PROFILES -->
+        <sql>
+            INSERT INTO user_profiles (id, first_name, last_name, email, phone, role, keycloak_id, state_id, flow_id, tenant, created_time)
+            VALUES ('user-1', 'Alice', 'Smith', 'alice@example.com', '9876543210', 'CUSTOMER', 'cust-1', 'ACTIVE', 'user-flow', 'homebase', TIMESTAMP '2025-01-01 10:00:00');
+
+            INSERT INTO user_profiles (id, first_name, last_name, email, phone, role, keycloak_id, state_id, flow_id, tenant, created_time)
+            VALUES ('user-2', 'Bob', 'Jones', 'bob@example.com', '9876543211', 'CUSTOMER', 'cust-2', 'ACTIVE', 'user-flow', 'homebase', TIMESTAMP '2025-01-05 10:00:00');
+
+            INSERT INTO user_profiles (id, first_name, last_name, email, phone, role, keycloak_id, state_id, flow_id, tenant, created_time)
+            VALUES ('user-3', 'Charlie', 'Brown', 'charlie@example.com', '9876543212', 'CUSTOMER', 'cust-3', 'SUSPENDED', 'user-flow', 'homebase', TIMESTAMP '2025-01-10 10:00:00');
+
+            INSERT INTO user_profiles (id, first_name, last_name, email, phone, role, keycloak_id, state_id, flow_id, tenant, created_time)
+            VALUES ('user-4', 'Diana', 'Lee', 'diana@example.com', '9876543213', 'CUSTOMER', 'cust-4', 'ACTIVE', 'user-flow', 'homebase', TIMESTAMP '2025-02-01 10:00:00');
+        </sql>
+
+        <!-- USER ADDRESSES -->
+        <insert tableName="user_address">
+            <column name="id" value="addr-1a"/>
+            <column name="user_id" value="user-1"/>
+            <column name="address_line1" value="42 MG Road"/>
+            <column name="address_line2" value="Apt 7B"/>
+            <column name="city" value="Bangalore"/>
+            <column name="state" value="Karnataka"/>
+            <column name="postal_code" value="560001"/>
+            <column name="country" value="India"/>
+            <column name="phone" value="9876543210"/>
+            <column name="label" value="Home"/>
+            <column name="is_default" valueBoolean="true"/>
+        </insert>
+        <insert tableName="user_address">
+            <column name="id" value="addr-1b"/>
+            <column name="user_id" value="user-1"/>
+            <column name="address_line1" value="100 Brigade Road"/>
+            <column name="city" value="Bangalore"/>
+            <column name="state" value="Karnataka"/>
+            <column name="postal_code" value="560025"/>
+            <column name="country" value="India"/>
+            <column name="phone" value="9876543210"/>
+            <column name="label" value="Office"/>
+            <column name="is_default" valueBoolean="false"/>
+        </insert>
+
+        <!-- AUDIT LOG -->
+        <sql>
+            INSERT INTO audit_log (id, created_time, tenant, entity_type, entity_id, action, old_value, new_value, changed_by, ip_address, is_critical)
+            VALUES ('audit-1', TIMESTAMP '2025-03-01 10:00:00', 'homebase', 'ORDER', 'ord-1', 'STATE_CHANGE', 'CONFIRMED', 'SHIPPED', 'admin-1', '192.168.1.1', false);
+
+            INSERT INTO audit_log (id, created_time, tenant, entity_type, entity_id, action, old_value, new_value, changed_by, ip_address, is_critical)
+            VALUES ('audit-2', TIMESTAMP '2025-03-02 14:00:00', 'homebase', 'ORDER', 'ord-1', 'STATE_CHANGE', 'SHIPPED', 'DELIVERED', 'system', '10.0.0.1', false);
+
+            INSERT INTO audit_log (id, created_time, tenant, entity_type, entity_id, action, changed_by, ip_address, is_critical, details)
+            VALUES ('audit-3', TIMESTAMP '2025-03-05 09:00:00', 'homebase', 'PRODUCT', 'prod-1', 'PRICE_UPDATE', 'admin-1', '192.168.1.1', true, 'Price changed from 2999 to 2499');
+
+            INSERT INTO audit_log (id, created_time, tenant, entity_type, entity_id, action, changed_by, ip_address, is_critical)
+            VALUES ('audit-4', TIMESTAMP '2025-03-10 11:00:00', 'homebase', 'USER', 'user-3', 'STATE_CHANGE', 'admin-1', '192.168.1.1', true);
+        </sql>
+
+        <!-- OFFER (singular table — production uses "offer" not "offers") -->
+        <sql>
+            INSERT INTO offer (id, product_id, variant_id, supplier_id, selling_price, mrp, state_id, flow_id)
+            VALUES ('off-1a', 'prod-1', 'var-1a', 'seller-1', 2499.00, 2999.00, 'LIVE', 'offer-flow');
+
+            INSERT INTO offer (id, product_id, variant_id, supplier_id, selling_price, mrp, state_id, flow_id)
+            VALUES ('off-1b', 'prod-1', 'var-1b', 'seller-2', 2699.00, 2999.00, 'LIVE', 'offer-flow');
+
+            INSERT INTO offer (id, product_id, supplier_id, selling_price, mrp, state_id, flow_id)
+            VALUES ('off-2a', 'prod-2', 'seller-1', 599.00, 799.00, 'LIVE', 'offer-flow');
+
+            INSERT INTO offer (id, product_id, variant_id, supplier_id, selling_price, mrp, state_id, flow_id)
+            VALUES ('off-5a', 'prod-5', 'var-5a', 'seller-1', 1999.00, 2499.00, 'LIVE', 'offer-flow');
+        </sql>
+
+        <!-- CATALOG ITEMS (storefront read model) -->
+        <sql>
+            INSERT INTO catalog_items (id, product_id, name, description, brand, image_url, price, mrp, offer_price, discount_percent, in_stock, available_qty, average_rating, review_count, category_id, supplier_id, featured, country_of_origin, active)
+            VALUES ('ci-1', 'prod-1', 'Wireless Headphones', 'Premium noise-cancelling wireless headphones', 'SoundMax', '/images/headphones.jpg', 2499.00, 2999.00, 2499.00, 16.67, true, 53, 4.5, 2, 'cat-audio', 'seller-1', true, 'India', true);
+
+            INSERT INTO catalog_items (id, product_id, name, description, brand, image_url, price, mrp, offer_price, discount_percent, in_stock, available_qty, average_rating, review_count, category_id, supplier_id, featured, country_of_origin, active)
+            VALUES ('ci-2', 'prod-2', 'Cotton T-Shirt', 'Comfortable cotton t-shirt available in multiple sizes', 'FashionWear', '/images/tshirt.jpg', 599.00, 799.00, 599.00, 25.03, true, 278, 3.0, 1, 'cat-apparel', 'seller-1', false, 'India', true);
+
+            INSERT INTO catalog_items (id, product_id, name, description, brand, image_url, price, mrp, offer_price, discount_percent, in_stock, available_qty, average_rating, review_count, category_id, supplier_id, featured, country_of_origin, active)
+            VALUES ('ci-5', 'prod-5', 'Bluetooth Speaker', 'Portable Bluetooth speaker with deep bass', 'SoundMax', '/images/speaker.jpg', 1999.00, 2499.00, 1999.00, 20.01, true, 70, 5.0, 1, 'cat-audio', 'seller-1', true, 'India', true);
+        </sql>
+
+        <!-- CATALOG CATEGORIES -->
+        <insert tableName="catalog_categories">
+            <column name="id" value="cat-audio"/>
+            <column name="name" value="Audio"/>
+            <column name="slug" value="audio"/>
+            <column name="level" valueNumeric="1"/>
+            <column name="display_order" valueNumeric="1"/>
+            <column name="product_count" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="catalog_categories">
+            <column name="id" value="cat-apparel"/>
+            <column name="name" value="Apparel"/>
+            <column name="slug" value="apparel"/>
+            <column name="level" valueNumeric="1"/>
+            <column name="display_order" valueNumeric="2"/>
+            <column name="product_count" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
 
     </changeSet>
 

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        User test data - 8 users covering all STM states from user-states.xml:
+        REGISTERED, EMAIL_VERIFIED, ACTIVE, SUSPENDED, DEACTIVATED, LOCKED,
+        CHECK_VERIFICATION_TIMEOUT, KYC_PENDING
+    -->
+    <changeSet id="user-test-data" author="homebase-test">
+
+        <!-- user-1: Priya Sharma - ACTIVE customer, verified, tier PREMIUM -->
+        <insert tableName="user_profiles">
+            <column name="id" value="user-1"/>
+            <column name="keycloak_id" value="kc-user-1"/>
+            <column name="email" value="priya.sharma@gmail.com"/>
+            <column name="first_name" value="Priya"/>
+            <column name="last_name" value="Sharma"/>
+            <column name="phone" value="+919876543210"/>
+            <column name="role" value="CUSTOMER"/>
+            <column name="kyc_status" value="VERIFIED"/>
+            <column name="email_verified" valueBoolean="true"/>
+            <column name="phone_verified" valueBoolean="true"/>
+            <column name="customer_tier" value="PREMIUM"/>
+            <column name="pref_language" value="en"/>
+            <column name="pref_currency" value="INR"/>
+            <column name="pref_email_notif" valueBoolean="true"/>
+            <column name="pref_sms_notif" valueBoolean="true"/>
+            <column name="date_of_birth" valueDate="1992-06-15"/>
+            <column name="gender" value="FEMALE"/>
+            <column name="referral_code" value="PRIYA2026"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="user-flow"/>
+            <column name="created_time" valueDate="2025-06-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-10T14:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="5"/>
+        </insert>
+
+        <!-- user-2: Rahul Verma - ACTIVE customer, REGULAR tier -->
+        <insert tableName="user_profiles">
+            <column name="id" value="user-2"/>
+            <column name="keycloak_id" value="kc-user-2"/>
+            <column name="email" value="rahul.verma@outlook.com"/>
+            <column name="first_name" value="Rahul"/>
+            <column name="last_name" value="Verma"/>
+            <column name="phone" value="+919876543211"/>
+            <column name="role" value="CUSTOMER"/>
+            <column name="kyc_status" value="VERIFIED"/>
+            <column name="email_verified" valueBoolean="true"/>
+            <column name="phone_verified" valueBoolean="true"/>
+            <column name="customer_tier" value="REGULAR"/>
+            <column name="pref_language" value="hi"/>
+            <column name="pref_currency" value="INR"/>
+            <column name="date_of_birth" valueDate="1988-11-22"/>
+            <column name="gender" value="MALE"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="user-flow"/>
+            <column name="created_time" valueDate="2025-08-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-12T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- user-3: Anita Desai - ACTIVE customer -->
+        <insert tableName="user_profiles">
+            <column name="id" value="user-3"/>
+            <column name="keycloak_id" value="kc-user-3"/>
+            <column name="email" value="anita.desai@yahoo.com"/>
+            <column name="first_name" value="Anita"/>
+            <column name="last_name" value="Desai"/>
+            <column name="phone" value="+919876543212"/>
+            <column name="role" value="CUSTOMER"/>
+            <column name="kyc_status" value="VERIFIED"/>
+            <column name="email_verified" valueBoolean="true"/>
+            <column name="phone_verified" valueBoolean="false"/>
+            <column name="customer_tier" value="REGULAR"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="user-flow"/>
+            <column name="created_time" valueDate="2025-10-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-02-28T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- user-4: Vikram Singh - REGISTERED (email not yet verified) -->
+        <insert tableName="user_profiles">
+            <column name="id" value="user-4"/>
+            <column name="keycloak_id" value="kc-user-4"/>
+            <column name="email" value="vikram.singh@gmail.com"/>
+            <column name="first_name" value="Vikram"/>
+            <column name="last_name" value="Singh"/>
+            <column name="phone" value="+919876543213"/>
+            <column name="role" value="CUSTOMER"/>
+            <column name="email_verified" valueBoolean="false"/>
+            <column name="phone_verified" valueBoolean="false"/>
+            <column name="state_id" value="REGISTERED"/>
+            <column name="flow_id" value="user-flow"/>
+            <column name="created_time" valueDate="2026-03-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+        <!-- user-5: Meera Nair - SUSPENDED (fraud investigation) -->
+        <insert tableName="user_profiles">
+            <column name="id" value="user-5"/>
+            <column name="keycloak_id" value="kc-user-5"/>
+            <column name="email" value="meera.nair@gmail.com"/>
+            <column name="first_name" value="Meera"/>
+            <column name="last_name" value="Nair"/>
+            <column name="phone" value="+919876543214"/>
+            <column name="role" value="CUSTOMER"/>
+            <column name="kyc_status" value="VERIFIED"/>
+            <column name="email_verified" valueBoolean="true"/>
+            <column name="phone_verified" valueBoolean="true"/>
+            <column name="suspend_reason" value="Multiple chargebacks flagged by payment gateway"/>
+            <column name="state_id" value="SUSPENDED"/>
+            <column name="flow_id" value="user-flow"/>
+            <column name="created_time" valueDate="2025-04-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="8"/>
+        </insert>
+
+        <!-- user-6: Deepak Patel - DEACTIVATED (user requested account deletion) -->
+        <insert tableName="user_profiles">
+            <column name="id" value="user-6"/>
+            <column name="keycloak_id" value="kc-user-6"/>
+            <column name="email" value="deepak.patel@gmail.com"/>
+            <column name="first_name" value="Deepak"/>
+            <column name="last_name" value="Patel"/>
+            <column name="phone" value="+919876543215"/>
+            <column name="role" value="CUSTOMER"/>
+            <column name="email_verified" valueBoolean="true"/>
+            <column name="state_id" value="DEACTIVATED"/>
+            <column name="flow_id" value="user-flow"/>
+            <column name="created_time" valueDate="2025-03-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-02-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="6"/>
+        </insert>
+
+        <!-- user-7: Kavita Iyer - LOCKED (too many login attempts) -->
+        <insert tableName="user_profiles">
+            <column name="id" value="user-7"/>
+            <column name="keycloak_id" value="kc-user-7"/>
+            <column name="email" value="kavita.iyer@gmail.com"/>
+            <column name="first_name" value="Kavita"/>
+            <column name="last_name" value="Iyer"/>
+            <column name="phone" value="+919876543216"/>
+            <column name="role" value="CUSTOMER"/>
+            <column name="email_verified" valueBoolean="true"/>
+            <column name="login_attempts" valueNumeric="5"/>
+            <column name="lock_reason" value="Exceeded maximum login attempts"/>
+            <column name="state_id" value="LOCKED"/>
+            <column name="flow_id" value="user-flow"/>
+            <column name="created_time" valueDate="2025-09-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-14T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <!-- user-8: Admin user for internal operations -->
+        <insert tableName="user_profiles">
+            <column name="id" value="user-8"/>
+            <column name="keycloak_id" value="kc-admin-1"/>
+            <column name="email" value="ops-admin@homebase.in"/>
+            <column name="first_name" value="HomeBase"/>
+            <column name="last_name" value="OpsAdmin"/>
+            <column name="phone" value="+919800000001"/>
+            <column name="role" value="ADMIN"/>
+            <column name="email_verified" valueBoolean="true"/>
+            <column name="phone_verified" valueBoolean="true"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="user-flow"/>
+            <column name="created_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-01T00:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

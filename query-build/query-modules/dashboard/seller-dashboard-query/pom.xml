@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.homebase.ecom.query.dashboard</groupId>
+        <artifactId>dashboard-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <groupId>com.homebase.ecom.dashboard</groupId>
+    <artifactId>seller-dashboard-query</artifactId>
+    <packaging>jar</packaging>
+    <name>seller-dashboard-query</name>
+    <description>Seller dashboard — sales KPIs, top products, recent orders, revenue trends for seller portal</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.homebase.ecom.dashboard</groupId>
+            <artifactId>dashboard-api</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency><groupId>org.chenile</groupId><artifactId>query-api</artifactId></dependency>
+        <dependency><groupId>org.chenile</groupId><artifactId>chenile-http</artifactId></dependency>
+        <dependency><groupId>com.homebase.ecom</groupId><artifactId>core</artifactId><version>${revision}</version></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
+    </dependencies>
+</project>

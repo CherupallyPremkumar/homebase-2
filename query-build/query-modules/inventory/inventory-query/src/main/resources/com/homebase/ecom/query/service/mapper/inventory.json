@@ -1,0 +1,143 @@
+[
+	{
+		"id": "Inventory.getAll",
+		"name": "inventoryItems",
+		"description": "Inventory listing from OLAP inventory_health_flat",
+		"acls": ["ADMIN", "WAREHOUSE", "OPERATIONS_MANAGER"],
+		"columnMetadata": {
+			"sku": { "name": "sku", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"productName": { "name": "productName", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
+			"sellerId": { "name": "sellerId", "filterable": true, "columnType": "Text" },
+			"sellerName": { "name": "sellerName", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"stockStatus": { "name": "stockStatus", "filterable": true, "columnType": "Text" },
+			"stmState": { "name": "stmState", "filterable": true, "columnType": "Text" },
+			"warehouseName": { "name": "warehouseName", "filterable": true, "sortable": true, "columnType": "Text" },
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+			"availableQuantity": { "name": "availableQuantity", "sortable": true, "columnType": "Numeric" },
+			"daysOfSupply": { "name": "daysOfSupply", "sortable": true, "columnType": "Numeric" },
+			"daysWithoutSale": { "name": "daysWithoutSale", "sortable": true, "columnType": "Numeric" },
+			"lockedCapital": { "name": "lockedCapital", "sortable": true, "columnType": "Numeric" }
+		},
+		"paginated": true,
+		"sortable": true,
+		"workflowName": "inventoryItem",
+		"stateColumn": "stateId"
+	},
+	{
+		"id": "Inventory.getById",
+		"name": "inventoryItem",
+		"description": "Single inventory item detail",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Inventory.checkAvailability",
+		"name": "inventory-availability",
+		"description": "Quick availability check for cart/PDP",
+		"acls": [],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
+			"variantId": { "name": "variantId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Inventory.getByProductId",
+		"name": "inventory-by-product",
+		"description": "All inventory for a product across warehouses",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Inventory.getStateCounts",
+		"name": "inventory-state-counts",
+		"description": "Stock status counts for tab badges (IN_STOCK/LOW_STOCK/OUT_OF_STOCK)",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"paginated": false
+	},
+	{
+		"id": "Inventory.getStmStateCounts",
+		"name": "inventory-stm-state-counts",
+		"description": "STM workflow state counts for state filter dropdown",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"paginated": false
+	},
+	{
+		"id": "Inventory.getDistinctSellers",
+		"name": "inventory-sellers",
+		"description": "Distinct sellers for dropdown filter",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"paginated": false
+	},
+	{
+		"id": "Inventory.getDistinctWarehouses",
+		"name": "inventory-warehouses",
+		"description": "Distinct warehouses for dropdown filter",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"paginated": false
+	},
+	{
+		"id": "Inventory.getLowStock",
+		"name": "inventory-low-stock",
+		"description": "Low stock items needing reorder",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"warehouseName": { "name": "warehouseName", "filterable": true, "columnType": "Text" },
+			"sellerId": { "name": "sellerId", "filterable": true, "columnType": "Text" },
+			"sku": { "name": "sku", "sortable": true, "columnType": "Text" },
+			"availableQuantity": { "name": "availableQuantity", "sortable": true, "columnType": "Numeric" },
+			"daysOfSupply": { "name": "daysOfSupply", "sortable": true, "columnType": "Numeric" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Inventory.getOutOfStock",
+		"name": "inventory-out-of-stock",
+		"description": "Out of stock items",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Inventory.getByFulfillmentCenter",
+		"name": "inventory-by-fc",
+		"description": "FC health summary grouped by warehouse",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"paginated": false
+	},
+	{
+		"id": "Inventory.getDeadStock",
+		"name": "inventory-dead-stock",
+		"description": "Items with no sale in 30+ days",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"daysWithoutSale": { "name": "daysWithoutSale", "sortable": true, "columnType": "Numeric" },
+			"lockedCapital": { "name": "lockedCapital", "sortable": true, "columnType": "Numeric" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Inventory.getRecentMovements",
+		"name": "stock-movements",
+		"description": "Recent stock movements (inbound, sale, transfer, etc.)",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"movementType": { "name": "movementType", "filterable": true, "columnType": "Text" },
+			"sku": { "name": "sku", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"warehouseName": { "name": "warehouseName", "filterable": true, "columnType": "Text" },
+			"movementTime": { "name": "movementTime", "sortable": true, "columnType": "Date" },
+			"quantity": { "name": "quantity", "sortable": true, "columnType": "Numeric" }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

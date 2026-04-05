@@ -1,0 +1,602 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Storefront">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL READS FROM hm_query.* OLAP SCHEMA ONLY — NEVER FROM OLTP          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- STOREFRONT PRODUCTS                                                   -->
+<!-- Source: hm_query.dim_product + hm_query.fact_inventory                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="storefrontProducts-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.dim_product
+    WHERE product_status = 'PUBLISHED'
+    <if test="categoryId != null">AND category_id = #{categoryId}</if>
+    <if test="brand != null">AND brand = #{brand}</if>
+    <if test="q != null">AND (product_name ILIKE CONCAT('%', #{q}, '%') OR description ILIKE CONCAT('%', #{q}, '%') OR brand ILIKE CONCAT('%', #{q}, '%'))</if>
+    <if test="id != null">AND product_id = #{id}</if>
+</select>
+
+<select id="storefrontProducts" resultType="com.homebase.ecom.uiquery.dto.StorefrontProductQueryDto">
+    SELECT
+        p.product_id as "id",
+        p.product_id as "productId",
+        p.product_name as "name",
+        p.description as "description",
+        p.brand as "brandName",
+        p.primary_image_url as "imageUrl",
+        p.base_price as "price",
+        p.base_price as "mrp",
+        p.selling_price as "offerPrice",
+        CASE WHEN p.base_price > 0 AND p.selling_price > 0
+             THEN ((p.base_price - p.selling_price) * 100 / p.base_price)
+             ELSE 0 END as "discount",
+        CASE WHEN COALESCE(fi.available_qty, 0) > 0 THEN true ELSE false END as "inStock",
+        COALESCE(fi.available_qty, 0) as "availableQuantity",
+        COALESCE(p.avg_rating, 0) as "averageRating",
+        COALESCE(p.review_count, 0) as "reviewCount",
+        p.category_id as "categoryId",
+        p.seller_id as "supplierId",
+        p.featured as "featured",
+        p.country_of_origin as "countryOfOrigin",
+        'INR' as "currency"
+    FROM hm_query.dim_product p
+    LEFT JOIN hm_query.fact_inventory fi ON fi.product_id = p.product_id
+    WHERE p.product_status = 'PUBLISHED'
+    <if test="categoryId != null">AND p.category_id = #{categoryId}</if>
+    <if test="brand != null">AND p.brand = #{brand}</if>
+    <if test="q != null">AND (p.product_name ILIKE CONCAT('%', #{q}, '%') OR p.description ILIKE CONCAT('%', #{q}, '%') OR p.brand ILIKE CONCAT('%', #{q}, '%'))</if>
+    <if test="id != null">AND p.product_id = #{id}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- FEATURED PRODUCTS                                                     -->
+<!-- Source: hm_query.dim_product                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="featuredProducts-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.dim_product
+    WHERE product_status = 'PUBLISHED' AND featured = true
+</select>
+
+<select id="featuredProducts" resultType="com.homebase.ecom.uiquery.dto.FeaturedProductQueryDto">
+    SELECT
+        p.product_id as "id",
+        p.product_id as "productId",
+        p.product_name as "name",
+        p.description as "description",
+        p.brand as "brandName",
+        p.primary_image_url as "imageUrl",
+        p.base_price as "price",
+        p.base_price as "mrp",
+        p.selling_price as "offerPrice",
+        CASE WHEN p.base_price > 0 AND p.selling_price > 0
+             THEN ((p.base_price - p.selling_price) * 100 / p.base_price)
+             ELSE 0 END as "discount",
+        CASE WHEN COALESCE(fi.available_qty, 0) > 0 THEN true ELSE false END as "inStock",
+        COALESCE(p.avg_rating, 0) as "averageRating",
+        COALESCE(p.review_count, 0) as "reviewCount",
+        p.category_id as "categoryId",
+        'INR' as "currency"
+    FROM hm_query.dim_product p
+    LEFT JOIN hm_query.fact_inventory fi ON fi.product_id = p.product_id
+    WHERE p.product_status = 'PUBLISHED' AND p.featured = true
+    ORDER BY p.review_count DESC, p.avg_rating DESC
+    ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- STOREFRONT CATEGORIES                                                 -->
+<!-- Source: hm_query.dim_category                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="storefrontCategories" resultType="com.homebase.ecom.uiquery.dto.StorefrontCategoryQueryDto">
+    SELECT
+        c.category_id as "id",
+        c.category_name as "name",
+        c.slug as "slug",
+        c.parent_id as "parentId",
+        c.image_url as "imageUrl",
+        c.description as "description",
+        c.level as "level",
+        c.display_order as "sortOrder",
+        COALESCE(c.product_count, 0) as "productCount"
+    FROM hm_query.dim_category c
+    WHERE c.active = true
+    <if test="parentId != null">AND c.parent_id = #{parentId}</if>
+    ORDER BY COALESCE(c.display_order, 999), c.category_name ASC
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SEARCH SUGGESTIONS                                                    -->
+<!-- Source: hm_query.dim_product                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="suggestions-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.dim_product
+    WHERE product_status = 'PUBLISHED'
+    <if test="q != null">AND product_name ILIKE CONCAT('%', #{q}, '%')</if>
+</select>
+
+<select id="suggestions" resultType="com.homebase.ecom.uiquery.dto.SuggestionQueryDto">
+    SELECT
+        p.product_id as "id",
+        p.product_name as "text",
+        'product' as "type",
+        p.product_id as "productId"
+    FROM hm_query.dim_product p
+    WHERE p.product_status = 'PUBLISHED'
+    <if test="q != null">AND p.product_name ILIKE CONCAT('%', #{q}, '%')</if>
+    ORDER BY p.product_name ASC
+    ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- BANNERS                                                               -->
+<!-- Source: hm_query.dim_banner                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="banners" resultType="com.homebase.ecom.uiquery.dto.BannerQueryDto">
+    SELECT
+        b.banner_id as "id",
+        b.title as "title",
+        b.image_url as "imageUrl",
+        b.mobile_image_url as "mobileImageUrl",
+        b.link_url as "linkUrl",
+        b.position as "position",
+        b.display_order as "displayOrder"
+    FROM hm_query.dim_banner b
+    WHERE b.active = true
+      AND (b.active_from IS NULL OR b.active_from &lt;= CURRENT_TIMESTAMP)
+      AND (b.active_to IS NULL OR b.active_to &gt;= CURRENT_TIMESTAMP)
+    ORDER BY COALESCE(b.display_order, 999)
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- FILTERS (brands for faceted navigation)                               -->
+<!-- Source: hm_query.dim_product                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="filters" resultType="com.homebase.ecom.uiquery.dto.FilterQueryDto">
+    SELECT DISTINCT brand as "value", brand as "label", 'brand' as "filterType"
+    FROM hm_query.dim_product
+    WHERE product_status = 'PUBLISHED' AND brand IS NOT NULL
+    ORDER BY brand
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PRODUCT DETAIL                                                        -->
+<!-- Source: hm_query.dim_product + hm_query.fact_inventory                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="productDetail" resultType="com.homebase.ecom.uiquery.dto.ProductDetailQueryDto">
+    SELECT
+        p.product_id as "id",
+        p.product_name as "name",
+        p.description as "description",
+        p.short_description as "shortDescription",
+        p.brand as "brand",
+        p.slug as "slug",
+        p.category_id as "categoryId",
+        p.category_name as "categoryName",
+        p.base_price as "basePrice",
+        p.base_price as "mrp",
+        p.hsn_code as "hsnCode",
+        p.country_of_origin as "countryOfOrigin",
+        p.weight_grams as "weightGrams",
+        p.warranty_months as "warrantyMonths",
+        p.is_returnable as "isReturnable",
+        p.return_window_days as "returnWindowDays",
+        '' as "metaTitle",
+        '' as "metaDescription",
+        COALESCE(fi.available_qty, 0) as "availableQuantity",
+        CASE WHEN COALESCE(fi.available_qty, 0) > 0 THEN true ELSE false END as "inStock",
+        COALESCE(p.avg_rating, 0) as "averageRating",
+        COALESCE(p.review_count, 0) as "reviewCount"
+    FROM hm_query.dim_product p
+    LEFT JOIN hm_query.fact_inventory fi ON fi.product_id = p.product_id
+    WHERE p.product_status = 'PUBLISHED'
+      AND p.slug = #{slug}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PRODUCT VARIANTS WITH PRICE                                           -->
+<!-- Source: hm_query.product_variant_flat + hm_query.fact_inventory       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="productVariantsWithPrice" resultType="com.homebase.ecom.uiquery.dto.ProductVariantWithPriceQueryDto">
+    SELECT
+        pv.variant_id as "variantId",
+        pv.product_id as "productId",
+        pv.sku as "sku",
+        COALESCE(pv.selling_price, pv.mrp) as "sellingPrice",
+        COALESCE(pv.mrp, 0) as "mrp",
+        COALESCE(pv.available_qty, 0) as "availableQuantity",
+        CASE WHEN COALESCE(pv.available_qty, 0) > 0 THEN true ELSE false END as "inStock",
+        '' as "offerId",
+        pv.variant_status as "offerState"
+    FROM hm_query.product_variant_flat pv
+    WHERE pv.product_id = #{productId}
+    ORDER BY pv.sku
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MY ORDERS                                                             -->
+<!-- Source: hm_query.order_details_flat                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="myOrders-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.order_details_flat
+    WHERE tenant = #{tenant}
+    <if test="customerId != null">AND customer_id = #{customerId}</if>
+</select>
+
+<select id="myOrders" resultType="com.homebase.ecom.uiquery.dto.MyOrderQueryDto">
+    SELECT
+        o.order_id as "orderId",
+        o.order_number as "orderNumber",
+        o.order_status as "stateId",
+        o.total_amount as "totalAmount",
+        o.currency as "currency",
+        o.order_date as "createdTime",
+        o.total_items as "itemCount",
+        o.payment_status as "paymentStatus",
+        o.payment_method as "paymentMethod",
+        o.shipping_status as "shippingStatus",
+        o.tracking_number as "trackingNumber",
+        o.carrier as "carrier",
+        o.estimated_delivery as "estimatedDeliveryDate"
+    FROM hm_query.order_details_flat o
+    WHERE o.tenant = #{tenant}
+    <if test="customerId != null">AND o.customer_id = #{customerId}</if>
+    ORDER BY o.order_date DESC
+    ${pagination}
+</select>
+
+<select id="myOrdersAlias-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.order_details_flat
+    WHERE tenant = #{tenant}
+    <if test="customerId != null">AND customer_id = #{customerId}</if>
+</select>
+
+<select id="myOrdersAlias" resultType="com.homebase.ecom.uiquery.dto.MyOrderQueryDto">
+    SELECT
+        o.order_id as "orderId",
+        o.order_number as "orderNumber",
+        o.order_status as "stateId",
+        o.total_amount as "totalAmount",
+        o.currency as "currency",
+        o.order_date as "createdTime",
+        o.total_items as "itemCount",
+        o.payment_status as "paymentStatus",
+        o.payment_method as "paymentMethod",
+        o.shipping_status as "shippingStatus",
+        o.tracking_number as "trackingNumber",
+        o.carrier as "carrier",
+        o.estimated_delivery as "estimatedDeliveryDate"
+    FROM hm_query.order_details_flat o
+    WHERE o.tenant = #{tenant}
+    <if test="customerId != null">AND o.customer_id = #{customerId}</if>
+    ORDER BY o.order_date DESC
+    ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ORDER DETAIL                                                          -->
+<!-- Source: hm_query.order_details_flat                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="orderDetail" resultType="com.homebase.ecom.uiquery.dto.OrderDetailQueryDto">
+    SELECT
+        o.order_id as "orderId",
+        o.order_number as "orderNumber",
+        o.order_status as "orderState",
+        o.total_amount as "totalAmount",
+        o.currency as "currency",
+        o.total_items as "itemCount",
+        o.order_date as "createdTime",
+        o.payment_id as "paymentId",
+        o.payment_status as "paymentStatus",
+        o.payment_method as "paymentMethod",
+        o.total_amount as "paymentAmount",
+        o.shipment_id as "shipmentId",
+        o.shipping_status as "shippingStatus",
+        o.carrier as "carrier",
+        o.tracking_number as "trackingNumber",
+        o.shipping_method as "shippingMethod",
+        o.estimated_delivery as "estimatedDeliveryDate",
+        o.actual_delivery as "actualDeliveryDate",
+        '' as "currentLocation"
+    FROM hm_query.order_details_flat o
+    WHERE o.order_id = #{orderId}
+    <if test="customerId != null">AND o.customer_id = #{customerId}</if>
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ORDER LINE ITEMS                                                      -->
+<!-- Source: hm_query.order_items_flat                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="orderLineItems" resultType="com.homebase.ecom.uiquery.dto.OrderLineItemQueryDto">
+    SELECT
+        oi.item_id as "itemId",
+        oi.product_id as "productId",
+        oi.product_name as "productName",
+        oi.variant_id as "variantId",
+        oi.sku as "sku",
+        oi.quantity as "quantity",
+        oi.unit_price as "unitPrice",
+        oi.total_price as "totalPrice",
+        oi.fulfillment_status as "itemStatus",
+        oi.product_slug as "productSlug",
+        oi.brand as "brand",
+        oi.image_url as "imageUrl"
+    FROM hm_query.order_items_flat oi
+    WHERE oi.order_id = #{orderId}
+    ORDER BY oi.created_time ASC
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ORDER TRACKING                                                        -->
+<!-- Source: hm_query.order_details_flat                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="orderTracking" resultType="com.homebase.ecom.uiquery.dto.OrderTrackingQueryDto">
+    SELECT
+        o.shipment_id as "shipmentId",
+        o.order_id as "orderId",
+        o.shipping_status as "shippingStatus",
+        o.carrier as "carrier",
+        o.tracking_number as "trackingNumber",
+        o.shipping_method as "shippingMethod",
+        o.estimated_delivery as "estimatedDeliveryDate",
+        o.actual_delivery as "actualDeliveryDate",
+        '' as "currentLocation",
+        0 as "deliveryAttempts",
+        '' as "eventType",
+        '' as "eventDescription",
+        '' as "eventLocation",
+        o.order_date as "eventTime"
+    FROM hm_query.order_details_flat o
+    WHERE o.order_id = #{orderId}
+    <if test="customerId != null">AND o.customer_id = #{customerId}</if>
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MY CART                                                               -->
+<!-- Source: hm_query.cart_detail_flat                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="myCart" resultType="com.homebase.ecom.uiquery.dto.MyCartQueryDto">
+    SELECT
+        c.cart_id as "cartId",
+        c.cart_status as "cartState",
+        c.subtotal as "subtotal",
+        c.currency as "currency",
+        c.coupon_codes as "couponCodes",
+        c.item_id as "itemId",
+        c.product_id as "productId",
+        c.variant_id as "variantId",
+        c.product_name as "productName",
+        c.sku as "sku",
+        c.quantity as "quantity",
+        c.unit_price as "unitPrice",
+        c.total_price as "totalPrice",
+        c.image_url as "imageUrl",
+        c.product_slug as "productSlug",
+        c.brand as "brand",
+        COALESCE(c.available_qty, 0) as "availableQuantity",
+        CASE WHEN COALESCE(c.available_qty, 0) >= c.quantity THEN true ELSE false END as "inStock"
+    FROM hm_query.cart_detail_flat c
+    WHERE c.cart_status = 'ACTIVE'
+      AND c.customer_id = #{customerId}
+    ORDER BY c.created_time ASC
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PRODUCT REVIEWS                                                       -->
+<!-- Source: hm_query.review_flat                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="productReviews-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.review_flat
+    WHERE review_status = 'PUBLISHED' AND product_id = #{productId}
+    <if test="rating != null">AND rating = #{rating}</if>
+</select>
+
+<select id="productReviews" resultType="com.homebase.ecom.uiquery.dto.ProductReviewQueryDto">
+    SELECT
+        r.review_id as "reviewId",
+        r.product_id as "productId",
+        r.customer_id as "customerId",
+        r.rating as "rating",
+        r.title as "title",
+        r.comment as "comment",
+        r.is_verified_purchase as "isVerifiedPurchase",
+        r.helpful_count as "helpfulCount",
+        r.created_time as "createdTime",
+        r.reviewer_name as "reviewerName"
+    FROM hm_query.review_flat r
+    WHERE r.review_status = 'PUBLISHED'
+      AND r.product_id = #{productId}
+    <if test="rating != null">AND r.rating = #{rating}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- BRAND LIST                                                            -->
+<!-- Source: hm_query.dim_product                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="brandList" resultType="com.homebase.ecom.uiquery.dto.BrandListQueryDto">
+    SELECT DISTINCT brand as "name", COUNT(*) as "productCount"
+    FROM hm_query.dim_product
+    WHERE product_status = 'PUBLISHED' AND brand IS NOT NULL
+    GROUP BY brand
+    ORDER BY brand
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PRICE RANGES                                                          -->
+<!-- Source: hm_query.dim_product                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="priceRanges" resultType="com.homebase.ecom.uiquery.dto.PriceRangeQueryDto">
+    SELECT
+        MIN(base_price) as "minPrice",
+        MAX(base_price) as "maxPrice",
+        AVG(base_price) as "avgPrice"
+    FROM hm_query.dim_product
+    WHERE product_status = 'PUBLISHED' AND base_price IS NOT NULL AND base_price > 0
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MY WISHLIST                                                           -->
+<!-- Source: hm_query.wishlist_flat                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="myWishlist-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.wishlist_flat
+    WHERE customer_id = #{customerId}
+</select>
+
+<select id="myWishlist" resultType="com.homebase.ecom.uiquery.dto.WishlistItemQueryDto">
+    SELECT
+        wi.wishlist_item_id as "id",
+        wi.product_id as "productId",
+        wi.variant_id as "variantId",
+        wi.added_at as "addedAt",
+        wi.price_when_added as "priceWhenAdded",
+        wi.notify_on_price_drop as "notifyOnPriceDrop",
+        wi.product_name as "productName",
+        wi.brand as "brand",
+        wi.image_url as "imageUrl",
+        wi.current_price as "currentPrice",
+        wi.mrp as "mrp",
+        wi.offer_price as "offerPrice",
+        wi.in_stock as "inStock",
+        wi.discount_percent as "discount",
+        wi.avg_rating as "averageRating",
+        wi.review_count as "reviewCount"
+    FROM hm_query.wishlist_flat wi
+    WHERE wi.customer_id = #{customerId}
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MY PROFILE                                                            -->
+<!-- Source: hm_query.customer_360_flat                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="myProfile" resultType="com.homebase.ecom.uiquery.dto.MyProfileQueryDto">
+    SELECT
+        u.customer_id as "id",
+        u.first_name as "firstName",
+        u.last_name as "lastName",
+        u.email as "email",
+        u.phone as "phone",
+        u.role as "role",
+        u.customer_status as "stateId",
+        u.keycloak_id as "keycloakId",
+        u.default_address_id as "defaultAddressId",
+        u.created_time as "createdTime",
+        COALESCE(u.address_count, 0) as "addressCount"
+    FROM hm_query.customer_360_flat u
+    WHERE u.customer_status = 'ACTIVE'
+      AND u.keycloak_id = #{customerId}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MY NOTIFICATIONS                                                      -->
+<!-- Source: hm_query.notification_flat                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="myNotifications-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.notification_flat
+    <where>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="type != null">AND type = #{type}</if>
+        <if test="title != null">AND title ILIKE CONCAT('%', #{title}, '%')</if>
+        <if test="isRead != null">AND is_read = CAST(#{isRead} AS boolean)</if>
+        <if test="createdTime != null">AND created_time BETWEEN #{createdTime[0]} AND #{createdTime[1]}</if>
+    </where>
+</select>
+
+<select id="myNotifications" resultType="com.homebase.ecom.uiquery.dto.CustomerNotificationQueryDto">
+    SELECT
+        cn.notification_id as "id",
+        cn.type as "type",
+        cn.title as "title",
+        cn.message as "message",
+        cn.is_read as "isRead",
+        cn.reference_id as "referenceId",
+        cn.reference_type as "referenceType",
+        cn.created_time as "createdTime"
+    FROM hm_query.notification_flat cn
+    <where>
+        <if test="customerId != null">AND cn.customer_id = #{customerId}</if>
+        <if test="type != null">AND cn.type = #{type}</if>
+        <if test="title != null">AND cn.title ILIKE CONCAT('%', #{title}, '%')</if>
+        <if test="isRead != null">AND cn.is_read = CAST(#{isRead} AS boolean)</if>
+        <if test="createdTime != null">AND cn.created_time BETWEEN #{createdTime[0]} AND #{createdTime[1]}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MY ADDRESSES                                                          -->
+<!-- Source: hm_query.customer_360_flat (address sub-query)                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="myAddresses" resultType="com.homebase.ecom.uiquery.dto.AddressQueryDto">
+    SELECT
+        ua.address_id as "id",
+        ua.customer_id as "userId",
+        ua.address_line1 as "addressLine1",
+        ua.address_line2 as "addressLine2",
+        ua.city as "city",
+        ua.state as "state",
+        ua.postal_code as "postalCode",
+        ua.country as "country",
+        ua.phone as "phone",
+        ua.label as "label",
+        ua.is_default as "isDefault"
+    FROM hm_query.address_flat ua
+    WHERE ua.customer_id = #{userId}
+    ORDER BY ua.is_default DESC, ua.address_id ASC
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MY RETURNS                                                            -->
+<!-- Source: hm_query.return_detail_flat                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="myReturns-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.return_detail_flat
+    WHERE customer_id = #{customerId}
+</select>
+
+<select id="myReturns" resultType="com.homebase.ecom.uiquery.dto.MyReturnQueryDto">
+    SELECT
+        r.return_id as "returnId",
+        r.order_id as "orderId",
+        r.order_item_id as "orderItemId",
+        r.reason as "reason",
+        r.description as "description",
+        r.return_status as "stateId",
+        r.quantity as "quantity",
+        r.refund_amount as "refundAmount",
+        r.return_type as "returnType",
+        r.created_time as "createdTime",
+        r.product_name as "productName",
+        r.sku as "sku"
+    FROM hm_query.return_detail_flat r
+    WHERE r.customer_id = #{customerId}
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

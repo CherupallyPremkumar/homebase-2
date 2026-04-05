@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Invoice">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read ONLY from hm_query OLAP schema.                      -->
+<!-- Source: invoice_flat (denormalized flat table)                         -->
+<!-- Populated by InvoiceSyncService ETL.                                  -->
+<!-- NEVER reference any OLTP schema here.                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN LISTING ====== -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.invoice_flat
+    <where>
+        <if test="orderId != null">AND order_id = #{orderId}</if>
+        <if test="status != null">AND status = #{status}</if>
+        <if test="invoiceNumber != null">AND LOWER(invoice_number) LIKE LOWER(CONCAT('%', #{invoiceNumber}, '%'))</if>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="q != null">AND (
+            LOWER(invoice_number) LIKE LOWER(CONCAT('%', #{q}, '%'))
+            OR order_id LIKE CONCAT('%', #{q}, '%')
+            OR customer_name LIKE CONCAT('%', #{q}, '%')
+            OR order_number LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.invoice.dto.InvoiceQueryDto">
+    SELECT
+        id,
+        order_id           as "orderId",
+        order_number       as "orderNumber",
+        invoice_number     as "invoiceNumber",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        total_amount       as "totalAmount",
+        tax_amount         as "taxAmount",
+        subtotal           as "subtotal",
+        status,
+        gstin,
+        created_time       as "createdAt"
+    FROM hm_query.invoice_flat
+    <where>
+        <if test="orderId != null">AND order_id = #{orderId}</if>
+        <if test="status != null">AND status = #{status}</if>
+        <if test="invoiceNumber != null">AND LOWER(invoice_number) LIKE LOWER(CONCAT('%', #{invoiceNumber}, '%'))</if>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="q != null">AND (
+            LOWER(invoice_number) LIKE LOWER(CONCAT('%', #{q}, '%'))
+            OR order_id LIKE CONCAT('%', #{q}, '%')
+            OR customer_name LIKE CONCAT('%', #{q}, '%')
+            OR order_number LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== DETAIL ====== -->
+<select id="getById" resultType="com.homebase.ecom.invoice.dto.InvoiceQueryDto">
+    SELECT
+        id,
+        order_id           as "orderId",
+        order_number       as "orderNumber",
+        invoice_number     as "invoiceNumber",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        customer_email     as "customerEmail",
+        total_amount       as "totalAmount",
+        tax_amount         as "taxAmount",
+        subtotal           as "subtotal",
+        shipping_amount    as "shippingAmount",
+        discount_amount    as "discountAmount",
+        status,
+        gstin,
+        billing_address    as "billingAddress",
+        shipping_address   as "shippingAddress",
+        created_time       as "createdAt"
+    FROM hm_query.invoice_flat
+    WHERE id = #{id}
+</select>
+
+<!-- ====== STATE COUNTS ====== -->
+<select id="getStateCounts" resultType="map">
+    SELECT status as "status", count(*) as "count"
+    FROM hm_query.invoice_flat
+    GROUP BY status
+    ORDER BY count(*) DESC
+</select>
+
+<!-- ====== BY CUSTOMER ====== -->
+<select id="getByCustomerId-count" resultType="int">
+    SELECT count(*) FROM hm_query.invoice_flat
+    WHERE customer_id = #{customerId}
+    <if test="status != null">AND status = #{status}</if>
+</select>
+
+<select id="getByCustomerId" resultType="com.homebase.ecom.invoice.dto.InvoiceQueryDto">
+    SELECT
+        id,
+        order_id           as "orderId",
+        order_number       as "orderNumber",
+        invoice_number     as "invoiceNumber",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        total_amount       as "totalAmount",
+        tax_amount         as "taxAmount",
+        status,
+        created_time       as "createdAt"
+    FROM hm_query.invoice_flat
+    WHERE customer_id = #{customerId}
+    <if test="status != null">AND status = #{status}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== BY ORDER ====== -->
+<select id="getByOrderId" resultType="com.homebase.ecom.invoice.dto.InvoiceQueryDto">
+    SELECT
+        id,
+        order_id           as "orderId",
+        order_number       as "orderNumber",
+        invoice_number     as "invoiceNumber",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        total_amount       as "totalAmount",
+        tax_amount         as "taxAmount",
+        status,
+        gstin,
+        created_time       as "createdAt"
+    FROM hm_query.invoice_flat
+    WHERE order_id = #{orderId}
+</select>
+
+</mapper>

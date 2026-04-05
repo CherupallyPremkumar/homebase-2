@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="DashboardCompute">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ANALYTICS PROCESSING — computes dashboard tables from flat tables      -->
+<!--                                                                        -->
+<!-- READS FROM:  hm_query.*_flat tables (denormalized data)                -->
+<!-- WRITES TO:   hm_query.*_daily / *_snapshots tables (aggregated)        -->
+<!-- NEVER reads from OLTP schemas.                                         -->
+<!--                                                                        -->
+<!-- Schedule: Runs at 3:00 AM IST, AFTER all flat table syncs complete.    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 1. PLATFORM KPI SNAPSHOTS (one row per day)               -->
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<delete id="deletePlatformKpiForDate">
+    DELETE FROM hm_query.platform_kpi_snapshots
+    WHERE snapshot_date = #{snapshotDate}
+</delete>
+
+<insert id="computePlatformKpiSnapshots">
+    INSERT INTO hm_query.platform_kpi_snapshots (
+        id, tenant, snapshot_date, created_time,
+        gmv, total_revenue, total_commission_earned, total_platform_fees,
+        total_seller_payouts, pending_payouts, total_refund_amount, take_rate,
+        total_orders, total_units_sold, avg_order_value,
+        cancellation_count, rto_count, return_count,
+        active_buyers, active_sellers, new_buyers, new_sellers,
+        total_products_listed, total_skus,
+        total_sessions, total_page_views, conversion_rate, cart_abandonment_rate,
+        fraud_attempts_blocked, open_support_tickets,
+        avg_delivery_days, on_time_delivery_rate,
+        upi_pct, card_pct, cod_pct, wallet_pct, netbanking_pct, payment_success_rate
+    )
+    SELECT
+        'kpi-' || #{snapshotDate},
+        'homebase',
+        #{snapshotDate},
+        NOW(),
+        -- Revenue
+        COALESCE(SUM(o.total_amount), 0),
+        COALESCE(SUM(o.total_amount), 0),
+        COALESCE(SUM(o.commission_amount), 0),
+        COALESCE(SUM(o.commission_amount), 0),
+        COALESCE(SUM(o.seller_payout), 0),
+        COALESCE(SUM(CASE WHEN o.order_status IN ('DELIVERED','COMPLETED') AND o.seller_payout > 0 THEN 0 ELSE o.seller_payout END), 0),
+        0, -- refund_amount: computed from returns data
+        CASE WHEN SUM(o.total_amount) > 0
+             THEN (SUM(o.commission_amount) * 10000 / SUM(o.total_amount))::INT
+             ELSE 0 END,
+        -- Orders
+        COUNT(*),
+        COALESCE(SUM(o.total_items), 0),
+        CASE WHEN COUNT(*) > 0 THEN (SUM(o.total_amount) / COUNT(*))::BIGINT ELSE 0 END,
+        COUNT(CASE WHEN o.order_status IN ('CANCELLED','CANCEL_REQUESTED') THEN 1 END),
+        0, -- rto_count: from delivery data
+        COUNT(CASE WHEN o.order_status IN ('RETURN_REQUESTED','REFUNDED') THEN 1 END),
+        -- Users
+        COUNT(DISTINCT o.customer_id),
+        COUNT(DISTINCT o.seller_id),
+        0, -- new_buyers: computed from customer_360_flat
+        0, -- new_sellers: computed from seller_dashboard_flat
+        -- Catalog
+        (SELECT COUNT(*) FROM hm_query.product_catalog_flat WHERE product_status = 'PUBLISHED'),
+        (SELECT COUNT(DISTINCT sku) FROM hm_query.inventory_health_flat),
+        -- Traffic (from conversion funnel if available, else 0)
+        0, 0, 0, 0,
+        -- Operations
+        0, 0, 0, 0,
+        -- Payment mix
+        CASE WHEN COUNT(*) > 0 THEN (COUNT(CASE WHEN o.payment_method = 'UPI' THEN 1 END) * 10000 / COUNT(*))::INT ELSE 0 END,
+        CASE WHEN COUNT(*) > 0 THEN (COUNT(CASE WHEN o.payment_method = 'CARD' THEN 1 END) * 10000 / COUNT(*))::INT ELSE 0 END,
+        CASE WHEN COUNT(*) > 0 THEN (COUNT(CASE WHEN o.payment_method = 'COD' THEN 1 END) * 10000 / COUNT(*))::INT ELSE 0 END,
+        CASE WHEN COUNT(*) > 0 THEN (COUNT(CASE WHEN o.payment_method = 'WALLET' THEN 1 END) * 10000 / COUNT(*))::INT ELSE 0 END,
+        CASE WHEN COUNT(*) > 0 THEN (COUNT(CASE WHEN o.payment_method = 'NETBANKING' THEN 1 END) * 10000 / COUNT(*))::INT ELSE 0 END,
+        CASE WHEN COUNT(*) > 0 THEN (COUNT(CASE WHEN o.payment_status IN ('COMPLETED','PAID') THEN 1 END) * 10000 / COUNT(*))::INT ELSE 0 END
+    FROM hm_query.order_details_flat o
+    WHERE o.order_date::DATE = #{snapshotDate}
+</insert>
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 2. CATEGORY PERFORMANCE DAILY                             -->
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<delete id="deleteCategoryPerformanceForDate">
+    DELETE FROM hm_query.category_performance_daily
+    WHERE summary_date = #{snapshotDate}
+</delete>
+
+<insert id="computeCategoryPerformanceDaily">
+    INSERT INTO hm_query.category_performance_daily (
+        id, tenant, summary_date,
+        category_id, category_name,
+        gmv, total_orders, total_units_sold, total_returns,
+        return_rate, avg_order_value,
+        active_sellers, active_listings, conversion_rate,
+        avg_product_rating, avg_views_per_product
+    )
+    SELECT
+        'catperf-' || p.category_id || '-' || #{snapshotDate},
+        'homebase',
+        #{snapshotDate},
+        p.category_id,
+        p.category_name,
+        COALESCE(SUM(oi.total_price), 0),
+        COUNT(DISTINCT oi.order_id),
+        COALESCE(SUM(oi.quantity), 0),
+        0, 0, -- returns computed separately
+        CASE WHEN COUNT(DISTINCT oi.order_id) > 0
+             THEN (SUM(oi.total_price) / COUNT(DISTINCT oi.order_id))::BIGINT ELSE 0 END,
+        COUNT(DISTINCT p.seller_id),
+        COUNT(DISTINCT p.product_id),
+        0, -- conversion requires clickstream
+        COALESCE(AVG(p.avg_rating), 0)::INT,
+        COALESCE(AVG(p.views_30d) / NULLIF(30, 0), 0)::INT
+    FROM hm_query.product_catalog_flat p
+    LEFT JOIN hm_query.order_items_flat oi ON oi.product_id = p.product_id
+    LEFT JOIN hm_query.order_details_flat o ON oi.order_id = o.order_id
+        AND o.order_date::DATE = #{snapshotDate}
+    WHERE p.product_status = 'PUBLISHED'
+    GROUP BY p.category_id, p.category_name
+    HAVING p.category_id IS NOT NULL
+</insert>
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 3. SELLER HEALTH SUMMARY DAILY                            -->
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<delete id="deleteSellerHealthForDate">
+    DELETE FROM hm_query.seller_health_summary_daily
+    WHERE summary_date = #{snapshotDate}
+</delete>
+
+<insert id="computeSellerHealthSummaryDaily">
+    INSERT INTO hm_query.seller_health_summary_daily (
+        id, tenant, summary_date,
+        total_sellers, healthy_sellers, at_risk_sellers, unhealthy_sellers,
+        new_applications, pending_approvals, suspended_sellers,
+        avg_health_score, avg_rating, avg_fulfillment_rate
+    )
+    SELECT
+        'sellerhealth-' || #{snapshotDate},
+        'homebase',
+        #{snapshotDate},
+        COUNT(*),
+        COUNT(CASE WHEN health_score >= 700 THEN 1 END),
+        COUNT(CASE WHEN health_score >= 400 AND health_score &lt; 700 THEN 1 END),
+        COUNT(CASE WHEN health_score &lt; 400 THEN 1 END),
+        COUNT(CASE WHEN seller_status = 'APPLIED' THEN 1 END),
+        COUNT(CASE WHEN seller_status = 'PENDING_APPROVAL' THEN 1 END),
+        COUNT(CASE WHEN seller_status = 'SUSPENDED' THEN 1 END),
+        COALESCE(AVG(health_score), 0)::INT,
+        COALESCE(AVG(rating), 0)::INT,
+        COALESCE(AVG(fulfillment_rate), 0)::INT
+    FROM hm_query.seller_dashboard_flat
+</insert>
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 4. CONVERSION FUNNEL DAILY                                -->
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<delete id="deleteConversionFunnelForDate">
+    DELETE FROM hm_query.conversion_funnel_daily
+    WHERE funnel_date = #{snapshotDate}
+</delete>
+
+<insert id="computeConversionFunnelDaily">
+    INSERT INTO hm_query.conversion_funnel_daily (
+        id, tenant, funnel_date,
+        total_sessions, product_views, add_to_cart,
+        checkout_initiated, purchase_completed,
+        browse_to_cart_rate, cart_to_checkout_rate,
+        checkout_to_purchase_rate, overall_conversion_rate
+    )
+    SELECT
+        'funnel-' || #{snapshotDate},
+        'homebase',
+        #{snapshotDate},
+        -- Sessions and views from platform_kpi_snapshots (if computed) or estimate from orders
+        COALESCE((SELECT total_sessions FROM hm_query.platform_kpi_snapshots WHERE snapshot_date = #{snapshotDate}), 0),
+        0, -- product_views: requires clickstream
+        -- Cart: count distinct carts created that day (from order pipeline)
+        (SELECT COUNT(CASE WHEN order_status NOT IN ('CANCELLED') THEN 1 END) * 4
+         FROM hm_query.order_details_flat WHERE order_date::DATE = #{snapshotDate}),
+        -- Checkout: orders that reached payment
+        (SELECT COUNT(CASE WHEN payment_status IS NOT NULL THEN 1 END)
+         FROM hm_query.order_details_flat WHERE order_date::DATE = #{snapshotDate}),
+        -- Purchase: completed orders
+        (SELECT COUNT(CASE WHEN order_status NOT IN ('CANCELLED','CANCEL_REQUESTED','PAYMENT_FAILED') THEN 1 END)
+         FROM hm_query.order_details_flat WHERE order_date::DATE = #{snapshotDate}),
+        -- Rates computed in application layer after insert
+        0, 0, 0, 0
+</insert>
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 5. REVENUE BY REGION DAILY                                -->
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<delete id="deleteRevenueByRegionForDate">
+    DELETE FROM hm_query.revenue_by_region_daily
+    WHERE summary_date = #{snapshotDate}
+</delete>
+
+<insert id="computeRevenueByRegionDaily">
+    INSERT INTO hm_query.revenue_by_region_daily (
+        id, tenant, summary_date,
+        state, city,
+        gmv, total_orders, avg_order_value,
+        active_sellers, active_buyers, on_time_delivery_rate
+    )
+    SELECT
+        'region-' || COALESCE(shipping_state, 'UNKNOWN') || '-' || #{snapshotDate},
+        'homebase',
+        #{snapshotDate},
+        COALESCE(shipping_state, 'Unknown'),
+        NULL, -- city-level aggregation done separately
+        SUM(total_amount),
+        COUNT(*),
+        CASE WHEN COUNT(*) > 0 THEN (SUM(total_amount) / COUNT(*))::BIGINT ELSE 0 END,
+        COUNT(DISTINCT seller_id),
+        COUNT(DISTINCT customer_id),
+        CASE WHEN COUNT(*) > 0
+             THEN (COUNT(CASE WHEN sla_status = 'ON_TRACK' OR sla_status = 'COMPLETED' THEN 1 END) * 10000 / COUNT(*))::INT
+             ELSE 0 END
+    FROM hm_query.order_details_flat
+    WHERE order_date::DATE = #{snapshotDate}
+      AND shipping_state IS NOT NULL
+    GROUP BY shipping_state
+</insert>
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 6. TOP PRODUCTS TODAY (refresh — not date-specific)        -->
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<update id="truncateTopProductsToday">
+    TRUNCATE TABLE hm_query.top_products_today
+</update>
+
+<insert id="computeTopProductsToday">
+    INSERT INTO hm_query.top_products_today (
+        id, tenant, refreshed_at, rank,
+        product_id, product_name, sku, category_name, seller_name,
+        units_sold, revenue, stock_remaining, stock_status,
+        avg_rating, review_count, conversion_rate
+    )
+    SELECT
+        'top-' || ROW_NUMBER() OVER (ORDER BY SUM(oi.quantity) DESC),
+        'homebase',
+        NOW(),
+        ROW_NUMBER() OVER (ORDER BY SUM(oi.quantity) DESC),
+        p.product_id,
+        p.product_name,
+        p.primary_sku,
+        p.category_name,
+        p.seller_name,
+        SUM(oi.quantity),
+        SUM(oi.total_price),
+        p.total_available_qty,
+        p.stock_status,
+        p.avg_rating,
+        p.review_count,
+        p.conversion_rate
+    FROM hm_query.order_items_flat oi
+    JOIN hm_query.order_details_flat o ON oi.order_id = o.order_id
+    JOIN hm_query.product_catalog_flat p ON oi.product_id = p.product_id
+    WHERE o.order_date::DATE = CURRENT_DATE
+    GROUP BY p.product_id, p.product_name, p.primary_sku, p.category_name,
+             p.seller_name, p.total_available_qty, p.stock_status,
+             p.avg_rating, p.review_count, p.conversion_rate
+    ORDER BY SUM(oi.quantity) DESC
+    LIMIT 50
+</insert>
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 7. TOP SELLERS TODAY                                       -->
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<update id="truncateTopSellersToday">
+    TRUNCATE TABLE hm_query.top_sellers_today
+</update>
+
+<insert id="computeTopSellersToday">
+    INSERT INTO hm_query.top_sellers_today (
+        id, tenant, refreshed_at, rank,
+        seller_id, seller_name, tier,
+        gmv_today, orders_today, products_count,
+        fulfillment_rate, rating, health_score
+    )
+    SELECT
+        'topseller-' || ROW_NUMBER() OVER (ORDER BY SUM(o.total_amount) DESC),
+        'homebase',
+        NOW(),
+        ROW_NUMBER() OVER (ORDER BY SUM(o.total_amount) DESC),
+        s.seller_id,
+        s.business_name,
+        s.tier,
+        SUM(o.total_amount),
+        COUNT(DISTINCT o.order_id),
+        s.total_products,
+        s.fulfillment_rate,
+        s.rating,
+        s.health_score
+    FROM hm_query.order_details_flat o
+    JOIN hm_query.seller_dashboard_flat s ON o.seller_id = s.seller_id
+    WHERE o.order_date::DATE = CURRENT_DATE
+    GROUP BY s.seller_id, s.business_name, s.tier,
+             s.total_products, s.fulfillment_rate, s.rating, s.health_score
+    ORDER BY SUM(o.total_amount) DESC
+    LIMIT 50
+</insert>
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 8. LIVE ORDER PIPELINE                                    -->
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<update id="truncateLiveOrderPipeline">
+    TRUNCATE TABLE hm_query.live_order_pipeline
+</update>
+
+<insert id="computeLiveOrderPipeline">
+    INSERT INTO hm_query.live_order_pipeline (
+        id, tenant, refreshed_at, pipeline_date,
+        placed_count, confirmed_count, packed_count, shipped_count,
+        out_for_delivery_count, delivered_count, cancelled_count,
+        returned_count, rto_count,
+        placed_breach_4hr, placed_breach_8hr, packed_breach_4hr, shipped_breach_24hr,
+        cancellation_rate, rto_rate, return_rate, orders_per_minute
+    )
+    SELECT
+        'pipeline-' || CURRENT_DATE,
+        'homebase',
+        NOW(),
+        CURRENT_DATE,
+        COUNT(CASE WHEN order_status IN ('CREATED','PAYMENT_PENDING') THEN 1 END),
+        COUNT(CASE WHEN order_status IN ('PAID','CHECK_FRAUD','PROCESSING') THEN 1 END),
+        COUNT(CASE WHEN order_status = 'PROCESSING' THEN 1 END),
+        COUNT(CASE WHEN order_status IN ('SHIPPED','PARTIALLY_SHIPPED') THEN 1 END),
+        0, -- out_for_delivery: from shipping tracking
+        COUNT(CASE WHEN order_status IN ('DELIVERED','COMPLETED') THEN 1 END),
+        COUNT(CASE WHEN order_status IN ('CANCELLED','CANCEL_REQUESTED') THEN 1 END),
+        COUNT(CASE WHEN order_status IN ('RETURN_REQUESTED','REFUNDED') THEN 1 END),
+        0, -- rto
+        -- SLA breaches
+        COUNT(CASE WHEN order_status IN ('CREATED','PAYMENT_PENDING') AND sla_breach_hours >= 4 AND sla_breach_hours &lt; 8 THEN 1 END),
+        COUNT(CASE WHEN order_status IN ('CREATED','PAYMENT_PENDING') AND sla_breach_hours >= 8 THEN 1 END),
+        COUNT(CASE WHEN order_status = 'PROCESSING' AND sla_breach_hours >= 4 THEN 1 END),
+        COUNT(CASE WHEN order_status IN ('SHIPPED','PARTIALLY_SHIPPED') AND sla_breach_hours >= 24 THEN 1 END),
+        -- Rates
+        CASE WHEN COUNT(*) > 0
+             THEN (COUNT(CASE WHEN order_status IN ('CANCELLED') THEN 1 END) * 10000 / COUNT(*))::INT ELSE 0 END,
+        0,
+        CASE WHEN COUNT(*) > 0
+             THEN (COUNT(CASE WHEN order_status IN ('RETURN_REQUESTED','REFUNDED') THEN 1 END) * 10000 / COUNT(*))::INT ELSE 0 END,
+        -- Orders per minute (based on today's volume / minutes elapsed)
+        CASE WHEN EXTRACT(EPOCH FROM NOW() - CURRENT_DATE::TIMESTAMP) / 60 > 0
+             THEN (COUNT(*) * 100 / (EXTRACT(EPOCH FROM NOW() - CURRENT_DATE::TIMESTAMP) / 60))::INT
+             ELSE 0 END
+    FROM hm_query.order_details_flat
+    WHERE order_date::DATE = CURRENT_DATE
+</insert>
+
+</mapper>

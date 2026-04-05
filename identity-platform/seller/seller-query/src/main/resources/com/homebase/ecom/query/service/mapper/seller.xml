@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="Seller">
-  <select id="getAll" resultType="map">SELECT id, store_name AS "storeName", email, phone, kyc_status AS "kycStatus", active, created_time AS "createdAt" FROM sellers <where><if test="storeName != null">AND LOWER(store_name) LIKE LOWER(CONCAT('%',#{storeName},'%'))</if><if test="kycStatus != null">AND kyc_status = #{kycStatus}</if><if test="active != null">AND active = #{active}</if></where> ORDER BY created_time DESC</select>
-  <select id="getAll-count" resultType="long">SELECT COUNT(*) FROM sellers <where><if test="kycStatus != null">AND kyc_status = #{kycStatus}</if><if test="active != null">AND active = #{active}</if></where></select>
-  <select id="getPerformance" resultType="map">SELECT seller_id AS "sellerId", order_count AS "orderCount", return_rate AS "returnRate", avg_rating AS "rating" FROM seller_performance <where><if test="sellerId != null">AND seller_id = #{sellerId}</if></where> ORDER BY avg_rating DESC</select>
-  <select id="getPerformance-count" resultType="long">SELECT COUNT(*) FROM seller_performance <where><if test="sellerId != null">AND seller_id = #{sellerId}</if></where></select>
-</mapper>

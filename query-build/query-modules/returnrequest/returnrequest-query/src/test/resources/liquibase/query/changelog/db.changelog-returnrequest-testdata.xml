@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        ReturnRequest test data — STM states from returnrequest-states.xml:
+        INITIATED, CHECK_AUTO_APPROVE, APPROVED, REJECTED, PICKUP_SCHEDULED,
+        ITEM_RECEIVED, INSPECTED, REFUND_INITIATED, COMPLETED, ESCALATED, CANCELLED
+    -->
+    <changeSet id="returnrequest-test-data" author="homebase-test">
+
+        <!-- rr-1: APPROVED — Return for ord-5 Bluetooth Speaker -->
+        <insert tableName="returnrequest">
+            <column name="id" value="rr-1"/>
+            <column name="order_id" value="ord-5"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="reason" value="Product not working — Bluetooth connectivity drops after 5 minutes"/>
+            <column name="return_type" value="REFUND"/>
+            <column name="items_json" value='[{"orderItemId":"oi-5a","sku":"SKU-005","qty":1,"productName":"Bluetooth Speaker"}]'/>
+            <column name="total_refund_amount" valueNumeric="4128.82"/>
+            <column name="order_delivery_date" valueDate="2026-03-05T10:00:00"/>
+            <column name="order_total_value" valueNumeric="4128.82"/>
+            <column name="reviewer_id" value="user-8"/>
+            <column name="review_notes" value="Within 7-day return window. Defective product — auto-approved."/>
+            <column name="state_id" value="APPROVED"/>
+            <column name="flow_id" value="return-request-flow"/>
+            <column name="created_time" valueDate="2026-03-08T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-08T10:05:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="3"/>
+        </insert>
+
+        <!-- rr-2: INITIATED — New return request pending review -->
+        <insert tableName="returnrequest">
+            <column name="id" value="rr-2"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="reason" value="Wrong colour received — ordered Red, got Blue"/>
+            <column name="return_type" value="REPLACEMENT"/>
+            <column name="items_json" value='[{"orderItemId":"oi-1a","sku":"SKU-001","qty":1,"productName":"Widget A"}]'/>
+            <column name="order_delivery_date" valueDate="2026-03-13T14:00:00"/>
+            <column name="order_total_value" valueNumeric="1568.82"/>
+            <column name="state_id" value="INITIATED"/>
+            <column name="flow_id" value="return-request-flow"/>
+            <column name="created_time" valueDate="2026-03-15T09:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-15T09:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+        <!-- rr-3: REJECTED — Outside return window -->
+        <insert tableName="returnrequest">
+            <column name="id" value="rr-3"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="customer_id" value="user-1"/>
+            <column name="reason" value="Changed my mind about the product"/>
+            <column name="return_type" value="REFUND"/>
+            <column name="items_json" value='[{"orderItemId":"oi-1b","sku":"SKU-002","qty":1,"productName":"Gadget B"}]'/>
+            <column name="rejection_reason" value="Return window expired (7 days)"/>
+            <column name="rejection_comment" value="Order delivered on Mar 13, return requested on Mar 25 — 12 days past delivery"/>
+            <column name="reviewer_id" value="user-8"/>
+            <column name="state_id" value="REJECTED"/>
+            <column name="flow_id" value="return-request-flow"/>
+            <column name="created_time" valueDate="2026-03-25T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-25T10:10:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="2"/>
+        </insert>
+
+        <!-- rr-4: COMPLETED — Full lifecycle done -->
+        <insert tableName="returnrequest">
+            <column name="id" value="rr-4"/>
+            <column name="order_id" value="ord-5"/>
+            <column name="customer_id" value="user-2"/>
+            <column name="reason" value="Defective item — speaker crackles at volume above 60%"/>
+            <column name="return_type" value="REFUND"/>
+            <column name="total_refund_amount" valueNumeric="3499.00"/>
+            <column name="restocking_fee" valueNumeric="0.00"/>
+            <column name="condition_on_receipt" value="GOOD"/>
+            <column name="inspector_id" value="user-8"/>
+            <column name="inspector_notes" value="Confirmed defective. Audio IC failure."/>
+            <column name="state_id" value="COMPLETED"/>
+            <column name="flow_id" value="return-request-flow"/>
+            <column name="created_time" valueDate="2026-02-20T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="8"/>
+        </insert>
+
+        <!-- Return Request Activity -->
+        <insert tableName="returnrequest_activity">
+            <column name="id" value="rract-1"/>
+            <column name="returnrequest_id" value="rr-1"/>
+            <column name="event_id" value="approve"/>
+            <column name="comment" value="Auto-approved: within 7-day window, defective product"/>
+            <column name="success" valueBoolean="true"/>
+            <column name="created_time" valueDate="2026-03-08T10:05:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+        <insert tableName="returnrequest_activity">
+            <column name="id" value="rract-2"/>
+            <column name="returnrequest_id" value="rr-3"/>
+            <column name="event_id" value="reject"/>
+            <column name="comment" value="Rejected: return window expired"/>
+            <column name="success" valueBoolean="true"/>
+            <column name="created_time" valueDate="2026-03-25T10:10:00"/>
+            <column name="tenant" value="homebase"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

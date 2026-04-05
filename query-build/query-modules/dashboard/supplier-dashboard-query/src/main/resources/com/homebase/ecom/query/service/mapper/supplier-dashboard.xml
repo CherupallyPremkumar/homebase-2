@@ -1,0 +1,314 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SupplierDashboard">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL READS FROM hm_query.* OLAP SCHEMA ONLY — NEVER FROM OLTP          -->
+<!-- Sources: hm_query.seller_dashboard_flat, hm_query.order_details_flat, -->
+<!--          hm_query.order_items_flat, hm_query.settlement_flat,         -->
+<!--          hm_query.product_catalog_flat, hm_query.inventory_health_flat-->
+<!--          hm_query.return_detail_flat, hm_query.fulfillment_flat       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SUPPLIER KPI OVERVIEW                                                  -->
+<!-- Source: hm_query.seller_dashboard_flat                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="supplierOverview" resultType="map">
+    SELECT
+        s.seller_id as "supplierId",
+        s.business_name as "businessName",
+        s.seller_status as "supplierStatus",
+        s.tier as "tier",
+        s.total_products as "totalProducts",
+        s.total_orders_30d as "totalOrders30d",
+        s.gmv_30d as "gmv30d",
+        s.rating as "rating",
+        s.health_score as "healthScore",
+        s.fulfillment_rate as "fulfillmentRate",
+        s.return_rate as "returnRate",
+        s.cancellation_rate as "cancellationRate",
+        s.on_time_dispatch_rate as "onTimeDispatchRate",
+        s.avg_response_time_hrs as "avgResponseTimeHrs"
+    FROM hm_query.seller_dashboard_flat s
+    WHERE s.seller_id = #{supplierId}
+    LIMIT 1
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SUPPLIER DAILY SALES                                                   -->
+<!-- Source: hm_query.order_details_flat                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="supplierDailySales-count" resultType="int">
+    SELECT COUNT(DISTINCT order_date::DATE)
+    FROM hm_query.order_details_flat
+    WHERE seller_id = #{supplierId}
+      AND order_status NOT IN ('CANCELLED', 'PAYMENT_FAILED')
+    <if test="startDate != null">AND order_date::DATE &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND order_date::DATE &lt;= CAST(#{endDate} AS DATE)</if>
+</select>
+
+<select id="supplierDailySales" resultType="map">
+    SELECT
+        o.order_date::DATE as "date",
+        COUNT(DISTINCT o.order_id) as "orderCount",
+        COALESCE(SUM(o.total_amount), 0) as "revenue",
+        COALESCE(SUM(o.total_items), 0) as "unitsSold"
+    FROM hm_query.order_details_flat o
+    WHERE o.seller_id = #{supplierId}
+      AND o.order_status NOT IN ('CANCELLED', 'PAYMENT_FAILED')
+    <if test="startDate != null">AND o.order_date::DATE &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND o.order_date::DATE &lt;= CAST(#{endDate} AS DATE)</if>
+    GROUP BY o.order_date::DATE
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SUPPLIER TOP PRODUCTS                                                  -->
+<!-- Source: hm_query.order_items_flat + hm_query.order_details_flat       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="supplierTopProducts-count" resultType="int">
+    SELECT COUNT(DISTINCT oi.product_id)
+    FROM hm_query.order_items_flat oi
+    JOIN hm_query.order_details_flat o ON oi.order_id = o.order_id
+    WHERE o.seller_id = #{supplierId}
+      AND o.order_status NOT IN ('CANCELLED', 'PAYMENT_FAILED')
+    <if test="q != null">AND (oi.product_name ILIKE CONCAT('%', #{q}, '%') OR oi.sku ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="supplierTopProducts" resultType="map">
+    SELECT
+        oi.product_id as "productId",
+        oi.product_name as "productName",
+        oi.sku as "sku",
+        COUNT(DISTINCT o.order_id) as "orderCount",
+        SUM(oi.quantity) as "unitsSold",
+        COALESCE(SUM(oi.total_price), 0) as "revenue"
+    FROM hm_query.order_items_flat oi
+    JOIN hm_query.order_details_flat o ON oi.order_id = o.order_id
+    WHERE o.seller_id = #{supplierId}
+      AND o.order_status NOT IN ('CANCELLED', 'PAYMENT_FAILED')
+    <if test="q != null">AND (oi.product_name ILIKE CONCAT('%', #{q}, '%') OR oi.sku ILIKE CONCAT('%', #{q}, '%'))</if>
+    GROUP BY oi.product_id, oi.product_name, oi.sku
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SUPPLIER ORDERS                                                        -->
+<!-- Source: hm_query.order_details_flat                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="supplierOrders-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.order_details_flat o
+    WHERE o.seller_id = #{supplierId}
+    <if test="stateId != null">AND o.order_status = #{stateId}</if>
+    <if test="startDate != null">AND o.order_date &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+    <if test="endDate != null">AND o.order_date &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+    <if test="q != null">AND (o.order_number ILIKE CONCAT('%', #{q}, '%') OR o.customer_email ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="supplierOrders" resultType="map">
+    SELECT
+        o.order_id as "orderId",
+        o.order_number as "orderNumber",
+        o.order_status as "orderState",
+        o.total_amount as "totalAmount",
+        o.currency as "currency",
+        o.total_items as "itemCount",
+        o.order_date as "createdTime",
+        o.customer_first_name as "customerFirstName",
+        o.customer_last_name as "customerLastName",
+        o.payment_status as "paymentStatus",
+        o.shipping_status as "shippingStatus",
+        o.tracking_number as "trackingNumber"
+    FROM hm_query.order_details_flat o
+    WHERE o.seller_id = #{supplierId}
+    <if test="stateId != null">AND o.order_status = #{stateId}</if>
+    <if test="startDate != null">AND o.order_date &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+    <if test="endDate != null">AND o.order_date &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+    <if test="q != null">AND (o.order_number ILIKE CONCAT('%', #{q}, '%') OR o.customer_email ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SUPPLIER PRODUCTS (inventory view)                                     -->
+<!-- Source: hm_query.product_catalog_flat                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="supplierProducts-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.product_catalog_flat p
+    WHERE p.seller_id = #{supplierId}
+    <if test="stateId != null">AND p.product_status = #{stateId}</if>
+    <if test="stockStatus != null">AND p.stock_status = #{stockStatus}</if>
+    <if test="q != null">AND (p.product_name ILIKE CONCAT('%', #{q}, '%') OR p.primary_sku ILIKE CONCAT('%', #{q}, '%') OR p.brand ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="supplierProducts" resultType="map">
+    SELECT
+        p.product_id as "productId",
+        p.product_name as "productName",
+        p.primary_sku as "sku",
+        p.brand as "brand",
+        p.category_name as "categoryName",
+        p.product_status as "productState",
+        p.base_price as "basePrice",
+        p.selling_price as "sellingPrice",
+        p.total_available_qty as "availableQty",
+        p.stock_status as "stockStatus",
+        p.avg_rating as "avgRating",
+        p.review_count as "reviewCount"
+    FROM hm_query.product_catalog_flat p
+    WHERE p.seller_id = #{supplierId}
+    <if test="stateId != null">AND p.product_status = #{stateId}</if>
+    <if test="stockStatus != null">AND p.stock_status = #{stockStatus}</if>
+    <if test="q != null">AND (p.product_name ILIKE CONCAT('%', #{q}, '%') OR p.primary_sku ILIKE CONCAT('%', #{q}, '%') OR p.brand ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SUPPLIER INVENTORY HEALTH                                              -->
+<!-- Source: hm_query.inventory_health_flat + hm_query.product_catalog_flat-->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="supplierInventoryHealth-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.inventory_health_flat inv
+    JOIN hm_query.product_catalog_flat p ON inv.product_id = p.product_id
+    WHERE p.seller_id = #{supplierId}
+    <if test="stockStatus != null">AND inv.stock_status = #{stockStatus}</if>
+    <if test="q != null">AND (inv.product_name ILIKE CONCAT('%', #{q}, '%') OR inv.sku ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="supplierInventoryHealth" resultType="map">
+    SELECT
+        inv.variant_id as "variantId",
+        inv.sku as "sku",
+        inv.product_id as "productId",
+        inv.product_name as "productName",
+        inv.available_qty as "availableQty",
+        inv.reserved_qty as "reservedQty",
+        inv.low_stock_threshold as "lowStockThreshold",
+        inv.stock_status as "stockStatus"
+    FROM hm_query.inventory_health_flat inv
+    JOIN hm_query.product_catalog_flat p ON inv.product_id = p.product_id
+    WHERE p.seller_id = #{supplierId}
+    <if test="stockStatus != null">AND inv.stock_status = #{stockStatus}</if>
+    <if test="q != null">AND (inv.product_name ILIKE CONCAT('%', #{q}, '%') OR inv.sku ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SUPPLIER SETTLEMENTS                                                   -->
+<!-- Source: hm_query.settlement_flat                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="supplierSettlements-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.settlement_flat st
+    WHERE st.supplier_id = #{supplierId}
+    <if test="stateId != null">AND st.settlement_status = #{stateId}</if>
+    <if test="startDate != null">AND st.period_start &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+    <if test="endDate != null">AND st.period_end &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+    <if test="q != null">AND (st.settlement_id ILIKE CONCAT('%', #{q}, '%') OR st.order_id ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="supplierSettlements" resultType="map">
+    SELECT
+        st.settlement_id as "settlementId",
+        st.order_id as "orderId",
+        st.settlement_status as "settlementState",
+        st.order_amount as "orderAmount",
+        st.commission_amount as "commissionAmount",
+        st.commission_rate as "commissionRate",
+        st.platform_fee as "platformFee",
+        st.net_payout as "netPayout",
+        st.currency as "currency",
+        st.period_start as "periodStart",
+        st.period_end as "periodEnd",
+        st.created_time as "createdTime"
+    FROM hm_query.settlement_flat st
+    WHERE st.supplier_id = #{supplierId}
+    <if test="stateId != null">AND st.settlement_status = #{stateId}</if>
+    <if test="startDate != null">AND st.period_start &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+    <if test="endDate != null">AND st.period_end &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+    <if test="q != null">AND (st.settlement_id ILIKE CONCAT('%', #{q}, '%') OR st.order_id ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SUPPLIER RETURNS                                                       -->
+<!-- Source: hm_query.return_detail_flat + hm_query.order_details_flat     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="supplierReturns-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.return_detail_flat rr
+    JOIN hm_query.order_details_flat o ON rr.order_id = o.order_id
+    WHERE o.seller_id = #{supplierId}
+    <if test="stateId != null">AND rr.return_status = #{stateId}</if>
+    <if test="q != null">AND (rr.product_name ILIKE CONCAT('%', #{q}, '%') OR rr.reason ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="supplierReturns" resultType="map">
+    SELECT
+        rr.return_id as "returnId",
+        rr.order_id as "orderId",
+        o.order_number as "orderNumber",
+        rr.product_name as "productName",
+        rr.sku as "sku",
+        rr.reason as "reason",
+        rr.return_type as "returnType",
+        rr.return_status as "returnState",
+        rr.quantity as "quantity",
+        rr.refund_amount as "refundAmount",
+        rr.created_time as "createdTime"
+    FROM hm_query.return_detail_flat rr
+    JOIN hm_query.order_details_flat o ON rr.order_id = o.order_id
+    WHERE o.seller_id = #{supplierId}
+    <if test="stateId != null">AND rr.return_status = #{stateId}</if>
+    <if test="q != null">AND (rr.product_name ILIKE CONCAT('%', #{q}, '%') OR rr.reason ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SUPPLIER FULFILLMENT STATUS                                            -->
+<!-- Source: hm_query.fulfillment_flat + hm_query.order_details_flat       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="supplierFulfillments-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.fulfillment_flat ff
+    JOIN hm_query.order_details_flat o ON ff.order_id = o.order_id
+    WHERE o.seller_id = #{supplierId}
+    <if test="stateId != null">AND ff.fulfillment_status = #{stateId}</if>
+    <if test="q != null">AND (ff.tracking_number ILIKE CONCAT('%', #{q}, '%') OR ff.fulfillment_id ILIKE CONCAT('%', #{q}, '%') OR ff.warehouse_name ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="supplierFulfillments" resultType="map">
+    SELECT
+        ff.fulfillment_id as "fulfillmentId",
+        ff.order_id as "orderId",
+        o.order_number as "orderNumber",
+        ff.fulfillment_status as "fulfillmentState",
+        ff.priority as "priority",
+        ff.fulfillment_type as "fulfillmentType",
+        ff.total_items as "totalItems",
+        ff.carrier as "carrier",
+        ff.tracking_number as "trackingNumber",
+        ff.estimated_ship_date as "estimatedShipDate",
+        ff.estimated_delivery_date as "estimatedDeliveryDate",
+        ff.warehouse_name as "warehouseName",
+        ff.created_time as "createdTime"
+    FROM hm_query.fulfillment_flat ff
+    JOIN hm_query.order_details_flat o ON ff.order_id = o.order_id
+    WHERE o.seller_id = #{supplierId}
+    <if test="stateId != null">AND ff.fulfillment_status = #{stateId}</if>
+    <if test="q != null">AND (ff.tracking_number ILIKE CONCAT('%', #{q}, '%') OR ff.fulfillment_id ILIKE CONCAT('%', #{q}, '%') OR ff.warehouse_name ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

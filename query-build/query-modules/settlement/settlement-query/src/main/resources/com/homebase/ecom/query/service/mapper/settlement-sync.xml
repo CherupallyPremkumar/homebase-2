@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SettlementSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query.fact_settlements + dim_seller from OLTP   -->
+<!-- Source: settlements + supplier                                         -->
+<!-- Called by SettlementSyncService                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateFactSettlements">
+    TRUNCATE TABLE hm_query.fact_settlements
+</update>
+
+<insert id="syncFactSettlements">
+    INSERT INTO hm_query.fact_settlements (
+        id, tenant, last_synced_at,
+        supplier_id, order_id, state_id, flow_id,
+        order_amount, commission_amount, platform_fee, net_amount,
+        currency, settlement_period_start, settlement_period_end,
+        disbursement_reference, created_time
+    )
+    SELECT
+        s.id,
+        s.tenant,
+        NOW(),
+        s.supplier_id,
+        s.order_id,
+        s.state_id,
+        s.flow_id,
+        COALESCE(s.order_amount, 0),
+        COALESCE(s.commission_amount, 0),
+        COALESCE(s.platform_fee, 0),
+        COALESCE(s.net_amount, 0),
+        COALESCE(s.currency, 'INR'),
+        s.settlement_period_start,
+        s.settlement_period_end,
+        s.disbursement_reference,
+        s.created_time
+    FROM hm_settlement.settlements s
+</insert>
+
+<!-- ====== dim_seller (upsert) ====== -->
+<update id="syncDimSeller">
+    INSERT INTO hm_query.dim_seller (seller_id, seller_name, seller_tier, last_synced_at)
+    SELECT
+        sup.id,
+        COALESCE(sup.business_name, ''),
+        COALESCE(sup.tier, ''),
+        NOW()
+    FROM hm_supplier.supplier sup
+    WHERE sup.id IN (SELECT DISTINCT supplier_id FROM hm_settlement.settlements WHERE supplier_id IS NOT NULL)
+    ON CONFLICT (seller_id) DO UPDATE SET
+        seller_name = EXCLUDED.seller_name,
+        seller_tier = EXCLUDED.seller_tier,
+        last_synced_at = EXCLUDED.last_synced_at
+</update>
+
+</mapper>

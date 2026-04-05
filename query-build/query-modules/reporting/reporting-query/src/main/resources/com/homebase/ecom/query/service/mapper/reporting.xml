@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Reporting">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: report_definitions_flat, scheduled_reports_flat,                -->
+<!--         report_history_flat                                             -->
+<!-- Populated by ReportingSyncService ETL.                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ================================================================ -->
+<!-- Report Definitions                                                -->
+<!-- ================================================================ -->
+
+<select id="getDefinitions-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.report_definitions_flat
+    <where>
+        <if test="name != null">AND LOWER(name) LIKE LOWER(CONCAT('%', #{name}, '%'))</if>
+        <if test="category != null">AND category = #{category}</if>
+        <if test="isActive != null">AND is_active = #{isActive}</if>
+        <if test="q != null">AND (LOWER(name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR LOWER(description) LIKE LOWER(CONCAT('%', #{q}, '%')))</if>
+    </where>
+</select>
+
+<select id="getDefinitions" resultType="com.homebase.ecom.reporting.dto.ReportDefinitionQueryDto">
+    SELECT id, name, description, category,
+           available_formats AS "availableFormats",
+           is_active AS "isActive",
+           created_time AS "createdTime"
+    FROM hm_query.report_definitions_flat
+    <where>
+        <if test="name != null">AND LOWER(name) LIKE LOWER(CONCAT('%', #{name}, '%'))</if>
+        <if test="category != null">AND category = #{category}</if>
+        <if test="isActive != null">AND is_active = #{isActive}</if>
+        <if test="q != null">AND (LOWER(name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR LOWER(description) LIKE LOWER(CONCAT('%', #{q}, '%')))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Scheduled Reports                                                 -->
+<!-- ================================================================ -->
+
+<select id="getScheduled-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.scheduled_reports_flat
+    <where>
+        <if test="reportDefinitionId != null">AND report_definition_id = #{reportDefinitionId}</if>
+        <if test="status != null">AND status = #{status}</if>
+        <if test="frequency != null">AND frequency = #{frequency}</if>
+        <if test="q != null">AND (LOWER(report_name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR LOWER(recipient_email) LIKE LOWER(CONCAT('%', #{q}, '%')))</if>
+    </where>
+</select>
+
+<select id="getScheduled" resultType="com.homebase.ecom.reporting.dto.ScheduledReportQueryDto">
+    SELECT id, report_definition_id AS "reportDefinitionId",
+           report_name AS "reportName",
+           format, frequency, cron_expression AS "cronExpression",
+           next_run_at AS "nextRunAt", last_run_at AS "lastRunAt",
+           recipient_email AS "recipientEmail",
+           status, created_time AS "createdTime"
+    FROM hm_query.scheduled_reports_flat
+    <where>
+        <if test="reportDefinitionId != null">AND report_definition_id = #{reportDefinitionId}</if>
+        <if test="status != null">AND status = #{status}</if>
+        <if test="frequency != null">AND frequency = #{frequency}</if>
+        <if test="q != null">AND (LOWER(report_name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR LOWER(recipient_email) LIKE LOWER(CONCAT('%', #{q}, '%')))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Report History                                                    -->
+<!-- ================================================================ -->
+
+<select id="getHistory-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.report_history_flat
+    <where>
+        <if test="reportDefinitionId != null">AND report_definition_id = #{reportDefinitionId}</if>
+        <if test="status != null">AND status = #{status}</if>
+        <if test="generatedBy != null">AND generated_by = #{generatedBy}</if>
+        <if test="q != null">AND (LOWER(name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR LOWER(report_definition_name) LIKE LOWER(CONCAT('%', #{q}, '%')))</if>
+    </where>
+</select>
+
+<select id="getHistory" resultType="com.homebase.ecom.reporting.dto.ReportHistoryQueryDto">
+    SELECT id, report_definition_id AS "reportDefinitionId",
+           report_definition_name AS "reportDefinitionName",
+           name, format, generated_by AS "generatedBy",
+           file_url AS "fileUrl", file_size_bytes AS "fileSizeBytes",
+           record_count AS "recordCount", status,
+           completed_at AS "completedAt", error_message AS "errorMessage",
+           created_time AS "createdTime"
+    FROM hm_query.report_history_flat
+    <where>
+        <if test="reportDefinitionId != null">AND report_definition_id = #{reportDefinitionId}</if>
+        <if test="status != null">AND status = #{status}</if>
+        <if test="generatedBy != null">AND generated_by = #{generatedBy}</if>
+        <if test="q != null">AND (LOWER(name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR LOWER(report_definition_name) LIKE LOWER(CONCAT('%', #{q}, '%')))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

@@ -1,3 +1,0 @@
-[
-  {"id":"Media.getAll","name":"mediaAssets","acls":["ADMIN","EDITOR"],"columnMetadata":{"id":{"name":"id","filterable":true,"columnType":"Text","sortable":true},"originalName":{"name":"originalName","filterable":true,"columnType":"Text","likeQuery":true,"sortable":true},"mimeType":{"name":"mimeType","filterable":true,"columnType":"Text"},"folder":{"name":"folder","filterable":true,"columnType":"Text"},"fileSizeBytes":{"name":"fileSizeBytes","columnType":"Number","sortable":true},"createdAt":{"name":"createdAt","filterable":true,"columnType":"Date","sortable":true}}}
-]

@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="i18n-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_i18n</sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- currencies — supported currencies with symbols and precision        -->
+    <!-- ================================================================== -->
+    <changeSet id="i18n-001-create-currencies" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="currencies" schemaName="hm_i18n"/></not></preConditions>
+        <createTable tableName="currencies" schemaName="hm_i18n">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="code" type="VARCHAR(3)"><constraints unique="true"/></column>
+            <column name="name" type="VARCHAR(100)"/>
+            <column name="symbol" type="VARCHAR(10)"/>
+            <column name="decimal_places" type="INT" defaultValueNumeric="2"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- exchange_rates — currency conversion rates with date tracking        -->
+    <!-- ================================================================== -->
+    <changeSet id="i18n-002-create-exchange-rates" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="exchange_rates" schemaName="hm_i18n"/></not></preConditions>
+        <createTable tableName="exchange_rates" schemaName="hm_i18n">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="base_currency_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_exchange_base_currency" references="currencies(id)"/></column>
+            <column name="target_currency_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_exchange_target_currency" references="currencies(id)"/></column>
+            <column name="rate" type="DECIMAL(18,8)"/>
+            <column name="rate_date" type="DATE"/>
+            <column name="source" type="VARCHAR(50)"/>
+            <column name="is_current" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <createIndex indexName="idx_exchange_rates_base" tableName="exchange_rates" schemaName="hm_i18n">
+            <column name="base_currency_id"/>
+        </createIndex>
+        <createIndex indexName="idx_exchange_rates_current" tableName="exchange_rates" schemaName="hm_i18n">
+            <column name="is_current"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- countries — supported countries with region classification           -->
+    <!-- ================================================================== -->
+    <changeSet id="i18n-003-create-countries" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="countries" schemaName="hm_i18n"/></not></preConditions>
+        <createTable tableName="countries" schemaName="hm_i18n">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="country_code" type="VARCHAR(2)"><constraints unique="true"/></column>
+            <column name="country_code_3" type="VARCHAR(3)"/>
+            <column name="name" type="VARCHAR(100)"/>
+            <column name="region" type="VARCHAR(50)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="requires_import_duty" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- country_settings — locale defaults per country                      -->
+    <!-- ================================================================== -->
+    <changeSet id="i18n-004-create-country-settings" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="country_settings" schemaName="hm_i18n"/></not></preConditions>
+        <createTable tableName="country_settings" schemaName="hm_i18n">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="country_id" type="VARCHAR(255)"><constraints unique="true" nullable="false" foreignKeyName="fk_country_settings_country" references="countries(id)"/></column>
+            <column name="default_currency_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_country_settings_currency" references="currencies(id)"/></column>
+            <column name="default_language_code" type="VARCHAR(5)"/>
+            <column name="date_format" type="VARCHAR(20)"/>
+            <column name="number_format" type="VARCHAR(20)"/>
+            <column name="timezone" type="VARCHAR(50)"/>
+            <column name="phone_code" type="VARCHAR(5)"/>
+            <column name="is_eu_member" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+        <createIndex indexName="idx_country_settings_country" tableName="country_settings" schemaName="hm_i18n">
+            <column name="country_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- locale_languages — supported languages with directionality          -->
+    <!-- ================================================================== -->
+    <changeSet id="i18n-005-create-locale-languages" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="locale_languages" schemaName="hm_i18n"/></not></preConditions>
+        <createTable tableName="locale_languages" schemaName="hm_i18n">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="language_code" type="VARCHAR(5)"><constraints unique="true"/></column>
+            <column name="language_name" type="VARCHAR(100)"/>
+            <column name="native_name" type="VARCHAR(100)"/>
+            <column name="text_direction" type="VARCHAR(3)" defaultValue="LTR"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- locale_translations — entity field translations by language          -->
+    <!-- ================================================================== -->
+    <changeSet id="i18n-006-create-locale-translations" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="locale_translations" schemaName="hm_i18n"/></not></preConditions>
+        <createTable tableName="locale_translations" schemaName="hm_i18n">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="entity_type" type="VARCHAR(50)"/>
+            <column name="entity_id" type="VARCHAR(255)"/>
+            <column name="language_code" type="VARCHAR(5)"/>
+            <column name="field_name" type="VARCHAR(100)"/>
+            <column name="field_value" type="TEXT"/>
+            <column name="is_default" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+        <createIndex indexName="idx_translations_entity" tableName="locale_translations" schemaName="hm_i18n">
+            <column name="entity_type"/>
+            <column name="entity_id"/>
+            <column name="language_code"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- import_duties — customs duty rates by HS code and country pair       -->
+    <!-- ================================================================== -->
+    <changeSet id="i18n-007-create-import-duties" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="import_duties" schemaName="hm_i18n"/></not></preConditions>
+        <createTable tableName="import_duties" schemaName="hm_i18n">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="hs_code" type="VARCHAR(12)"/>
+            <column name="importing_country_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_duties_importing_country" references="countries(id)"/></column>
+            <column name="exporting_country_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_duties_exporting_country" references="countries(id)"/></column>
+            <column name="duty_percentage" type="INT"/>
+            <column name="duty_amount_fixed" type="BIGINT"/>
+            <column name="minimum_duty" type="BIGINT"/>
+            <column name="effective_date" type="DATE"/>
+            <column name="expiry_date" type="DATE"/>
+            <column name="preferential_agreement" type="VARCHAR(100)"/>
+            <column name="notes" type="VARCHAR(500)"/>
+        </createTable>
+        <createIndex indexName="idx_duties_importing" tableName="import_duties" schemaName="hm_i18n">
+            <column name="importing_country_id"/>
+        </createIndex>
+        <createIndex indexName="idx_duties_hs" tableName="import_duties" schemaName="hm_i18n">
+            <column name="hs_code"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- tax_jurisdictions_international — international tax rates            -->
+    <!-- ================================================================== -->
+    <changeSet id="i18n-008-create-tax-jurisdictions-international" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="tax_jurisdictions_international" schemaName="hm_i18n"/></not></preConditions>
+        <createTable tableName="tax_jurisdictions_international" schemaName="hm_i18n">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="country_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_tax_intl_country" references="countries(id)"/></column>
+            <column name="state_province" type="VARCHAR(100)"/>
+            <column name="jurisdiction_code" type="VARCHAR(50)"/>
+            <column name="tax_type" type="VARCHAR(50)"/>
+            <column name="tax_rate" type="INT"/>
+            <column name="threshold_amount" type="BIGINT"/>
+            <column name="effective_date" type="DATE"/>
+            <column name="expiry_date" type="DATE"/>
+            <column name="has_digital_goods_variation" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="digital_goods_rate" type="INT"/>
+        </createTable>
+        <createIndex indexName="idx_tax_country" tableName="tax_jurisdictions_international" schemaName="hm_i18n">
+            <column name="country_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Seed data — currencies                                              -->
+    <!-- ================================================================== -->
+    <changeSet id="i18n-100-seed-currencies" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_i18n.currencies</sqlCheck>
+        </preConditions>
+        <insert tableName="currencies" schemaName="hm_i18n">
+            <column name="id" value="cur-inr"/>
+            <column name="code" value="INR"/>
+            <column name="name" value="Indian Rupee"/>
+            <column name="symbol" value="₹"/>
+            <column name="decimal_places" valueNumeric="2"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="currencies" schemaName="hm_i18n">
+            <column name="id" value="cur-usd"/>
+            <column name="code" value="USD"/>
+            <column name="name" value="US Dollar"/>
+            <column name="symbol" value="$"/>
+            <column name="decimal_places" valueNumeric="2"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="currencies" schemaName="hm_i18n">
+            <column name="id" value="cur-eur"/>
+            <column name="code" value="EUR"/>
+            <column name="name" value="Euro"/>
+            <column name="symbol" value="€"/>
+            <column name="decimal_places" valueNumeric="2"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="currencies" schemaName="hm_i18n">
+            <column name="id" value="cur-gbp"/>
+            <column name="code" value="GBP"/>
+            <column name="name" value="British Pound"/>
+            <column name="symbol" value="£"/>
+            <column name="decimal_places" valueNumeric="2"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="currencies" schemaName="hm_i18n">
+            <column name="id" value="cur-jpy"/>
+            <column name="code" value="JPY"/>
+            <column name="name" value="Japanese Yen"/>
+            <column name="symbol" value="¥"/>
+            <column name="decimal_places" valueNumeric="0"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="currencies" schemaName="hm_i18n">
+            <column name="id" value="cur-aud"/>
+            <column name="code" value="AUD"/>
+            <column name="name" value="Australian Dollar"/>
+            <column name="symbol" value="A$"/>
+            <column name="decimal_places" valueNumeric="2"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="currencies" schemaName="hm_i18n">
+            <column name="id" value="cur-cad"/>
+            <column name="code" value="CAD"/>
+            <column name="name" value="Canadian Dollar"/>
+            <column name="symbol" value="C$"/>
+            <column name="decimal_places" valueNumeric="2"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="currencies" schemaName="hm_i18n">
+            <column name="id" value="cur-sgd"/>
+            <column name="code" value="SGD"/>
+            <column name="name" value="Singapore Dollar"/>
+            <column name="symbol" value="S$"/>
+            <column name="decimal_places" valueNumeric="2"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Seed data — countries                                               -->
+    <!-- ================================================================== -->
+    <changeSet id="i18n-101-seed-countries" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_i18n.countries</sqlCheck>
+        </preConditions>
+        <insert tableName="countries" schemaName="hm_i18n">
+            <column name="id" value="country-in"/>
+            <column name="country_code" value="IN"/>
+            <column name="country_code_3" value="IND"/>
+            <column name="name" value="India"/>
+            <column name="region" value="South Asia"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="requires_import_duty" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="countries" schemaName="hm_i18n">
+            <column name="id" value="country-us"/>
+            <column name="country_code" value="US"/>
+            <column name="country_code_3" value="USA"/>
+            <column name="name" value="United States"/>
+            <column name="region" value="North America"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="requires_import_duty" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="countries" schemaName="hm_i18n">
+            <column name="id" value="country-gb"/>
+            <column name="country_code" value="GB"/>
+            <column name="country_code_3" value="GBR"/>
+            <column name="name" value="United Kingdom"/>
+            <column name="region" value="Europe"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="requires_import_duty" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="countries" schemaName="hm_i18n">
+            <column name="id" value="country-de"/>
+            <column name="country_code" value="DE"/>
+            <column name="country_code_3" value="DEU"/>
+            <column name="name" value="Germany"/>
+            <column name="region" value="Europe"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="requires_import_duty" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="countries" schemaName="hm_i18n">
+            <column name="id" value="country-fr"/>
+            <column name="country_code" value="FR"/>
+            <column name="country_code_3" value="FRA"/>
+            <column name="name" value="France"/>
+            <column name="region" value="Europe"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="requires_import_duty" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="countries" schemaName="hm_i18n">
+            <column name="id" value="country-jp"/>
+            <column name="country_code" value="JP"/>
+            <column name="country_code_3" value="JPN"/>
+            <column name="name" value="Japan"/>
+            <column name="region" value="East Asia"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="requires_import_duty" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="countries" schemaName="hm_i18n">
+            <column name="id" value="country-au"/>
+            <column name="country_code" value="AU"/>
+            <column name="country_code_3" value="AUS"/>
+            <column name="name" value="Australia"/>
+            <column name="region" value="Oceania"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="requires_import_duty" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="countries" schemaName="hm_i18n">
+            <column name="id" value="country-ca"/>
+            <column name="country_code" value="CA"/>
+            <column name="country_code_3" value="CAN"/>
+            <column name="name" value="Canada"/>
+            <column name="region" value="North America"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="requires_import_duty" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="countries" schemaName="hm_i18n">
+            <column name="id" value="country-sg"/>
+            <column name="country_code" value="SG"/>
+            <column name="country_code_3" value="SGP"/>
+            <column name="name" value="Singapore"/>
+            <column name="region" value="Southeast Asia"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="requires_import_duty" valueBoolean="false"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Seed data — languages                                               -->
+    <!-- ================================================================== -->
+    <changeSet id="i18n-102-seed-languages" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_i18n.locale_languages</sqlCheck>
+        </preConditions>
+        <insert tableName="locale_languages" schemaName="hm_i18n">
+            <column name="id" value="lang-en"/>
+            <column name="language_code" value="en"/>
+            <column name="language_name" value="English"/>
+            <column name="native_name" value="English"/>
+            <column name="text_direction" value="LTR"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="locale_languages" schemaName="hm_i18n">
+            <column name="id" value="lang-hi"/>
+            <column name="language_code" value="hi"/>
+            <column name="language_name" value="Hindi"/>
+            <column name="native_name" value="हिन्दी"/>
+            <column name="text_direction" value="LTR"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="locale_languages" schemaName="hm_i18n">
+            <column name="id" value="lang-ta"/>
+            <column name="language_code" value="ta"/>
+            <column name="language_name" value="Tamil"/>
+            <column name="native_name" value="தமிழ்"/>
+            <column name="text_direction" value="LTR"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="locale_languages" schemaName="hm_i18n">
+            <column name="id" value="lang-te"/>
+            <column name="language_code" value="te"/>
+            <column name="language_name" value="Telugu"/>
+            <column name="native_name" value="తెలుగు"/>
+            <column name="text_direction" value="LTR"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="locale_languages" schemaName="hm_i18n">
+            <column name="id" value="lang-kn"/>
+            <column name="language_code" value="kn"/>
+            <column name="language_name" value="Kannada"/>
+            <column name="native_name" value="ಕನ್ನಡ"/>
+            <column name="text_direction" value="LTR"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="locale_languages" schemaName="hm_i18n">
+            <column name="id" value="lang-ml"/>
+            <column name="language_code" value="ml"/>
+            <column name="language_name" value="Malayalam"/>
+            <column name="native_name" value="മലയാളം"/>
+            <column name="text_direction" value="LTR"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="locale_languages" schemaName="hm_i18n">
+            <column name="id" value="lang-mr"/>
+            <column name="language_code" value="mr"/>
+            <column name="language_name" value="Marathi"/>
+            <column name="native_name" value="मराठी"/>
+            <column name="text_direction" value="LTR"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="locale_languages" schemaName="hm_i18n">
+            <column name="id" value="lang-bn"/>
+            <column name="language_code" value="bn"/>
+            <column name="language_name" value="Bengali"/>
+            <column name="native_name" value="বাংলা"/>
+            <column name="text_direction" value="LTR"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="tenant" value="homebase"/>
+            <column name="created_by" value="system"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

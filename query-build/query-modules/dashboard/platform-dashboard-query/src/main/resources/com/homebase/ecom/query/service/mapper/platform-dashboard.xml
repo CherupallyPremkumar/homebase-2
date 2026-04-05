@@ -1,0 +1,355 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PlatformDashboard">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL READS FROM hm_query.* OLAP SCHEMA ONLY — NEVER FROM OLTP          -->
+<!-- Sources: hm_query.platform_kpi_snapshots, hm_query.live_order_pipeline-->
+<!--          hm_query.top_products_today, hm_query.top_sellers_today,     -->
+<!--          hm_query.category_performance_daily,                          -->
+<!--          hm_query.seller_health_summary_daily,                         -->
+<!--          hm_query.conversion_funnel_daily,                             -->
+<!--          hm_query.revenue_by_region_daily                              -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PLATFORM KPI SNAPSHOTS — daily/range KPI time series                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="platformKpi-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.platform_kpi_snapshots
+    WHERE tenant = 'homebase'
+    <if test="startDate != null">AND snapshot_date &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND snapshot_date &lt;= CAST(#{endDate} AS DATE)</if>
+</select>
+
+<select id="platformKpi" resultType="map">
+    SELECT
+        kpi.snapshot_date as "snapshotDate",
+        kpi.gmv as "gmv",
+        kpi.total_revenue as "totalRevenue",
+        kpi.total_commission_earned as "totalCommission",
+        kpi.total_platform_fees as "platformFees",
+        kpi.total_seller_payouts as "sellerPayouts",
+        kpi.pending_payouts as "pendingPayouts",
+        kpi.total_refund_amount as "totalRefunds",
+        kpi.take_rate as "takeRate",
+        kpi.total_orders as "totalOrders",
+        kpi.total_units_sold as "totalUnitsSold",
+        kpi.avg_order_value as "avgOrderValue",
+        kpi.cancellation_count as "cancellations",
+        kpi.rto_count as "rtoCount",
+        kpi.return_count as "returnCount",
+        kpi.active_buyers as "activeBuyers",
+        kpi.active_sellers as "activeSellers",
+        kpi.new_buyers as "newBuyers",
+        kpi.new_sellers as "newSellers",
+        kpi.total_products_listed as "productsListed",
+        kpi.total_skus as "totalSkus",
+        kpi.total_sessions as "totalSessions",
+        kpi.conversion_rate as "conversionRate",
+        kpi.cart_abandonment_rate as "cartAbandonmentRate",
+        kpi.open_support_tickets as "openTickets",
+        kpi.avg_delivery_days as "avgDeliveryDays",
+        kpi.on_time_delivery_rate as "onTimeDeliveryRate",
+        kpi.upi_pct as "upiPct",
+        kpi.card_pct as "cardPct",
+        kpi.cod_pct as "codPct",
+        kpi.wallet_pct as "walletPct",
+        kpi.payment_success_rate as "paymentSuccessRate"
+    FROM hm_query.platform_kpi_snapshots kpi
+    WHERE kpi.tenant = 'homebase'
+    <if test="startDate != null">AND kpi.snapshot_date &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND kpi.snapshot_date &lt;= CAST(#{endDate} AS DATE)</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- LIVE ORDER PIPELINE — real-time order funnel                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="liveOrderPipeline" resultType="map">
+    SELECT
+        lop.pipeline_date as "pipelineDate",
+        lop.placed_count as "placedCount",
+        lop.confirmed_count as "confirmedCount",
+        lop.packed_count as "packedCount",
+        lop.shipped_count as "shippedCount",
+        lop.out_for_delivery_count as "outForDeliveryCount",
+        lop.delivered_count as "deliveredCount",
+        lop.cancelled_count as "cancelledCount",
+        lop.returned_count as "returnedCount",
+        lop.rto_count as "rtoCount",
+        lop.placed_breach_4hr as "placedBreach4hr",
+        lop.placed_breach_8hr as "placedBreach8hr",
+        lop.packed_breach_4hr as "packedBreach4hr",
+        lop.shipped_breach_24hr as "shippedBreach24hr",
+        lop.cancellation_rate as "cancellationRate",
+        lop.rto_rate as "rtoRate",
+        lop.return_rate as "returnRate",
+        lop.orders_per_minute as "ordersPerMinute",
+        lop.refreshed_at as "refreshedAt"
+    FROM hm_query.live_order_pipeline lop
+    WHERE lop.tenant = 'homebase'
+    ORDER BY lop.pipeline_date DESC
+    LIMIT 1
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- TOP PRODUCTS TODAY                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="topProductsToday-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.top_products_today
+    WHERE tenant = 'homebase'
+    <if test="q != null">AND (product_name ILIKE CONCAT('%', #{q}, '%') OR sku ILIKE CONCAT('%', #{q}, '%') OR category_name ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="topProductsToday" resultType="map">
+    SELECT
+        tp.rank as "rank",
+        tp.product_id as "productId",
+        tp.product_name as "productName",
+        tp.sku as "sku",
+        tp.category_name as "categoryName",
+        tp.seller_name as "sellerName",
+        tp.units_sold as "unitsSold",
+        tp.revenue as "revenue",
+        tp.stock_remaining as "stockRemaining",
+        tp.stock_status as "stockStatus",
+        tp.avg_rating as "avgRating",
+        tp.review_count as "reviewCount",
+        tp.conversion_rate as "conversionRate",
+        tp.refreshed_at as "refreshedAt"
+    FROM hm_query.top_products_today tp
+    WHERE tp.tenant = 'homebase'
+    <if test="q != null">AND (tp.product_name ILIKE CONCAT('%', #{q}, '%') OR tp.sku ILIKE CONCAT('%', #{q}, '%') OR tp.category_name ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- TOP SELLERS TODAY                                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="topSellersToday-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.top_sellers_today
+    WHERE tenant = 'homebase'
+    <if test="q != null">AND (seller_name ILIKE CONCAT('%', #{q}, '%') OR seller_id ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="topSellersToday" resultType="map">
+    SELECT
+        ts.rank as "rank",
+        ts.seller_id as "sellerId",
+        ts.seller_name as "sellerName",
+        ts.tier as "tier",
+        ts.gmv_today as "gmvToday",
+        ts.orders_today as "ordersToday",
+        ts.products_count as "productsCount",
+        ts.fulfillment_rate as "fulfillmentRate",
+        ts.rating as "rating",
+        ts.health_score as "healthScore",
+        ts.refreshed_at as "refreshedAt"
+    FROM hm_query.top_sellers_today ts
+    WHERE ts.tenant = 'homebase'
+    <if test="q != null">AND (ts.seller_name ILIKE CONCAT('%', #{q}, '%') OR ts.seller_id ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CATEGORY PERFORMANCE DAILY                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="categoryPerformance-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.category_performance_daily
+    WHERE tenant = 'homebase'
+    <if test="startDate != null">AND summary_date &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND summary_date &lt;= CAST(#{endDate} AS DATE)</if>
+    <if test="categoryId != null">AND category_id = #{categoryId}</if>
+    <if test="q != null">AND category_name ILIKE CONCAT('%', #{q}, '%')</if>
+</select>
+
+<select id="categoryPerformance" resultType="map">
+    SELECT
+        cpd.summary_date as "summaryDate",
+        cpd.category_id as "categoryId",
+        cpd.category_name as "categoryName",
+        cpd.gmv as "gmv",
+        cpd.total_orders as "totalOrders",
+        cpd.total_units_sold as "totalUnitsSold",
+        cpd.total_returns as "totalReturns",
+        cpd.return_rate as "returnRate",
+        cpd.avg_order_value as "avgOrderValue",
+        cpd.active_sellers as "activeSellers",
+        cpd.active_listings as "activeListings",
+        cpd.conversion_rate as "conversionRate",
+        cpd.avg_product_rating as "avgProductRating"
+    FROM hm_query.category_performance_daily cpd
+    WHERE cpd.tenant = 'homebase'
+    <if test="startDate != null">AND cpd.summary_date &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND cpd.summary_date &lt;= CAST(#{endDate} AS DATE)</if>
+    <if test="categoryId != null">AND cpd.category_id = #{categoryId}</if>
+    <if test="q != null">AND cpd.category_name ILIKE CONCAT('%', #{q}, '%')</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SELLER HEALTH SUMMARY DAILY                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="sellerHealthSummary-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.seller_health_summary_daily
+    WHERE tenant = 'homebase'
+    <if test="startDate != null">AND summary_date &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND summary_date &lt;= CAST(#{endDate} AS DATE)</if>
+</select>
+
+<select id="sellerHealthSummary" resultType="map">
+    SELECT
+        shs.summary_date as "summaryDate",
+        shs.total_sellers as "totalSellers",
+        shs.healthy_sellers as "healthySellers",
+        shs.at_risk_sellers as "atRiskSellers",
+        shs.unhealthy_sellers as "unhealthySellers",
+        shs.new_applications as "newApplications",
+        shs.pending_approvals as "pendingApprovals",
+        shs.suspended_sellers as "suspendedSellers",
+        shs.avg_health_score as "avgHealthScore",
+        shs.avg_rating as "avgRating",
+        shs.avg_fulfillment_rate as "avgFulfillmentRate"
+    FROM hm_query.seller_health_summary_daily shs
+    WHERE shs.tenant = 'homebase'
+    <if test="startDate != null">AND shs.summary_date &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND shs.summary_date &lt;= CAST(#{endDate} AS DATE)</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CONVERSION FUNNEL DAILY                                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="conversionFunnel-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.conversion_funnel_daily
+    WHERE tenant = 'homebase'
+    <if test="startDate != null">AND funnel_date &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND funnel_date &lt;= CAST(#{endDate} AS DATE)</if>
+</select>
+
+<select id="conversionFunnel" resultType="map">
+    SELECT
+        cfd.funnel_date as "funnelDate",
+        cfd.total_sessions as "totalSessions",
+        cfd.product_views as "productViews",
+        cfd.add_to_cart as "addToCart",
+        cfd.checkout_initiated as "checkoutInitiated",
+        cfd.purchase_completed as "purchaseCompleted",
+        cfd.browse_to_cart_rate as "browseToCartRate",
+        cfd.cart_to_checkout_rate as "cartToCheckoutRate",
+        cfd.checkout_to_purchase_rate as "checkoutToPurchaseRate",
+        cfd.overall_conversion_rate as "overallConversionRate"
+    FROM hm_query.conversion_funnel_daily cfd
+    WHERE cfd.tenant = 'homebase'
+    <if test="startDate != null">AND cfd.funnel_date &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND cfd.funnel_date &lt;= CAST(#{endDate} AS DATE)</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- REVENUE BY REGION DAILY                                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="revenueByRegion-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.revenue_by_region_daily
+    WHERE tenant = 'homebase'
+    <if test="startDate != null">AND summary_date &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND summary_date &lt;= CAST(#{endDate} AS DATE)</if>
+    <if test="q != null">AND (state ILIKE CONCAT('%', #{q}, '%') OR city ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="revenueByRegion" resultType="map">
+    SELECT
+        rbr.summary_date as "summaryDate",
+        rbr.state as "state",
+        rbr.city as "city",
+        rbr.gmv as "gmv",
+        rbr.total_orders as "totalOrders",
+        rbr.avg_order_value as "avgOrderValue",
+        rbr.active_sellers as "activeSellers",
+        rbr.active_buyers as "activeBuyers",
+        rbr.on_time_delivery_rate as "onTimeDeliveryRate"
+    FROM hm_query.revenue_by_region_daily rbr
+    WHERE rbr.tenant = 'homebase'
+    <if test="startDate != null">AND rbr.summary_date &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND rbr.summary_date &lt;= CAST(#{endDate} AS DATE)</if>
+    <if test="q != null">AND (rbr.state ILIKE CONCAT('%', #{q}, '%') OR rbr.city ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PLATFORM ALERTS — P0/P1/P2 severity alerts                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="platformAlerts-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.platform_alerts
+    WHERE tenant = 'homebase'
+    <if test="severity != null">AND severity = #{severity}</if>
+    <if test="is_active != null">AND is_active = #{is_active}</if>
+    <if test="alert_type != null">AND alert_type = #{alert_type}</if>
+    <if test="q != null">AND (alert_message ILIKE CONCAT('%', #{q}, '%') OR metric_name ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="platformAlerts" resultType="map">
+    SELECT
+        pa.id as "id",
+        pa.alert_type as "alertType",
+        pa.severity as "severity",
+        pa.metric_name as "metricName",
+        pa.threshold_value as "thresholdValue",
+        pa.current_value as "currentValue",
+        pa.alert_message as "alertMessage",
+        pa.is_active as "isActive",
+        pa.is_acknowledged as "isAcknowledged",
+        pa.acknowledged_by as "acknowledgedBy",
+        pa.acknowledged_at as "acknowledgedAt",
+        pa.resolved_at as "resolvedAt",
+        pa.created_time as "createdTime"
+    FROM hm_query.platform_alerts pa
+    WHERE pa.tenant = 'homebase'
+    <if test="severity != null">AND pa.severity = #{severity}</if>
+    <if test="is_active != null">AND pa.is_active = #{is_active}</if>
+    <if test="alert_type != null">AND pa.alert_type = #{alert_type}</if>
+    <if test="q != null">AND (pa.alert_message ILIKE CONCAT('%', #{q}, '%') OR pa.metric_name ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CUSTOMER HEALTH — cohort retention metrics                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="customerHealth-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.customer_cohort_metrics
+    WHERE tenant = 'homebase'
+    <if test="cohortMonth != null">AND cohort_month = CAST(#{cohortMonth} AS DATE)</if>
+    <if test="startDate != null">AND measurement_month &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND measurement_month &lt;= CAST(#{endDate} AS DATE)</if>
+</select>
+
+<select id="customerHealth" resultType="map">
+    SELECT
+        ccm.id as "id",
+        ccm.cohort_month as "cohortMonth",
+        ccm.measurement_month as "measurementMonth",
+        ccm.cohort_size as "cohortSize",
+        ccm.active_count as "activeCount",
+        ccm.retention_rate as "retentionRate",
+        ccm.revenue_per_user as "revenuePerUser",
+        ccm.total_orders as "totalOrders",
+        ccm.churn_count as "churnCount"
+    FROM hm_query.customer_cohort_metrics ccm
+    WHERE ccm.tenant = 'homebase'
+    <if test="cohortMonth != null">AND ccm.cohort_month = CAST(#{cohortMonth} AS DATE)</if>
+    <if test="startDate != null">AND ccm.measurement_month &gt;= CAST(#{startDate} AS DATE)</if>
+    <if test="endDate != null">AND ccm.measurement_month &lt;= CAST(#{endDate} AS DATE)</if>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

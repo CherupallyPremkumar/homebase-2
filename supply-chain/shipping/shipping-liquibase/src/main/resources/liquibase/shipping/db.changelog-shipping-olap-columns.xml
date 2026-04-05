@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- shipped_at: when the shipment was actually dispatched (distinct from created_time).
+         Needed by OLAP query layer to compute dispatch SLA, avg shipping time. -->
+    <changeSet id="shipping-olap-001-add-shipped-at" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="shipments" schemaName="hm_shipping"/>
+                <not><columnExists tableName="shipments" schemaName="hm_shipping" columnName="shipped_at"/></not>
+            </and>
+        </preConditions>
+        <addColumn tableName="shipments" schemaName="hm_shipping">
+            <column name="shipped_at" type="TIMESTAMP" remarks="When carrier picked up the parcel"/>
+        </addColumn>
+        <createIndex indexName="idx_shipments_shipped_at" tableName="shipments" schemaName="hm_shipping">
+            <column name="shipped_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

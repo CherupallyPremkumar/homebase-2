@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Supplier test data - 6 suppliers covering all STM states from supplier-states.xml:
+        APPLIED, APPROVED, ACTIVE, PROBATION, SUSPENDED, TERMINATED
+    -->
+    <changeSet id="supplier-test-data" author="homebase-test">
+
+        <!-- supplier-1: GreenLeaf Organics - ACTIVE, high performance seller -->
+        <insert tableName="supplier">
+            <column name="id" value="supplier-1"/>
+            <column name="user_id" value="user-1"/>
+            <column name="business_name" value="GreenLeaf Organics Pvt Ltd"/>
+            <column name="business_type" value="PRIVATE_LIMITED"/>
+            <column name="tax_id" value="29AABCG1234F1Z5"/>
+            <column name="contact_email" value="ops@greenleaf.in"/>
+            <column name="contact_phone" value="+919845012345"/>
+            <column name="address" value="Plot 42, KIADB Industrial Area, Whitefield, Bangalore 560066"/>
+            <column name="rating" valueNumeric="4.7"/>
+            <column name="total_orders" valueNumeric="2340"/>
+            <column name="total_returns" valueNumeric="45"/>
+            <column name="fulfillment_rate" valueNumeric="98.5"/>
+            <column name="avg_shipping_days" valueNumeric="2.1"/>
+            <column name="commission_rate" valueNumeric="12.0"/>
+            <column name="active_date" valueDate="2025-03-15T10:00:00"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="supplier-flow"/>
+            <column name="created_time" valueDate="2025-02-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-10T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="12"/>
+        </insert>
+
+        <!-- supplier-2: TechVista Electronics - ACTIVE, mid-tier seller -->
+        <insert tableName="supplier">
+            <column name="id" value="supplier-2"/>
+            <column name="user_id" value="user-2"/>
+            <column name="business_name" value="TechVista Electronics"/>
+            <column name="business_type" value="PARTNERSHIP"/>
+            <column name="tax_id" value="07AABFT5678G1Z8"/>
+            <column name="contact_email" value="sales@techvista.in"/>
+            <column name="contact_phone" value="+919845012346"/>
+            <column name="address" value="Shop 15, Nehru Place, New Delhi 110019"/>
+            <column name="rating" valueNumeric="4.2"/>
+            <column name="total_orders" valueNumeric="890"/>
+            <column name="total_returns" valueNumeric="78"/>
+            <column name="fulfillment_rate" valueNumeric="94.2"/>
+            <column name="avg_shipping_days" valueNumeric="3.5"/>
+            <column name="commission_rate" valueNumeric="15.0"/>
+            <column name="active_date" valueDate="2025-06-01T10:00:00"/>
+            <column name="state_id" value="ACTIVE"/>
+            <column name="flow_id" value="supplier-flow"/>
+            <column name="created_time" valueDate="2025-05-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-08T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="8"/>
+        </insert>
+
+        <!-- supplier-3: Artisan Handlooms - PROBATION (high return rate) -->
+        <insert tableName="supplier">
+            <column name="id" value="supplier-3"/>
+            <column name="business_name" value="Artisan Handlooms"/>
+            <column name="business_type" value="SOLE_PROPRIETORSHIP"/>
+            <column name="tax_id" value="33AABCA9012H1Z2"/>
+            <column name="contact_email" value="info@artisanhandlooms.in"/>
+            <column name="contact_phone" value="+919845012347"/>
+            <column name="address" value="Kanchipuram Silk Market, Tamil Nadu 631502"/>
+            <column name="rating" valueNumeric="3.4"/>
+            <column name="total_orders" valueNumeric="320"/>
+            <column name="total_returns" valueNumeric="64"/>
+            <column name="fulfillment_rate" valueNumeric="82.0"/>
+            <column name="avg_shipping_days" valueNumeric="5.2"/>
+            <column name="commission_rate" valueNumeric="10.0"/>
+            <column name="probation_reason" value="Return rate exceeded 15% threshold for 3 consecutive months"/>
+            <column name="probation_date" valueDate="2026-02-15T10:00:00"/>
+            <column name="state_id" value="PROBATION"/>
+            <column name="flow_id" value="supplier-flow"/>
+            <column name="created_time" valueDate="2025-04-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-02-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="10"/>
+        </insert>
+
+        <!-- supplier-4: QuickShip Wholesale - SUSPENDED (counterfeit goods) -->
+        <insert tableName="supplier">
+            <column name="id" value="supplier-4"/>
+            <column name="business_name" value="QuickShip Wholesale"/>
+            <column name="business_type" value="LLP"/>
+            <column name="tax_id" value="27AABCQ3456I1Z9"/>
+            <column name="contact_email" value="admin@quickship.in"/>
+            <column name="contact_phone" value="+919845012348"/>
+            <column name="address" value="Goregaon Industrial Estate, Mumbai 400063"/>
+            <column name="rating" valueNumeric="2.1"/>
+            <column name="total_orders" valueNumeric="150"/>
+            <column name="total_returns" valueNumeric="45"/>
+            <column name="suspension_reason" value="Counterfeit product complaints - IP violation report filed"/>
+            <column name="suspended_date" valueDate="2026-03-01T10:00:00"/>
+            <column name="products_disabled" valueBoolean="true"/>
+            <column name="state_id" value="SUSPENDED"/>
+            <column name="flow_id" value="supplier-flow"/>
+            <column name="created_time" valueDate="2025-08-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-01T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="7"/>
+        </insert>
+
+        <!-- supplier-5: FreshKart Foods - APPLIED (new application pending review) -->
+        <insert tableName="supplier">
+            <column name="id" value="supplier-5"/>
+            <column name="business_name" value="FreshKart Foods"/>
+            <column name="business_type" value="PRIVATE_LIMITED"/>
+            <column name="tax_id" value="36AABCF7890J1Z4"/>
+            <column name="contact_email" value="onboarding@freshkart.in"/>
+            <column name="contact_phone" value="+919845012349"/>
+            <column name="address" value="Jubilee Hills, Hyderabad 500033"/>
+            <column name="state_id" value="APPLIED"/>
+            <column name="flow_id" value="supplier-flow"/>
+            <column name="created_time" valueDate="2026-03-14T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-14T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+        <!-- supplier-6: OldWorld Antiques - TERMINATED -->
+        <insert tableName="supplier">
+            <column name="id" value="supplier-6"/>
+            <column name="business_name" value="OldWorld Antiques"/>
+            <column name="business_type" value="SOLE_PROPRIETORSHIP"/>
+            <column name="tax_id" value="19AABCO2345K1Z1"/>
+            <column name="contact_email" value="info@oldworldantiques.in"/>
+            <column name="contact_phone" value="+919845012350"/>
+            <column name="address" value="Park Street, Kolkata 700016"/>
+            <column name="termination_reason" value="Repeated policy violations after 2 suspensions"/>
+            <column name="terminated_date" valueDate="2026-01-15T10:00:00"/>
+            <column name="products_disabled" valueBoolean="true"/>
+            <column name="state_id" value="TERMINATED"/>
+            <column name="flow_id" value="supplier-flow"/>
+            <column name="created_time" valueDate="2025-01-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-01-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="15"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PaymentSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query payment OLAP tables from OLTP             -->
+<!-- Source: payment + user_profiles + payment_refunds + payment_webhook_log -->
+<!-- Called by PaymentSyncService                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== fact_payments ====== -->
+<update id="truncateFactPayments">
+    TRUNCATE TABLE hm_query.fact_payments
+</update>
+
+<insert id="syncFactPayments">
+    INSERT INTO hm_query.fact_payments (
+        id, tenant, last_synced_at,
+        order_id, customer_id,
+        amount, currency, payment_method,
+        gateway_transaction_id, gateway_name, gateway_response,
+        retry_count, failure_reason,
+        state_id, flow_id,
+        created_time, last_modified_time
+    )
+    SELECT
+        p.id,
+        p.tenant,
+        NOW(),
+        p.order_id,
+        p.customer_id,
+        COALESCE(p.amount, 0),
+        COALESCE(p.currency, 'INR'),
+        p.payment_method,
+        p.gateway_transaction_id,
+        p.gateway_name,
+        p.gateway_response,
+        COALESCE(p.retry_count, 0),
+        p.failure_reason,
+        p.state_id,
+        p.flow_id,
+        p.created_time,
+        p.last_modified_time
+    FROM hm_payment.payment p
+</insert>
+
+<!-- ====== dim_customer (upsert) ====== -->
+<update id="syncDimCustomer">
+    INSERT INTO hm_query.dim_customer (customer_id, customer_name, customer_email, last_synced_at)
+    SELECT
+        u.id,
+        COALESCE(u.first_name || ' ' || COALESCE(u.last_name, ''), ''),
+        COALESCE(u.email, ''),
+        NOW()
+    FROM hm_user.user_profiles u
+    WHERE u.id IN (SELECT DISTINCT customer_id FROM hm_payment.payment WHERE customer_id IS NOT NULL)
+    ON CONFLICT (customer_id) DO UPDATE SET
+        customer_name = EXCLUDED.customer_name,
+        customer_email = EXCLUDED.customer_email,
+        last_synced_at = EXCLUDED.last_synced_at
+</update>
+
+<!-- ====== dim_payment_method (upsert) ====== -->
+<update id="syncDimPaymentMethod">
+    INSERT INTO hm_query.dim_payment_method (method_code, method_display_name, method_type, last_synced_at)
+    SELECT DISTINCT
+        p.payment_method,
+        COALESCE(p.payment_method, ''),
+        COALESCE(p.payment_method, ''),
+        NOW()
+    FROM hm_payment.payment p
+    WHERE p.payment_method IS NOT NULL
+    ON CONFLICT (method_code) DO UPDATE SET
+        method_display_name = EXCLUDED.method_display_name,
+        method_type = EXCLUDED.method_type,
+        last_synced_at = EXCLUDED.last_synced_at
+</update>
+
+<!-- ====== payment_refunds_flat ====== -->
+<update id="truncatePaymentRefundsFlat">
+    TRUNCATE TABLE hm_query.payment_refunds_flat
+</update>
+
+<insert id="syncPaymentRefundsFlat">
+    INSERT INTO hm_query.payment_refunds_flat (
+        id, tenant, last_synced_at,
+        payment_id, amount, reason, status, created_time
+    )
+    SELECT
+        pr.id,
+        p.tenant,
+        NOW(),
+        pr.payment_id,
+        pr.amount,
+        pr.reason,
+        pr.status,
+        pr.created_time
+    FROM hm_payment.payment_refunds pr
+    JOIN hm_payment.payment p ON pr.payment_id = p.id
+</insert>
+
+<!-- ====== payment_webhook_log_flat ====== -->
+<update id="truncatePaymentWebhookLogFlat">
+    TRUNCATE TABLE hm_query.payment_webhook_log_flat
+</update>
+
+<insert id="syncPaymentWebhookLogFlat">
+    INSERT INTO hm_query.payment_webhook_log_flat (
+        id, tenant, last_synced_at,
+        payment_id, event_type, provider, status, created_time
+    )
+    SELECT
+        wl.id,
+        p.tenant,
+        NOW(),
+        wl.payment_id,
+        wl.event_type,
+        wl.provider,
+        wl.status,
+        wl.created_time
+    FROM hm_payment.payment_webhook_log wl
+    JOIN hm_payment.payment p ON wl.payment_id = p.id
+    WHERE wl.created_time >= NOW() - INTERVAL '90 days'
+</insert>
+
+</mapper>

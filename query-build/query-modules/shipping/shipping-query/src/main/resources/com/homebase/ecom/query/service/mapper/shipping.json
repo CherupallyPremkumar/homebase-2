@@ -1,0 +1,144 @@
+[
+	{
+		"id": "Shipping.getAll",
+		"name": "shipments",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"workflowName": "shipping",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "fs.id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"orderId": {
+				"name": "fs.order_id",
+				"columnType": "Text",
+				"filterable": true,
+				"sortable": true
+			},
+			"customerId": {
+				"name": "fs.customer_id",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"carrier": {
+				"name": "fs.carrier",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"shippingMethod": {
+				"name": "fs.shipping_method",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"stateId": {
+				"name": "fs.state_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdAt": {
+				"name": "fs.created_time",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			},
+			"q": {
+				"name": "q",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Shipping.getById",
+		"name": "shippingById",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"workflowName": "shipping",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "fs.id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Shipping.getStateCounts",
+		"name": "shippingStateCounts",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Shipping.getByCarrier",
+		"name": "shippingsByCarrier",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"carrier": {
+				"name": "fs.carrier",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "fs.state_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Shipping.getPendingShipments",
+		"name": "pendingShipments",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Shipping.getByOrderId",
+		"name": "shippingByOrderId",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"orderId": {
+				"name": "fs.order_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Shipping.trackShipment",
+		"name": "trackShipment",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"trackingNumber": {
+				"name": "fs.tracking_number",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	}
+]

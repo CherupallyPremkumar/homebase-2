@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="seller-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_seller</sql>
+    </changeSet>
+
+    <!-- sellers (STM entity — extends AbstractJpaStateEntity) -->
+    <changeSet id="seller-001-create-sellers" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="sellers" schemaName="hm_seller"/></not>
+        </preConditions>
+        <createTable tableName="sellers" schemaName="hm_seller">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="user_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="business_name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="display_name" type="VARCHAR(255)"/>
+            <column name="email" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="phone" type="VARCHAR(20)"/>
+            <column name="gstin" type="VARCHAR(15)"/>
+            <column name="pan" type="VARCHAR(10)"/>
+            <column name="bank_account_number" type="VARCHAR(20)"/>
+            <column name="bank_ifsc" type="VARCHAR(11)"/>
+            <column name="commission_rate" type="DECIMAL(5,2)"/>
+            <column name="rating" type="DECIMAL(3,2)"/>
+            <column name="total_products" type="INT" defaultValueNumeric="0"/>
+            <column name="total_orders" type="INT" defaultValueNumeric="0"/>
+            <column name="address_line1" type="VARCHAR(255)"/>
+            <column name="address_line2" type="VARCHAR(255)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="state" type="VARCHAR(100)"/>
+            <column name="pincode" type="VARCHAR(10)"/>
+        </createTable>
+        <createIndex indexName="idx_sellers_user" tableName="sellers" schemaName="hm_seller">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_sellers_state" tableName="sellers" schemaName="hm_seller">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex indexName="idx_sellers_email" tableName="sellers" schemaName="hm_seller">
+            <column name="email"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- seller_activity (audit log) -->
+    <changeSet id="seller-002-create-seller-activity" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="seller_activity" schemaName="hm_seller"/></not>
+        </preConditions>
+        <createTable tableName="seller_activity" schemaName="hm_seller">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="seller_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="action_type" type="VARCHAR(100)"/>
+            <column name="performed_by" type="VARCHAR(255)"/>
+            <column name="comment" type="TEXT"/>
+        </createTable>
+        <createIndex indexName="idx_seller_activity_seller" tableName="seller_activity" schemaName="hm_seller">
+            <column name="seller_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

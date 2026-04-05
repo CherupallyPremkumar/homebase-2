@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Campaign">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: campaign_flat                                                   -->
+<!-- Populated by PromoSyncService ETL.                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN: getAll campaigns ====== -->
+<select id="getAll" resultType="com.homebase.ecom.dto.CampaignDto">
+    SELECT
+        campaign_id        as "id",
+        name               as "name",
+        campaign_type      as "campaignType",
+        description        as "description",
+        discount_type      as "discountType",
+        discount_value     as "discountValue",
+        start_date         as "startDate",
+        end_date           as "endDate",
+        budget             as "budget",
+        spent              as "spent",
+        revenue            as "revenue",
+        usage_count        as "usageCount",
+        min_order_amount   as "minOrderAmount",
+        max_discount_amount as "maxDiscountAmount",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        remaining_budget   as "remainingBudget",
+        roi                as "roi"
+    FROM hm_query.campaign_flat
+    <where>
+        <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="campaignType != null">AND campaign_type = #{campaignType}</if>
+        <if test="discountType != null">AND discount_type = #{discountType}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="q != null">AND (name LIKE CONCAT('%', #{q}, '%') OR description LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.campaign_flat
+    <where>
+        <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="campaignType != null">AND campaign_type = #{campaignType}</if>
+        <if test="discountType != null">AND discount_type = #{discountType}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="q != null">AND (name LIKE CONCAT('%', #{q}, '%') OR description LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<!-- ====== ADMIN: stats (state counts + budget summary) ====== -->
+<select id="stats" resultType="java.util.Map">
+    SELECT
+        state_id           as "stateId",
+        count(*)           as "count",
+        COALESCE(SUM(budget), 0) as "totalBudget",
+        COALESCE(SUM(spent), 0) as "totalSpent",
+        COALESCE(SUM(revenue), 0) as "totalRevenue",
+        COALESCE(SUM(usage_count), 0) as "totalUsage"
+    FROM hm_query.campaign_flat
+    GROUP BY state_id
+</select>
+
+<select id="stats-count" resultType="int">
+    SELECT count(DISTINCT state_id) FROM hm_query.campaign_flat
+</select>
+
+</mapper>

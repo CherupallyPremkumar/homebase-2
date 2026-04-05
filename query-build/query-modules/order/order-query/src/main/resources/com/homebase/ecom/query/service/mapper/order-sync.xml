@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="OrderSync">
+
+<update id="truncateOrderDetailsFlat">
+    TRUNCATE TABLE hm_query.order_details_flat
+</update>
+
+<!-- SYNC: order_details_flat -->
+<!-- Source: orders + order_items + user_profiles + supplier + payment + shipments + order_addresses -->
+<insert id="syncOrderDetailsFlat">
+    INSERT INTO hm_query.order_details_flat (
+        id, tenant, last_synced_at,
+        order_id, order_number, order_date, order_status, flow_id,
+        total_amount, subtotal, tax_amount, shipping_amount, discount_amount,
+        item_count, currency, coupon_codes,
+        first_product_name, first_product_sku, total_items,
+        customer_id, customer_name, customer_email, customer_phone, customer_tier,
+        seller_id, seller_name, seller_tier,
+        payment_id, payment_method, payment_status, gateway_name, gateway_fee,
+        shipment_id, carrier, tracking_number, shipped_at,
+        estimated_delivery_date, actual_delivery_date,
+        shipping_city, shipping_state, shipping_pincode,
+        sla_status, sla_breach_hours,
+        commission_amount, commission_rate, seller_payout
+    )
+    SELECT
+        o.id, o.tenant, NOW(),
+        o.id, o.order_number, o.created_time, o.state_id, o.flow_id,
+        o.total_amount, o.subtotal, o.tax_amount, o.shipping_amount, o.discount_amount,
+        COALESCE(o.item_count, (SELECT COUNT(*) FROM hm_order.order_items oi2 WHERE oi2.order_id = o.id)),
+        o.currency, o.coupon_codes,
+        -- First product (from order_items LATERAL)
+        oi.product_name,
+        oi.sku,
+        (SELECT COUNT(*) FROM hm_order.order_items oi3 WHERE oi3.order_id = o.id),
+        -- Customer
+        o.customer_id,
+        COALESCE(u.first_name || ' ' || COALESCE(u.last_name, ''), ''),
+        u.email,
+        u.phone,
+        u.customer_tier,
+        -- Seller (from first order item)
+        oi.supplier_id,
+        COALESCE(s.business_name, oi.supplier_name),
+        s.tier,
+        -- Payment
+        pay.id,
+        pay.payment_method,
+        pay.state_id,
+        pay.gateway_name,
+        pay.gateway_fee,
+        -- Shipment
+        ship.id,
+        COALESCE(o.carrier, ship.carrier),
+        COALESCE(o.tracking_number, ship.tracking_number),
+        ship.shipped_at,
+        COALESCE(o.estimated_delivery_date, ship.estimated_delivery_date),
+        COALESCE(o.actual_delivery_date, ship.actual_delivery_date),
+        -- Address (from order_addresses or parsed from shipping_address)
+        oa.city,
+        oa.state,
+        oa.postal_code,
+        -- SLA
+        CASE
+            WHEN o.state_id IN ('DELIVERED', 'CANCELLED') THEN 'COMPLETED'
+            WHEN o.sla_late > 0 THEN 'BREACHED'
+            WHEN o.sla_tending_late > 0 THEN 'AT_RISK'
+            ELSE 'ON_TRACK'
+        END,
+        COALESCE(o.sla_late, 0),
+        -- Commission (computed: total_amount * commission_rate)
+        COALESCE((o.total_amount * COALESCE(s.commission_rate, 500) / 10000)::BIGINT, 0),
+        COALESCE(s.commission_rate, 500),
+        COALESCE(o.total_amount - (o.total_amount * COALESCE(s.commission_rate, 500) / 10000)::BIGINT, o.total_amount)
+    FROM hm_order.orders o
+    LEFT JOIN hm_user.user_profiles u ON o.customer_id = u.id
+    LEFT JOIN LATERAL (
+        SELECT supplier_id, supplier_name, product_name, sku
+        FROM hm_order.order_items WHERE order_id = o.id LIMIT 1
+    ) oi ON true
+    LEFT JOIN hm_supplier.supplier s ON oi.supplier_id = s.id
+    LEFT JOIN hm_payment.payment pay ON o.payment_id = pay.id
+    LEFT JOIN hm_shipping.shipments ship ON ship.order_id = o.id
+    LEFT JOIN hm_order.order_addresses oa ON oa.order_id = o.id AND oa.address_type = 'SHIPPING'
+</insert>
+
+<!-- ====== SYNC: order_items_flat ====== -->
+<update id="truncateOrderItemsFlat">
+    TRUNCATE TABLE hm_query.order_items_flat
+</update>
+
+<insert id="syncOrderItemsFlat">
+    INSERT INTO hm_query.order_items_flat (
+        id, tenant, last_synced_at, order_id,
+        product_id, product_name, sku, quantity,
+        unit_price, total_price, tax_amount, discount_amount,
+        supplier_id, supplier_name, image_url, hsn_code,
+        return_eligible, fulfillment_status
+    )
+    SELECT
+        oi.id, o.tenant, NOW(), oi.order_id,
+        oi.product_id, oi.product_name, oi.sku, oi.quantity,
+        oi.unit_price, oi.total_price, oi.tax_amount, oi.discount_amount,
+        oi.supplier_id, oi.supplier_name, oi.image_url, oi.hsn_code,
+        oi.return_eligible, oi.fulfillment_status
+    FROM hm_order.order_items oi
+    JOIN hm_order.orders o ON oi.order_id = o.id
+</insert>
+
+<!-- ====== SYNC: order_activity_flat ====== -->
+<update id="truncateOrderActivityFlat">
+    TRUNCATE TABLE hm_query.order_activity_flat
+</update>
+
+<insert id="syncOrderActivityFlat">
+    INSERT INTO hm_query.order_activity_flat (
+        id, tenant, order_id, action, description, performed_by, created_time
+    )
+    SELECT
+        oa.id, o.tenant, oa.order_id,
+        oa.action, oa.description, oa.performed_by, oa.created_time
+    FROM hm_order.order_activity oa
+    JOIN hm_order.orders o ON oa.order_id = o.id
+    WHERE oa.created_time >= NOW() - INTERVAL '90 days'
+</insert>
+
+<!-- ====== SYNC: shipment_tracking_flat ====== -->
+<update id="truncateShipmentTrackingFlat">
+    TRUNCATE TABLE hm_query.shipment_tracking_flat
+</update>
+
+<insert id="syncShipmentTrackingFlat">
+    INSERT INTO hm_query.shipment_tracking_flat (
+        id, tenant, order_id, shipment_id,
+        event_type, location, description, event_time
+    )
+    SELECT
+        ste.id, s.tenant, s.order_id, ste.shipment_id,
+        ste.event_type, ste.location, ste.description, ste.event_time
+    FROM hm_shipping.shipping_tracking_events ste
+    JOIN hm_shipping.shipments s ON ste.shipment_id = s.id
+    WHERE ste.event_time >= NOW() - INTERVAL '90 days'
+</insert>
+
+<!-- ====== SYNC: order_risk_flat ====== -->
+<update id="truncateOrderRiskFlat">
+    TRUNCATE TABLE hm_query.order_risk_flat
+</update>
+
+<insert id="syncOrderRiskFlat">
+    INSERT INTO hm_query.order_risk_flat (
+        id, tenant, order_id,
+        risk_score, risk_level, payment_risk, address_verified,
+        assessment_status, assessed_at
+    )
+    SELECT
+        fa.id, fa.tenant, fa.entity_id,
+        COALESCE(fa.risk_score, 0),
+        COALESCE(fa.risk_level, 'LOW'),
+        CASE WHEN fa.risk_score &lt; 30 THEN 'LOW'
+             WHEN fa.risk_score &lt; 70 THEN 'MEDIUM'
+             ELSE 'HIGH' END,
+        true,
+        fa.state_id,
+        fa.created_time
+    FROM hm_fraud.fraud_assessments fa
+    WHERE fa.entity_type = 'ORDER'
+</insert>
+
+</mapper>

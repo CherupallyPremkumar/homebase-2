@@ -1,0 +1,43 @@
+[
+	{
+		"id": "Reconciliation.getAll",
+		"name": "batches",
+		"description": "Reconciliation batches from OLAP",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"batchDate": { "name": "batchDate", "filterable": true, "columnType": "Date", "sortable": true },
+			"gatewayType": { "name": "gatewayType", "filterable": true, "columnType": "Text" },
+			"matchedCount": { "name": "matchedCount", "columnType": "Number", "sortable": true },
+			"mismatchCount": { "name": "mismatchCount", "columnType": "Number", "sortable": true },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true,
+		"workflowName": "reconciliation",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId"
+	},
+	{
+		"id": "Reconciliation.getById",
+		"name": "batch",
+		"description": "Single reconciliation batch detail",
+		"acls": ["ADMIN"],
+		"workflowName": "reconciliation",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Reconciliation.getStateCounts",
+		"name": "batchStateCounts",
+		"description": "Batch count by state for tab badges",
+		"acls": ["ADMIN"],
+		"paginated": false
+	}
+]

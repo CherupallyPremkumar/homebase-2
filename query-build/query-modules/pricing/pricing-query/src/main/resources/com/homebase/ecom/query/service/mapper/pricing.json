@@ -1,0 +1,58 @@
+[
+	{
+		"id": "Pricing.getRules",
+		"name": "pricingRules",
+		"description": "Pricing rules listing from OLAP pricing_rule_flat",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"columnMetadata": {
+			"name": { "name": "name", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"ruleType": { "name": "ruleType", "filterable": true, "columnType": "Text" },
+			"active": { "name": "active", "filterable": true, "columnType": "CheckBox" },
+			"hasConflict": { "name": "hasConflict", "filterable": true, "columnType": "CheckBox" },
+			"priority": { "name": "priority", "sortable": true, "columnType": "Numeric" },
+			"productsAffected": { "name": "productsAffected", "sortable": true, "columnType": "Numeric" },
+			"conversions30d": { "name": "conversions30d", "sortable": true, "columnType": "Numeric" },
+			"revenueImpact": { "name": "revenueImpact", "sortable": true, "columnType": "Numeric" },
+			"createdAt": { "name": "createdAt", "sortable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Pricing.getRuleStats",
+		"name": "pricingRuleStats",
+		"description": "Stat card counts (active rules, products affected, avg discount, revenue impact)",
+		"acls": ["ADMIN"],
+		"paginated": false
+	},
+	{
+		"id": "Pricing.getRuleTypeCounts",
+		"name": "pricingRuleTypeCounts",
+		"description": "Count per rule type for filter button badges (All/Markup/Discount/Floor/Ceiling)",
+		"acls": ["ADMIN"],
+		"paginated": false
+	},
+	{
+		"id": "Pricing.getConflicts",
+		"name": "pricingConflicts",
+		"description": "Rules with detected conflicts",
+		"acls": ["ADMIN"],
+		"paginated": false
+	},
+	{
+		"id": "Pricing.getHistory",
+		"name": "priceHistory",
+		"description": "Price change history from OLAP price_change_log_flat",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
+			"productName": { "name": "productName", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"changedBy": { "name": "changedBy", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+			"newPrice": { "name": "newPrice", "sortable": true, "columnType": "Numeric" },
+			"createdAt": { "name": "createdAt", "sortable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

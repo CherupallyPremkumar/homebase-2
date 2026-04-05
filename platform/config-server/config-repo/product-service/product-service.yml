@@ -1,0 +1,5 @@
+server:
+  port: 8086
+product:
+  max-variants-per-product: 20
+  image-upload-max-size-mb: 10

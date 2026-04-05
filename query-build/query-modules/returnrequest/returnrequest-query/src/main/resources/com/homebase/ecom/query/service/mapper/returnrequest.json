@@ -1,0 +1,186 @@
+[
+	{
+		"id": "Returnrequest.getAll",
+		"name": "returnrequests",
+		"acls": ["ADMIN", "AGENT"],
+		"workflowName": "returnrequest",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "fr.id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"orderId": {
+				"name": "fr.order_id",
+				"columnType": "Text",
+				"filterable": true,
+				"sortable": true
+			},
+			"customerId": {
+				"name": "fr.customer_id",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"sellerId": {
+				"name": "fr.seller_id",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"productId": {
+				"name": "fr.product_id",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"customerName": {
+				"name": "dc.customer_name",
+				"columnType": "Text",
+				"filterable": true,
+				"likeQuery": true
+			},
+			"sellerName": {
+				"name": "ds.seller_name",
+				"columnType": "Text",
+				"filterable": true,
+				"likeQuery": true
+			},
+			"productName": {
+				"name": "dp.product_name",
+				"columnType": "Text",
+				"filterable": true,
+				"likeQuery": true
+			},
+			"reason": {
+				"name": "fr.reason",
+				"columnType": "Text",
+				"filterable": true,
+				"likeQuery": true
+			},
+			"returnType": {
+				"name": "fr.return_type",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"totalRefundAmount": {
+				"name": "fr.total_refund_amount",
+				"columnType": "Number",
+				"filterable": true,
+				"sortable": true
+			},
+			"stateId": {
+				"name": "fr.state_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdTime": {
+				"name": "fr.created_time",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			},
+			"q": {
+				"name": "q",
+				"columnType": "Text",
+				"filterable": true,
+				"likeQuery": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Returnrequest.getById",
+		"name": "returnrequestById",
+		"acls": ["ADMIN", "AGENT"],
+		"workflowName": "returnrequest",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "fr.id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Returnrequest.getStateCounts",
+		"name": "returnrequestStateCounts",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Returnrequest.getPendingReturns",
+		"name": "pendingReturns",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {
+			"stateId": {
+				"name": "fr.state_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Returnrequest.getByCustomerId",
+		"name": "myReturns",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"customerId": {
+				"name": "fr.customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Returnrequest.getByOrderId",
+		"name": "orderReturns",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {
+			"orderId": {
+				"name": "fr.order_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Returnrequest.getBySellerId",
+		"name": "sellerReturns",
+		"acls": ["ADMIN", "SUPPLIER"],
+		"columnMetadata": {
+			"sellerId": {
+				"name": "fr.seller_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "fr.state_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	}
+]

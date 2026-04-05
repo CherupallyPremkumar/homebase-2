@@ -1,0 +1,53 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SellerDashboardSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC -- populate hm_query OLAP tables for seller dashboard reads   -->
+<!-- Called by SellerDashboardSyncService (Spring scheduler)                -->
+<!-- Strategy: TRUNCATE + INSERT (full refresh)                            -->
+<!--                                                                        -->
+<!-- Tables synced:                                                         -->
+<!--   - hm_query.seller_dashboard_flat (from supplier + orders + reviews)  -->
+<!--                                                                        -->
+<!-- Note: order_details_flat, order_items_flat, settlement_flat,           -->
+<!-- product_catalog_flat, return_detail_flat are synced by other services. -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateSellerDashboardFlat">TRUNCATE TABLE hm_query.seller_dashboard_flat</update>
+
+<!-- ====== SYNC: seller_dashboard_flat ====== -->
+<insert id="syncSellerDashboardFlat">
+    INSERT INTO hm_query.seller_dashboard_flat (
+        id, tenant, last_synced_at,
+        seller_id, business_name, seller_status, tier,
+        total_products, total_orders_30d, gmv_30d,
+        rating, health_score, fulfillment_rate,
+        return_rate, cancellation_rate, on_time_dispatch_rate,
+        avg_response_time_hrs
+    )
+    SELECT
+        s.id, s.tenant, NOW(),
+        s.id, s.business_name, s.state_id, COALESCE(s.tier, 'STANDARD'),
+        COALESCE((SELECT COUNT(*) FROM hm_product.products p
+                  WHERE p.supplier_id = s.id AND p.state_id = 'PUBLISHED'), 0),
+        COALESCE((SELECT COUNT(*) FROM hm_order.orders o
+                  WHERE o.seller_id = s.id
+                    AND o.created_time &gt;= NOW() - INTERVAL '30 days'), 0),
+        COALESCE((SELECT SUM(o.total_amount) FROM hm_order.orders o
+                  WHERE o.seller_id = s.id
+                    AND o.state_id NOT IN ('CANCELLED', 'PAYMENT_FAILED')
+                    AND o.created_time &gt;= NOW() - INTERVAL '30 days'), 0),
+        COALESCE((SELECT AVG(r.rating) * 100 FROM hm_review.product_reviews r
+                  JOIN hm_product.products p ON r.product_id = p.id
+                  WHERE p.supplier_id = s.id AND r.state_id = 'PUBLISHED')::INT, 0),
+        COALESCE(s.health_score, 500),
+        COALESCE(s.fulfillment_rate, 0),
+        COALESCE(s.return_rate, 0),
+        COALESCE(s.cancellation_rate, 0),
+        COALESCE(s.on_time_dispatch_rate, 0),
+        COALESCE(s.avg_response_time_hrs, 0)
+    FROM hm_supplier.supplier s
+    WHERE s.state_id NOT IN ('DEACTIVATED', 'BANNED')
+</insert>
+
+</mapper>

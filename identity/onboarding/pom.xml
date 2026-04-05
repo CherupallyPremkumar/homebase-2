@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<packaging>pom</packaging>
+	<modules>
+		<module>onboarding-domain</module>
+		<module>onboarding-api</module>
+		<module>onboarding-infrastructure</module>
+		<module>onboarding-service</module>
+		<module>onboarding-client</module>
+	        <module>onboarding-liquibase</module>
+    </modules>
+	<parent>
+		<groupId>com.homebase.ecom</groupId>
+		<artifactId>homebase-parent</artifactId>
+		<version>${revision}</version>
+		<relativePath>../../pom.xml</relativePath>
+	</parent>
+
+	<properties>
+		<onboarding.version>${revision}</onboarding.version>
+	</properties>
+
+	<groupId>com.homebase.ecom.onboarding</groupId>
+	<artifactId>onboarding-parent</artifactId>
+	<name>onboarding-parent</name>
+	<description>Parent POM for Supplier Onboarding</description>
+
+	<dependencyManagement>
+	<dependencies>
+		<dependency>
+			<groupId>com.homebase.ecom.onboarding</groupId>
+			<artifactId>onboarding-domain</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.onboarding</groupId>
+			<artifactId>onboarding-api</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.onboarding</groupId>
+			<artifactId>onboarding-infrastructure</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.homebase.ecom.onboarding</groupId>
+			<artifactId>onboarding-service</artifactId>
+			<version>${revision}</version>
+		</dependency>
+	</dependencies>
+	</dependencyManagement>
+
+</project>

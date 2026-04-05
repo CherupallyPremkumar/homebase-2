@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Live/Near-Real-Time Tables (OLAP)                                  -->
+    <!-- Refreshed every 1-5 minutes by scheduler or Kafka consumers.       -->
+    <!-- Small tables — few rows, fast writes, instant reads.               -->
+    <!-- ================================================================== -->
+
+    <!-- ====== LIVE ORDER PIPELINE ====== -->
+    <!-- One row per order status — gives instant funnel counts for dashboard -->
+    <!-- Refreshed every minute by counting orders per state_id -->
+    <changeSet id="query-live-001-live-order-pipeline" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="live_order_pipeline" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="live_order_pipeline" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="refreshed_at" type="TIMESTAMP"/>
+            <column name="pipeline_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="placed_count" type="INT" defaultValueNumeric="0"/>
+            <column name="confirmed_count" type="INT" defaultValueNumeric="0"/>
+            <column name="packed_count" type="INT" defaultValueNumeric="0"/>
+            <column name="shipped_count" type="INT" defaultValueNumeric="0"/>
+            <column name="out_for_delivery_count" type="INT" defaultValueNumeric="0"/>
+            <column name="delivered_count" type="INT" defaultValueNumeric="0"/>
+            <column name="cancelled_count" type="INT" defaultValueNumeric="0"/>
+            <column name="returned_count" type="INT" defaultValueNumeric="0"/>
+            <column name="rto_count" type="INT" defaultValueNumeric="0"/>
+            <!-- SLA breach counts per stage -->
+            <column name="placed_breach_4hr" type="INT" defaultValueNumeric="0" remarks="Placed but not confirmed >4hrs"/>
+            <column name="placed_breach_8hr" type="INT" defaultValueNumeric="0"/>
+            <column name="packed_breach_4hr" type="INT" defaultValueNumeric="0" remarks="Confirmed but not packed >4hrs"/>
+            <column name="shipped_breach_24hr" type="INT" defaultValueNumeric="0" remarks="Packed but not shipped >24hrs"/>
+            <!-- Rates (basis points) -->
+            <column name="cancellation_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="rto_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="return_rate" type="INT" defaultValueNumeric="0"/>
+            <!-- Velocity -->
+            <column name="orders_per_minute" type="INT" defaultValueNumeric="0" remarks="Basis points: 1420 = 14.20/min"/>
+        </createTable>
+        <addUniqueConstraint tableName="live_order_pipeline" schemaName="hm_query"
+            columnNames="pipeline_date, tenant" constraintName="uk_query_pipeline_date_tenant"/>
+    </changeSet>
+
+    <!-- ====== TOP PRODUCTS TODAY ====== -->
+    <!-- Refreshed every 5 minutes — top 50 selling products by units -->
+    <changeSet id="query-live-002-top-products-today" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="top_products_today" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="top_products_today" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="refreshed_at" type="TIMESTAMP"/>
+            <column name="rank" type="INT"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="category_name" type="VARCHAR(255)"/>
+            <column name="seller_name" type="VARCHAR(255)"/>
+            <column name="units_sold" type="INT" defaultValueNumeric="0"/>
+            <column name="revenue" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="stock_remaining" type="INT"/>
+            <column name="stock_status" type="VARCHAR(30)"/>
+            <column name="avg_rating" type="INT" defaultValueNumeric="0"/>
+            <column name="review_count" type="INT" defaultValueNumeric="0"/>
+            <column name="conversion_rate" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_query_topproducts_rank" tableName="top_products_today" schemaName="hm_query">
+            <column name="rank"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== TOP SELLERS TODAY ====== -->
+    <!-- Refreshed every 5 minutes — top 50 sellers by GMV -->
+    <changeSet id="query-live-003-top-sellers-today" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="top_sellers_today" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="top_sellers_today" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="refreshed_at" type="TIMESTAMP"/>
+            <column name="rank" type="INT"/>
+            <column name="seller_id" type="VARCHAR(255)"/>
+            <column name="seller_name" type="VARCHAR(255)"/>
+            <column name="tier" type="VARCHAR(50)"/>
+            <column name="gmv_today" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="orders_today" type="INT" defaultValueNumeric="0"/>
+            <column name="products_count" type="INT" defaultValueNumeric="0"/>
+            <column name="fulfillment_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="rating" type="INT" defaultValueNumeric="0"/>
+            <column name="health_score" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ====== LIVE DELIVERY TRACKING ====== -->
+    <!-- Refreshed every 2 minutes — aggregated shipment status across carriers -->
+    <changeSet id="query-live-004-live-delivery-status" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="live_delivery_status" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="live_delivery_status" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="refreshed_at" type="TIMESTAMP"/>
+            <column name="carrier" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="active_shipments" type="INT" defaultValueNumeric="0"/>
+            <column name="in_transit" type="INT" defaultValueNumeric="0"/>
+            <column name="out_for_delivery" type="INT" defaultValueNumeric="0"/>
+            <column name="delivered_today" type="INT" defaultValueNumeric="0"/>
+            <column name="delayed" type="INT" defaultValueNumeric="0"/>
+            <column name="failed_delivery" type="INT" defaultValueNumeric="0"/>
+            <column name="rto" type="INT" defaultValueNumeric="0"/>
+            <column name="on_time_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="avg_delivery_days" type="INT" defaultValueNumeric="0" remarks="Basis points: 210 = 2.1 days"/>
+            <column name="sla_breaches" type="INT" defaultValueNumeric="0"/>
+            <column name="carrier_status" type="VARCHAR(30)" remarks="OPERATIONAL, DEGRADED, DOWN"/>
+        </createTable>
+        <addUniqueConstraint tableName="live_delivery_status" schemaName="hm_query"
+            columnNames="carrier, tenant" constraintName="uk_query_delivery_carrier_tenant"/>
+    </changeSet>
+
+    <!-- ====== LIVE PAYMENT GATEWAY STATUS ====== -->
+    <!-- Refreshed every minute — gateway health monitoring -->
+    <changeSet id="query-live-005-live-gateway-status" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="live_gateway_status" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="live_gateway_status" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="refreshed_at" type="TIMESTAMP"/>
+            <column name="gateway_name" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="gateway_role" type="VARCHAR(20)" remarks="PRIMARY, FAILOVER, BACKUP"/>
+            <column name="success_rate" type="INT" defaultValueNumeric="0" remarks="Basis points: 9980 = 99.80%"/>
+            <column name="avg_latency_ms" type="INT" defaultValueNumeric="0"/>
+            <column name="transactions_today" type="INT" defaultValueNumeric="0"/>
+            <column name="failed_today" type="INT" defaultValueNumeric="0"/>
+            <column name="total_volume_today" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="gateway_status" type="VARCHAR(30)" remarks="ACTIVE, DEGRADED, DOWN"/>
+            <column name="last_error" type="VARCHAR(500)"/>
+            <column name="last_error_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,5 @@
+server:
+  port: 8088
+shipping:
+  default-provider: delhivery
+  tracking-poll-interval-minutes: 30

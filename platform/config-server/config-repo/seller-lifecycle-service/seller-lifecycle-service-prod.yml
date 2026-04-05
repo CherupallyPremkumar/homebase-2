@@ -1,0 +1,3 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://prod-seller-lifecycle-db.homebase.internal:5432/homebase_seller-lifecycle

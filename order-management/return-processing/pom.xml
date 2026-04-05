@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.homebase.ecom</groupId>
+        <artifactId>homebase-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.homebase.ecom.returnprocessing</groupId>
+    <artifactId>return-processing-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>return-processing-parent</name>
+
+    <modules>
+        <module>return-processing-domain</module>
+        <module>return-processing-api</module>
+        <module>return-processing-infrastructure</module>
+        <module>return-processing-service</module>
+        <module>return-processing-client</module>
+            <module>return-processing-liquibase</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.homebase.ecom.returnprocessing</groupId>
+                <artifactId>return-processing-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.returnprocessing</groupId>
+                <artifactId>return-processing-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.returnprocessing</groupId>
+                <artifactId>return-processing-infrastructure</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.homebase.ecom.returnprocessing</groupId>
+                <artifactId>return-processing-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

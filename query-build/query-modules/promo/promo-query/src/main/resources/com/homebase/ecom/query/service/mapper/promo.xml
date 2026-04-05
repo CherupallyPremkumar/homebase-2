@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PromoCode">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: coupon_flat                                                     -->
+<!-- Populated by PromoSyncService ETL.                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN: getAll promo codes ====== -->
+<select id="getAll" resultType="com.homebase.ecom.dto.PromoCodeDto">
+    SELECT
+        coupon_id          as "id",
+        code               as "code",
+        name               as "name",
+        description        as "description",
+        discount_type      as "discountType",
+        discount_value     as "discountValue",
+        min_order_value    as "minOrderValue",
+        max_discount_amount as "maxDiscountAmount",
+        start_date         as "startDate",
+        end_date           as "endDate",
+        usage_limit        as "usageLimit",
+        usage_count        as "usageCount",
+        usage_per_customer as "usagePerCustomer",
+        state_id           as "stateId",
+        flow_id            as "flowId"
+    FROM hm_query.coupon_flat
+    <where>
+        <if test="code != null">AND code LIKE CONCAT('%', #{code}, '%')</if>
+        <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="discountType != null">AND discount_type = #{discountType}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="q != null">AND (code LIKE CONCAT('%', #{q}, '%') OR name LIKE CONCAT('%', #{q}, '%') OR description LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.coupon_flat
+    <where>
+        <if test="code != null">AND code LIKE CONCAT('%', #{code}, '%')</if>
+        <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="discountType != null">AND discount_type = #{discountType}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="q != null">AND (code LIKE CONCAT('%', #{q}, '%') OR name LIKE CONCAT('%', #{q}, '%') OR description LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<!-- ====== ADMIN: getById (detail — flat, zero JOINs) ====== -->
+<select id="getById" resultType="com.homebase.ecom.dto.PromoCodeDto">
+    SELECT
+        coupon_id          as "id",
+        code               as "code",
+        name               as "name",
+        description        as "description",
+        discount_type      as "discountType",
+        discount_value     as "discountValue",
+        min_order_value    as "minOrderValue",
+        max_discount_amount as "maxDiscountAmount",
+        start_date         as "startDate",
+        end_date           as "endDate",
+        usage_limit        as "usageLimit",
+        usage_count        as "usageCount",
+        usage_per_customer as "usagePerCustomer",
+        state_id           as "stateId",
+        flow_id            as "flowId"
+    FROM hm_query.coupon_flat
+    WHERE code = #{code}
+</select>
+
+<!-- ====== ADMIN: getStateCounts ====== -->
+<select id="getStateCounts" resultType="java.util.Map">
+    SELECT state_id as "stateId", count(*) as "count"
+    FROM hm_query.coupon_flat
+    GROUP BY state_id
+</select>
+
+<select id="getStateCounts-count" resultType="int">
+    SELECT count(DISTINCT state_id) FROM hm_query.coupon_flat
+</select>
+
+<!-- ====== ADMIN: getActivePromos ====== -->
+<select id="getActivePromos" resultType="com.homebase.ecom.dto.PromoCodeDto">
+    SELECT
+        coupon_id          as "id",
+        code               as "code",
+        name               as "name",
+        description        as "description",
+        discount_type      as "discountType",
+        discount_value     as "discountValue",
+        start_date         as "startDate",
+        end_date           as "endDate",
+        usage_limit        as "usageLimit",
+        usage_count        as "usageCount",
+        state_id           as "stateId"
+    FROM hm_query.coupon_flat
+    WHERE state_id = 'ACTIVE'
+    <if test="code != null">AND code LIKE CONCAT('%', #{code}, '%')</if>
+    <if test="discountType != null">AND discount_type = #{discountType}</if>
+    ${orderby} ${pagination}
+</select>
+
+<select id="getActivePromos-count" resultType="int">
+    SELECT count(*) FROM hm_query.coupon_flat
+    WHERE state_id = 'ACTIVE'
+    <if test="code != null">AND code LIKE CONCAT('%', #{code}, '%')</if>
+    <if test="discountType != null">AND discount_type = #{discountType}</if>
+</select>
+
+<!-- ====== ADMIN: getExpiringPromos (within 7 days) ====== -->
+<select id="getExpiringPromos" resultType="com.homebase.ecom.dto.PromoCodeDto">
+    SELECT
+        coupon_id          as "id",
+        code               as "code",
+        name               as "name",
+        discount_type      as "discountType",
+        discount_value     as "discountValue",
+        end_date           as "endDate",
+        usage_count        as "usageCount",
+        usage_limit        as "usageLimit",
+        state_id           as "stateId",
+        EXTRACT(DAY FROM (end_date - NOW())) as "daysUntilExpiry"
+    FROM hm_query.coupon_flat
+    WHERE state_id = 'ACTIVE'
+      AND end_date IS NOT NULL
+      AND end_date > NOW()
+      AND end_date &lt;= NOW() + INTERVAL '7 days'
+    ORDER BY end_date ASC
+    ${pagination}
+</select>
+
+<select id="getExpiringPromos-count" resultType="int">
+    SELECT count(*) FROM hm_query.coupon_flat
+    WHERE state_id = 'ACTIVE'
+      AND end_date IS NOT NULL
+      AND end_date > NOW()
+      AND end_date &lt;= NOW() + INTERVAL '7 days'
+</select>
+
+<!-- ====== CUSTOMER: getAvailableForCart ====== -->
+<select id="getAvailableForCart" resultType="com.homebase.ecom.dto.PromoCodeDto">
+    SELECT
+        coupon_id          as "id",
+        code               as "code",
+        name               as "name",
+        description        as "description",
+        discount_type      as "discountType",
+        discount_value     as "discountValue",
+        min_order_value    as "minOrderValue",
+        max_discount_amount as "maxDiscountAmount",
+        state_id           as "stateId"
+    FROM hm_query.coupon_flat
+    WHERE state_id = 'ACTIVE'
+      AND (end_date IS NULL OR end_date > NOW())
+      AND (usage_limit IS NULL OR usage_limit = 0 OR usage_count &lt; usage_limit)
+      AND (min_order_value IS NULL OR min_order_value &lt;= #{cartTotal})
+    ${orderby} ${pagination}
+</select>
+
+<select id="getAvailableForCart-count" resultType="int">
+    SELECT count(*) FROM hm_query.coupon_flat
+    WHERE state_id = 'ACTIVE'
+      AND (end_date IS NULL OR end_date > NOW())
+      AND (usage_limit IS NULL OR usage_limit = 0 OR usage_count &lt; usage_limit)
+      AND (min_order_value IS NULL OR min_order_value &lt;= #{cartTotal})
+</select>
+
+<!-- ====== CUSTOMER: validatePromoCode ====== -->
+<select id="validatePromoCode" resultType="com.homebase.ecom.dto.PromoCodeDto">
+    SELECT
+        coupon_id          as "id",
+        code               as "code",
+        name               as "name",
+        discount_type      as "discountType",
+        discount_value     as "discountValue",
+        min_order_value    as "minOrderValue",
+        max_discount_amount as "maxDiscountAmount",
+        usage_limit        as "usageLimit",
+        usage_count        as "usageCount",
+        state_id           as "stateId",
+        CASE
+            WHEN state_id != 'ACTIVE' THEN 'INACTIVE'
+            WHEN end_date IS NOT NULL AND end_date &lt;= NOW() THEN 'EXPIRED'
+            WHEN usage_limit > 0 AND usage_count >= usage_limit THEN 'USAGE_EXHAUSTED'
+            WHEN min_order_value IS NOT NULL AND min_order_value > #{cartTotal} THEN 'MIN_ORDER_NOT_MET'
+            ELSE 'VALID'
+        END as "validationStatus"
+    FROM hm_query.coupon_flat
+    WHERE code = #{code}
+</select>
+
+</mapper>

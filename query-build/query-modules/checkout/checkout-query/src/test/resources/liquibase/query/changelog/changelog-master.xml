@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Checkout schema from checkout-liquibase -->
+    <include file="liquibase/checkout/db.changelog-checkout.xml"/>
+
+    <!-- Checkout test data (from db-migrations) -->
+    <include file="db/changelog/checkout/test/db.changelog-checkout-testdata.xml"/>
+
+</databaseChangeLog>

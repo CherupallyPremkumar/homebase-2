@@ -1,0 +1,286 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UiQuerySync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query OLAP dimension/fact tables for UI reads  -->
+<!-- Called by UiQuerySyncService (Spring scheduler)                        -->
+<!-- Strategy: TRUNCATE + INSERT (full refresh)                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== TRUNCATE targets ====== -->
+<update id="truncateDimProduct">TRUNCATE TABLE hm_query.dim_product</update>
+<update id="truncateDimCategory">TRUNCATE TABLE hm_query.dim_category</update>
+<update id="truncateDimBanner">TRUNCATE TABLE hm_query.dim_banner</update>
+<update id="truncateFactInventory">TRUNCATE TABLE hm_query.fact_inventory</update>
+<update id="truncateCartDetailFlat">TRUNCATE TABLE hm_query.cart_detail_flat</update>
+<update id="truncateWishlistFlat">TRUNCATE TABLE hm_query.wishlist_flat</update>
+<update id="truncateReviewFlat">TRUNCATE TABLE hm_query.review_flat</update>
+<update id="truncateNotificationFlat">TRUNCATE TABLE hm_query.notification_flat</update>
+<update id="truncateAddressFlat">TRUNCATE TABLE hm_query.address_flat</update>
+<update id="truncateReturnDetailFlat">TRUNCATE TABLE hm_query.return_detail_flat</update>
+<update id="truncateAuditLogFlat">TRUNCATE TABLE hm_query.audit_log_flat</update>
+<update id="truncateSupportTicketFlat">TRUNCATE TABLE hm_query.support_ticket_flat</update>
+
+<!-- ====== SYNC: dim_product ====== -->
+<insert id="syncDimProduct">
+    INSERT INTO hm_query.dim_product (
+        id, tenant, last_synced_at,
+        product_id, product_name, slug, brand, description, short_description,
+        product_status, category_id, category_name, hsn_code,
+        base_price, selling_price, country_of_origin, weight_grams,
+        warranty_months, is_returnable, return_window_days,
+        primary_image_url, primary_sku, featured,
+        seller_id, seller_name,
+        avg_rating, review_count,
+        total_available_qty, stock_status
+    )
+    SELECT
+        p.id, p.tenant, NOW(),
+        p.id, p.name, p.slug, p.brand, p.description, p.short_description,
+        p.state_id, p.category_id, c.name, p.hsn_code,
+        p.base_price,
+        COALESCE((SELECT o.selling_price FROM hm_offer.offer o
+                  WHERE o.product_id = p.id AND o.state_id = 'LIVE'
+                  ORDER BY o.selling_price ASC LIMIT 1), p.base_price),
+        p.country_of_origin, p.weight_grams,
+        p.warranty_months, p.is_returnable, p.return_window_days,
+        (SELECT ma.cdn_url FROM hm_media.media_assets ma
+         JOIN hm_media.product_media pm ON pm.asset_id = ma.id
+         WHERE pm.product_id = p.id AND pm.is_primary = true LIMIT 1),
+        (SELECT pv.sku FROM hm_product.product_variants pv
+         WHERE pv.product_id = p.id ORDER BY pv.sku LIMIT 1),
+        COALESCE(p.featured, false),
+        p.supplier_id,
+        s.business_name,
+        COALESCE((SELECT AVG(r.rating) * 100 FROM hm_review.product_reviews r
+                  WHERE r.product_id = p.id AND r.state_id = 'PUBLISHED')::INT, 0),
+        COALESCE((SELECT COUNT(*) FROM hm_review.product_reviews r
+                  WHERE r.product_id = p.id AND r.state_id = 'PUBLISHED'), 0),
+        COALESCE((SELECT SUM(inv.available_quantity) FROM hm_inventory.inventory_item inv
+                  WHERE inv.product_id = p.id), 0),
+        CASE
+            WHEN COALESCE((SELECT SUM(inv.available_quantity) FROM hm_inventory.inventory_item inv
+                 WHERE inv.product_id = p.id), 0) = 0 THEN 'OUT_OF_STOCK'
+            WHEN COALESCE((SELECT SUM(inv.available_quantity) FROM hm_inventory.inventory_item inv
+                 WHERE inv.product_id = p.id), 0) &lt;
+                 COALESCE((SELECT MIN(inv.low_stock_threshold) FROM hm_inventory.inventory_item inv
+                 WHERE inv.product_id = p.id), 5) THEN 'LOW_STOCK'
+            ELSE 'IN_STOCK'
+        END
+    FROM hm_product.products p
+    LEFT JOIN hm_product.categories c ON p.category_id = c.id
+    LEFT JOIN hm_supplier.supplier s ON p.supplier_id = s.id
+</insert>
+
+<!-- ====== SYNC: dim_category ====== -->
+<insert id="syncDimCategory">
+    INSERT INTO hm_query.dim_category (
+        id, tenant, last_synced_at,
+        category_id, category_name, slug, description, parent_id,
+        level, display_order, image_url, active, featured,
+        product_count
+    )
+    SELECT
+        c.id, c.tenant, NOW(),
+        c.id, c.name, c.slug, c.description, c.parent_id,
+        c.level, c.display_order, c.image_url, c.active,
+        COALESCE(c.featured, false),
+        COALESCE((SELECT COUNT(*) FROM hm_product.products p
+                  WHERE p.category_id = c.id AND p.state_id = 'PUBLISHED'), 0)
+    FROM hm_product.categories c
+</insert>
+
+<!-- ====== SYNC: dim_banner ====== -->
+<insert id="syncDimBanner">
+    INSERT INTO hm_query.dim_banner (
+        id, tenant, last_synced_at,
+        banner_id, title, image_url, mobile_image_url, link_url,
+        position, display_order, active, active_from, active_to
+    )
+    SELECT
+        b.id, b.tenant, NOW(),
+        b.id, b.name, b.image_url, b.mobile_image_url, b.link_url,
+        b.position, b.display_order, b.active, b.active_from, b.active_to
+    FROM hm_cms.banners b
+</insert>
+
+<!-- ====== SYNC: fact_inventory (aggregated per product) ====== -->
+<insert id="syncFactInventory">
+    INSERT INTO hm_query.fact_inventory (
+        id, tenant, last_synced_at,
+        product_id, available_qty, reserved_qty, stock_status
+    )
+    SELECT
+        inv.product_id,
+        'homebase',
+        NOW(),
+        inv.product_id,
+        SUM(inv.available_quantity),
+        SUM(inv.reserved_quantity),
+        CASE
+            WHEN SUM(inv.available_quantity) = 0 THEN 'OUT_OF_STOCK'
+            WHEN SUM(inv.available_quantity) &lt; COALESCE(MIN(inv.low_stock_threshold), 5) THEN 'LOW_STOCK'
+            ELSE 'IN_STOCK'
+        END
+    FROM hm_inventory.inventory_item inv
+    GROUP BY inv.product_id
+</insert>
+
+<!-- ====== SYNC: cart_detail_flat ====== -->
+<insert id="syncCartDetailFlat">
+    INSERT INTO hm_query.cart_detail_flat (
+        id, tenant, last_synced_at,
+        cart_id, cart_status, customer_id, subtotal, currency, coupon_codes,
+        item_id, product_id, variant_id, product_name, sku,
+        quantity, unit_price, total_price, image_url,
+        product_slug, brand, available_qty, created_time
+    )
+    SELECT
+        ci.id, c.tenant, NOW(),
+        c.id, c.state_id, c.customer_id, c.subtotal, c.currency, c.coupon_codes,
+        ci.id, ci.product_id, ci.variant_id, ci.product_name, ci.sku,
+        ci.quantity, ci.unit_price, ci.total_price, ci.image_url,
+        p.slug, p.brand,
+        COALESCE(inv.available_quantity, 0),
+        ci.created_time
+    FROM hm_cart.cart c
+    JOIN hm_cart.cart_item ci ON ci.cart_id = c.id
+    LEFT JOIN hm_product.products p ON ci.product_id = p.id
+    LEFT JOIN hm_inventory.inventory_item inv ON inv.variant_id = ci.variant_id
+        AND inv.state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+    WHERE c.state_id = 'ACTIVE'
+</insert>
+
+<!-- ====== SYNC: wishlist_flat ====== -->
+<insert id="syncWishlistFlat">
+    INSERT INTO hm_query.wishlist_flat (
+        id, tenant, last_synced_at,
+        wishlist_item_id, customer_id, product_id, variant_id,
+        added_at, price_when_added, notify_on_price_drop,
+        product_name, brand, image_url,
+        current_price, mrp, offer_price, in_stock,
+        discount_percent, avg_rating, review_count
+    )
+    SELECT
+        wi.id, 'homebase', NOW(),
+        wi.id, up.keycloak_id, wi.product_id, wi.variant_id,
+        wi.added_at, wi.price_when_added, wi.notify_on_price_drop,
+        p.name, p.brand,
+        (SELECT ma.cdn_url FROM hm_media.media_assets ma
+         JOIN hm_media.product_media pm ON pm.asset_id = ma.id
+         WHERE pm.product_id = p.id AND pm.is_primary = true LIMIT 1),
+        p.base_price, p.base_price,
+        COALESCE((SELECT o.selling_price FROM hm_offer.offer o
+                  WHERE o.product_id = p.id AND o.state_id = 'LIVE'
+                  ORDER BY o.selling_price ASC LIMIT 1), p.base_price),
+        COALESCE((SELECT SUM(inv.available_quantity) FROM hm_inventory.inventory_item inv
+                  WHERE inv.product_id = p.id), 0) > 0,
+        CASE WHEN p.base_price > 0
+             THEN ((p.base_price - COALESCE((SELECT o.selling_price FROM hm_offer.offer o
+                    WHERE o.product_id = p.id AND o.state_id = 'LIVE'
+                    ORDER BY o.selling_price ASC LIMIT 1), p.base_price)) * 100 / p.base_price)::INT
+             ELSE 0 END,
+        COALESCE((SELECT AVG(r.rating) * 100 FROM hm_review.product_reviews r
+                  WHERE r.product_id = p.id AND r.state_id = 'PUBLISHED')::INT, 0),
+        COALESCE((SELECT COUNT(*) FROM hm_review.product_reviews r
+                  WHERE r.product_id = p.id AND r.state_id = 'PUBLISHED'), 0)
+    FROM hm_wishlist.wishlist_items wi
+    JOIN hm_user.user_profiles up ON up.id = wi.user_id
+    LEFT JOIN hm_product.products p ON wi.product_id = p.id
+</insert>
+
+<!-- ====== SYNC: review_flat ====== -->
+<insert id="syncReviewFlat">
+    INSERT INTO hm_query.review_flat (
+        id, tenant, last_synced_at,
+        review_id, product_id, customer_id, reviewer_name,
+        rating, title, comment,
+        is_verified_purchase, helpful_count, review_status, created_time
+    )
+    SELECT
+        r.id, r.tenant, NOW(),
+        r.id, r.product_id, r.customer_id,
+        COALESCE(u.first_name, 'Anonymous'),
+        r.rating, r.title, r.comment,
+        r.is_verified_purchase, r.helpful_count, r.state_id, r.created_time
+    FROM hm_review.product_reviews r
+    LEFT JOIN hm_user.user_profiles u ON r.customer_id = u.id
+</insert>
+
+<!-- ====== SYNC: notification_flat ====== -->
+<insert id="syncNotificationFlat">
+    INSERT INTO hm_query.notification_flat (
+        id, tenant, last_synced_at,
+        notification_id, customer_id, type, title, message,
+        is_read, reference_id, reference_type, created_time
+    )
+    SELECT
+        cn.id, cn.tenant, NOW(),
+        cn.id, cn.customer_id, cn.type, cn.title, cn.message,
+        cn.is_read, cn.reference_id, cn.reference_type, cn.created_time
+    FROM hm_notification.customer_notifications cn
+</insert>
+
+<!-- ====== SYNC: address_flat ====== -->
+<insert id="syncAddressFlat">
+    INSERT INTO hm_query.address_flat (
+        id, tenant, last_synced_at,
+        address_id, customer_id, address_line1, address_line2,
+        city, state, postal_code, country, phone, label, is_default
+    )
+    SELECT
+        ua.id, 'homebase', NOW(),
+        ua.id, ua.user_id, ua.address_line1, ua.address_line2,
+        ua.city, ua.state, ua.postal_code, ua.country, ua.phone, ua.label, ua.is_default
+    FROM hm_user.user_address ua
+</insert>
+
+<!-- ====== SYNC: return_detail_flat ====== -->
+<insert id="syncReturnDetailFlat">
+    INSERT INTO hm_query.return_detail_flat (
+        id, tenant, last_synced_at,
+        return_id, order_id, order_item_id, customer_id,
+        reason, description, return_status, quantity,
+        refund_amount, return_type, product_name, sku, created_time
+    )
+    SELECT
+        rr.id, rr.tenant, NOW(),
+        rr.id, rr.order_id, rr.order_item_id, rr.created_by,
+        rr.reason, rr.description, rr.state_id, rr.quantity,
+        rr.refund_amount, rr.return_type,
+        oi.product_name, oi.sku, rr.created_time
+    FROM hm_return.returnrequest rr
+    LEFT JOIN hm_order.order_items oi ON rr.order_item_id = oi.id
+</insert>
+
+<!-- ====== SYNC: audit_log_flat ====== -->
+<insert id="syncAuditLogFlat">
+    INSERT INTO hm_query.audit_log_flat (
+        id, tenant, last_synced_at,
+        entity_type, entity_id, action,
+        old_value, new_value, changed_by, ip_address,
+        correlation_id, is_critical, details, created_time
+    )
+    SELECT
+        al.id, al.tenant, NOW(),
+        al.entity_type, al.entity_id, al.action,
+        al.old_value, al.new_value, al.changed_by, al.ip_address,
+        al.correlation_id, al.is_critical, al.details, al.created_time
+    FROM hm_audit.audit_log al
+</insert>
+
+<!-- ====== SYNC: support_ticket_flat ====== -->
+<insert id="syncSupportTicketFlat">
+    INSERT INTO hm_query.support_ticket_flat (
+        id, tenant, last_synced_at,
+        ticket_id, ticket_status, subject, priority, category,
+        customer_id, order_id, assigned_agent_id, created_time
+    )
+    SELECT
+        t.id, t.tenant, NOW(),
+        t.id, t.state_id, t.subject, t.priority, t.category,
+        t.customer_id, t.order_id, t.assigned_agent_id, t.created_time
+    FROM hm_support.support_tickets t
+</insert>
+
+</mapper>

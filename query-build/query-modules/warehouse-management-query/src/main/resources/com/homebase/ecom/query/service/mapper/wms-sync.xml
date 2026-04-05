@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="WmsSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query WMS OLAP tables from OLTP                -->
+<!-- Source: warehouses + inventory_item + products + fulfillment_orders +  -->
+<!--         fulfillment_line_items + warehouse_locations + warehouse_inv + -->
+<!--         orders + user_profiles + shipments + supplier +               -->
+<!--         pick_lists + inventory_movements                              -->
+<!-- Called by WmsSyncService                                               -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- wms_overview_stats_flat — precomputed KPIs per warehouse + __ALL__     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateWmsOverviewStatsFlat">
+    TRUNCATE TABLE hm_query.wms_overview_stats_flat
+</update>
+
+<insert id="syncWmsOverviewStatsFlat">
+    INSERT INTO hm_query.wms_overview_stats_flat (
+        warehouse_id, tenant, last_synced_at,
+        active_warehouses, total_skus, low_stock_items, out_of_stock_items,
+        pending_fulfillments, shipped_today, pending_pick_lists
+    )
+    SELECT
+        w.id,
+        w.tenant,
+        NOW(),
+        1,
+        COALESCE(inv_stats.total_skus, 0),
+        COALESCE(inv_stats.low_stock_items, 0),
+        COALESCE(inv_stats.out_of_stock_items, 0),
+        COALESCE(ful_stats.pending_fulfillments, 0),
+        COALESCE(ful_stats.shipped_today, 0),
+        COALESCE(pl_stats.pending_pick_lists, 0)
+    FROM hm_warehouse.warehouses w
+    LEFT JOIN (
+        SELECT
+            primary_fc,
+            COUNT(*) as total_skus,
+            COUNT(*) FILTER (WHERE available_quantity &lt;= low_stock_threshold AND available_quantity > 0) as low_stock_items,
+            COUNT(*) FILTER (WHERE available_quantity = 0) as out_of_stock_items
+        FROM hm_inventory.inventory_item
+        WHERE state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+        GROUP BY primary_fc
+    ) inv_stats ON inv_stats.primary_fc = w.id
+    LEFT JOIN (
+        SELECT
+            warehouse_id,
+            COUNT(*) FILTER (WHERE state_id IN ('INITIATED', 'PICKING', 'PACKING')) as pending_fulfillments,
+            COUNT(*) FILTER (WHERE state_id = 'SHIPPED' AND CAST(shipped_at AS DATE) = CURRENT_DATE) as shipped_today
+        FROM hm_fulfillment.fulfillment_orders
+        GROUP BY warehouse_id
+    ) ful_stats ON ful_stats.warehouse_id = w.id
+    LEFT JOIN (
+        SELECT
+            warehouse_id,
+            COUNT(*) as pending_pick_lists
+        FROM hm_fulfillment.pick_lists
+        WHERE status IN ('PENDING', 'IN_PROGRESS')
+        GROUP BY warehouse_id
+    ) pl_stats ON pl_stats.warehouse_id = w.id
+    WHERE w.is_active = true
+</insert>
+
+<insert id="syncWmsOverviewStatsAllWarehouse">
+    INSERT INTO hm_query.wms_overview_stats_flat (
+        warehouse_id, tenant, last_synced_at,
+        active_warehouses, total_skus, low_stock_items, out_of_stock_items,
+        pending_fulfillments, shipped_today, pending_pick_lists
+    )
+    SELECT
+        '__ALL__',
+        'homebase',
+        NOW(),
+        COUNT(DISTINCT w.id),
+        COALESCE(SUM(inv_stats.total_skus), 0),
+        COALESCE(SUM(inv_stats.low_stock_items), 0),
+        COALESCE(SUM(inv_stats.out_of_stock_items), 0),
+        COALESCE(SUM(ful_stats.pending_fulfillments), 0),
+        COALESCE(SUM(ful_stats.shipped_today), 0),
+        COALESCE(SUM(pl_stats.pending_pick_lists), 0)
+    FROM hm_warehouse.warehouses w
+    LEFT JOIN (
+        SELECT
+            primary_fc,
+            COUNT(*) as total_skus,
+            COUNT(*) FILTER (WHERE available_quantity &lt;= low_stock_threshold AND available_quantity > 0) as low_stock_items,
+            COUNT(*) FILTER (WHERE available_quantity = 0) as out_of_stock_items
+        FROM hm_inventory.inventory_item
+        WHERE state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+        GROUP BY primary_fc
+    ) inv_stats ON inv_stats.primary_fc = w.id
+    LEFT JOIN (
+        SELECT
+            warehouse_id,
+            COUNT(*) FILTER (WHERE state_id IN ('INITIATED', 'PICKING', 'PACKING')) as pending_fulfillments,
+            COUNT(*) FILTER (WHERE state_id = 'SHIPPED' AND CAST(shipped_at AS DATE) = CURRENT_DATE) as shipped_today
+        FROM hm_fulfillment.fulfillment_orders
+        GROUP BY warehouse_id
+    ) ful_stats ON ful_stats.warehouse_id = w.id
+    LEFT JOIN (
+        SELECT
+            warehouse_id,
+            COUNT(*) as pending_pick_lists
+        FROM hm_fulfillment.pick_lists
+        WHERE status IN ('PENDING', 'IN_PROGRESS')
+        GROUP BY warehouse_id
+    ) pl_stats ON pl_stats.warehouse_id = w.id
+    WHERE w.is_active = true
+</insert>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- wms_inventory_with_product_flat — inventory + product + warehouse      -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateWmsInventoryWithProductFlat">
+    TRUNCATE TABLE hm_query.wms_inventory_with_product_flat
+</update>
+
+<insert id="syncWmsInventoryWithProductFlat">
+    INSERT INTO hm_query.wms_inventory_with_product_flat (
+        inventory_id, tenant, last_synced_at,
+        sku, product_id, variant_id,
+        total_quantity, available_quantity, reserved_quantity,
+        damaged_quantity, inbound_quantity,
+        low_stock_threshold, inventory_status, stm_state,
+        warehouse_id,
+        product_name, brand, product_state, category_name,
+        warehouse_name, warehouse_code, warehouse_city,
+        is_low_stock, is_out_of_stock
+    )
+    SELECT
+        ii.id,
+        ii.tenant,
+        NOW(),
+        ii.sku,
+        ii.product_id,
+        ii.variant_id,
+        COALESCE(ii.total_quantity, 0),
+        COALESCE(ii.available_quantity, 0),
+        COALESCE(ii.reserved_quantity, 0),
+        COALESCE(ii.damaged_quantity, 0),
+        COALESCE(ii.inbound_quantity, 0),
+        COALESCE(ii.low_stock_threshold, 0),
+        ii.inventory_status,
+        ii.state_id,
+        ii.primary_fc,
+        COALESCE(p.name, ''),
+        COALESCE(p.brand, ''),
+        COALESCE(p.state_id, ''),
+        COALESCE(p.category_name, ''),
+        COALESCE(w.warehouse_name, ''),
+        COALESCE(w.warehouse_code, ''),
+        COALESCE(w.city, ''),
+        CASE WHEN ii.available_quantity &lt;= ii.low_stock_threshold AND ii.available_quantity > 0 THEN true ELSE false END,
+        CASE WHEN ii.available_quantity = 0 THEN true ELSE false END
+    FROM hm_inventory.inventory_item ii
+    LEFT JOIN hm_product.products p ON ii.product_id = p.id
+    LEFT JOIN hm_warehouse.warehouses w ON ii.primary_fc = w.id
+    WHERE ii.state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+</insert>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- wms_fulfillment_with_order_flat — fulfillment + order + warehouse      -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateWmsFulfillmentWithOrderFlat">
+    TRUNCATE TABLE hm_query.wms_fulfillment_with_order_flat
+</update>
+
+<insert id="syncWmsFulfillmentWithOrderFlat">
+    INSERT INTO hm_query.wms_fulfillment_with_order_flat (
+        fulfillment_id, tenant, last_synced_at,
+        order_id, fulfillment_state, priority, fulfillment_type,
+        total_items, total_weight_grams,
+        assigned_picker, assigned_packer,
+        pick_started_at, pick_completed_at,
+        pack_started_at, pack_completed_at,
+        shipped_at, carrier, tracking_number,
+        shipping_method, estimated_ship_date, estimated_delivery_date,
+        notes, created_time,
+        warehouse_id, warehouse_name, warehouse_code,
+        order_number, order_state, order_amount, order_currency,
+        customer_id, customer_first_name, customer_last_name,
+        shipping_status, current_location
+    )
+    SELECT
+        fo.id,
+        fo.tenant,
+        NOW(),
+        fo.order_id,
+        fo.state_id,
+        fo.priority,
+        fo.fulfillment_type,
+        COALESCE(fo.total_items, 0),
+        COALESCE(fo.total_weight_grams, 0),
+        fo.assigned_picker_id,
+        fo.assigned_packer_id,
+        fo.pick_started_at,
+        fo.pick_completed_at,
+        fo.pack_started_at,
+        fo.pack_completed_at,
+        fo.shipped_at,
+        fo.carrier,
+        fo.tracking_number,
+        fo.shipping_method,
+        fo.estimated_ship_date,
+        fo.estimated_delivery_date,
+        fo.notes,
+        fo.created_time,
+        fo.warehouse_id,
+        COALESCE(w.warehouse_name, ''),
+        COALESCE(w.warehouse_code, ''),
+        COALESCE(o.order_number, ''),
+        COALESCE(o.state_id, ''),
+        COALESCE(o.total_amount, 0),
+        COALESCE(o.currency, 'INR'),
+        o.customer_id,
+        COALESCE(u.first_name, ''),
+        COALESCE(u.last_name, ''),
+        COALESCE(sh.state_id, ''),
+        COALESCE(sh.current_location, '')
+    FROM hm_fulfillment.fulfillment_orders fo
+    LEFT JOIN hm_warehouse.warehouses w ON fo.warehouse_id = w.id
+    LEFT JOIN hm_order.orders o ON fo.order_id = o.id
+    LEFT JOIN hm_user.user_profiles u ON o.customer_id = u.id
+    LEFT JOIN hm_shipping.shipments sh ON sh.order_id = fo.order_id
+</insert>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- wms_pick_list_flat — pick lists + fulfillment + warehouse + orders     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateWmsPickListFlat">
+    TRUNCATE TABLE hm_query.wms_pick_list_flat
+</update>
+
+<insert id="syncWmsPickListFlat">
+    INSERT INTO hm_query.wms_pick_list_flat (
+        pick_list_id, tenant, last_synced_at,
+        fulfillment_order_id, warehouse_id,
+        assigned_to, pick_status,
+        item_count, picked_count,
+        started_at, completed_at, notes, created_time,
+        warehouse_name, warehouse_code,
+        order_id, fulfillment_state, fulfillment_priority,
+        fulfillment_total_items,
+        order_number, customer_id
+    )
+    SELECT
+        pl.id,
+        fo.tenant,
+        NOW(),
+        pl.fulfillment_order_id,
+        pl.warehouse_id,
+        pl.assigned_to,
+        pl.status,
+        COALESCE(pl.item_count, 0),
+        COALESCE(pl.picked_count, 0),
+        pl.started_at,
+        pl.completed_at,
+        pl.notes,
+        pl.created_time,
+        COALESCE(w.warehouse_name, ''),
+        COALESCE(w.warehouse_code, ''),
+        fo.order_id,
+        fo.state_id,
+        fo.priority,
+        COALESCE(fo.total_items, 0),
+        COALESCE(o.order_number, ''),
+        o.customer_id
+    FROM hm_fulfillment.pick_lists pl
+    JOIN hm_fulfillment.fulfillment_orders fo ON pl.fulfillment_order_id = fo.id
+    LEFT JOIN hm_warehouse.warehouses w ON pl.warehouse_id = w.id
+    LEFT JOIN hm_order.orders o ON fo.order_id = o.id
+</insert>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- wms_fulfillment_line_items_flat — line items + products                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateWmsFulfillmentLineItemsFlat">
+    TRUNCATE TABLE hm_query.wms_fulfillment_line_items_flat
+</update>
+
+<insert id="syncWmsFulfillmentLineItemsFlat">
+    INSERT INTO hm_query.wms_fulfillment_line_items_flat (
+        line_item_id, tenant, last_synced_at,
+        fulfillment_order_id, order_item_id,
+        product_id, variant_id, sku,
+        quantity_ordered, quantity_allocated,
+        quantity_picked, quantity_packed,
+        quantity_shipped, quantity_short,
+        bin_location, item_status,
+        product_name, brand, weight_grams,
+        unit_price, total_price
+    )
+    SELECT
+        fli.id,
+        fo.tenant,
+        NOW(),
+        fli.fulfillment_order_id,
+        fli.order_item_id,
+        fli.product_id,
+        fli.variant_id,
+        fli.sku,
+        COALESCE(fli.quantity_ordered, 0),
+        COALESCE(fli.quantity_allocated, 0),
+        COALESCE(fli.quantity_picked, 0),
+        COALESCE(fli.quantity_packed, 0),
+        COALESCE(fli.quantity_shipped, 0),
+        COALESCE(fli.quantity_short, 0),
+        fli.bin_location,
+        fli.status,
+        COALESCE(p.name, ''),
+        COALESCE(p.brand, ''),
+        COALESCE(p.weight_grams, 0),
+        COALESCE(oi.unit_price, 0),
+        COALESCE(oi.total_price, 0)
+    FROM hm_fulfillment.fulfillment_line_items fli
+    JOIN hm_fulfillment.fulfillment_orders fo ON fli.fulfillment_order_id = fo.id
+    LEFT JOIN hm_product.products p ON fli.product_id = p.id
+    LEFT JOIN hm_order.order_items oi ON fli.order_item_id = oi.id
+</insert>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- wms_inventory_by_location_flat — warehouse_inventory + locations       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateWmsInventoryByLocationFlat">
+    TRUNCATE TABLE hm_query.wms_inventory_by_location_flat
+</update>
+
+<insert id="syncWmsInventoryByLocationFlat">
+    INSERT INTO hm_query.wms_inventory_by_location_flat (
+        warehouse_inventory_id, tenant, last_synced_at,
+        warehouse_id, location_id,
+        product_id, variant_id, sku,
+        quantity_on_hand, quantity_reserved,
+        quantity_available, quantity_damaged, quantity_in_transit,
+        last_counted_at,
+        location_code, zone, aisle, shelf, bin,
+        location_type, location_capacity, location_current_units,
+        product_name, brand,
+        warehouse_name, warehouse_code
+    )
+    SELECT
+        wi.id,
+        w.tenant,
+        NOW(),
+        wl.warehouse_id,
+        wi.location_id,
+        wi.product_id,
+        wi.variant_id,
+        wi.sku,
+        COALESCE(wi.quantity_on_hand, 0),
+        COALESCE(wi.quantity_reserved, 0),
+        COALESCE(wi.quantity_available, 0),
+        COALESCE(wi.quantity_damaged, 0),
+        COALESCE(wi.quantity_in_transit, 0),
+        wi.last_counted_at,
+        wl.location_code,
+        wl.zone,
+        wl.aisle,
+        wl.shelf,
+        wl.bin,
+        wl.location_type,
+        COALESCE(wl.capacity_units, 0),
+        COALESCE(wl.current_units, 0),
+        COALESCE(p.name, ''),
+        COALESCE(p.brand, ''),
+        COALESCE(w.warehouse_name, ''),
+        COALESCE(w.warehouse_code, '')
+    FROM hm_warehouse.warehouse_inventory wi
+    JOIN hm_warehouse.warehouse_locations wl ON wi.location_id = wl.id
+    JOIN hm_warehouse.warehouses w ON wl.warehouse_id = w.id
+    LEFT JOIN hm_product.products p ON wi.product_id = p.id
+</insert>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- wms_inbound_shipments_flat — inventory movements + supplier + product  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateWmsInboundShipmentsFlat">
+    TRUNCATE TABLE hm_query.wms_inbound_shipments_flat
+</update>
+
+<insert id="syncWmsInboundShipmentsFlat">
+    INSERT INTO hm_query.wms_inbound_shipments_flat (
+        inventory_item_id, tenant, last_synced_at,
+        product_id, variant_id, sku,
+        quantity, movement_type, reference_id,
+        fulfillment_center_id, movement_time, reason,
+        supplier_id,
+        product_name, brand,
+        fulfillment_center_name, fulfillment_center_code,
+        supplier_name, supplier_state
+    )
+    SELECT
+        im.inventory_item_id,
+        im.tenant,
+        NOW(),
+        ii.product_id,
+        ii.variant_id,
+        ii.sku,
+        im.quantity,
+        im.movement_type,
+        im.reference_id,
+        ii.primary_fc,
+        im.movement_time,
+        im.reason,
+        ii.supplier_id,
+        COALESCE(p.name, ''),
+        COALESCE(p.brand, ''),
+        COALESCE(w.warehouse_name, ''),
+        COALESCE(w.warehouse_code, ''),
+        COALESCE(s.business_name, ''),
+        COALESCE(s.state_id, '')
+    FROM hm_inventory.inventory_movements im
+    JOIN hm_inventory.inventory_item ii ON im.inventory_item_id = ii.id
+    LEFT JOIN hm_product.products p ON ii.product_id = p.id
+    LEFT JOIN hm_warehouse.warehouses w ON ii.primary_fc = w.id
+    LEFT JOIN hm_supplier.supplier s ON ii.supplier_id = s.id
+    WHERE im.movement_type IN ('INBOUND', 'SUPPLIER_SHIPMENT', 'PURCHASE_ORDER')
+</insert>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- dim_warehouse — reused from warehouse sync (upsert for WMS context)   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="syncDimWarehouse">
+    INSERT INTO hm_query.dim_warehouse (
+        id, tenant, last_synced_at,
+        warehouse_code, warehouse_name, warehouse_type,
+        address_line1, address_line2,
+        city, state, pincode, country,
+        latitude, longitude, timezone,
+        contact_phone, contact_email, manager_id,
+        max_capacity_units, current_utilization_pct,
+        is_active, is_returns_center,
+        operating_hours_json, supported_carriers_json,
+        total_skus, total_units, low_stock_count,
+        pending_fulfillments,
+        created_time, last_modified_time
+    )
+    SELECT
+        w.id,
+        w.tenant,
+        NOW(),
+        w.warehouse_code,
+        w.warehouse_name,
+        w.warehouse_type,
+        w.address_line1,
+        w.address_line2,
+        w.city,
+        w.state,
+        w.pincode,
+        w.country,
+        w.latitude,
+        w.longitude,
+        w.timezone,
+        w.contact_phone,
+        w.contact_email,
+        w.manager_id,
+        w.max_capacity_units,
+        w.current_utilization_pct,
+        w.is_active,
+        w.is_returns_center,
+        w.operating_hours_json,
+        w.supported_carriers_json,
+        COALESCE(inv_stats.total_skus, 0),
+        COALESCE(inv_stats.total_units, 0),
+        COALESCE(inv_stats.low_stock_count, 0),
+        COALESCE(ful_stats.pending_fulfillments, 0),
+        w.created_time,
+        w.last_modified_time
+    FROM hm_warehouse.warehouses w
+    LEFT JOIN (
+        SELECT
+            primary_fc,
+            COUNT(*) as total_skus,
+            SUM(available_quantity) as total_units,
+            COUNT(*) FILTER (WHERE available_quantity &lt;= low_stock_threshold) as low_stock_count
+        FROM hm_inventory.inventory_item
+        WHERE state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+        GROUP BY primary_fc
+    ) inv_stats ON inv_stats.primary_fc = w.id
+    LEFT JOIN (
+        SELECT
+            warehouse_id,
+            COUNT(*) as pending_fulfillments
+        FROM hm_fulfillment.fulfillment_orders
+        WHERE state_id IN ('INITIATED', 'PICKING', 'PACKING')
+        GROUP BY warehouse_id
+    ) ful_stats ON ful_stats.warehouse_id = w.id
+    ON CONFLICT (id) DO UPDATE SET
+        warehouse_name = EXCLUDED.warehouse_name,
+        warehouse_type = EXCLUDED.warehouse_type,
+        city = EXCLUDED.city,
+        state = EXCLUDED.state,
+        max_capacity_units = EXCLUDED.max_capacity_units,
+        current_utilization_pct = EXCLUDED.current_utilization_pct,
+        is_active = EXCLUDED.is_active,
+        total_skus = EXCLUDED.total_skus,
+        total_units = EXCLUDED.total_units,
+        low_stock_count = EXCLUDED.low_stock_count,
+        pending_fulfillments = EXCLUDED.pending_fulfillments,
+        last_synced_at = EXCLUDED.last_synced_at
+</update>
+
+</mapper>

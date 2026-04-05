@@ -1,0 +1,513 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Cart">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: cart_flat, cart_items_flat, cart_activity_flat                   -->
+<!-- Populated by CartSyncService ETL.                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ================================================================ -->
+<!-- ADMIN: getAll carts listing                                       -->
+<!-- ================================================================ -->
+
+<select id='getAll-count' resultType="int">
+    SELECT count(*) FROM hm_query.cart_flat
+    <where>
+        <if test="userId != null">AND customer_id = #{userId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="currency != null">AND currency = #{currency}</if>
+        <if test="customerName != null">AND customer_name LIKE CONCAT('%', #{customerName}, '%')</if>
+        <if test="customerEmail != null">AND customer_email LIKE CONCAT('%', #{customerEmail}, '%')</if>
+        <if test="minTotal != null">AND total &gt;= #{minTotal}</if>
+        <if test="maxTotal != null">AND total &lt;= #{maxTotal}</if>
+        <if test="startDate != null">AND created_time &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_time &lt;= #{endDate}</if>
+        <if test="q != null">AND (customer_name LIKE CONCAT('%', #{q}, '%') OR customer_email LIKE CONCAT('%', #{q}, '%') OR cart_id LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.dto.CartDto">
+    SELECT
+        cart_id            as "id",
+        customer_id        as "userId",
+        customer_name      as "customerName",
+        customer_email     as "customerEmail",
+        session_id         as "sessionId",
+        subtotal           as "subtotal",
+        currency           as "currency",
+        coupon_codes       as "couponCodes",
+        discount_amount    as "discountAmount",
+        total              as "total",
+        item_count         as "itemCount",
+        expires_at         as "expiresAt",
+        notes              as "notes",
+        description        as "description",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_time       as "createdTime",
+        last_modified_time as "lastModifiedTime",
+        last_modified_by   as "lastModifiedBy",
+        created_by         as "createdBy",
+        tenant             as "tenant",
+        version            as "version"
+    FROM hm_query.cart_flat
+    <where>
+        <if test="userId != null">AND customer_id = #{userId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="currency != null">AND currency = #{currency}</if>
+        <if test="customerName != null">AND customer_name LIKE CONCAT('%', #{customerName}, '%')</if>
+        <if test="customerEmail != null">AND customer_email LIKE CONCAT('%', #{customerEmail}, '%')</if>
+        <if test="minTotal != null">AND total &gt;= #{minTotal}</if>
+        <if test="maxTotal != null">AND total &lt;= #{maxTotal}</if>
+        <if test="startDate != null">AND created_time &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_time &lt;= #{endDate}</if>
+        <if test="q != null">AND (customer_name LIKE CONCAT('%', #{q}, '%') OR customer_email LIKE CONCAT('%', #{q}, '%') OR cart_id LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- ADMIN: getStateCounts for tab badges                              -->
+<!-- ================================================================ -->
+
+<select id="getStateCounts" resultType="java.util.HashMap">
+    SELECT state_id as "stateId", COUNT(*) as "count"
+    FROM hm_query.cart_flat
+    GROUP BY state_id
+</select>
+
+<!-- ================================================================ -->
+<!-- ADMIN: getAbandonedCarts                                          -->
+<!-- ================================================================ -->
+
+<select id='getAbandonedCarts-count' resultType="int">
+    SELECT count(*) FROM hm_query.cart_flat
+    WHERE state_id = 'ABANDONED'
+    <if test="userId != null">AND customer_id = #{userId}</if>
+    <if test="customerName != null">AND customer_name LIKE CONCAT('%', #{customerName}, '%')</if>
+</select>
+
+<select id="getAbandonedCarts" resultType="com.homebase.ecom.dto.CartDto">
+    SELECT
+        cart_id            as "id",
+        customer_id        as "userId",
+        customer_name      as "customerName",
+        customer_email     as "customerEmail",
+        subtotal           as "subtotal",
+        currency           as "currency",
+        discount_amount    as "discountAmount",
+        total              as "total",
+        item_count         as "itemCount",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_time       as "createdTime",
+        last_modified_time as "lastModifiedTime"
+    FROM hm_query.cart_flat
+    WHERE state_id = 'ABANDONED'
+    <if test="userId != null">AND customer_id = #{userId}</if>
+    <if test="customerName != null">AND customer_name LIKE CONCAT('%', #{customerName}, '%')</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- ADMIN: getExpiredCarts                                             -->
+<!-- ================================================================ -->
+
+<select id='getExpiredCarts-count' resultType="int">
+    SELECT count(*) FROM hm_query.cart_flat
+    WHERE state_id = 'EXPIRED'
+    <if test="userId != null">AND customer_id = #{userId}</if>
+</select>
+
+<select id="getExpiredCarts" resultType="com.homebase.ecom.dto.CartDto">
+    SELECT
+        cart_id            as "id",
+        customer_id        as "userId",
+        customer_name      as "customerName",
+        subtotal           as "subtotal",
+        currency           as "currency",
+        discount_amount    as "discountAmount",
+        total              as "total",
+        item_count         as "itemCount",
+        expires_at         as "expiresAt",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_time       as "createdTime",
+        last_modified_time as "lastModifiedTime"
+    FROM hm_query.cart_flat
+    WHERE state_id = 'EXPIRED'
+    <if test="userId != null">AND customer_id = #{userId}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- CUSTOMER: getByCustomerId                                         -->
+<!-- ================================================================ -->
+
+<select id='getByCustomerId-count' resultType="int">
+    SELECT count(*) FROM hm_query.cart_flat
+    WHERE customer_id = #{userId}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+</select>
+
+<select id="getByCustomerId" resultType="com.homebase.ecom.dto.CartDto">
+    SELECT
+        cart_id            as "id",
+        customer_id        as "userId",
+        session_id         as "sessionId",
+        subtotal           as "subtotal",
+        currency           as "currency",
+        coupon_codes       as "couponCodes",
+        discount_amount    as "discountAmount",
+        total              as "total",
+        item_count         as "itemCount",
+        expires_at         as "expiresAt",
+        notes              as "notes",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_time       as "createdTime",
+        last_modified_time as "lastModifiedTime"
+    FROM hm_query.cart_flat
+    WHERE customer_id = #{userId}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- CUSTOMER: getActiveCart                                            -->
+<!-- ================================================================ -->
+
+<select id="getActiveCart" resultType="com.homebase.ecom.dto.CartDto">
+    SELECT
+        cart_id            as "id",
+        customer_id        as "userId",
+        session_id         as "sessionId",
+        subtotal           as "subtotal",
+        currency           as "currency",
+        coupon_codes       as "couponCodes",
+        discount_amount    as "discountAmount",
+        total              as "total",
+        item_count         as "itemCount",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_time       as "createdTime",
+        last_modified_time as "lastModifiedTime"
+    FROM hm_query.cart_flat
+    WHERE customer_id = #{userId}
+    AND state_id = 'ACTIVE'
+    ORDER BY last_modified_time DESC
+    LIMIT 1
+</select>
+
+<!-- ================================================================ -->
+<!-- SYSTEM: Cart job queries (read from OLAP)                         -->
+<!-- ================================================================ -->
+
+<select id="getActiveCartIdsWithVariant" resultType="string">
+    SELECT DISTINCT cart_id
+    FROM hm_query.cart_items_flat
+    WHERE variant_id = #{variantId}
+    AND cart_state IN ('ACTIVE', 'CHECKOUT_INITIATED')
+</select>
+
+<select id="getActiveCartIdsWithCoupon" resultType="string">
+    SELECT cart_id
+    FROM hm_query.cart_flat
+    WHERE coupon_codes LIKE CONCAT('%', #{couponCode}, '%')
+    AND state_id IN ('ACTIVE', 'CHECKOUT_INITIATED')
+</select>
+
+<select id="getExpiredCartIds" resultType="string">
+    SELECT cart_id
+    FROM hm_query.cart_flat
+    WHERE expires_at &lt; NOW()
+    AND state_id IN ('ACTIVE', 'ABANDONED', 'CHECKOUT_INITIATED')
+</select>
+
+<select id="getIdleCartIds" resultType="string">
+    SELECT cart_id
+    FROM hm_query.cart_flat
+    WHERE state_id = 'ACTIVE'
+    AND last_modified_time &lt; (NOW() - INTERVAL '1 hour' * #{thresholdHours})
+</select>
+
+<!-- ================================================================ -->
+<!-- ADMIN: Cart items listing                                         -->
+<!-- ================================================================ -->
+
+<select id='getItemsByCartId-count' resultType="int">
+    SELECT count(*) FROM hm_query.cart_items_flat WHERE cart_id = #{cartId}
+</select>
+
+<select id="getItemsByCartId" resultType="com.homebase.ecom.dto.CartItemDto">
+    SELECT
+        item_id            as "id",
+        cart_id            as "cartId",
+        product_id         as "productId",
+        variant_id         as "variantId",
+        sku                as "sku",
+        product_name       as "productName",
+        supplier_id        as "supplierId",
+        quantity           as "quantity",
+        unit_price         as "unitPrice",
+        line_total         as "lineTotal",
+        created_time       as "createdTime",
+        last_modified_time as "lastModifiedTime",
+        tenant             as "tenant"
+    FROM hm_query.cart_items_flat
+    WHERE cart_id = #{cartId}
+    ${orderby} ${pagination}
+</select>
+
+<select id='getAllItems-count' resultType="int">
+    SELECT count(*) FROM hm_query.cart_items_flat
+    <where>
+        <if test="cartId != null">AND cart_id = #{cartId}</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="sku != null">AND sku = #{sku}</if>
+        <if test="productName != null">AND product_name LIKE CONCAT('%', #{productName}, '%')</if>
+    </where>
+</select>
+
+<select id="getAllItems" resultType="com.homebase.ecom.dto.CartItemDto">
+    SELECT
+        item_id            as "id",
+        cart_id            as "cartId",
+        product_id         as "productId",
+        variant_id         as "variantId",
+        sku                as "sku",
+        product_name       as "productName",
+        supplier_id        as "supplierId",
+        quantity           as "quantity",
+        unit_price         as "unitPrice",
+        line_total         as "lineTotal",
+        created_time       as "createdTime",
+        last_modified_time as "lastModifiedTime",
+        tenant             as "tenant"
+    FROM hm_query.cart_items_flat
+    <where>
+        <if test="cartId != null">AND cart_id = #{cartId}</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="sku != null">AND sku = #{sku}</if>
+        <if test="productName != null">AND product_name LIKE CONCAT('%', #{productName}, '%')</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- ADMIN: Cart detail (flat — zero JOINs)                            -->
+<!-- ================================================================ -->
+
+<select id='getCartDetail-count' resultType="int">
+    SELECT count(*) FROM hm_query.cart_items_flat WHERE cart_id = #{cartId}
+</select>
+
+<select id="getCartDetail" resultType="com.homebase.ecom.dto.CartDetailDto">
+    SELECT
+        f.cart_id          as "cartId",
+        f.customer_id      as "userId",
+        f.customer_name    as "customerName",
+        f.customer_email   as "customerEmail",
+        f.session_id       as "sessionId",
+        f.subtotal         as "subtotal",
+        f.currency         as "currency",
+        f.coupon_codes     as "couponCodes",
+        f.discount_amount  as "discountAmount",
+        f.total            as "total",
+        f.expires_at       as "expiresAt",
+        f.notes            as "notes",
+        f.description      as "description",
+        f.state_id         as "stateId",
+        f.flow_id          as "flowId",
+        f.created_time     as "cartCreatedTime",
+        f.last_modified_time as "cartLastModifiedTime",
+        f.last_modified_by as "lastModifiedBy",
+        f.created_by       as "createdBy",
+        f.tenant           as "tenant",
+        f.version          as "version",
+        f.state_entry_time as "stateEntryTime",
+        ci.item_id         as "itemId",
+        ci.product_id      as "productId",
+        ci.variant_id      as "variantId",
+        ci.sku             as "sku",
+        ci.product_name    as "productName",
+        ci.supplier_id     as "supplierId",
+        ci.quantity         as "quantity",
+        ci.unit_price      as "unitPrice",
+        ci.line_total      as "lineTotal",
+        ci.created_time    as "itemCreatedTime",
+        ci.last_modified_time as "itemLastModifiedTime"
+    FROM hm_query.cart_flat f
+    LEFT JOIN hm_query.cart_items_flat ci ON ci.cart_id = f.cart_id
+    WHERE f.cart_id = #{cartId}
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- ADMIN: Cart activity log                                          -->
+<!-- ================================================================ -->
+
+<select id='getActivitiesByCartId-count' resultType="int">
+    SELECT count(*) FROM hm_query.cart_activity_flat WHERE cart_id = #{cartId}
+</select>
+
+<select id="getActivitiesByCartId" resultType="com.homebase.ecom.dto.CartActivityDto">
+    SELECT
+        id                 as "id",
+        cart_id            as "cartId",
+        activity_name      as "activityName",
+        activity_success   as "activitySuccess",
+        activity_comment   as "activityComment",
+        created_time       as "createdTime",
+        created_by         as "createdBy"
+    FROM hm_query.cart_activity_flat
+    WHERE cart_id = #{cartId}
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- ADMIN: Cart full (cart + items + activities from OLAP)             -->
+<!-- ================================================================ -->
+
+<select id='getCartFull-count' resultType="int">
+    SELECT count(*) FROM hm_query.cart_flat f
+    LEFT JOIN hm_query.cart_items_flat ci ON ci.cart_id = f.cart_id
+    LEFT JOIN hm_query.cart_activity_flat al ON al.cart_id = f.cart_id
+    WHERE f.cart_id = #{cartId}
+</select>
+
+<select id="getCartFull" resultType="com.homebase.ecom.dto.CartFullDto">
+    SELECT
+        f.cart_id          as "cartId",
+        f.customer_id      as "userId",
+        f.customer_name    as "customerName",
+        f.session_id       as "sessionId",
+        f.subtotal         as "subtotal",
+        f.currency         as "currency",
+        f.coupon_codes     as "couponCodes",
+        f.discount_amount  as "discountAmount",
+        f.total            as "total",
+        f.expires_at       as "expiresAt",
+        f.notes            as "notes",
+        f.description      as "description",
+        f.state_id         as "stateId",
+        f.flow_id          as "flowId",
+        f.created_time     as "cartCreatedTime",
+        f.last_modified_time as "cartLastModifiedTime",
+        f.last_modified_by as "lastModifiedBy",
+        f.created_by       as "createdBy",
+        f.tenant           as "tenant",
+        f.version          as "version",
+        f.state_entry_time as "stateEntryTime",
+        f.sla_yellow_date  as "slaYellowDate",
+        f.sla_red_date     as "slaRedDate",
+        f.sla_tending_late as "slaTendingLate",
+        f.sla_late         as "slaLate",
+        ci.item_id         as "itemId",
+        ci.product_id      as "productId",
+        ci.variant_id      as "variantId",
+        ci.sku             as "sku",
+        ci.product_name    as "productName",
+        ci.supplier_id     as "supplierId",
+        ci.quantity         as "quantity",
+        ci.unit_price      as "unitPrice",
+        ci.line_total      as "lineTotal",
+        ci.created_time    as "itemCreatedTime",
+        ci.last_modified_time as "itemLastModifiedTime",
+        al.id              as "activityId",
+        al.activity_name   as "activityName",
+        al.activity_success as "activitySuccess",
+        al.activity_comment as "activityComment",
+        al.created_time    as "activityCreatedTime"
+    FROM hm_query.cart_flat f
+    LEFT JOIN hm_query.cart_items_flat ci ON ci.cart_id = f.cart_id
+    LEFT JOIN hm_query.cart_activity_flat al ON al.cart_id = f.cart_id
+    WHERE f.cart_id = #{cartId}
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- STOREFRONT: Cart view with product enrichment (from OLAP)         -->
+<!-- ================================================================ -->
+
+<select id='getStorefrontCart-count' resultType="int">
+    SELECT count(*) FROM hm_query.cart_items_flat
+    WHERE customer_id = #{userId}
+    AND cart_state IN ('ACTIVE', 'CHECKOUT_INITIATED')
+</select>
+
+<select id="getStorefrontCart" resultType="com.homebase.ecom.dto.StorefrontCartDto">
+    SELECT
+        ci.cart_id         as "cartId",
+        ci.customer_id     as "userId",
+        ci.cart_subtotal   as "subtotal",
+        ci.cart_currency   as "currency",
+        ci.cart_coupon_codes as "couponCodes",
+        ci.cart_discount   as "discountAmount",
+        ci.cart_total      as "total",
+        ci.cart_state      as "stateId",
+        ci.item_id         as "itemId",
+        ci.variant_id      as "variantId",
+        ci.product_id      as "productId",
+        ci.sku             as "sku",
+        ci.quantity         as "quantity",
+        ci.unit_price      as "unitPrice",
+        ci.line_total      as "lineTotal",
+        ci.product_name    as "productName",
+        ci.brand           as "brand",
+        ci.product_slug    as "productSlug",
+        ci.category_name   as "categoryName",
+        ci.variant_color   as "variantColor",
+        ci.variant_size    as "variantSize",
+        ci.image_url       as "imageUrl",
+        ci.available_quantity as "availableQuantity",
+        ci.stock_status    as "stockStatus"
+    FROM hm_query.cart_items_flat ci
+    WHERE ci.customer_id = #{userId}
+    AND ci.cart_state IN ('ACTIVE', 'CHECKOUT_INITIATED')
+    ORDER BY ci.created_time ASC
+    ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- STOREFRONT: Cart by ID (admin/support with enrichment from OLAP)  -->
+<!-- ================================================================ -->
+
+<select id='getStorefrontCartById-count' resultType="int">
+    SELECT count(*) FROM hm_query.cart_items_flat WHERE cart_id = #{cartId}
+</select>
+
+<select id="getStorefrontCartById" resultType="com.homebase.ecom.dto.StorefrontCartDto">
+    SELECT
+        ci.cart_id         as "cartId",
+        ci.customer_id     as "userId",
+        ci.cart_subtotal   as "subtotal",
+        ci.cart_currency   as "currency",
+        ci.cart_coupon_codes as "couponCodes",
+        ci.cart_discount   as "discountAmount",
+        ci.cart_total      as "total",
+        ci.cart_state      as "stateId",
+        ci.item_id         as "itemId",
+        ci.variant_id      as "variantId",
+        ci.product_id      as "productId",
+        ci.sku             as "sku",
+        ci.quantity         as "quantity",
+        ci.unit_price      as "unitPrice",
+        ci.line_total      as "lineTotal",
+        ci.product_name    as "productName",
+        ci.brand           as "brand",
+        ci.product_slug    as "productSlug",
+        ci.category_name   as "categoryName",
+        ci.variant_color   as "variantColor",
+        ci.variant_size    as "variantSize",
+        ci.image_url       as "imageUrl",
+        ci.available_quantity as "availableQuantity",
+        ci.stock_status    as "stockStatus"
+    FROM hm_query.cart_items_flat ci
+    WHERE ci.cart_id = #{cartId}
+    ORDER BY ci.created_time ASC
+    ${pagination}
+</select>
+
+</mapper>

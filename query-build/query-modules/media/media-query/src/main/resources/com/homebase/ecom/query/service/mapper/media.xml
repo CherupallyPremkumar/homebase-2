@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Media">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: media_flat                                                      -->
+<!-- Populated by MediaSyncService ETL.                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ================================================================ -->
+<!-- Media Asset Listing                                               -->
+<!-- ================================================================ -->
+
+<select id="getAll-count" resultType="long">
+    SELECT COUNT(*) FROM hm_query.media_flat
+    <where>
+        <if test="folder != null">AND folder = #{folder}</if>
+        <if test="mimeType != null">AND mime_type = #{mimeType}</if>
+        <if test="originalName != null">AND LOWER(original_name) LIKE LOWER(CONCAT('%', #{originalName}, '%'))</if>
+        <if test="q != null">AND (LOWER(original_name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR LOWER(alt_text) LIKE LOWER(CONCAT('%', #{q}, '%')) OR folder LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.media.dto.MediaQueryDto">
+    SELECT
+        id,
+        file_key           AS "fileKey",
+        original_name      AS "originalName",
+        cdn_url            AS "cdnUrl",
+        mime_type          AS "mimeType",
+        file_size_bytes    AS "fileSizeBytes",
+        width,
+        height,
+        alt_text           AS "altText",
+        folder,
+        created_at         AS "createdAt"
+    FROM hm_query.media_flat
+    <where>
+        <if test="folder != null">AND folder = #{folder}</if>
+        <if test="mimeType != null">AND mime_type = #{mimeType}</if>
+        <if test="originalName != null">AND LOWER(original_name) LIKE LOWER(CONCAT('%', #{originalName}, '%'))</if>
+        <if test="q != null">AND (LOWER(original_name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR LOWER(alt_text) LIKE LOWER(CONCAT('%', #{q}, '%')) OR folder LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Media Asset Detail                                                -->
+<!-- ================================================================ -->
+
+<select id="getById" resultType="com.homebase.ecom.media.dto.MediaQueryDto">
+    SELECT
+        id,
+        file_key           AS "fileKey",
+        original_name      AS "originalName",
+        cdn_url            AS "cdnUrl",
+        mime_type          AS "mimeType",
+        file_size_bytes    AS "fileSizeBytes",
+        width,
+        height,
+        alt_text           AS "altText",
+        folder,
+        created_at         AS "createdAt"
+    FROM hm_query.media_flat
+    WHERE id = #{id}
+</select>
+
+</mapper>

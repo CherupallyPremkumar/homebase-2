@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ReconciliationSync">
+
+<update id="truncateReconciliationBatchesFlat">TRUNCATE TABLE hm_query.reconciliation_batches_flat</update>
+
+<insert id="syncReconciliationBatchesFlat">
+    INSERT INTO hm_query.reconciliation_batches_flat (
+        id, tenant, last_synced_at,
+        batch_date, period_start, period_end,
+        gateway_type, reconciliation_method,
+        matched_count, mismatch_count, auto_resolved_count,
+        state_id, flow_id, created_time, last_modified_time
+    )
+    SELECT
+        rb.id, rb.tenant, NOW(),
+        rb.batch_date, rb.period_start, rb.period_end,
+        rb.gateway_type, rb.reconciliation_method,
+        COALESCE(rb.matched_count, 0), COALESCE(rb.mismatch_count, 0), COALESCE(rb.auto_resolved_count, 0),
+        rb.state_id, rb.flow_id, rb.created_time, rb.last_modified_time
+    FROM hm_reconciliation.reconciliation_batches rb
+</insert>
+
+</mapper>

@@ -1,0 +1,190 @@
+[
+	{
+		"id": "Order.getAll",
+		"name": "orders",
+		"description": "Admin order listing from OLAP order_details_flat",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"columnMetadata": {
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"orderNumber": { "name": "orderNumber", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" },
+			"customerName": { "name": "customerName", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"customerEmail": { "name": "customerEmail", "likeQuery": true, "filterable": true, "columnType": "Text" },
+			"sellerId": { "name": "sellerId", "filterable": true, "columnType": "Text" },
+			"sellerName": { "name": "sellerName", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"paymentMethod": { "name": "paymentMethod", "filterable": true, "columnType": "Text" },
+			"shippingState": { "name": "shippingState", "filterable": true, "columnType": "Text" },
+			"carrier": { "name": "carrier", "filterable": true, "columnType": "Text" },
+			"slaStatus": { "name": "slaStatus", "filterable": true, "columnType": "Text" },
+			"minAmount": { "name": "minAmount", "filterable": true, "columnType": "Numeric" },
+			"maxAmount": { "name": "maxAmount", "filterable": true, "columnType": "Numeric" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+			"totalAmount": { "name": "totalAmount", "sortable": true, "columnType": "Numeric" },
+			"createdAt": { "name": "createdAt", "sortable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": true,
+		"workflowName": "order",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId"
+	},
+	{
+		"id": "Order.getStateCounts",
+		"name": "order-state-counts",
+		"description": "Order count by status for tab badges (All/Pending/Processing/Shipped/Delivered/Cancelled/Disputes)",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"paginated": false
+	},
+	{
+		"id": "Order.getRawStateCounts",
+		"name": "order-raw-state-counts",
+		"description": "Raw STM state counts for admin drill-down (all 20 states)",
+		"acls": ["ADMIN"],
+		"paginated": false
+	},
+	{
+		"id": "Order.getSlaBreachCount",
+		"name": "order-sla-breaches",
+		"description": "SLA breach and high-value order counts for stat cards",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"paginated": false
+	},
+	{
+		"id": "Order.getSlaAtRiskOrders",
+		"name": "order-sla-at-risk",
+		"description": "Orders at risk of SLA breach — for smart recommendation widget and 'Review Now' action",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"columnMetadata": {
+			"slaBreachHours": { "name": "slaBreachHours", "sortable": true, "columnType": "Numeric" },
+			"slaStatus": { "name": "slaStatus", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Order.getSlaAlertSummary",
+		"name": "order-sla-alert-summary",
+		"description": "SLA alert banner: '14 orders pending >4hrs' counts",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"paginated": false
+	},
+	{
+		"id": "Order.getDistinctPaymentMethods",
+		"name": "order-payment-methods",
+		"description": "Distinct payment methods for filter sidebar (UPI/Card/COD/Wallet/NetBanking)",
+		"acls": ["ADMIN"],
+		"paginated": false
+	},
+	{
+		"id": "Order.getDistinctRegions",
+		"name": "order-regions",
+		"description": "Distinct shipping states for filter sidebar",
+		"acls": ["ADMIN"],
+		"paginated": false
+	},
+	{
+		"id": "Order.getDistinctCarriers",
+		"name": "order-carriers",
+		"description": "Distinct carriers for filter sidebar (Delhivery/BlueDart/DTDC/etc.)",
+		"acls": ["ADMIN"],
+		"paginated": false
+	},
+	{
+		"id": "Order.getDistinctSellers",
+		"name": "order-sellers",
+		"description": "Distinct sellers for filter dropdown",
+		"acls": ["ADMIN"],
+		"paginated": false
+	},
+	{
+		"id": "Order.getById",
+		"name": "order",
+		"description": "Single order detail from OLAP",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false,
+		"workflowName": "order",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId"
+	},
+	{
+		"id": "Order.getOrderItems",
+		"name": "order-items",
+		"description": "Line items for a single order (detail page)",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Order.getOrderActivity",
+		"name": "order-activity",
+		"description": "Audit trail / activity log for a single order",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Order.getRelatedOrders",
+		"name": "order-related",
+		"description": "Other orders by the same customer (detail page sidebar)",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" },
+			"excludeOrderId": { "name": "excludeOrderId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Order.getShipmentTrackingEvents",
+		"name": "order-tracking-events",
+		"description": "Shipment tracking timeline (Picked Up → In Transit → Delivered)",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Order.getOrderRiskAssessment",
+		"name": "order-risk-assessment",
+		"description": "Fraud/risk assessment for an order (payment risk, fraud score)",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Order.getMyOrders",
+		"name": "my-orders",
+		"description": "Customer's own orders (storefront)",
+		"acls": [],
+		"columnMetadata": {
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Order.getDeliveredOrderItemsForSupplier",
+		"name": "delivered-items-for-settlement",
+		"description": "Delivered order items for supplier payout calculation",
+		"acls": ["ADMIN", "FINANCE"],
+		"columnMetadata": {
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

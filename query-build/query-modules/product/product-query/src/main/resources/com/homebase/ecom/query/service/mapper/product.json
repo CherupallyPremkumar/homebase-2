@@ -1,0 +1,277 @@
+[
+	{
+		"id": "Product.getAll",
+		"name": "products",
+		"description": "Admin product listing from OLAP product_catalog_flat",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" },
+			"name": { "name": "name", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"brand": { "name": "brand", "filterable": true, "sortable": true, "columnType": "Text" },
+			"categoryId": { "name": "categoryId", "filterable": true, "sortable": true, "columnType": "Text" },
+			"slug": { "name": "slug", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"sellerId": { "name": "sellerId", "filterable": true, "columnType": "Text" },
+			"sellerTier": { "name": "sellerTier", "filterable": true, "columnType": "Text" },
+			"stockStatus": { "name": "stockStatus", "filterable": true, "columnType": "Text" },
+			"minPrice": { "name": "minPrice", "filterable": true, "columnType": "Numeric" },
+			"maxPrice": { "name": "maxPrice", "filterable": true, "columnType": "Numeric" },
+			"minRating": { "name": "minRating", "filterable": true, "columnType": "Numeric" },
+			"basePrice": { "name": "basePrice", "sortable": true, "columnType": "Numeric" },
+			"avgRating": { "name": "avgRating", "sortable": true, "columnType": "Numeric" },
+			"reviewCount": { "name": "reviewCount", "sortable": true, "columnType": "Numeric" },
+			"unitsSold30d": { "name": "unitsSold30d", "sortable": true, "columnType": "Numeric" },
+			"violationsCount": { "name": "violationsCount", "sortable": true, "columnType": "Numeric" },
+			"createdTime": { "name": "createdTime", "sortable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": true,
+		"workflowName": "product",
+		"stateColumn": "stateId"
+	},
+	{
+		"id": "Product.getById",
+		"name": "product",
+		"description": "Single product detail from OLAP with variants sub-select",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false,
+		"workflowName": "product",
+		"stateColumn": "stateId"
+	},
+	{
+		"id": "Product.getPublished",
+		"name": "storefront-products",
+		"description": "Storefront published products from OLAP",
+		"acls": [],
+		"columnMetadata": {
+			"name": { "name": "name", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"brand": { "name": "brand", "filterable": true, "sortable": true, "columnType": "Text" },
+			"categoryId": { "name": "categoryId", "filterable": true, "sortable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Product.getBySlug",
+		"name": "product-by-slug",
+		"description": "Product detail by SEO slug",
+		"acls": [],
+		"columnMetadata": {
+			"slug": { "name": "slug", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Product.searchProducts",
+		"name": "search-products",
+		"description": "Full-text search across product name, description, brand",
+		"acls": [],
+		"columnMetadata": {
+			"q": { "name": "q", "filterable": true, "likeQuery": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Product.getByCategory",
+		"name": "products-by-category",
+		"description": "Products filtered by category",
+		"acls": [],
+		"columnMetadata": {
+			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Product.getCategoryTree",
+		"name": "category-tree",
+		"description": "Hierarchical category tree from OLAP",
+		"acls": [],
+		"paginated": false
+	},
+	{
+		"id": "Product.getStateCounts",
+		"name": "product-state-counts",
+		"description": "Product count by workflow state for tab badges",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"paginated": false
+	},
+	{
+		"id": "Product.getPendingReview",
+		"name": "products-pending-review",
+		"description": "Products awaiting admin review",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"columnMetadata": {
+			"name": { "name": "name", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"brand": { "name": "brand", "filterable": true, "sortable": true, "columnType": "Text" },
+			"sellerId": { "name": "sellerId", "filterable": true, "columnType": "Text" },
+			"createdTime": { "name": "createdTime", "sortable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Product.variantExists",
+		"name": "variant-exists",
+		"description": "Check variant availability for cart integration",
+		"acls": ["ADMIN", "SUPPLIER"],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
+			"variantId": { "name": "variantId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Product.getVariantsByProduct",
+		"name": "product-variants",
+		"description": "All variants for a product from OLAP",
+		"acls": [],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Product.getVariantBySku",
+		"name": "variant-by-sku",
+		"description": "Single variant lookup by SKU",
+		"acls": ["ADMIN", "SUPPLIER"],
+		"columnMetadata": {
+			"sku": { "name": "sku", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Product.getCategories",
+		"name": "categories",
+		"description": "Admin category management from OLAP category_config_flat",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"columnMetadata": {
+			"name": { "name": "name", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"active": { "name": "active", "filterable": true, "columnType": "Text" },
+			"parentId": { "name": "parentId", "filterable": true, "columnType": "Text" },
+			"productCount": { "name": "productCount", "sortable": true, "columnType": "Numeric" },
+			"commissionRateBps": { "name": "commissionRateBps", "sortable": true, "columnType": "Numeric" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Product.getCategoryBenchmark",
+		"name": "category-benchmark",
+		"description": "Category avg metrics for product detail comparison",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Product.getRestockForecast",
+		"name": "restock-forecast",
+		"description": "Inventory restock prediction from OLAP",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Product.getSupplierContact",
+		"name": "supplier-contact",
+		"description": "Supplier contact info for product detail",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"sellerId": { "name": "sellerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Product.getCompetitorPricing",
+		"name": "competitor-pricing",
+		"description": "Similar products in same category for price comparison",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" },
+			"excludeProductId": { "name": "excludeProductId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Product.getBrands",
+		"name": "brands",
+		"description": "Brand registry listing from OLAP brand_registry_flat",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"columnMetadata": {
+			"brandName": { "name": "brandName", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"brandStatus": { "name": "brandStatus", "filterable": true, "columnType": "Text" },
+			"industryCategory": { "name": "industryCategory", "filterable": true, "columnType": "Text" },
+			"productCount": { "name": "productCount", "sortable": true, "columnType": "Numeric" },
+			"authorizedSellerCount": { "name": "authorizedSellerCount", "sortable": true, "columnType": "Numeric" }
+		},
+		"paginated": true,
+		"sortable": true,
+		"workflowName": "brands",
+		"stateColumn": "brandStatus"
+	},
+	{
+		"id": "Product.getBrandStateCounts",
+		"name": "brand-state-counts",
+		"description": "Brand count by status for tab badges",
+		"acls": ["ADMIN"],
+		"paginated": false
+	},
+	{
+		"id": "Product.getAttributes",
+		"name": "attributes",
+		"description": "Attribute definitions from OLAP with usage counts",
+		"acls": ["ADMIN", "OPERATIONS_MANAGER"],
+		"columnMetadata": {
+			"code": { "name": "code", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"label": { "name": "label", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"inputType": { "name": "inputType", "filterable": true, "columnType": "Text" },
+			"filterable": { "name": "filterable", "filterable": true, "columnType": "Text" },
+			"searchable": { "name": "searchable", "filterable": true, "columnType": "Text" },
+			"productCount": { "name": "productCount", "sortable": true, "columnType": "Numeric" },
+			"variationCount": { "name": "variationCount", "sortable": true, "columnType": "Numeric" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Product.getAttributeStats",
+		"name": "attribute-stats",
+		"description": "Attribute stat card counts",
+		"acls": ["ADMIN"],
+		"paginated": false
+	},
+	{
+		"id": "Product.getAttributeSets",
+		"name": "attribute-sets",
+		"description": "Attribute sets with counts",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"name": { "name": "name", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"attributeCount": { "name": "attributeCount", "sortable": true, "columnType": "Numeric" },
+			"productCount": { "name": "productCount", "sortable": true, "columnType": "Numeric" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Product.getCategoryAttributeMapping",
+		"name": "category-attribute-mapping",
+		"description": "Which categories require which attributes",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"name": { "name": "name", "likeQuery": true, "filterable": true, "sortable": true, "columnType": "Text" },
+			"requiredAttributesCount": { "name": "requiredAttributesCount", "sortable": true, "columnType": "Numeric" }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

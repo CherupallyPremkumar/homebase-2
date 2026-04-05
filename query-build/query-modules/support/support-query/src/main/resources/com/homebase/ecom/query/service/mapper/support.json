@@ -1,0 +1,89 @@
+[
+	{
+		"id": "Support.getAll",
+		"name": "tickets",
+		"description": "Admin support ticket listing from OLAP fact_support_tickets_flat",
+		"acls": ["ADMIN", "AGENT"],
+		"workflowName": "support",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"customerId": { "name": "customerId", "columnType": "Text", "filterable": true },
+			"subject": { "name": "subject", "columnType": "Text", "filterable": true, "likeQuery": true },
+			"category": { "name": "category", "filterable": true, "columnType": "Text" },
+			"priority": { "name": "priority", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"assignedAgentId": { "name": "assignedAgentId", "columnType": "Text", "filterable": true },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+			"createdAt": { "name": "createdAt", "columnType": "Date", "sortable": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Support.getById",
+		"name": "supportTicket",
+		"description": "Single support ticket detail from OLAP",
+		"acls": ["ADMIN", "AGENT"],
+		"workflowName": "support",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Support.getStateCounts",
+		"name": "supportTicketStateCounts",
+		"description": "Ticket count by state for tab badges",
+		"acls": ["ADMIN", "AGENT"],
+		"paginated": false
+	},
+	{
+		"id": "Support.getOverdueTickets",
+		"name": "supportOverdueTickets",
+		"description": "Tickets exceeding SLA threshold",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {
+			"slaHours": { "name": "slaHours", "columnType": "Number", "filterable": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Support.getByAgent",
+		"name": "supportTicketsByAgent",
+		"description": "Tickets assigned to a specific agent",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"assignedAgentId": { "name": "assignedAgentId", "columnType": "Text", "filterable": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Support.getByPriority",
+		"name": "supportTicketsByPriority",
+		"description": "Tickets filtered by priority level",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {
+			"priority": { "name": "priority", "columnType": "Text", "filterable": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Support.getByCustomerId",
+		"name": "myTickets",
+		"description": "Customer's own support tickets (storefront)",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

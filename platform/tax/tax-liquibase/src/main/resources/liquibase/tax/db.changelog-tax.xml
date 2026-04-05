@@ -6,11 +6,18 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
     <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="tax-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_tax</sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
     <!-- tax_rates — GST rates per HSN code with effective dates             -->
     <!-- ================================================================== -->
     <changeSet id="tax-001-create-tax-rates" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="tax_rates"/></not></preConditions>
-        <createTable tableName="tax_rates">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="tax_rates" schemaName="hm_tax"/></not></preConditions>
+        <createTable tableName="tax_rates" schemaName="hm_tax">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -27,7 +34,7 @@
             <column name="effective_to" type="DATE"/>
             <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
         </createTable>
-        <createIndex indexName="idx_tax_rates_hsn" tableName="tax_rates">
+        <createIndex indexName="idx_tax_rates_hsn" tableName="tax_rates" schemaName="hm_tax">
             <column name="hsn_code"/>
             <column name="active"/>
         </createIndex>
@@ -37,8 +44,8 @@
     <!-- tax_category_mapping — product category → HSN code                  -->
     <!-- ================================================================== -->
     <changeSet id="tax-002-create-tax-category-mapping" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="tax_category_mapping"/></not></preConditions>
-        <createTable tableName="tax_category_mapping">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="tax_category_mapping" schemaName="hm_tax"/></not></preConditions>
+        <createTable tableName="tax_category_mapping" schemaName="hm_tax">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -51,7 +58,7 @@
             <column name="hsn_code" type="VARCHAR(8)"><constraints nullable="false"/></column>
             <column name="description" type="VARCHAR(500)"/>
         </createTable>
-        <createIndex indexName="idx_tax_cat_mapping_category" tableName="tax_category_mapping">
+        <createIndex indexName="idx_tax_cat_mapping_category" tableName="tax_category_mapping" schemaName="hm_tax">
             <column name="product_category"/>
         </createIndex>
     </changeSet>
@@ -60,8 +67,8 @@
     <!-- tax_regions — Indian state/UT codes for GST jurisdiction             -->
     <!-- ================================================================== -->
     <changeSet id="tax-003-create-tax-regions" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="tax_regions"/></not></preConditions>
-        <createTable tableName="tax_regions">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="tax_regions" schemaName="hm_tax"/></not></preConditions>
+        <createTable tableName="tax_regions" schemaName="hm_tax">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -81,8 +88,8 @@
     <!-- tax_exemptions — B2B, exports, SEZ, essential goods                 -->
     <!-- ================================================================== -->
     <changeSet id="tax-004-create-tax-exemptions" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="tax_exemptions"/></not></preConditions>
-        <createTable tableName="tax_exemptions">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="tax_exemptions" schemaName="hm_tax"/></not></preConditions>
+        <createTable tableName="tax_exemptions" schemaName="hm_tax">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -96,7 +103,7 @@
             <column name="full_exemption" type="BOOLEAN" defaultValueBoolean="true"/>
             <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
         </createTable>
-        <createIndex indexName="idx_tax_exemptions_type" tableName="tax_exemptions">
+        <createIndex indexName="idx_tax_exemptions_type" tableName="tax_exemptions" schemaName="hm_tax">
             <column name="exemption_type"/>
             <column name="active"/>
         </createIndex>
@@ -106,8 +113,8 @@
     <!-- order_tax_lines — per-order historical tax records                   -->
     <!-- ================================================================== -->
     <changeSet id="tax-005-create-order-tax-lines" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="order_tax_lines"/></not></preConditions>
-        <createTable tableName="order_tax_lines">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="order_tax_lines" schemaName="hm_tax"/></not></preConditions>
+        <createTable tableName="order_tax_lines" schemaName="hm_tax">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -128,7 +135,7 @@
             <column name="tcs_amount" type="DECIMAL(19,2)" defaultValueNumeric="0"/>
             <column name="total_tax" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
         </createTable>
-        <createIndex indexName="idx_order_tax_lines_order" tableName="order_tax_lines">
+        <createIndex indexName="idx_order_tax_lines_order" tableName="order_tax_lines" schemaName="hm_tax">
             <column name="order_id"/>
         </createIndex>
     </changeSet>

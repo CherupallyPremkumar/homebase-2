@@ -1,0 +1,36 @@
+[
+	{
+		"id": "Recommendation.getForUser",
+		"name": "userRecommendations",
+		"description": "User recommendations from OLAP",
+		"acls": ["CUSTOMER", "ADMIN"],
+		"columnMetadata": {
+			"userId": { "name": "userId", "filterable": true, "columnType": "Text" },
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
+			"recommendationType": { "name": "recommendationType", "filterable": true, "columnType": "Text" },
+			"score": { "name": "score", "columnType": "Number", "sortable": true },
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+			"createdTime": { "name": "createdTime", "columnType": "Date", "sortable": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Recommendation.getTrending",
+		"name": "trendingProducts",
+		"description": "Trending products from OLAP",
+		"acls": ["CUSTOMER", "ADMIN"],
+		"columnMetadata": {
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
+			"category": { "name": "category", "filterable": true, "columnType": "Text" },
+			"trendingScore": { "name": "trendingScore", "columnType": "Number", "sortable": true },
+			"timeWindow": { "name": "timeWindow", "filterable": true, "columnType": "Text" },
+			"viewCount": { "name": "viewCount", "columnType": "Number", "sortable": true },
+			"orderCount": { "name": "orderCount", "columnType": "Number", "sortable": true },
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+			"createdTime": { "name": "createdTime", "columnType": "Date", "sortable": true }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

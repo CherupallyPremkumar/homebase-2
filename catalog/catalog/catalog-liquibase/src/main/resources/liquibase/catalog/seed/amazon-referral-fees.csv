@@ -1,0 +1,120 @@
+category,sub_category,referral_fee_percent,referral_fee_below_1000,notes
+Automotive,Helmets & Riding Gloves,8.5,0,
+Automotive,Tyres & Rims,3.0,0,
+Automotive,Vehicles (2W/4W/EV),5.0,0,2% above 50K
+Automotive,Car & Bike Parts,16.0,0,
+Automotive,Car Electronics,12.0,0,
+Automotive,Oils & Lubricants,11.5,0,
+Automotive,Other Automotive,16.0,0,
+Baby & Toys,Toys - Drones,30.0,0,
+Baby & Toys,Toys - Games & Puzzles,12.5,0,
+Baby & Toys,Baby Hardlines,6.5,0,
+Baby & Toys,Baby Strollers,9.0,0,
+Baby & Toys,Baby Diapers,9.5,0,
+Baby & Toys,Baby Other,7.5,0,
+Baby & Toys,Toys Other,11.5,0,
+Books & Media,Books,13.5,0,"2% for 250-500, 4% for 500-1000"
+Books & Media,School Textbooks,4.5,2,
+Books & Media,Video Game Consoles,9.0,7,
+Books & Media,Movies & Music,6.5,6.5,
+Books & Media,Musical Instruments,11.0,0,
+Electronics,Mobile Phones,5.0,5.0,Flat rate
+Electronics,Laptops,6.0,6.0,Flat rate
+Electronics,Desktops,8.0,8.0,Flat rate
+Electronics,Television,6.0,6.0,Flat rate
+Electronics,Camera & Camcorder,7.0,5,9% for 19K-49K
+Electronics,Headphones & Earphones,18.0,0,
+Electronics,Cases & Covers,25.0,0,
+Electronics,Cables & Adapters,20.0,0,
+Electronics,Power Banks & Chargers,20.5,0,
+Electronics,Smart Watches,17.0,0,
+Electronics,Speakers,14.0,11,
+Electronics,PC Components (RAM etc),5.5,0,
+Electronics,Hard Disks,12.5,9.5,
+Electronics,Kindle Accessories,25.0,25,Flat rate
+Electronics,USB Flash Drives,16.0,16,Flat rate
+Electronics,Modems & Networking,14.0,14,Flat rate
+Electronics,Projectors & Home Theatre,6.0,6,Flat rate
+Electronics,Other Electronics,17.0,0,
+Fashion,Apparel - T-shirts (Men),23.0,0,
+Fashion,Apparel - Shirts,21.0,0,
+Fashion,Apparel - Shorts,24.0,0,
+Fashion,Apparel - Ethnic Wear,16.5,0,
+Fashion,Apparel - Sarees,15.0,0,
+Fashion,Apparel - Baby,7.0,0,
+Fashion,Apparel - Innerwear,18.5,0,
+Fashion,Apparel - Other,19.0,0,
+Fashion,Shoes,8.0,0,
+Fashion,Kids Shoes,16.0,0,
+Fashion,Flip Flops & Sandals,15.0,0,
+Fashion,Watches,15.0,0,
+Fashion,Fashion Jewellery,22.5,0,
+Fashion,Fine Jewellery - Gold Coins,6.0,0,
+Fashion,Fine Jewellery - Studded,13.0,0,
+Fashion,Silver Jewellery,13.0,0,
+Fashion,Handbags,12.0,0,
+Fashion,Backpacks,14.5,0,
+Fashion,Luggage - Suitcase,5.5,0,
+Fashion,Wallets,14.0,0,
+Fashion,Sunglasses,18.5,0,
+Grocery,Herbs & Spices,8.0,0,
+Grocery,Dried Fruits & Nuts,9.0,0,
+Grocery,Oils,5.0,0,
+Grocery,Beverages,10.0,0,
+Grocery,Other Grocery,9.0,0,
+Grocery,Pet Food,9.5,0,
+Grocery,Pet Accessories,12.5,0,
+Health & Beauty,Fragrance,10.0,0,14% for 500-1000
+Health & Beauty,Haircare & Bath,8.0,0,
+Health & Beauty,Makeup,7.0,0,
+Health & Beauty,Luxury Beauty,10.0,0,
+Health & Beauty,Sports Nutrition,9.5,0,
+Health & Beauty,Medical Equipment,2.0,0,
+Health & Beauty,Vitamins & Minerals,11.0,0,
+Health & Beauty,OTC Medicine,15.0,12,
+Health & Beauty,Prescription Medicine,8.0,8,Flat rate
+Health & Beauty,Grooming Appliances,9.5,0,
+Health & Beauty,Other Health,11.5,0,
+Home & Garden,Mattresses,16.0,0,13.5% above 20K
+Home & Garden,Large Furniture,15.5,0,11% above 15K
+Home & Garden,Office Furniture,15.5,0,11% above 15K
+Home & Garden,Bedsheets & Blankets,8.5,0,
+Home & Garden,Curtains,16.5,0,
+Home & Garden,Home Decor,17.0,0,
+Home & Garden,Wall Art,13.5,0,
+Home & Garden,Indoor Lighting,12.5,0,
+Home & Garden,LED Bulbs,14.0,0,
+Home & Garden,Wall Paints & Tools,6.0,0,
+Home & Garden,Water Purifier,7.5,0,
+Home & Garden,Water Heater,9.0,0,
+Home & Garden,Sanitaryware,8.0,0,6% above 10K
+Home & Garden,Home Safety & Security,6.0,0,
+Home & Garden,Inverter & Batteries,4.5,0,
+Home & Garden,Cleaning Appliances,8.5,0,
+Home & Garden,Solar Panels,2.0,0,
+Home & Garden,Plants & Seeds,11.0,0,
+Home & Garden,Home Storage,15.0,0,
+Home & Garden,Other Home,18.0,0,
+Kitchen & Appliances,Glassware & Ceramicware,12.5,0,
+Kitchen & Appliances,Gas Stoves & Pressure Cookers,10.0,0,6% for 1000-1500
+Kitchen & Appliances,Cookware & Tableware,12.5,0,
+Kitchen & Appliances,Kitchen Tools,12.5,0,
+Kitchen & Appliances,Refrigerators,5.0,5,Flat rate
+Kitchen & Appliances,Chimneys,9.5,9.5,Flat rate
+Kitchen & Appliances,Small Appliances,8.0,0,4.5% for 1K-5K
+Kitchen & Appliances,Fans & Robotic Vacuums,8.0,0,4.5% for 1K-5K
+Kitchen & Appliances,Other Kitchen,12.5,0,
+Kitchen & Appliances,Other Major Appliances,5.5,5.5,Flat rate
+Sports,Bicycles,6.0,0,
+Sports,Gym Equipment,12.0,0,10% above 35K
+Sports,Gym Weights,5.5,0,
+Sports,Sports Footwear,16.0,0,
+Sports,Cricket & Badminton,8.5,0,
+Sports,Cricket Bats & Racquets,7.5,0,
+Sports,Other Sports,13.0,0,
+Office & Industrial,Office Supplies,13.0,0,
+Office & Industrial,Writing Instruments,14.0,0,
+Office & Industrial,Power & Hand Tools,10.0,0,
+Office & Industrial,3D Printers,12.0,0,
+Office & Industrial,Packing Materials,5.0,0,
+Office & Industrial,Other Office,11.5,0,

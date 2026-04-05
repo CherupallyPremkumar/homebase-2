@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CmsSync">
+
+<!-- ====== CMS Pages ====== -->
+<update id="truncateCmsPagesFlat">TRUNCATE TABLE hm_query.cms_pages_flat</update>
+<insert id="syncCmsPagesFlat">
+    INSERT INTO hm_query.cms_pages_flat (id, tenant, last_synced_at, slug, title, page_type, published, published_at)
+    SELECT p.id, p.tenant, NOW(), p.slug, p.title, p.page_type, p.published, p.published_at
+    FROM hm_cms.cms_pages p
+</insert>
+
+<!-- ====== Banners ====== -->
+<update id="truncateCmsBannersFlat">TRUNCATE TABLE hm_query.cms_banners_flat</update>
+<insert id="syncCmsBannersFlat">
+    INSERT INTO hm_query.cms_banners_flat (id, tenant, last_synced_at, name, image_url, position, active, created_at)
+    SELECT b.id, b.tenant, NOW(), b.name, b.image_url, b.position, b.active, b.created_time
+    FROM hm_cms.banners b
+</insert>
+
+<!-- ====== Blocks ====== -->
+<update id="truncateCmsBlocksFlat">TRUNCATE TABLE hm_query.cms_blocks_flat</update>
+<insert id="syncCmsBlocksFlat">
+    INSERT INTO hm_query.cms_blocks_flat (id, tenant, last_synced_at, page_id, block_type, data, sort_order, active)
+    SELECT b.id, b.tenant, NOW(), b.page_id, b.block_type, b.data, b.sort_order, b.active
+    FROM hm_cms.cms_blocks b
+</insert>
+
+<!-- ====== CMS Media ====== -->
+<update id="truncateCmsMediaFlat">TRUNCATE TABLE hm_query.cms_media_flat</update>
+<insert id="syncCmsMediaFlat">
+    INSERT INTO hm_query.cms_media_flat (id, tenant, last_synced_at, file_key, original_name, cdn_url, mime_type, file_size_bytes, width, height, alt_text, folder)
+    SELECT m.id, m.tenant, NOW(), m.file_key, m.original_name, m.cdn_url, m.mime_type, m.file_size_bytes, m.width, m.height, m.alt_text, m.folder
+    FROM hm_cms.cms_media m
+</insert>
+
+<!-- ====== Page Versions ====== -->
+<update id="truncateCmsPageVersionsFlat">TRUNCATE TABLE hm_query.cms_page_versions_flat</update>
+<insert id="syncCmsPageVersionsFlat">
+    INSERT INTO hm_query.cms_page_versions_flat (id, tenant, last_synced_at, page_id, version_number, published_by, published_at, change_summary)
+    SELECT v.id, v.tenant, NOW(), v.page_id, v.version_number, v.published_by, v.published_at, v.change_summary
+    FROM hm_cms.cms_page_versions v
+</insert>
+
+<!-- ====== Schedules ====== -->
+<update id="truncateCmsSchedulesFlat">TRUNCATE TABLE hm_query.cms_schedules_flat</update>
+<insert id="syncCmsSchedulesFlat">
+    INSERT INTO hm_query.cms_schedules_flat (id, tenant, last_synced_at, page_id, publish_at, unpublish_at, timezone, is_active)
+    SELECT s.id, s.tenant, NOW(), s.page_id, s.publish_at, s.unpublish_at, s.timezone, s.active
+    FROM hm_cms.cms_schedules s
+</insert>
+
+<!-- ====== Announcements ====== -->
+<update id="truncateCmsAnnouncementsFlat">TRUNCATE TABLE hm_query.cms_announcements_flat</update>
+<insert id="syncCmsAnnouncementsFlat">
+    INSERT INTO hm_query.cms_announcements_flat (id, tenant, last_synced_at, title, announcement_type, target_audience, priority, status, dismissible, scheduled_date, expiry_date, created_at)
+    SELECT a.id, a.tenant, NOW(), a.title, a.announcement_type, a.target_audience, a.priority, a.status, a.dismissible, a.scheduled_date, a.expiry_date, a.created_time
+    FROM hm_cms.announcement a
+</insert>
+
+<!-- ====== SEO Meta ====== -->
+<update id="truncateCmsSeoMetaFlat">TRUNCATE TABLE hm_query.cms_seo_meta_flat</update>
+<insert id="syncCmsSeoMetaFlat">
+    INSERT INTO hm_query.cms_seo_meta_flat (id, tenant, last_synced_at, page_id, og_title, og_type, canonical_url, robots, keywords, created_at)
+    SELECT s.id, s.tenant, NOW(), s.page_id, s.og_title, s.og_type, s.canonical_url, s.robots, s.keywords, s.created_time
+    FROM hm_cms.cms_seo_meta s
+</insert>
+
+</mapper>

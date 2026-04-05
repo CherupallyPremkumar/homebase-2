@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- UI-driven column additions for product domain tables               -->
+    <!-- Fills schema gaps identified from admin UI prototype audit          -->
+    <!-- ================================================================== -->
+
+    <!-- categories: marketplace governance columns (categories.html) -->
+    <changeSet id="product-ui-001-categories-marketplace-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="categories" schemaName="hm_product"/>
+                <not><columnExists tableName="categories" schemaName="hm_product" columnName="commission_rate_bps"/></not>
+            </and>
+        </preConditions>
+        <addColumn tableName="categories" schemaName="hm_product">
+            <column name="commission_rate_bps" type="INT" defaultValueNumeric="0" remarks="Seller commission in basis points (800 = 8%)"/>
+            <column name="is_gated" type="BOOLEAN" defaultValueBoolean="false" remarks="Restricted category requiring approval to list"/>
+            <column name="return_policy_days" type="INT" defaultValueNumeric="7" remarks="Default return window for products in this category"/>
+            <column name="max_shipping_weight_grams" type="INT" remarks="Maximum allowed shipping weight for listings"/>
+            <column name="listing_min_images" type="INT" defaultValueNumeric="1" remarks="Minimum images required per listing"/>
+            <column name="listing_min_desc_length" type="INT" defaultValueNumeric="0" remarks="Minimum description character count"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- product_variants: identifiers for scanning and catalog (detail.html) -->
+    <changeSet id="product-ui-002-variant-identifiers" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="product_variants" schemaName="hm_product"/>
+                <not><columnExists tableName="product_variants" schemaName="hm_product" columnName="ean"/></not>
+            </and>
+        </preConditions>
+        <addColumn tableName="product_variants" schemaName="hm_product">
+            <column name="ean" type="VARCHAR(20)" remarks="EAN/UPC barcode for scanning"/>
+            <column name="model_number" type="VARCHAR(100)" remarks="Manufacturer model number"/>
+            <column name="mrp" type="BIGINT" remarks="Maximum retail price in paisa (variant-level)"/>
+            <column name="selling_price" type="BIGINT" remarks="Current selling price in paisa (variant-level)"/>
+            <column name="cost_price" type="BIGINT" remarks="Seller cost price in paisa (for margin calc)"/>
+            <column name="weight_grams" type="INT" remarks="Variant-specific weight (overrides product weight)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </addColumn>
+        <createIndex indexName="idx_variant_ean" tableName="product_variants" schemaName="hm_product">
+            <column name="ean"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

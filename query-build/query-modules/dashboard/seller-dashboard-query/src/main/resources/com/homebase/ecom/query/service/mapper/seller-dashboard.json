@@ -1,0 +1,87 @@
+[
+	{
+		"id": "SellerDashboard.sellerOverview",
+		"name": "seller-overview",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"sellerId": { "name": "sellerId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "SellerDashboard.sellerDailySales",
+		"name": "seller-daily-sales",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"sellerId": { "name": "sellerId", "filterable": true, "columnType": "Text" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "SellerDashboard.sellerTopProducts",
+		"name": "seller-top-products",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"sellerId": { "name": "sellerId", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "SellerDashboard.sellerOrders",
+		"name": "seller-orders",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"sellerId": { "name": "sellerId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "SellerDashboard.sellerProducts",
+		"name": "seller-products",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"sellerId": { "name": "sellerId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"stockStatus": { "name": "stockStatus", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "SellerDashboard.sellerSettlements",
+		"name": "seller-settlements",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"sellerId": { "name": "sellerId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "SellerDashboard.sellerReturns",
+		"name": "seller-returns",
+		"acls": ["SUPPLIER"],
+		"columnMetadata": {
+			"sellerId": { "name": "sellerId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

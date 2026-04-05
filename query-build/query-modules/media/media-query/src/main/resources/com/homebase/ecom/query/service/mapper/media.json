@@ -1,0 +1,29 @@
+[
+  {
+    "id": "Media.getAll",
+    "name": "mediaAssets",
+    "description": "Media asset listing from OLAP media_flat",
+    "acls": ["ADMIN", "EDITOR"],
+    "columnMetadata": {
+      "id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
+      "originalName": { "name": "originalName", "filterable": true, "columnType": "Text", "likeQuery": true, "sortable": true },
+      "mimeType": { "name": "mimeType", "filterable": true, "columnType": "Text" },
+      "folder": { "name": "folder", "filterable": true, "columnType": "Text" },
+      "fileSizeBytes": { "name": "fileSizeBytes", "columnType": "Number", "sortable": true },
+      "q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+      "createdAt": { "name": "createdAt", "filterable": true, "columnType": "Date", "sortable": true }
+    },
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "Media.getById",
+    "name": "mediaAsset",
+    "description": "Single media asset detail from OLAP",
+    "acls": ["ADMIN", "EDITOR"],
+    "columnMetadata": {
+      "id": { "name": "id", "filterable": true, "columnType": "Text" }
+    },
+    "paginated": false
+  }
+]

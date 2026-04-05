@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="RulesEngineSync">
+
+<!-- ====== Rule Sets ====== -->
+<update id="truncateRuleSetsFlat">TRUNCATE TABLE hm_query.rule_sets_flat</update>
+<insert id="syncRuleSetsFlat">
+    INSERT INTO hm_query.rule_sets_flat (
+        id, tenant, last_synced_at, name, description, target_module,
+        default_effect, active, state_id, flow_id, created_time, last_modified_time
+    )
+    SELECT p.id, p.tenant, NOW(), p.name, p.description, p.target_module,
+           p.default_effect, p.active, p.state_id, p.flow_id,
+           p.created_time, p.last_modified_time
+    FROM hm_rules.policy p
+</insert>
+
+<!-- ====== Rules ====== -->
+<update id="truncateRulesFlat">TRUNCATE TABLE hm_query.rules_flat</update>
+<insert id="syncRulesFlat">
+    INSERT INTO hm_query.rules_flat (
+        id, tenant, last_synced_at, name, expression, effect,
+        priority, policy_id, policy_name
+    )
+    SELECT r.id, r.tenant, NOW(), r.name, r.expression, r.effect,
+           r.priority, r.policy_id, p.name
+    FROM hm_rules.policy_rule r
+    JOIN hm_rules.policy p ON r.policy_id = p.id
+</insert>
+
+<!-- ====== Decisions ====== -->
+<update id="truncateDecisionsFlat">TRUNCATE TABLE hm_query.decisions_flat</update>
+<insert id="syncDecisionsFlat">
+    INSERT INTO hm_query.decisions_flat (
+        id, tenant, last_synced_at, policy_id, subject_id,
+        effect, reasons, target_module, created_time
+    )
+    SELECT d.id, d.tenant, NOW(), d.policy_id, d.subject_id,
+           d.effect, d.reasons, d.target_module, d.created_time
+    FROM hm_rules.decisions d
+</insert>
+
+<!-- ====== Fact Definitions ====== -->
+<update id="truncateFactDefinitionsFlat">TRUNCATE TABLE hm_query.fact_definitions_flat</update>
+<insert id="syncFactDefinitionsFlat">
+    INSERT INTO hm_query.fact_definitions_flat (
+        id, tenant, last_synced_at, name, description, data_type, module, created_time
+    )
+    SELECT fd.id, fd.tenant, NOW(), fd.name, fd.description, fd.data_type, fd.module, fd.created_time
+    FROM hm_rules.fact_definition fd
+</insert>
+
+</mapper>

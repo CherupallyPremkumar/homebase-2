@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Create dedicated schema for loyalty bounded context -->
+    <changeSet id="loyalty-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_loyalty</sql>
+    </changeSet>
+
+    <!-- loyalty_programs (LoyaltyProgramEntity extends BaseJpaEntity) -->
+    <changeSet id="loyalty-001-create-loyalty-programs" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="loyalty_programs" schemaName="hm_loyalty"/></not>
+        </preConditions>
+        <createTable tableName="loyalty_programs" schemaName="hm_loyalty">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="program_name" type="VARCHAR(100)"/>
+            <column name="program_type" type="VARCHAR(50)"/>
+            <column name="currency_code" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="points_expiration_days" type="INT"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="enrollment_bonus_points" type="BIGINT" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- loyalty_members (STM entity: LoyaltyMemberEntity extends AbstractJpaStateEntity, FK to loyalty_programs) -->
+    <changeSet id="loyalty-002-create-loyalty-members" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="loyalty_members" schemaName="hm_loyalty"/></not>
+        </preConditions>
+        <createTable tableName="loyalty_members" schemaName="hm_loyalty">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="program_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="current_tier_id" type="VARCHAR(255)"/>
+            <column name="current_points_balance" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="lifetime_points_earned" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="lifetime_points_redeemed" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="last_activity_date" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="loyalty_members" baseTableSchemaName="hm_loyalty" baseColumnNames="program_id"
+            referencedTableName="loyalty_programs" referencedTableSchemaName="hm_loyalty" referencedColumnNames="id" constraintName="fk_members_program"/>
+    </changeSet>
+
+    <!-- loyalty_tiers (LoyaltyTierEntity extends BaseJpaEntity, FK to loyalty_programs) -->
+    <changeSet id="loyalty-003-create-loyalty-tiers" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="loyalty_tiers" schemaName="hm_loyalty"/></not>
+        </preConditions>
+        <createTable tableName="loyalty_tiers" schemaName="hm_loyalty">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="program_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="tier_name" type="VARCHAR(100)"/>
+            <column name="tier_level" type="INT"/>
+            <column name="tier_description" type="VARCHAR(500)"/>
+            <column name="minimum_points_threshold" type="BIGINT"/>
+            <column name="minimum_annual_spend" type="BIGINT"/>
+            <column name="points_multiplier" type="INT" defaultValueNumeric="100"/>
+            <column name="benefits" type="VARCHAR(2000)"/>
+            <column name="annual_fee" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="loyalty_tiers" baseTableSchemaName="hm_loyalty" baseColumnNames="program_id"
+            referencedTableName="loyalty_programs" referencedTableSchemaName="hm_loyalty" referencedColumnNames="id" constraintName="fk_tiers_program"/>
+    </changeSet>
+
+    <!-- points_transactions (PointsTransactionEntity extends BaseJpaEntity, FK to loyalty_members) -->
+    <changeSet id="loyalty-004-create-points-transactions" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="points_transactions" schemaName="hm_loyalty"/></not>
+        </preConditions>
+        <createTable tableName="points_transactions" schemaName="hm_loyalty">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="member_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="program_id" type="VARCHAR(255)"/>
+            <column name="transaction_type" type="VARCHAR(50)"/>
+            <column name="points_amount" type="BIGINT"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="related_transaction_id" type="VARCHAR(255)"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="source_system" type="VARCHAR(50)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="points_transactions" baseTableSchemaName="hm_loyalty" baseColumnNames="member_id"
+            referencedTableName="loyalty_members" referencedTableSchemaName="hm_loyalty" referencedColumnNames="id" constraintName="fk_points_member"/>
+    </changeSet>
+
+    <!-- rewards (RewardEntity extends BaseJpaEntity, FK to loyalty_programs) -->
+    <changeSet id="loyalty-005-create-rewards" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="rewards" schemaName="hm_loyalty"/></not>
+        </preConditions>
+        <createTable tableName="rewards" schemaName="hm_loyalty">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="program_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="reward_name" type="VARCHAR(255)"/>
+            <column name="reward_description" type="VARCHAR(500)"/>
+            <column name="reward_type" type="VARCHAR(50)"/>
+            <column name="points_cost" type="BIGINT"/>
+            <column name="monetary_value" type="BIGINT"/>
+            <column name="inventory_count" type="INT"/>
+            <column name="inventory_unlimited" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="redemption_limit_per_member" type="INT"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="active_from" type="TIMESTAMP"/>
+            <column name="active_until" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="rewards" baseTableSchemaName="hm_loyalty" baseColumnNames="program_id"
+            referencedTableName="loyalty_programs" referencedTableSchemaName="hm_loyalty" referencedColumnNames="id" constraintName="fk_rewards_program"/>
+    </changeSet>
+
+    <!-- reward_redemptions (RewardRedemptionEntity extends BaseJpaEntity, FK to loyalty_members and rewards) -->
+    <changeSet id="loyalty-006-create-reward-redemptions" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="reward_redemptions" schemaName="hm_loyalty"/></not>
+        </preConditions>
+        <createTable tableName="reward_redemptions" schemaName="hm_loyalty">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="member_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="program_id" type="VARCHAR(255)"/>
+            <column name="reward_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="points_spent" type="BIGINT"/>
+            <column name="redemption_status" type="VARCHAR(50)"/>
+            <column name="fulfillment_date" type="TIMESTAMP"/>
+            <column name="fulfillment_method" type="VARCHAR(50)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="reference_code" type="VARCHAR(100)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="reward_redemptions" baseTableSchemaName="hm_loyalty" baseColumnNames="member_id"
+            referencedTableName="loyalty_members" referencedTableSchemaName="hm_loyalty" referencedColumnNames="id" constraintName="fk_redemptions_member"/>
+        <addForeignKeyConstraint baseTableName="reward_redemptions" baseTableSchemaName="hm_loyalty" baseColumnNames="reward_id"
+            referencedTableName="rewards" referencedTableSchemaName="hm_loyalty" referencedColumnNames="id" constraintName="fk_redemptions_reward"/>
+    </changeSet>
+
+    <!-- membership_plans (MembershipPlanEntity extends BaseJpaEntity, FK to loyalty_programs) -->
+    <changeSet id="loyalty-007-create-membership-plans" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="membership_plans" schemaName="hm_loyalty"/></not>
+        </preConditions>
+        <createTable tableName="membership_plans" schemaName="hm_loyalty">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="program_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="plan_name" type="VARCHAR(100)"/>
+            <column name="plan_type" type="VARCHAR(50)"/>
+            <column name="billing_cycle_days" type="INT"/>
+            <column name="monthly_fee" type="BIGINT"/>
+            <column name="annual_fee" type="BIGINT"/>
+            <column name="free_trial_days" type="INT"/>
+            <column name="benefits_json" type="VARCHAR(2000)"/>
+            <column name="max_members_per_account" type="INT" defaultValueNumeric="1"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="membership_plans" baseTableSchemaName="hm_loyalty" baseColumnNames="program_id"
+            referencedTableName="loyalty_programs" referencedTableSchemaName="hm_loyalty" referencedColumnNames="id" constraintName="fk_plans_program"/>
+    </changeSet>
+
+    <!-- membership_subscriptions (STM entity: MembershipSubscriptionEntity extends AbstractJpaStateEntity, FK to loyalty_members and membership_plans) -->
+    <changeSet id="loyalty-008-create-membership-subscriptions" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="membership_subscriptions" schemaName="hm_loyalty"/></not>
+        </preConditions>
+        <createTable tableName="membership_subscriptions" schemaName="hm_loyalty">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="member_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="plan_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="auto_renew" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="payment_gateway" type="VARCHAR(50)"/>
+            <column name="subscription_gateway_id" type="VARCHAR(255)"/>
+            <column name="last_billing_date" type="TIMESTAMP"/>
+            <column name="next_billing_date" type="TIMESTAMP"/>
+            <column name="payment_method_id" type="VARCHAR(255)"/>
+            <column name="cancellation_date" type="TIMESTAMP"/>
+            <column name="cancellation_reason" type="VARCHAR(500)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="membership_subscriptions" baseTableSchemaName="hm_loyalty" baseColumnNames="member_id"
+            referencedTableName="loyalty_members" referencedTableSchemaName="hm_loyalty" referencedColumnNames="id" constraintName="fk_subscriptions_member"/>
+        <addForeignKeyConstraint baseTableName="membership_subscriptions" baseTableSchemaName="hm_loyalty" baseColumnNames="plan_id"
+            referencedTableName="membership_plans" referencedTableSchemaName="hm_loyalty" referencedColumnNames="id" constraintName="fk_subscriptions_plan"/>
+    </changeSet>
+
+    <!-- behavior_triggers (BehaviorTriggerEntity extends BaseJpaEntity, FK to loyalty_programs) -->
+    <changeSet id="loyalty-009-create-behavior-triggers" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="behavior_triggers" schemaName="hm_loyalty"/></not>
+        </preConditions>
+        <createTable tableName="behavior_triggers" schemaName="hm_loyalty">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="program_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="trigger_name" type="VARCHAR(100)"/>
+            <column name="trigger_type" type="VARCHAR(50)"/>
+            <column name="points_earned" type="BIGINT"/>
+            <column name="points_multiplier" type="INT" defaultValueNumeric="100"/>
+            <column name="min_transaction_amount" type="BIGINT"/>
+            <column name="max_points_per_transaction" type="BIGINT"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="behavior_triggers" baseTableSchemaName="hm_loyalty" baseColumnNames="program_id"
+            referencedTableName="loyalty_programs" referencedTableSchemaName="hm_loyalty" referencedColumnNames="id" constraintName="fk_triggers_program"/>
+    </changeSet>
+
+    <!-- loyalty_activity_log (LoyaltyActivityLogEntity — no version/last_modified columns) -->
+    <changeSet id="loyalty-010-create-loyalty-activity-log" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="loyalty_activity_log" schemaName="hm_loyalty"/></not>
+        </preConditions>
+        <createTable tableName="loyalty_activity_log" schemaName="hm_loyalty">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="member_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Indexes for loyalty tables -->
+    <changeSet id="loyalty-011-create-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="loyalty_members" schemaName="hm_loyalty"/>
+            <not><indexExists indexName="idx_members_user" schemaName="hm_loyalty"/></not>
+        </preConditions>
+        <createIndex indexName="idx_members_user" tableName="loyalty_members" schemaName="hm_loyalty">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_members_program" tableName="loyalty_members" schemaName="hm_loyalty">
+            <column name="program_id"/>
+        </createIndex>
+        <createIndex indexName="idx_points_member" tableName="points_transactions" schemaName="hm_loyalty">
+            <column name="member_id"/>
+        </createIndex>
+        <createIndex indexName="idx_points_order" tableName="points_transactions" schemaName="hm_loyalty">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex indexName="idx_rewards_program" tableName="rewards" schemaName="hm_loyalty">
+            <column name="program_id"/>
+        </createIndex>
+        <createIndex indexName="idx_redemptions_member" tableName="reward_redemptions" schemaName="hm_loyalty">
+            <column name="member_id"/>
+        </createIndex>
+        <createIndex indexName="idx_subscriptions_member" tableName="membership_subscriptions" schemaName="hm_loyalty">
+            <column name="member_id"/>
+        </createIndex>
+        <createIndex indexName="idx_tiers_program" tableName="loyalty_tiers" schemaName="hm_loyalty">
+            <column name="program_id"/>
+        </createIndex>
+        <createIndex indexName="idx_triggers_program" tableName="behavior_triggers" schemaName="hm_loyalty">
+            <column name="program_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

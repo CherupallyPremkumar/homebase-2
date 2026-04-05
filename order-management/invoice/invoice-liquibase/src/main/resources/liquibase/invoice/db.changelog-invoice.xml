@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Schema creation -->
+    <changeSet id="invoice-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_invoice</sql>
+    </changeSet>
+
+    <!-- invoices (extends BaseJpaEntity — no STM, generated documents) -->
+    <changeSet id="invoice-001-create-invoices" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="invoices" schemaName="hm_invoice"/></not>
+        </preConditions>
+        <createTable tableName="invoices" schemaName="hm_invoice">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="invoice_number" type="VARCHAR(50)"><constraints nullable="false" unique="true"/></column>
+            <column name="invoice_type" type="VARCHAR(20)"><constraints nullable="false"/></column>
+            <column name="invoice_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="due_date" type="DATE"/>
+            <column name="seller_id" type="VARCHAR(255)"/>
+            <column name="buyer_name" type="VARCHAR(255)"/>
+            <column name="buyer_gstin" type="VARCHAR(15)"/>
+            <column name="buyer_address" type="TEXT"/>
+            <column name="seller_name" type="VARCHAR(255)"/>
+            <column name="seller_gstin" type="VARCHAR(15)"/>
+            <column name="seller_address" type="TEXT"/>
+            <column name="subtotal" type="DECIMAL(19,2)"/>
+            <column name="tax_amount" type="DECIMAL(19,2)"/>
+            <column name="discount_amount" type="DECIMAL(19,2)"/>
+            <column name="total_amount" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="GENERATED"/>
+            <column name="pdf_url" type="VARCHAR(1000)"/>
+            <column name="irn" type="VARCHAR(100)"/>
+            <column name="irn_date" type="TIMESTAMP"/>
+            <column name="qr_code" type="TEXT"/>
+        </createTable>
+        <createIndex indexName="idx_invoices_order" tableName="invoices" schemaName="hm_invoice">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex indexName="idx_invoices_number" tableName="invoices" schemaName="hm_invoice">
+            <column name="invoice_number"/>
+        </createIndex>
+        <createIndex indexName="idx_invoices_seller" tableName="invoices" schemaName="hm_invoice">
+            <column name="seller_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- invoice_line_items -->
+    <changeSet id="invoice-002-create-invoice-line-items" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="invoice_line_items" schemaName="hm_invoice"/></not>
+        </preConditions>
+        <createTable tableName="invoice_line_items" schemaName="hm_invoice">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="invoice_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(100)"/>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="hsn_code" type="VARCHAR(10)"/>
+            <column name="quantity" type="INT"><constraints nullable="false"/></column>
+            <column name="unit_price" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
+            <column name="discount" type="DECIMAL(19,2)" defaultValueNumeric="0"/>
+            <column name="taxable_amount" type="DECIMAL(19,2)"/>
+            <column name="cgst_rate" type="DECIMAL(5,2)"/>
+            <column name="cgst_amount" type="DECIMAL(19,2)"/>
+            <column name="sgst_rate" type="DECIMAL(5,2)"/>
+            <column name="sgst_amount" type="DECIMAL(19,2)"/>
+            <column name="igst_rate" type="DECIMAL(5,2)"/>
+            <column name="igst_amount" type="DECIMAL(19,2)"/>
+            <column name="total_amount" type="DECIMAL(19,2)"><constraints nullable="false"/></column>
+        </createTable>
+        <createIndex indexName="idx_invoice_items_invoice" tableName="invoice_line_items" schemaName="hm_invoice">
+            <column name="invoice_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

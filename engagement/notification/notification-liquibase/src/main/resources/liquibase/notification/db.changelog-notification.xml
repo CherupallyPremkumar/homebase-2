@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
+    <!-- Create dedicated schema for notification bounded context -->
+    <changeSet id="notification-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_notification</sql>
+    </changeSet>
+
     <changeSet id="notification-001-create-notifications" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="notifications"/></not></preConditions>
-        <createTable tableName="notifications">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="notifications" schemaName="hm_notification"/></not></preConditions>
+        <createTable tableName="notifications" schemaName="hm_notification">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -32,8 +37,8 @@
     </changeSet>
 
     <changeSet id="notification-002-create-notification-metadata" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="notification_metadata"/></not></preConditions>
-        <createTable tableName="notification_metadata">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="notification_metadata" schemaName="hm_notification"/></not></preConditions>
+        <createTable tableName="notification_metadata" schemaName="hm_notification">
             <column name="notification_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
             <column name="meta_key" type="VARCHAR(255)"/>
             <column name="meta_value" type="VARCHAR(255)"/>
@@ -41,8 +46,8 @@
     </changeSet>
 
     <changeSet id="notification-003-create-notification-activity" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="notification_activity"/></not></preConditions>
-        <createTable tableName="notification_activity">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="notification_activity" schemaName="hm_notification"/></not></preConditions>
+        <createTable tableName="notification_activity" schemaName="hm_notification">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -58,8 +63,8 @@
     </changeSet>
 
     <changeSet id="notification-004-create-notification-preferences" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="notification_preferences"/></not></preConditions>
-        <createTable tableName="notification_preferences">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="notification_preferences" schemaName="hm_notification"/></not></preConditions>
+        <createTable tableName="notification_preferences" schemaName="hm_notification">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -75,8 +80,8 @@
     </changeSet>
 
     <changeSet id="notification-005-create-notification-templates" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="notification_templates"/></not></preConditions>
-        <createTable tableName="notification_templates">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="notification_templates" schemaName="hm_notification"/></not></preConditions>
+        <createTable tableName="notification_templates" schemaName="hm_notification">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -90,16 +95,16 @@
             <column name="body_template" type="TEXT"/>
             <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
         </createTable>
-        <addUniqueConstraint tableName="notification_templates" columnNames="code" constraintName="uk_notif_template_code"/>
+        <addUniqueConstraint tableName="notification_templates" schemaName="hm_notification" columnNames="code" constraintName="uk_notif_template_code"/>
     </changeSet>
 
     <!-- Add reference, priority, scheduling, and tracking columns to notifications -->
     <changeSet id="notification-006-add-notification-columns" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <tableExists tableName="notifications"/>
-            <not><columnExists tableName="notifications" columnName="reference_type"/></not>
+            <tableExists tableName="notifications" schemaName="hm_notification"/>
+            <not><columnExists tableName="notifications" schemaName="hm_notification" columnName="reference_type"/></not>
         </preConditions>
-        <addColumn tableName="notifications">
+        <addColumn tableName="notifications" schemaName="hm_notification">
             <column name="reference_type" type="VARCHAR(50)"/>
             <column name="reference_id" type="VARCHAR(255)"/>
             <column name="priority" type="VARCHAR(20)" defaultValue="NORMAL"/>
@@ -112,19 +117,19 @@
     <!-- Indexes on notifications -->
     <changeSet id="notification-007-add-notification-indexes" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <tableExists tableName="notifications"/>
-            <not><indexExists indexName="idx_notifications_customer"/></not>
+            <tableExists tableName="notifications" schemaName="hm_notification"/>
+            <not><indexExists indexName="idx_notifications_customer" schemaName="hm_notification"/></not>
         </preConditions>
-        <createIndex indexName="idx_notifications_customer" tableName="notifications">
+        <createIndex indexName="idx_notifications_customer" tableName="notifications" schemaName="hm_notification">
             <column name="customer_id"/>
         </createIndex>
-        <createIndex indexName="idx_notifications_channel" tableName="notifications">
+        <createIndex indexName="idx_notifications_channel" tableName="notifications" schemaName="hm_notification">
             <column name="channel"/>
         </createIndex>
-        <createIndex indexName="idx_notifications_state" tableName="notifications">
+        <createIndex indexName="idx_notifications_state" tableName="notifications" schemaName="hm_notification">
             <column name="state_id"/>
         </createIndex>
-        <createIndex indexName="idx_notifications_reference" tableName="notifications">
+        <createIndex indexName="idx_notifications_reference" tableName="notifications" schemaName="hm_notification">
             <column name="reference_type"/>
             <column name="reference_id"/>
         </createIndex>
@@ -135,8 +140,8 @@
     <!-- ================================================================== -->
 
     <changeSet id="notification-008-create-customer-notifications" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="customer_notifications"/></not></preConditions>
-        <createTable tableName="customer_notifications">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="customer_notifications" schemaName="hm_notification"/></not></preConditions>
+        <createTable tableName="customer_notifications" schemaName="hm_notification">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -156,21 +161,21 @@
 
     <changeSet id="notification-009-customer-notifications-indexes" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <tableExists tableName="customer_notifications"/>
-            <not><indexExists indexName="idx_customer_notifications_customer"/></not>
+            <tableExists tableName="customer_notifications" schemaName="hm_notification"/>
+            <not><indexExists indexName="idx_customer_notifications_customer" schemaName="hm_notification"/></not>
         </preConditions>
-        <createIndex indexName="idx_customer_notifications_customer" tableName="customer_notifications">
+        <createIndex indexName="idx_customer_notifications_customer" tableName="customer_notifications" schemaName="hm_notification">
             <column name="customer_id"/>
         </createIndex>
-        <createIndex indexName="idx_customer_notifications_tenant_customer" tableName="customer_notifications">
+        <createIndex indexName="idx_customer_notifications_tenant_customer" tableName="customer_notifications" schemaName="hm_notification">
             <column name="tenant"/>
             <column name="customer_id"/>
             <column name="created_time" descending="true"/>
         </createIndex>
-        <createIndex indexName="idx_customer_notifications_type" tableName="customer_notifications">
+        <createIndex indexName="idx_customer_notifications_type" tableName="customer_notifications" schemaName="hm_notification">
             <column name="type"/>
         </createIndex>
-        <createIndex indexName="idx_customer_notifications_reference" tableName="customer_notifications">
+        <createIndex indexName="idx_customer_notifications_reference" tableName="customer_notifications" schemaName="hm_notification">
             <column name="reference_type"/>
             <column name="reference_id"/>
         </createIndex>
@@ -179,10 +184,10 @@
     <!-- Add category, is_read, action_url columns to notifications -->
     <changeSet id="notification-010-add-notification-columns" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <tableExists tableName="notifications"/>
-            <not><columnExists tableName="notifications" columnName="category"/></not>
+            <tableExists tableName="notifications" schemaName="hm_notification"/>
+            <not><columnExists tableName="notifications" schemaName="hm_notification" columnName="category"/></not>
         </preConditions>
-        <addColumn tableName="notifications">
+        <addColumn tableName="notifications" schemaName="hm_notification">
             <column name="category" type="VARCHAR(50)"/>
             <column name="is_read" type="BOOLEAN" defaultValueBoolean="false"/>
             <column name="action_url" type="VARCHAR(500)"/>

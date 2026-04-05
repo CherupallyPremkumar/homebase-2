@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- item_count: denormalized count of items in cart.
+         Updated by cart-service on add/remove. Avoids COUNT(*) JOIN for OLAP queries. -->
+    <changeSet id="cart-olap-001-add-item-count" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="cart" schemaName="hm_cart"/>
+                <not><columnExists tableName="cart" schemaName="hm_cart" columnName="item_count"/></not>
+            </and>
+        </preConditions>
+        <addColumn tableName="cart" schemaName="hm_cart">
+            <column name="item_count" type="INT" defaultValueNumeric="0" remarks="Denormalized count of cart_item rows"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

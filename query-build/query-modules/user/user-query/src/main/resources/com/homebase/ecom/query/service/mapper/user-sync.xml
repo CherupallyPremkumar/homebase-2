@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SYNC: OLTP → OLAP                                                      -->
+<!-- Reads from hm_user.*, hm_order.*, hm_cart.*, hm_wishlist.*             -->
+<!-- Writes to hm_query.dim_customer, hm_query.customer_360_flat            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== dim_customer ====== -->
+<update id="truncateDimCustomer">
+    TRUNCATE TABLE hm_query.dim_customer
+</update>
+
+<insert id="syncDimCustomer">
+    INSERT INTO hm_query.dim_customer (
+        customer_key, tenant, last_synced_at,
+        email, first_name, last_name, phone,
+        customer_status, customer_tier, segment,
+        registered_date, last_login_at, last_active_at,
+        email_verified, phone_verified,
+        city, state, pincode,
+        total_orders, total_spent, avg_order_value, ltv,
+        last_purchase_date,
+        total_returns, return_rate, churn_risk, fraud_score
+    )
+    SELECT
+        u.id, u.tenant, NOW(),
+        u.email, u.first_name, u.last_name, u.phone,
+        u.state_id, u.customer_tier,
+        CASE
+            WHEN u.state_id = 'SUSPENDED' THEN 'SUSPENDED'
+            WHEN ord_agg.total_orders IS NULL OR ord_agg.total_orders = 0 THEN 'NEW'
+            WHEN ord_agg.total_spent > 5000000 THEN 'VIP'
+            WHEN ord_agg.total_spent > 1000000 THEN 'HIGH_VALUE'
+            ELSE 'REGULAR'
+        END,
+        u.created_time, u.last_login_at, u.last_active_at,
+        u.email_verified, u.phone_verified,
+        addr.city, addr.state, addr.postal_code,
+        COALESCE(ord_agg.total_orders, 0),
+        COALESCE(ord_agg.total_spent, 0),
+        CASE WHEN COALESCE(ord_agg.total_orders, 0) > 0
+             THEN (ord_agg.total_spent / ord_agg.total_orders) ELSE 0 END,
+        COALESCE(ord_agg.total_spent, 0),
+        ord_agg.last_order_date,
+        COALESCE(ord_agg.total_returns, 0),
+        CASE WHEN COALESCE(ord_agg.total_orders, 0) > 0
+             THEN (COALESCE(ord_agg.total_returns, 0) * 10000 / ord_agg.total_orders) ELSE 0 END,
+        CASE
+            WHEN ord_agg.last_order_date IS NULL THEN 'HIGH'
+            WHEN ord_agg.last_order_date &lt; NOW() - INTERVAL '180 days' THEN 'HIGH'
+            WHEN ord_agg.last_order_date &lt; NOW() - INTERVAL '90 days' THEN 'MEDIUM'
+            ELSE 'LOW'
+        END,
+        0
+    FROM hm_user.user_profiles u
+    LEFT JOIN LATERAL (
+        SELECT city, state, postal_code
+        FROM hm_user.user_address
+        WHERE user_id = u.id AND is_default = true
+        LIMIT 1
+    ) addr ON true
+    LEFT JOIN LATERAL (
+        SELECT
+            COUNT(*) as total_orders,
+            COALESCE(SUM(total_amount), 0) as total_spent,
+            MAX(created_time) as last_order_date,
+            0 as total_returns
+        FROM hm_order.orders
+        WHERE customer_id = u.id
+    ) ord_agg ON true
+</insert>
+
+<!-- ====== customer_360_flat ====== -->
+<update id="truncateCustomer360Flat">
+    TRUNCATE TABLE hm_query.customer_360_flat
+</update>
+
+<insert id="syncCustomer360Flat">
+    INSERT INTO hm_query.customer_360_flat (
+        id, tenant, last_synced_at,
+        customer_id, first_name, last_name, email, phone,
+        customer_status, customer_tier, registered_date,
+        last_login_at, last_active_at, email_verified, phone_verified,
+        city, state, pincode, segment,
+        total_orders, total_spent, avg_order_value,
+        first_order_date, last_purchase_date, ltv,
+        total_returns, return_rate,
+        reviews_given, churn_risk, days_since_last_purchase,
+        fraud_score, open_tickets, total_tickets,
+        wishlist_count, active_cart_value
+    )
+    SELECT
+        u.id, u.tenant, NOW(),
+        u.id, u.first_name, u.last_name, u.email, u.phone,
+        u.state_id, u.customer_tier, u.created_time,
+        u.last_login_at, u.last_active_at, u.email_verified, u.phone_verified,
+        addr.city, addr.state, addr.postal_code,
+        CASE
+            WHEN u.state_id = 'SUSPENDED' THEN 'SUSPENDED'
+            WHEN ord_agg.total_orders IS NULL OR ord_agg.total_orders = 0 THEN 'NEW'
+            WHEN ord_agg.total_spent > 5000000 THEN 'VIP'
+            WHEN ord_agg.total_spent > 1000000 THEN 'HIGH_VALUE'
+            ELSE 'REGULAR'
+        END,
+        COALESCE(ord_agg.total_orders, 0),
+        COALESCE(ord_agg.total_spent, 0),
+        CASE WHEN COALESCE(ord_agg.total_orders, 0) > 0
+             THEN (ord_agg.total_spent / ord_agg.total_orders) ELSE 0 END,
+        ord_agg.first_order_date,
+        ord_agg.last_order_date,
+        COALESCE(ord_agg.total_spent, 0),
+        0, 0,
+        COALESCE(review_agg.review_count, 0),
+        CASE
+            WHEN ord_agg.last_order_date IS NULL THEN 'HIGH'
+            WHEN ord_agg.last_order_date &lt; NOW() - INTERVAL '180 days' THEN 'HIGH'
+            WHEN ord_agg.last_order_date &lt; NOW() - INTERVAL '90 days' THEN 'MEDIUM'
+            ELSE 'LOW'
+        END,
+        COALESCE(EXTRACT(DAY FROM (NOW() - ord_agg.last_order_date))::INT, 9999),
+        0, 0, 0,
+        COALESCE(wish_agg.wish_count, 0),
+        COALESCE(cart_agg.cart_value, 0)
+    FROM hm_user.user_profiles u
+    LEFT JOIN LATERAL (
+        SELECT city, state, postal_code
+        FROM hm_user.user_address WHERE user_id = u.id AND is_default = true LIMIT 1
+    ) addr ON true
+    LEFT JOIN LATERAL (
+        SELECT
+            COUNT(*) as total_orders,
+            COALESCE(SUM(total_amount), 0) as total_spent,
+            MIN(created_time) as first_order_date,
+            MAX(created_time) as last_order_date
+        FROM hm_order.orders WHERE customer_id = u.id
+    ) ord_agg ON true
+    LEFT JOIN LATERAL (
+        SELECT COUNT(*) as review_count
+        FROM hm_product.product_reviews WHERE user_id = u.id
+    ) review_agg ON true
+    LEFT JOIN LATERAL (
+        SELECT COUNT(*) as wish_count
+        FROM hm_wishlist.wishlist_items WHERE user_id = u.id
+    ) wish_agg ON true
+    LEFT JOIN LATERAL (
+        SELECT COALESCE(SUM(total), 0) as cart_value
+        FROM hm_cart.cart WHERE customer_id = u.id AND state_id = 'ACTIVE'
+    ) cart_agg ON true
+</insert>
+
+</mapper>

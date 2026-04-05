@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Checkout">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: checkout_flat                                                   -->
+<!-- Populated by CheckoutSyncService ETL.                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN: Checkout listing ====== -->
+<select id="getAll-count" resultType="long">
+    SELECT COUNT(*) FROM hm_query.checkout_flat
+    <where>
+        <if test="id != null">AND checkout_id = #{id}</if>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="customerName != null">AND customer_name LIKE CONCAT('%', #{customerName}, '%')</if>
+        <if test="customerEmail != null">AND customer_email LIKE CONCAT('%', #{customerEmail}, '%')</if>
+        <if test="paymentMethod != null">AND payment_method = #{paymentMethod}</if>
+        <if test="minTotal != null">AND total &gt;= #{minTotal}</if>
+        <if test="maxTotal != null">AND total &lt;= #{maxTotal}</if>
+        <if test="startDate != null">AND created_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_at &lt;= #{endDate}</if>
+        <if test="q != null">AND (customer_name LIKE CONCAT('%', #{q}, '%') OR customer_email LIKE CONCAT('%', #{q}, '%') OR checkout_id LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.checkout.dto.CheckoutQueryDto">
+    SELECT
+        checkout_id        as "id",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        customer_email     as "customerEmail",
+        cart_id            as "cartId",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        subtotal           as "subtotal",
+        tax_amount         as "taxAmount",
+        shipping_amount    as "shippingAmount",
+        discount_amount    as "discountAmount",
+        total              as "total",
+        currency           as "currency",
+        coupon_codes       as "couponCodes",
+        item_count         as "itemCount",
+        payment_method     as "paymentMethod",
+        shipping_city      as "shippingCity",
+        shipping_state     as "shippingState",
+        created_at         as "createdAt",
+        last_modified_time as "lastModifiedTime"
+    FROM hm_query.checkout_flat
+    <where>
+        <if test="id != null">AND checkout_id = #{id}</if>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="customerName != null">AND customer_name LIKE CONCAT('%', #{customerName}, '%')</if>
+        <if test="customerEmail != null">AND customer_email LIKE CONCAT('%', #{customerEmail}, '%')</if>
+        <if test="paymentMethod != null">AND payment_method = #{paymentMethod}</if>
+        <if test="minTotal != null">AND total &gt;= #{minTotal}</if>
+        <if test="maxTotal != null">AND total &lt;= #{maxTotal}</if>
+        <if test="startDate != null">AND created_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_at &lt;= #{endDate}</if>
+        <if test="q != null">AND (customer_name LIKE CONCAT('%', #{q}, '%') OR customer_email LIKE CONCAT('%', #{q}, '%') OR checkout_id LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== ADMIN: State counts ====== -->
+<select id="getStateCounts" resultType="java.util.HashMap">
+    SELECT state_id as "stateId", COUNT(*) as "count"
+    FROM hm_query.checkout_flat
+    GROUP BY state_id
+</select>
+
+<!-- ====== ADMIN: Checkout detail (flat — zero JOINs) ====== -->
+<select id="getById" resultType="com.homebase.ecom.checkout.dto.CheckoutQueryDto">
+    SELECT
+        checkout_id        as "id",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        customer_email     as "customerEmail",
+        customer_phone     as "customerPhone",
+        cart_id            as "cartId",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        subtotal           as "subtotal",
+        tax_amount         as "taxAmount",
+        shipping_amount    as "shippingAmount",
+        discount_amount    as "discountAmount",
+        total              as "total",
+        currency           as "currency",
+        coupon_codes       as "couponCodes",
+        item_count         as "itemCount",
+        payment_method     as "paymentMethod",
+        shipping_address   as "shippingAddress",
+        shipping_city      as "shippingCity",
+        shipping_state     as "shippingState",
+        shipping_pincode   as "shippingPincode",
+        billing_address    as "billingAddress",
+        order_id           as "orderId",
+        created_at         as "createdAt",
+        last_modified_time as "lastModifiedTime"
+    FROM hm_query.checkout_flat
+    WHERE checkout_id = #{id}
+</select>
+
+</mapper>

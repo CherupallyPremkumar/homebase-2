@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="OfferSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SYNC: OLTP -> OLAP                                                     -->
+<!-- Reads from hm_offer.offer + hm_product.products + hm_supplier.supplier -->
+<!-- Writes to hm_query.offer_flat                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateOfferFlat">
+    TRUNCATE TABLE hm_query.offer_flat
+</update>
+
+<insert id="syncOfferFlat">
+    INSERT INTO hm_query.offer_flat (
+        id, tenant, last_synced_at,
+        product_id, product_name,
+        supplier_id, supplier_name,
+        offer_price, mrp, discount_percent,
+        state_id, flow_id, created_at
+    )
+    SELECT
+        o.id, o.tenant, NOW(),
+        o.product_id,
+        COALESCE(p.name, ''),
+        o.supplier_id,
+        COALESCE(s.business_name, ''),
+        o.offer_price, o.mrp, o.discount_percent,
+        o.state_id, o.flow_id, o.created_time
+    FROM hm_offer.offer o
+    LEFT JOIN hm_product.products p ON o.product_id = p.id
+    LEFT JOIN hm_supplier.supplier s ON o.supplier_id = s.id
+</insert>
+
+</mapper>

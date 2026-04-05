@@ -20,8 +20,6 @@
         <module>tax-domain</module>
         <module>tax-infrastructure</module>
         <module>tax-service</module>
-        <module>tax-query-api</module>
-        <module>tax-query</module>
         <module>tax-app</module>
         <module>tax-client</module>
             <module>tax-liquibase</module>

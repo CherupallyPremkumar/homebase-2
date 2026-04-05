@@ -560,6 +560,51 @@
                                  referencedTableName="supplier" referencedColumnNames="id"/>
     </changeSet>
 
+    <!-- ================================================================== -->
+    <!-- 14. Align regulations table with JPA entity columns               -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-014-align-regulations-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="regulations"/>
+            <not><columnExists tableName="regulations" columnName="name"/></not>
+        </preConditions>
+        <addColumn tableName="regulations">
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="regulation_type" type="VARCHAR(100)"/>
+            <column name="description" type="VARCHAR(2000)"/>
+            <column name="reference_url" type="VARCHAR(1024)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 15. Align compliance_audits with JPA entity (add status column)    -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-015-align-compliance-audits-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="compliance_audits"/>
+            <not><columnExists tableName="compliance_audits" columnName="status"/></not>
+        </preConditions>
+        <addColumn tableName="compliance_audits">
+            <column name="status" type="VARCHAR(50)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 16. Align compliance_mappings with JPA entity                      -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-016-align-compliance-mappings-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="compliance_mappings"/>
+            <not><columnExists tableName="compliance_mappings" columnName="mapping_type"/></not>
+        </preConditions>
+        <addColumn tableName="compliance_mappings">
+            <column name="mapping_type" type="VARCHAR(100)"/>
+            <column name="target_id" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(1000)"/>
+        </addColumn>
+    </changeSet>
+
     <!-- Production seed data: 6 regulations, 5 agreements, 6 platform policies, 5 mappings, 2 audits -->
     <include file="db/changelog/compliance/db.changelog-compliance-seed-data.xml"/>
 

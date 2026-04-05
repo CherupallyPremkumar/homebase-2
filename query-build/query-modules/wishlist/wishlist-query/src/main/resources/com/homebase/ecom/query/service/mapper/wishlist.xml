@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Wishlist">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: wishlist_flat                                                   -->
+<!-- Populated by WishlistSyncService ETL.                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== Listing: getAll ====== -->
+<select id="getAll-count" resultType="long">
+    SELECT COUNT(*) FROM hm_query.wishlist_flat
+    <where>
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="variantId != null">AND variant_id = #{variantId}</if>
+        <if test="notifyOnPriceDrop != null">AND notify_on_price_drop = #{notifyOnPriceDrop}</if>
+        <if test="productName != null">AND product_name LIKE CONCAT('%', #{productName}, '%')</if>
+        <if test="brand != null">AND brand LIKE CONCAT('%', #{brand}, '%')</if>
+        <if test="inStock != null and inStock == true">AND available_quantity > 0</if>
+        <if test="q != null">AND (product_name LIKE CONCAT('%', #{q}, '%') OR brand LIKE CONCAT('%', #{q}, '%') OR sku LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.wishlist.dto.WishlistItemQueryDto">
+    SELECT
+        wishlist_item_id   as "id",
+        user_id            as "userId",
+        product_id         as "productId",
+        variant_id         as "variantId",
+        product_name       as "productName",
+        brand              as "brand",
+        sku                as "sku",
+        image_url          as "imageUrl",
+        category_name      as "categoryName",
+        added_at           as "addedAt",
+        price_when_added   as "priceWhenAdded",
+        current_price      as "currentPrice",
+        notify_on_price_drop as "notifyOnPriceDrop",
+        available_quantity as "availableQuantity",
+        stock_status       as "stockStatus",
+        notes              as "notes",
+        created_time       as "createdTime"
+    FROM hm_query.wishlist_flat
+    <where>
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="variantId != null">AND variant_id = #{variantId}</if>
+        <if test="notifyOnPriceDrop != null">AND notify_on_price_drop = #{notifyOnPriceDrop}</if>
+        <if test="productName != null">AND product_name LIKE CONCAT('%', #{productName}, '%')</if>
+        <if test="brand != null">AND brand LIKE CONCAT('%', #{brand}, '%')</if>
+        <if test="inStock != null and inStock == true">AND available_quantity > 0</if>
+        <if test="q != null">AND (product_name LIKE CONCAT('%', #{q}, '%') OR brand LIKE CONCAT('%', #{q}, '%') OR sku LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== Customer: getByUserId (storefront — enriched) ====== -->
+<select id="getByUserId-count" resultType="long">
+    SELECT COUNT(*) FROM hm_query.wishlist_flat WHERE user_id = #{userId}
+</select>
+
+<select id="getByUserId" resultType="com.homebase.ecom.wishlist.dto.WishlistItemQueryDto">
+    SELECT
+        wishlist_item_id   as "id",
+        user_id            as "userId",
+        product_id         as "productId",
+        variant_id         as "variantId",
+        product_name       as "productName",
+        brand              as "brand",
+        sku                as "sku",
+        image_url          as "imageUrl",
+        category_name      as "categoryName",
+        added_at           as "addedAt",
+        price_when_added   as "priceWhenAdded",
+        current_price      as "currentPrice",
+        notify_on_price_drop as "notifyOnPriceDrop",
+        available_quantity as "availableQuantity",
+        stock_status       as "stockStatus",
+        notes              as "notes"
+    FROM hm_query.wishlist_flat
+    WHERE user_id = #{userId}
+    ORDER BY added_at DESC
+    ${pagination}
+</select>
+
+<!-- ====== SYSTEM: Price drop candidates ====== -->
+<select id="getPriceDropCandidates" resultType="com.homebase.ecom.wishlist.dto.WishlistItemQueryDto">
+    SELECT
+        wishlist_item_id   as "id",
+        user_id            as "userId",
+        product_id         as "productId",
+        variant_id         as "variantId",
+        product_name       as "productName",
+        price_when_added   as "priceWhenAdded",
+        current_price      as "currentPrice"
+    FROM hm_query.wishlist_flat
+    WHERE notify_on_price_drop = true
+    AND current_price &lt; price_when_added
+</select>
+
+</mapper>

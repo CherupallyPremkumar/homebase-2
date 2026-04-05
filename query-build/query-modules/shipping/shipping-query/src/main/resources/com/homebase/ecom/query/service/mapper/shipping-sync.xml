@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ShippingSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query shipping OLAP tables from OLTP            -->
+<!-- Source: shipments + orders + user_profiles                              -->
+<!-- Called by ShippingSyncService                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateFactShipments">
+    TRUNCATE TABLE hm_query.fact_shipments
+</update>
+
+<insert id="syncFactShipments">
+    INSERT INTO hm_query.fact_shipments (
+        id, tenant, last_synced_at,
+        order_id, order_number,
+        customer_id, customer_name,
+        carrier, tracking_number, shipping_method,
+        state_id, flow_id,
+        delivery_attempts,
+        estimated_delivery_date, actual_delivery_date,
+        current_location, from_address, to_address,
+        destination_pincode,
+        weight, dimensions, delivery_instructions,
+        shipped_at, created_time
+    )
+    SELECT
+        sh.id,
+        sh.tenant,
+        NOW(),
+        sh.order_id,
+        COALESCE(o.order_number, ''),
+        sh.customer_id,
+        COALESCE(u.first_name || ' ' || COALESCE(u.last_name, ''), ''),
+        sh.carrier,
+        sh.tracking_number,
+        sh.shipping_method,
+        sh.state_id,
+        sh.flow_id,
+        COALESCE(sh.delivery_attempts, 0),
+        sh.estimated_delivery_date,
+        sh.actual_delivery_date,
+        sh.current_location,
+        sh.from_address,
+        sh.to_address,
+        COALESCE(sh.destination_pincode, ''),
+        sh.weight,
+        sh.dimensions,
+        sh.delivery_instructions,
+        sh.shipped_at,
+        sh.created_time
+    FROM hm_shipping.shipments sh
+    LEFT JOIN hm_order.orders o ON sh.order_id = o.id
+    LEFT JOIN hm_user.user_profiles u ON sh.customer_id = u.id
+</insert>
+
+<!-- ====== dim_carrier (upsert) ====== -->
+<update id="syncDimCarrier">
+    INSERT INTO hm_query.dim_carrier (carrier_code, carrier_name, last_synced_at)
+    SELECT DISTINCT
+        sh.carrier,
+        COALESCE(sh.carrier, ''),
+        NOW()
+    FROM hm_shipping.shipments sh
+    WHERE sh.carrier IS NOT NULL
+    ON CONFLICT (carrier_code) DO UPDATE SET
+        carrier_name = EXCLUDED.carrier_name,
+        last_synced_at = EXCLUDED.last_synced_at
+</update>
+
+<!-- ====== dim_geography (upsert) ====== -->
+<update id="syncDimGeography">
+    INSERT INTO hm_query.dim_geography (pincode, city, state, country, last_synced_at)
+    SELECT DISTINCT
+        a.postal_code,
+        COALESCE(a.city, ''),
+        COALESCE(a.state, ''),
+        COALESCE(a.country, 'IN'),
+        NOW()
+    FROM hm_order.order_addresses a
+    WHERE a.address_type = 'SHIPPING' AND a.postal_code IS NOT NULL
+    ON CONFLICT (pincode) DO UPDATE SET
+        city = EXCLUDED.city,
+        state = EXCLUDED.state,
+        country = EXCLUDED.country,
+        last_synced_at = EXCLUDED.last_synced_at
+</update>
+
+</mapper>

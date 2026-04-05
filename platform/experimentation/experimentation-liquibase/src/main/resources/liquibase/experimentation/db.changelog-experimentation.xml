@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="experimentation-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_experimentation</sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- experiments — STM entity for A/B test lifecycle                      -->
+    <!-- ================================================================== -->
+    <changeSet id="experimentation-001-create-experiments" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="experiments" schemaName="hm_experimentation"/></not></preConditions>
+        <createTable tableName="experiments" schemaName="hm_experimentation">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- STM columns -->
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <!-- Domain columns -->
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(1000)"/>
+            <column name="hypothesis" type="VARCHAR(1000)"/>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="end_date" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- experiment_variants — control and treatment variants per experiment  -->
+    <!-- ================================================================== -->
+    <changeSet id="experimentation-002-create-experiment-variants" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="experiment_variants" schemaName="hm_experimentation"/></not></preConditions>
+        <createTable tableName="experiment_variants" schemaName="hm_experimentation">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="experiment_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_variants_experiment" references="experiments(id)"/></column>
+            <column name="variant_key" type="VARCHAR(100)"/>
+            <column name="variant_name" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="traffic_allocation" type="INT"/>
+            <column name="is_control" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="config_json" type="VARCHAR(4000)"/>
+        </createTable>
+        <createIndex indexName="idx_variants_experiment" tableName="experiment_variants" schemaName="hm_experimentation">
+            <column name="experiment_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- experiment_assignments — user-to-variant assignment tracking         -->
+    <!-- ================================================================== -->
+    <changeSet id="experimentation-003-create-experiment-assignments" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="experiment_assignments" schemaName="hm_experimentation"/></not></preConditions>
+        <createTable tableName="experiment_assignments" schemaName="hm_experimentation">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="experiment_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_assignments_experiment" references="experiments(id)"/></column>
+            <column name="variant_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_assignments_variant" references="experiment_variants(id)"/></column>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="assignment_key" type="VARCHAR(255)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <addUniqueConstraint tableName="experiment_assignments" schemaName="hm_experimentation"
+            columnNames="experiment_id, user_id" constraintName="uq_assignment_experiment_user"/>
+        <createIndex indexName="idx_assignments_experiment" tableName="experiment_assignments" schemaName="hm_experimentation">
+            <column name="experiment_id"/>
+        </createIndex>
+        <createIndex indexName="idx_assignments_user" tableName="experiment_assignments" schemaName="hm_experimentation">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- experiment_results — statistical results per variant per metric      -->
+    <!-- ================================================================== -->
+    <changeSet id="experimentation-004-create-experiment-results" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="experiment_results" schemaName="hm_experimentation"/></not></preConditions>
+        <createTable tableName="experiment_results" schemaName="hm_experimentation">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="experiment_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_results_experiment" references="experiments(id)"/></column>
+            <column name="variant_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_results_variant" references="experiment_variants(id)"/></column>
+            <column name="metric_name" type="VARCHAR(100)"/>
+            <column name="metric_value" type="VARCHAR(50)"/>
+            <column name="sample_size" type="INT"/>
+            <column name="confidence_interval_lower" type="VARCHAR(50)"/>
+            <column name="confidence_interval_upper" type="VARCHAR(50)"/>
+            <column name="p_value" type="VARCHAR(50)"/>
+            <column name="is_winner" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="computed_at" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_results_experiment" tableName="experiment_results" schemaName="hm_experimentation">
+            <column name="experiment_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- feature_flags — feature toggle definitions                          -->
+    <!-- ================================================================== -->
+    <changeSet id="experimentation-005-create-feature-flags" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="feature_flags" schemaName="hm_experimentation"/></not></preConditions>
+        <createTable tableName="feature_flags" schemaName="hm_experimentation">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="flag_key" type="VARCHAR(100)"><constraints unique="true"/></column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="enabled" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="flag_type" type="VARCHAR(50)"/>
+            <column name="default_value" type="VARCHAR(500)"/>
+            <column name="owner_team" type="VARCHAR(100)"/>
+        </createTable>
+        <createIndex indexName="idx_flags_key" tableName="feature_flags" schemaName="hm_experimentation">
+            <column name="flag_key"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- feature_flag_rules — targeting rules for feature flags               -->
+    <!-- ================================================================== -->
+    <changeSet id="experimentation-006-create-feature-flag-rules" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="feature_flag_rules" schemaName="hm_experimentation"/></not></preConditions>
+        <createTable tableName="feature_flag_rules" schemaName="hm_experimentation">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="feature_flag_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_flag_rules_flag" references="feature_flags(id)"/></column>
+            <column name="rule_name" type="VARCHAR(255)"/>
+            <column name="priority" type="INT"/>
+            <column name="rule_type" type="VARCHAR(50)"/>
+            <column name="conditions_json" type="VARCHAR(4000)"/>
+            <column name="target_value" type="VARCHAR(500)"/>
+            <column name="target_percentage" type="INT"/>
+            <column name="enabled" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <createIndex indexName="idx_flag_rules_flag" tableName="feature_flag_rules" schemaName="hm_experimentation">
+            <column name="feature_flag_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- feature_flag_overrides — per-user/segment flag overrides             -->
+    <!-- ================================================================== -->
+    <changeSet id="experimentation-007-create-feature-flag-overrides" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="feature_flag_overrides" schemaName="hm_experimentation"/></not></preConditions>
+        <createTable tableName="feature_flag_overrides" schemaName="hm_experimentation">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="feature_flag_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_flag_overrides_flag" references="feature_flags(id)"/></column>
+            <column name="override_type" type="VARCHAR(50)"/>
+            <column name="target_identifier" type="VARCHAR(255)"/>
+            <column name="override_value" type="VARCHAR(500)"/>
+            <column name="reason" type="VARCHAR(500)"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_flag_overrides_flag" tableName="feature_flag_overrides" schemaName="hm_experimentation">
+            <column name="feature_flag_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

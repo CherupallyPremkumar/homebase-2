@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Onboarding test data - STM states from onboarding-states.xml:
+        APPLICATION_RECEIVED, DOCUMENTS_SUBMITTED, UNDER_REVIEW, DOCUMENTS_REJECTED,
+        BUSINESS_VERIFIED, TRAINING_IN_PROGRESS, CHECK_TRAINING_COMPLETE, COMPLETED
+    -->
+    <changeSet id="onboarding-test-data" author="homebase-test">
+
+        <!-- Onboarding for supplier-1: COMPLETED -->
+        <insert tableName="supplier_onboarding">
+            <column name="id" value="onb-1"/>
+            <column name="supplier_id" value="supplier-1"/>
+            <column name="applicant_name" value="Ramesh Kumar"/>
+            <column name="business_name" value="GreenLeaf Organics Pvt Ltd"/>
+            <column name="business_type" value="PRIVATE_LIMITED"/>
+            <column name="documents_json" value='{"gstin":"29AABCG1234F1Z5","pan":"AABCG1234F","bankProof":"verified"}'/>
+            <column name="verification_notes" value="All documents verified. GSTIN active on GST portal."/>
+            <column name="training_progress" valueNumeric="100"/>
+            <column name="submitted_at" valueDate="2025-02-10T10:00:00"/>
+            <column name="state_id" value="COMPLETED"/>
+            <column name="flow_id" value="onboarding-flow"/>
+            <column name="created_time" valueDate="2025-02-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-03-14T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="6"/>
+        </insert>
+
+        <!-- Onboarding for supplier-2: COMPLETED (early joiner) -->
+        <insert tableName="supplier_onboarding">
+            <column name="id" value="onb-5"/>
+            <column name="supplier_id" value="supplier-2"/>
+            <column name="applicant_name" value="Arun Mehta"/>
+            <column name="business_name" value="TechVista Electronics Pvt Ltd"/>
+            <column name="business_type" value="PRIVATE_LIMITED"/>
+            <column name="documents_json" value='{"gstin":"27AABCT5678G1Z3","pan":"AABCT5678G","bankProof":"verified","importExportCode":"AABCT5678G"}'/>
+            <column name="verification_notes" value="All documents verified. GSTIN active. Import-export code valid for electronics."/>
+            <column name="training_progress" valueNumeric="100"/>
+            <column name="submitted_at" valueDate="2025-05-10T10:00:00"/>
+            <column name="state_id" value="COMPLETED"/>
+            <column name="flow_id" value="onboarding-flow"/>
+            <column name="created_time" valueDate="2025-05-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-06-15T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="6"/>
+        </insert>
+
+        <!-- Onboarding for supplier-4: COMPLETED (later suspended for counterfeits) -->
+        <insert tableName="supplier_onboarding">
+            <column name="id" value="onb-6"/>
+            <column name="supplier_id" value="supplier-4"/>
+            <column name="applicant_name" value="Rajesh Gupta"/>
+            <column name="business_name" value="QuickShip Wholesale"/>
+            <column name="business_type" value="PARTNERSHIP"/>
+            <column name="documents_json" value='{"gstin":"07AABCQ3456L1Z9","pan":"AABCQ3456L","bankProof":"verified"}'/>
+            <column name="verification_notes" value="Documents verified. Note: supplier later suspended for IP violations."/>
+            <column name="training_progress" valueNumeric="100"/>
+            <column name="submitted_at" valueDate="2025-06-15T10:00:00"/>
+            <column name="state_id" value="COMPLETED"/>
+            <column name="flow_id" value="onboarding-flow"/>
+            <column name="created_time" valueDate="2025-06-10T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-07-20T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="6"/>
+        </insert>
+
+        <!-- Onboarding for supplier-5: DOCUMENTS_SUBMITTED (pending review) -->
+        <insert tableName="supplier_onboarding">
+            <column name="id" value="onb-2"/>
+            <column name="supplier_id" value="supplier-5"/>
+            <column name="applicant_name" value="Suresh Reddy"/>
+            <column name="business_name" value="FreshKart Foods"/>
+            <column name="business_type" value="PRIVATE_LIMITED"/>
+            <column name="documents_json" value='{"gstin":"36AABCF7890J1Z4","pan":"AABCF7890J","fssai":"10026027000123"}'/>
+            <column name="submitted_at" valueDate="2026-03-14T14:00:00"/>
+            <column name="state_id" value="DOCUMENTS_SUBMITTED"/>
+            <column name="flow_id" value="onboarding-flow"/>
+            <column name="created_time" valueDate="2026-03-14T10:00:00"/>
+            <column name="last_modified_time" valueDate="2026-03-14T14:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="1"/>
+        </insert>
+
+        <!-- Onboarding for supplier-3: TRAINING_IN_PROGRESS -->
+        <insert tableName="supplier_onboarding">
+            <column name="id" value="onb-3"/>
+            <column name="supplier_id" value="supplier-3"/>
+            <column name="applicant_name" value="Lakshmi Devi"/>
+            <column name="business_name" value="Artisan Handlooms"/>
+            <column name="business_type" value="SOLE_PROPRIETORSHIP"/>
+            <column name="documents_json" value='{"gstin":"33AABCA9012H1Z2","pan":"AABCA9012H"}'/>
+            <column name="verification_notes" value="Documents verified. GST active."/>
+            <column name="training_progress" valueNumeric="60"/>
+            <column name="training_completed_modules_json" value='["platform-basics","listing-products","shipping-101"]'/>
+            <column name="submitted_at" valueDate="2025-03-20T10:00:00"/>
+            <column name="state_id" value="TRAINING_IN_PROGRESS"/>
+            <column name="flow_id" value="onboarding-flow"/>
+            <column name="created_time" valueDate="2025-03-15T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-03-28T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="4"/>
+        </insert>
+
+        <!-- Onboarding for a rejected application: DOCUMENTS_REJECTED -->
+        <insert tableName="supplier_onboarding">
+            <column name="id" value="onb-4"/>
+            <column name="supplier_id" value="supplier-6"/>
+            <column name="applicant_name" value="Amit Ghosh"/>
+            <column name="business_name" value="OldWorld Antiques"/>
+            <column name="business_type" value="SOLE_PROPRIETORSHIP"/>
+            <column name="documents_json" value='{"gstin":"19AABCO2345K1Z1","pan":"AABCO2345K"}'/>
+            <column name="verification_notes" value="GSTIN status shows CANCELLED on GST portal"/>
+            <column name="rejection_reason" value="GSTIN is cancelled. Please provide active GSTIN."/>
+            <column name="resubmission_count" valueNumeric="2"/>
+            <column name="submitted_at" valueDate="2024-12-10T10:00:00"/>
+            <column name="state_id" value="DOCUMENTS_REJECTED"/>
+            <column name="flow_id" value="onboarding-flow"/>
+            <column name="created_time" valueDate="2024-12-01T10:00:00"/>
+            <column name="last_modified_time" valueDate="2025-01-05T10:00:00"/>
+            <column name="tenant" value="homebase"/>
+            <column name="version" valueNumeric="5"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

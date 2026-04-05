@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CatalogSearch">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL READS FROM hm_query.* OLAP SCHEMA ONLY — NEVER FROM OLTP          -->
+<!-- Source: hm_query.dim_product                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+    <resultMap id="searchResult" type="map">
+        <result property="id" column="ID"/>
+        <result property="productId" column="product_id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="brand" column="brand"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="price" column="price"/>
+        <result property="sellingPrice" column="selling_price"/>
+        <result property="inStock" column="in_stock"/>
+        <result property="availableQty" column="available_qty"/>
+        <result property="averageRating" column="average_rating"/>
+        <result property="reviewCount" column="review_count"/>
+        <result property="relevance" column="relevance"/>
+    </resultMap>
+
+    <!-- searchCatalog: PostgreSQL full-text search with ranking -->
+    <select id='search-count' resultType="int">
+        SELECT COUNT(*) FROM hm_query.dim_product
+        <where>
+            AND product_status = 'PUBLISHED'
+            <if test="searchTerm != null">
+                AND (product_name ILIKE CONCAT('%', #{searchTerm}, '%')
+                     OR description ILIKE CONCAT('%', #{searchTerm}, '%')
+                     OR brand ILIKE CONCAT('%', #{searchTerm}, '%')
+                     OR category_name ILIKE CONCAT('%', #{searchTerm}, '%'))
+            </if>
+            <if test="minPrice != null">AND base_price &gt;= #{minPrice}</if>
+            <if test="maxPrice != null">AND base_price &lt;= #{maxPrice}</if>
+            <if test="inStock != null">
+                AND CASE WHEN #{inStock} = true THEN stock_status != 'OUT_OF_STOCK' ELSE stock_status = 'OUT_OF_STOCK' END
+            </if>
+            <if test="brand != null">AND brand = #{brand}</if>
+            <if test="q != null">
+                AND (product_name ILIKE CONCAT('%', #{q}, '%') OR brand ILIKE CONCAT('%', #{q}, '%') OR description ILIKE CONCAT('%', #{q}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="search" resultMap="searchResult">
+        SELECT
+            p.product_id as ID,
+            p.product_id as product_id,
+            p.product_name as name,
+            p.description as description,
+            p.brand as brand,
+            p.category_name as category_name,
+            p.primary_image_url as image_url,
+            p.base_price as price,
+            p.selling_price as selling_price,
+            CASE WHEN p.stock_status != 'OUT_OF_STOCK' THEN true ELSE false END as in_stock,
+            p.total_available_qty as available_qty,
+            p.avg_rating as average_rating,
+            p.review_count as review_count,
+            <if test="searchTerm != null">
+                CASE
+                    WHEN p.product_name ILIKE #{searchTerm} THEN 100
+                    WHEN p.product_name ILIKE CONCAT(#{searchTerm}, '%') THEN 80
+                    WHEN p.product_name ILIKE CONCAT('%', #{searchTerm}, '%') THEN 60
+                    WHEN p.brand ILIKE CONCAT('%', #{searchTerm}, '%') THEN 40
+                    ELSE 20
+                END AS relevance
+            </if>
+            <if test="searchTerm == null">
+                0 AS relevance
+            </if>
+        FROM hm_query.dim_product p
+        <where>
+            AND p.product_status = 'PUBLISHED'
+            <if test="searchTerm != null">
+                AND (p.product_name ILIKE CONCAT('%', #{searchTerm}, '%')
+                     OR p.description ILIKE CONCAT('%', #{searchTerm}, '%')
+                     OR p.brand ILIKE CONCAT('%', #{searchTerm}, '%')
+                     OR p.category_name ILIKE CONCAT('%', #{searchTerm}, '%'))
+            </if>
+            <if test="minPrice != null">AND p.base_price &gt;= #{minPrice}</if>
+            <if test="maxPrice != null">AND p.base_price &lt;= #{maxPrice}</if>
+            <if test="inStock != null">
+                AND CASE WHEN #{inStock} = true THEN p.stock_status != 'OUT_OF_STOCK' ELSE p.stock_status = 'OUT_OF_STOCK' END
+            </if>
+            <if test="brand != null">AND p.brand = #{brand}</if>
+            <if test="q != null">
+                AND (p.product_name ILIKE CONCAT('%', #{q}, '%') OR p.brand ILIKE CONCAT('%', #{q}, '%') OR p.description ILIKE CONCAT('%', #{q}, '%'))
+            </if>
+        </where>
+        <if test="searchTerm != null">
+            ORDER BY relevance DESC
+        </if>
+        ${pagination}
+    </select>
+
+    <!-- fuzzyCatalog: Trigram-based fuzzy search (typo tolerance) -->
+    <select id='fuzzy-count' resultType="int">
+        SELECT COUNT(*) FROM hm_query.dim_product
+        <where>
+            AND product_status = 'PUBLISHED'
+            <if test="searchTerm != null">
+                AND similarity(product_name, #{searchTerm}) &gt; 0.2
+            </if>
+        </where>
+    </select>
+
+    <select id="fuzzy" resultMap="searchResult">
+        SELECT
+            p.product_id as ID,
+            p.product_id as product_id,
+            p.product_name as name,
+            p.description as description,
+            p.brand as brand,
+            p.category_name as category_name,
+            p.primary_image_url as image_url,
+            p.base_price as price,
+            p.selling_price as selling_price,
+            CASE WHEN p.stock_status != 'OUT_OF_STOCK' THEN true ELSE false END as in_stock,
+            p.total_available_qty as available_qty,
+            p.avg_rating as average_rating,
+            p.review_count as review_count,
+            similarity(p.product_name, #{searchTerm}) AS relevance
+        FROM hm_query.dim_product p
+        <where>
+            AND p.product_status = 'PUBLISHED'
+            <if test="searchTerm != null">
+                AND similarity(p.product_name, #{searchTerm}) &gt; 0.2
+            </if>
+            <if test="minPrice != null">AND p.base_price &gt;= #{minPrice}</if>
+            <if test="maxPrice != null">AND p.base_price &lt;= #{maxPrice}</if>
+            <if test="inStock != null">
+                AND CASE WHEN #{inStock} = true THEN p.stock_status != 'OUT_OF_STOCK' ELSE p.stock_status = 'OUT_OF_STOCK' END
+            </if>
+        </where>
+        ORDER BY relevance DESC
+        ${pagination}
+    </select>
+
+</mapper>

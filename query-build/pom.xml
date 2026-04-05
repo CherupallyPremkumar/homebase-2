@@ -7,6 +7,8 @@
 	<modules>
 		<module>query-configurations</module>
 		<module>query-stm</module>
+		<module>query-liquibase</module>
+		<module>query-modules</module>
 		<module>query-build-package</module>
 	</modules>
 

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Schema creation -->
+    <changeSet id="reporting-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_reporting</sql>
+    </changeSet>
+
+    <changeSet id="reporting-001-create-report-definition" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="report_definition" schemaName="hm_reporting"/></not>
+        </preConditions>
+        <createTable tableName="report_definition" schemaName="hm_reporting">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="description" type="TEXT"/>
+            <column name="category" type="VARCHAR(50)"/>
+            <column name="query_template" type="TEXT"/>
+            <column name="available_formats" type="VARCHAR(100)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <createIndex indexName="idx_report_def_category" tableName="report_definition" schemaName="hm_reporting">
+            <column name="category"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="reporting-002-create-scheduled-report" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="scheduled_report" schemaName="hm_reporting"/></not>
+        </preConditions>
+        <createTable tableName="scheduled_report" schemaName="hm_reporting">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="report_definition_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="format" type="VARCHAR(10)"/>
+            <column name="frequency" type="VARCHAR(20)"/>
+            <column name="cron_expression" type="VARCHAR(100)"/>
+            <column name="next_run_at" type="TIMESTAMP"/>
+            <column name="recipient_email" type="VARCHAR(255)"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE"/>
+            <column name="last_run_at" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_sched_report_def_id" tableName="scheduled_report" schemaName="hm_reporting">
+            <column name="report_definition_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="reporting-003-create-report-history" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="report_history" schemaName="hm_reporting"/></not>
+        </preConditions>
+        <createTable tableName="report_history" schemaName="hm_reporting">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="report_definition_id" type="VARCHAR(255)"/>
+            <column name="scheduled_report_id" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="format" type="VARCHAR(10)"/>
+            <column name="generated_by" type="VARCHAR(255)"/>
+            <column name="file_url" type="VARCHAR(1000)"/>
+            <column name="file_size_bytes" type="BIGINT"/>
+            <column name="record_count" type="INT"/>
+            <column name="status" type="VARCHAR(20)"/>
+            <column name="completed_at" type="TIMESTAMP"/>
+            <column name="error_message" type="VARCHAR(2000)"/>
+        </createTable>
+        <createIndex indexName="idx_report_hist_def_id" tableName="report_history" schemaName="hm_reporting">
+            <column name="report_definition_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

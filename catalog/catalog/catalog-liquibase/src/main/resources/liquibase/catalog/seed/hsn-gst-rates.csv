@@ -1,0 +1,97 @@
+hsn_chapter,description,gst_rate,cgst_rate,sgst_rate,igst_rate
+01,Live animals,0,0.0,0.0,0
+02,Meat and edible meat offal,0,0.0,0.0,0
+03,"Fish, crustaceans",0,0.0,0.0,0
+04,"Dairy produce, eggs, honey",0,0.0,0.0,0
+05,Products of animal origin,0,0.0,0.0,0
+06,Live trees and plants,0,0.0,0.0,0
+07,Edible vegetables,0,0.0,0.0,0
+08,Edible fruit and nuts,0,0.0,0.0,0
+09,"Coffee, tea, spices",5,2.5,2.5,5
+10,Cereals,0,0.0,0.0,0
+11,Milling industry products,0,0.0,0.0,0
+12,"Oil seeds, misc grains",0,0.0,0.0,0
+13,"Lac, gums, resins",5,2.5,2.5,5
+14,Vegetable plaiting materials,0,0.0,0.0,0
+15,Animal or vegetable fats and oils,5,2.5,2.5,5
+16,"Preparations of meat, fish",12,6.0,6.0,12
+17,Sugars and sugar confectionery,5,2.5,2.5,5
+18,Cocoa and cocoa preparations,18,9.0,9.0,18
+19,"Preparations of cereals, flour",18,9.0,9.0,18
+20,"Preparations of vegetables, fruit",12,6.0,6.0,12
+21,Miscellaneous edible preparations,18,9.0,9.0,18
+22,"Beverages, spirits and vinegar",28,14.0,14.0,28
+23,"Residues from food industries, animal feed",0,0.0,0.0,0
+24,Tobacco and manufactured tobacco,28,14.0,14.0,28
+25,"Salt, sulphur, earth and stone",5,2.5,2.5,5
+26,"Ores, slag and ash",5,2.5,2.5,5
+27,"Mineral fuels, oils",18,9.0,9.0,18
+28,Inorganic chemicals,18,9.0,9.0,18
+29,Organic chemicals,18,9.0,9.0,18
+30,Pharmaceutical products,12,6.0,6.0,12
+31,Fertilisers,5,2.5,2.5,5
+32,"Tanning, dyeing extracts, paints",18,9.0,9.0,18
+33,"Essential oils, perfumery, cosmetics",18,9.0,9.0,18
+34,"Soap, wax, candles",18,9.0,9.0,18
+35,"Albuminoidal substances, glues",18,9.0,9.0,18
+36,"Explosives, matches, pyrotechnics",18,9.0,9.0,18
+37,Photographic goods,18,9.0,9.0,18
+38,Miscellaneous chemical products,18,9.0,9.0,18
+39,Plastics and articles thereof,18,9.0,9.0,18
+40,Rubber and articles thereof,18,9.0,9.0,18
+41,"Raw hides and skins, leather",5,2.5,2.5,5
+42,Articles of leather,18,9.0,9.0,18
+43,Furskins and artificial fur,18,9.0,9.0,18
+44,Wood and articles of wood,18,9.0,9.0,18
+45,Cork and articles of cork,12,6.0,6.0,12
+46,"Manufactures of straw, basketware",12,6.0,6.0,12
+47,Pulp of wood,5,2.5,2.5,5
+48,Paper and paperboard,12,6.0,6.0,12
+49,"Printed books, newspapers",0,0.0,0.0,0
+50,Silk,5,2.5,2.5,5
+51,"Wool, animal hair",5,2.5,2.5,5
+52,Cotton,5,2.5,2.5,5
+53,"Vegetable textile fibres, yarn",5,2.5,2.5,5
+54,Man-made filaments,12,6.0,6.0,12
+55,Man-made staple fibres,12,6.0,6.0,12
+56,"Wadding, felt, twine, ropes",12,6.0,6.0,12
+57,Carpets and floor coverings,12,6.0,6.0,12
+58,Special woven fabrics,12,6.0,6.0,12
+59,"Impregnated, coated textile fabrics",12,6.0,6.0,12
+60,Knitted or crocheted fabrics,5,2.5,2.5,5
+61,"Articles of apparel, knitted",5,2.5,2.5,5
+62,"Articles of apparel, not knitted",5,2.5,2.5,5
+63,Other made-up textile articles,5,2.5,2.5,5
+64,Footwear,18,9.0,9.0,18
+65,Headgear,18,9.0,9.0,18
+66,"Umbrellas, walking sticks",12,6.0,6.0,12
+67,"Prepared feathers, artificial flowers",12,6.0,6.0,12
+68,"Articles of stone, plaster, cement",18,9.0,9.0,18
+69,Ceramic products,18,9.0,9.0,18
+70,Glass and glassware,18,9.0,9.0,18
+71,"Natural or cultured pearls, precious stones",3,1.5,1.5,3
+72,Iron and steel,18,9.0,9.0,18
+73,Articles of iron or steel,18,9.0,9.0,18
+74,Copper and articles thereof,18,9.0,9.0,18
+75,Nickel and articles thereof,18,9.0,9.0,18
+76,Aluminium and articles thereof,18,9.0,9.0,18
+78,Lead and articles thereof,18,9.0,9.0,18
+79,Zinc and articles thereof,18,9.0,9.0,18
+80,Tin and articles thereof,18,9.0,9.0,18
+81,Other base metals,18,9.0,9.0,18
+82,"Tools, cutlery of base metal",18,9.0,9.0,18
+83,Miscellaneous articles of base metal,18,9.0,9.0,18
+84,"Nuclear reactors, boilers, machinery",18,9.0,9.0,18
+85,Electrical machinery and equipment,18,9.0,9.0,18
+86,"Railway locomotives, rolling stock",12,6.0,6.0,12
+87,Vehicles other than railway,28,14.0,14.0,28
+88,"Aircraft, spacecraft",5,2.5,2.5,5
+89,"Ships, boats",5,2.5,2.5,5
+90,"Optical, photographic, medical instruments",18,9.0,9.0,18
+91,Clocks and watches,18,9.0,9.0,18
+92,Musical instruments,18,9.0,9.0,18
+93,Arms and ammunition,28,14.0,14.0,28
+94,"Furniture, bedding, lamps",18,9.0,9.0,18
+95,"Toys, games, sports equipment",18,9.0,9.0,18
+96,Miscellaneous manufactured articles,18,9.0,9.0,18
+97,"Works of art, antiques",12,6.0,6.0,12

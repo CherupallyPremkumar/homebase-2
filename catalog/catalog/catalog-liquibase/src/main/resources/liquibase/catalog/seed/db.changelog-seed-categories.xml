@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- =================================================================== -->
+    <!-- 1. Seed: Google Product Taxonomy (5,595 categories)                 -->
+    <!-- =================================================================== -->
+
+    <changeSet id="catalog-seed-001-google-taxonomy" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM hm_catalog.catalog_categories
+            </sqlCheck>
+        </preConditions>
+        <comment>Load Google Product Taxonomy into catalog_categories (5,595 rows)</comment>
+        <loadData tableName="catalog_categories" schemaName="hm_catalog"
+                  file="liquibase/catalog/seed/google-taxonomy.csv"
+                  separator=","
+                  encoding="UTF-8">
+            <column name="id" type="STRING"/>
+            <column name="name" type="STRING"/>
+            <column name="slug" type="STRING"/>
+            <column name="description" type="STRING"/>
+            <column name="parent_id" type="STRING"/>
+            <column name="level" type="NUMERIC"/>
+            <column name="display_order" type="NUMERIC"/>
+            <column name="active" type="BOOLEAN"/>
+            <column name="featured" type="BOOLEAN"/>
+            <column name="product_count" type="NUMERIC"/>
+            <column name="show_in_menu" type="BOOLEAN"/>
+            <column name="show_in_footer" type="BOOLEAN"/>
+        </loadData>
+    </changeSet>
+
+    <!-- =================================================================== -->
+    <!-- 2. Seed: HSN to GST rate mapping (96 chapters, CBIC India)          -->
+    <!-- =================================================================== -->
+
+    <changeSet id="catalog-seed-002-hsn-gst" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM hm_catalog.hsn_gst_mapping
+            </sqlCheck>
+        </preConditions>
+        <comment>Load HSN chapter to GST rate mapping (96 rows)</comment>
+        <loadData tableName="hsn_gst_mapping" schemaName="hm_catalog"
+                  file="liquibase/catalog/seed/hsn-gst-rates.csv"
+                  separator=","
+                  encoding="UTF-8">
+            <column name="hsn_chapter" type="STRING"/>
+            <column name="description" type="STRING"/>
+            <column name="gst_rate" type="NUMERIC"/>
+            <column name="cgst_rate" type="NUMERIC"/>
+            <column name="sgst_rate" type="NUMERIC"/>
+            <column name="igst_rate" type="NUMERIC"/>
+        </loadData>
+    </changeSet>
+
+    <!-- =================================================================== -->
+    <!-- 3. Seed: Category rules — Amazon India referral fees mapped to      -->
+    <!--    Google taxonomy IDs (55 rules covering all major categories)     -->
+    <!--    Source: sell.amazon.in/fees-and-pricing (public data)            -->
+    <!--    Children inherit parent rules via recursive SQL query.           -->
+    <!-- =================================================================== -->
+
+    <changeSet id="catalog-seed-003-category-rules" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM hm_catalog.category_rules
+            </sqlCheck>
+        </preConditions>
+        <comment>Load 55 category rules mapped from Amazon India referral fees to Google taxonomy IDs</comment>
+        <loadData tableName="category_rules" schemaName="hm_catalog"
+                  file="liquibase/catalog/seed/category-rules-seed.csv"
+                  separator=","
+                  encoding="UTF-8">
+            <column name="id" type="STRING"/>
+            <column name="category_id" type="STRING"/>
+            <column name="commission_rate" type="NUMERIC"/>
+            <column name="gst_rate" type="NUMERIC"/>
+            <column name="hsn_code" type="STRING"/>
+            <column name="return_days" type="NUMERIC"/>
+            <column name="return_type" type="STRING"/>
+            <column name="max_weight_kg" type="NUMERIC"/>
+            <column name="shipping_type" type="STRING"/>
+            <column name="restriction_type" type="STRING"/>
+            <column name="required_license" type="STRING"/>
+            <column name="min_images" type="NUMERIC"/>
+            <column name="min_description_length" type="NUMERIC"/>
+            <column name="ean_required" type="BOOLEAN"/>
+        </loadData>
+    </changeSet>
+
+    <!-- =================================================================== -->
+    <!-- 4. Seed: Category attributes for key categories                     -->
+    <!-- =================================================================== -->
+
+    <changeSet id="catalog-seed-004-category-attributes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM hm_catalog.category_attributes
+            </sqlCheck>
+        </preConditions>
+        <comment>Seed required/optional attributes for key categories</comment>
+
+        <!-- Electronics (222) — Brand, Model, Warranty -->
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-001"/><column name="category_id" value="222"/>
+            <column name="attribute_name" value="Brand"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="1"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-002"/><column name="category_id" value="222"/>
+            <column name="attribute_name" value="Model"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="2"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-003"/><column name="category_id" value="222"/>
+            <column name="attribute_name" value="Warranty"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="3"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-004"/><column name="category_id" value="222"/>
+            <column name="attribute_name" value="Color"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="false"/><column name="sort_order" valueNumeric="4"/>
+        </insert>
+
+        <!-- Apparel (166) — Size, Color, Material -->
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-010"/><column name="category_id" value="166"/>
+            <column name="attribute_name" value="Size"/><column name="attribute_type" value="MULTI_SELECT"/>
+            <column name="is_required" valueBoolean="true"/>
+            <column name="allowed_values" value='["XS","S","M","L","XL","XXL","XXXL"]'/>
+            <column name="sort_order" valueNumeric="1"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-011"/><column name="category_id" value="166"/>
+            <column name="attribute_name" value="Color"/><column name="attribute_type" value="MULTI_SELECT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="2"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-012"/><column name="category_id" value="166"/>
+            <column name="attribute_name" value="Material"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="3"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-013"/><column name="category_id" value="166"/>
+            <column name="attribute_name" value="Pattern"/><column name="attribute_type" value="SELECT"/>
+            <column name="is_required" valueBoolean="false"/>
+            <column name="allowed_values" value='["Solid","Striped","Printed","Checked","Embroidered"]'/>
+            <column name="sort_order" valueNumeric="4"/>
+        </insert>
+
+        <!-- Food (412) — FSSAI No, Expiry, Net Qty, Nutritional Info -->
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-020"/><column name="category_id" value="412"/>
+            <column name="attribute_name" value="FSSAI Number"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="1"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-021"/><column name="category_id" value="412"/>
+            <column name="attribute_name" value="Expiry Date"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="2"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-022"/><column name="category_id" value="412"/>
+            <column name="attribute_name" value="Net Quantity"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="3"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-023"/><column name="category_id" value="412"/>
+            <column name="attribute_name" value="Nutritional Info"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="4"/>
+        </insert>
+
+        <!-- Health & Beauty (469) — Ingredients, Expiry, Mfg Date -->
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-030"/><column name="category_id" value="469"/>
+            <column name="attribute_name" value="Ingredients"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="1"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-031"/><column name="category_id" value="469"/>
+            <column name="attribute_name" value="Expiry Date"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="2"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-032"/><column name="category_id" value="469"/>
+            <column name="attribute_name" value="Manufacturing Date"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="3"/>
+        </insert>
+
+        <!-- Media/Books (783) — ISBN, Author, Publisher, Language -->
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-040"/><column name="category_id" value="783"/>
+            <column name="attribute_name" value="ISBN"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="1"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-041"/><column name="category_id" value="783"/>
+            <column name="attribute_name" value="Author"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="2"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-042"/><column name="category_id" value="783"/>
+            <column name="attribute_name" value="Publisher"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="3"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-043"/><column name="category_id" value="783"/>
+            <column name="attribute_name" value="Language"/><column name="attribute_type" value="SELECT"/>
+            <column name="is_required" valueBoolean="true"/>
+            <column name="allowed_values" value='["English","Hindi","Tamil","Telugu","Kannada","Bengali","Marathi","Gujarati","Malayalam","Other"]'/>
+            <column name="sort_order" valueNumeric="4"/>
+        </insert>
+
+        <!-- Furniture (436) — Dimensions, Material, Weight -->
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-050"/><column name="category_id" value="436"/>
+            <column name="attribute_name" value="Dimensions (LxWxH cm)"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="1"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-051"/><column name="category_id" value="436"/>
+            <column name="attribute_name" value="Material"/><column name="attribute_type" value="TEXT"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="2"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-052"/><column name="category_id" value="436"/>
+            <column name="attribute_name" value="Weight (kg)"/><column name="attribute_type" value="NUMBER"/>
+            <column name="is_required" valueBoolean="true"/><column name="sort_order" valueNumeric="3"/>
+        </insert>
+        <insert tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" value="ATTR-053"/><column name="category_id" value="436"/>
+            <column name="attribute_name" value="Assembly Required"/><column name="attribute_type" value="BOOLEAN"/>
+            <column name="is_required" valueBoolean="false"/><column name="sort_order" valueNumeric="4"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

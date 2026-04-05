@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Recommendation">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: recommendations_flat, trending_products_flat                    -->
+<!-- Populated by RecommendationSyncService ETL.                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ================================================================ -->
+<!-- User Recommendations                                              -->
+<!-- ================================================================ -->
+
+<select id="getForUser-count" resultType="int">
+    SELECT count(*) FROM hm_query.recommendations_flat
+    <where>
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="recommendationType != null">AND recommendation_type = #{recommendationType}</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="q != null">AND (product_name LIKE CONCAT('%', #{q}, '%') OR reason LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getForUser" resultType="com.homebase.ecom.recommendation.dto.RecommendationQueryDto">
+    SELECT id             AS "id",
+           user_id        AS "userId",
+           product_id     AS "productId",
+           product_name   AS "productName",
+           recommendation_type AS "recommendationType",
+           score          AS "score",
+           reason         AS "reason",
+           created_time   AS "createdTime"
+    FROM hm_query.recommendations_flat
+    <where>
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="recommendationType != null">AND recommendation_type = #{recommendationType}</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="q != null">AND (product_name LIKE CONCAT('%', #{q}, '%') OR reason LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Trending Products                                                 -->
+<!-- ================================================================ -->
+
+<select id="getTrending-count" resultType="int">
+    SELECT count(*) FROM hm_query.trending_products_flat
+    <where>
+        <if test="category != null">AND category = #{category}</if>
+        <if test="timeWindow != null">AND time_window = #{timeWindow}</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="q != null">AND product_name LIKE CONCAT('%', #{q}, '%')</if>
+    </where>
+</select>
+
+<select id="getTrending" resultType="com.homebase.ecom.recommendation.dto.TrendingProductQueryDto">
+    SELECT id             AS "id",
+           product_id     AS "productId",
+           product_name   AS "productName",
+           category       AS "category",
+           trending_score AS "trendingScore",
+           time_window    AS "timeWindow",
+           view_count     AS "viewCount",
+           order_count    AS "orderCount",
+           created_time   AS "createdTime"
+    FROM hm_query.trending_products_flat
+    <where>
+        <if test="category != null">AND category = #{category}</if>
+        <if test="timeWindow != null">AND time_window = #{timeWindow}</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="q != null">AND product_name LIKE CONCAT('%', #{q}, '%')</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

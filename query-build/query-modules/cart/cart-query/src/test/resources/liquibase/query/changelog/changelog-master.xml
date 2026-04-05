@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Cart schema from cart-liquibase -->
+    <include file="liquibase/cart/db.changelog-cart.xml"/>
+
+    <!-- Product, catalog, inventory tables for storefront queries (from db-migrations) -->
+    <include file="db/changelog/cart/test/db.changelog-cart-query-tables.xml"/>
+
+    <!-- Test data: carts, items, activities, products, variants, media, inventory (from db-migrations) -->
+    <include file="db/changelog/cart/test/db.changelog-cart-testdata.xml"/>
+
+</databaseChangeLog>

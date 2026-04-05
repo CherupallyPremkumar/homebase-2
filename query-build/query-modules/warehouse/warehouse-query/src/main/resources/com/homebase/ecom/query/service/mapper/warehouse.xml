@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Warehouse">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read ONLY from hm_query OLAP schema.                      -->
+<!-- Source: dim_warehouse + warehouse_locations_flat +                     -->
+<!--         warehouse_inventory_flat (joins with fact_inventory)           -->
+<!-- Populated by WarehouseSyncService ETL.                                -->
+<!-- NEVER reference any OLTP schema here.                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== LIST ALL WAREHOUSES ====== -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.dim_warehouse
+    <where>
+        <if test="warehouseCode != null">AND warehouse_code = #{warehouseCode}</if>
+        <if test="warehouseName != null">AND warehouse_name LIKE CONCAT('%', #{warehouseName}, '%')</if>
+        <if test="warehouseType != null">AND warehouse_type = #{warehouseType}</if>
+        <if test="city != null">AND city = #{city}</if>
+        <if test="state != null">AND state = #{state}</if>
+        <if test="pincode != null">AND pincode = #{pincode}</if>
+        <if test="isActive != null">AND is_active = CAST(#{isActive} AS boolean)</if>
+        <if test="q != null">AND (
+            warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_code LIKE CONCAT('%', #{q}, '%')
+            OR city LIKE CONCAT('%', #{q}, '%')
+            OR state LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.warehouse.dto.WarehouseQueryDto">
+    SELECT
+        dw.id,
+        dw.warehouse_code          as "warehouseCode",
+        dw.warehouse_name          as "warehouseName",
+        dw.warehouse_type          as "warehouseType",
+        dw.city,
+        dw.state,
+        dw.pincode,
+        dw.country,
+        dw.contact_phone           as "contactPhone",
+        dw.contact_email           as "contactEmail",
+        dw.manager_id              as "managerId",
+        dw.max_capacity_units      as "maxCapacityUnits",
+        dw.current_utilization_pct as "currentUtilizationPct",
+        dw.is_active               as "isActive",
+        dw.is_returns_center       as "isReturnsCenter",
+        dw.total_skus              as "totalSkus",
+        dw.total_units             as "totalUnits",
+        dw.created_time            as "createdTime"
+    FROM hm_query.dim_warehouse dw
+    <where>
+        <if test="warehouseCode != null">AND dw.warehouse_code = #{warehouseCode}</if>
+        <if test="warehouseName != null">AND dw.warehouse_name LIKE CONCAT('%', #{warehouseName}, '%')</if>
+        <if test="warehouseType != null">AND dw.warehouse_type = #{warehouseType}</if>
+        <if test="city != null">AND dw.city = #{city}</if>
+        <if test="state != null">AND dw.state = #{state}</if>
+        <if test="pincode != null">AND dw.pincode = #{pincode}</if>
+        <if test="isActive != null">AND dw.is_active = CAST(#{isActive} AS boolean)</if>
+        <if test="q != null">AND (
+            dw.warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR dw.warehouse_code LIKE CONCAT('%', #{q}, '%')
+            OR dw.city LIKE CONCAT('%', #{q}, '%')
+            OR dw.state LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== WAREHOUSE DETAIL ====== -->
+<select id="getById" resultType="com.homebase.ecom.warehouse.dto.WarehouseDetailDto">
+    SELECT
+        dw.id,
+        dw.warehouse_code          as "warehouseCode",
+        dw.warehouse_name          as "warehouseName",
+        dw.warehouse_type          as "warehouseType",
+        dw.address_line1           as "addressLine1",
+        dw.address_line2           as "addressLine2",
+        dw.city,
+        dw.state,
+        dw.pincode,
+        dw.country,
+        dw.latitude,
+        dw.longitude,
+        dw.timezone,
+        dw.contact_phone           as "contactPhone",
+        dw.contact_email           as "contactEmail",
+        dw.manager_id              as "managerId",
+        dw.max_capacity_units      as "maxCapacityUnits",
+        dw.current_utilization_pct as "currentUtilizationPct",
+        dw.is_active               as "isActive",
+        dw.is_returns_center       as "isReturnsCenter",
+        dw.operating_hours_json    as "operatingHoursJson",
+        dw.supported_carriers_json as "supportedCarriersJson",
+        dw.total_skus              as "totalSkus",
+        dw.total_units             as "totalUnits",
+        dw.low_stock_count         as "lowStockCount",
+        dw.pending_fulfillments    as "pendingFulfillments",
+        dw.created_time            as "createdTime",
+        dw.last_modified_time      as "lastModifiedTime"
+    FROM hm_query.dim_warehouse dw
+    WHERE dw.id = #{id}
+</select>
+
+<!-- ====== WAREHOUSE LOCATIONS ====== -->
+<select id="getLocations-count" resultType="int">
+    SELECT count(*) FROM hm_query.warehouse_locations_flat
+    <where>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="locationType != null">AND location_type = #{locationType}</if>
+        <if test="zone != null">AND zone = #{zone}</if>
+        <if test="isActive != null">AND is_active = CAST(#{isActive} AS boolean)</if>
+        <if test="q != null">AND (
+            location_code LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR zone LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="getLocations" resultType="com.homebase.ecom.warehouse.dto.WarehouseLocationDto">
+    SELECT
+        id,
+        warehouse_id        as "warehouseId",
+        warehouse_name      as "warehouseName",
+        location_code       as "locationCode",
+        zone,
+        aisle,
+        shelf,
+        bin,
+        location_type       as "locationType",
+        capacity_units      as "capacityUnits",
+        current_units       as "currentUnits",
+        is_active           as "isActive"
+    FROM hm_query.warehouse_locations_flat
+    <where>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="locationType != null">AND location_type = #{locationType}</if>
+        <if test="zone != null">AND zone = #{zone}</if>
+        <if test="isActive != null">AND is_active = CAST(#{isActive} AS boolean)</if>
+        <if test="q != null">AND (
+            location_code LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR zone LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== INVENTORY BY LOCATION ====== -->
+<select id="getInventoryByLocation-count" resultType="int">
+    SELECT count(*) FROM hm_query.warehouse_inventory_flat
+    <where>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="locationId != null">AND location_id = #{locationId}</if>
+        <if test="zone != null">AND zone = #{zone}</if>
+        <if test="locationType != null">AND location_type = #{locationType}</if>
+        <if test="q != null">AND (
+            sku LIKE CONCAT('%', #{q}, '%')
+            OR product_name LIKE CONCAT('%', #{q}, '%')
+            OR brand LIKE CONCAT('%', #{q}, '%')
+            OR location_code LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="getInventoryByLocation" resultType="com.homebase.ecom.warehouse.dto.WarehouseInventoryDto">
+    SELECT
+        wi.warehouse_inventory_id as "warehouseInventoryId",
+        wi.product_id          as "productId",
+        wi.variant_id          as "variantId",
+        wi.sku                 as "sku",
+        wi.quantity_on_hand    as "expectedQuantity",
+        wi.quantity_reserved   as "quantityReserved",
+        wi.quantity_available  as "quantityAvailable",
+        wi.quantity_damaged    as "quantityDamaged",
+        wi.last_counted_at     as "lastCountedAt",
+        wi.location_id         as "locationId",
+        wi.location_code       as "locationCode",
+        wi.zone                as "zone",
+        wi.aisle               as "aisle",
+        wi.shelf               as "shelf",
+        wi.bin                 as "bin",
+        wi.location_type       as "locationType",
+        wi.product_name        as "productName",
+        wi.brand               as "brand"
+    FROM hm_query.warehouse_inventory_flat wi
+    <where>
+        <if test="warehouseId != null">AND wi.warehouse_id = #{warehouseId}</if>
+        <if test="locationId != null">AND wi.location_id = #{locationId}</if>
+        <if test="zone != null">AND wi.zone = #{zone}</if>
+        <if test="locationType != null">AND wi.location_type = #{locationType}</if>
+        <if test="q != null">AND (
+            wi.sku LIKE CONCAT('%', #{q}, '%')
+            OR wi.product_name LIKE CONCAT('%', #{q}, '%')
+            OR wi.brand LIKE CONCAT('%', #{q}, '%')
+            OR wi.location_code LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

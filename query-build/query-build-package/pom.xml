@@ -18,151 +18,73 @@
 	<description>Aggregates all query implementation services into a single executable</description>
 
 	<dependencies>
-		<!-- Query Service Implementations -->
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>cart-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>product-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>inventory-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom.user</groupId>
-			<artifactId>user-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>order-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>settlement-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>returnrequest-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>catalog-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>shipping-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>supplier-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom.promo</groupId>
-			<artifactId>promo-query</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>ui-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>order-management-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>warehouse-management-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>analytics-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>cms-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom.compliance</groupId>
-			<artifactId>compliance-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>notification-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>onboarding-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>payment-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>review-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>support-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>tax-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>cconfig-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom.rulesengine</groupId>
-			<artifactId>rules-engine-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>reconciliation-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>fulfillment-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>warehouse-query-service</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.homebase.ecom.query</groupId>
-			<artifactId>query-stm</artifactId>
-		</dependency>
+		<!-- ===== Platform (6) ===== -->
+		<dependency><groupId>com.homebase.ecom.organisation</groupId><artifactId>organisation-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>tax-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>cconfig-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.compliance</groupId><artifactId>compliance-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.media</groupId><artifactId>media-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.rulesengine</groupId><artifactId>rules-engine-query-service</artifactId><version>${revision}</version></dependency>
+
+		<!-- ===== Commerce (4) ===== -->
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>cart-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.promo</groupId><artifactId>promo-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.checkout</groupId><artifactId>checkout-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.wishlist</groupId><artifactId>wishlist-query</artifactId><version>${revision}</version></dependency>
+
+		<!-- ===== Identity (4) ===== -->
+		<dependency><groupId>com.homebase.ecom.user</groupId><artifactId>user-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.supplier</groupId><artifactId>supplier-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.onboarding</groupId><artifactId>onboarding-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.seller</groupId><artifactId>seller-query</artifactId><version>${revision}</version></dependency>
+
+		<!-- ===== Order Platform (6) ===== -->
+		<dependency><groupId>com.homebase.ecom.order</groupId><artifactId>order-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>payment-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.returnrequest</groupId><artifactId>returnrequest-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.settlement</groupId><artifactId>settlement-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.returnprocessing</groupId><artifactId>return-processing-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.invoice</groupId><artifactId>invoice-query</artifactId><version>${revision}</version></dependency>
+
+		<!-- ===== Product Catalog (6) ===== -->
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>product-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.offer</groupId><artifactId>offer-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.pricing</groupId><artifactId>pricing-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>catalog-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>review-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>search-query-service</artifactId><version>${revision}</version></dependency>
+
+		<!-- ===== Engagement (5) ===== -->
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>cms-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>notification-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>support-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>disputes-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>recommendation-query-service</artifactId><version>${revision}</version></dependency>
+
+		<!-- ===== Logistics (4) ===== -->
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>inventory-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>shipping-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>fulfillment-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>warehouse-query-service</artifactId><version>${revision}</version></dependency>
+
+		<!-- ===== Analytics (4) ===== -->
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>analytics-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>reconciliation-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.reporting</groupId><artifactId>reporting-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.clickstream</groupId><artifactId>clickstream-query</artifactId><version>${revision}</version></dependency>
+
+		<!-- ===== Cross-Module Queries (3) ===== -->
+		<dependency><groupId>com.homebase.ecom.query</groupId><artifactId>ui-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>order-management-query-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>warehouse-management-query-service</artifactId><version>${revision}</version></dependency>
+
+		<!-- ===== Dashboards (3) ===== -->
+		<dependency><groupId>com.homebase.ecom.dashboard</groupId><artifactId>platform-dashboard-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.dashboard</groupId><artifactId>seller-dashboard-query</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>com.homebase.ecom.dashboard</groupId><artifactId>supplier-dashboard-query</artifactId><version>${revision}</version></dependency>
+
+		<!-- ===== STM Metadata ===== -->
+		<dependency><groupId>com.homebase.ecom.query</groupId><artifactId>query-stm</artifactId></dependency>
 
 		<!-- Chenile Query Infrastructure -->
 		<dependency>
@@ -212,10 +134,10 @@
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-		<!-- DB Migrations (Liquibase creates tables + seeds data) -->
+		<!-- Query Liquibase (all schemas + seed data for query read DB) -->
 		<dependency>
-			<groupId>com.homebase.ecom</groupId>
-			<artifactId>db-migrations</artifactId>
+			<groupId>com.homebase.ecom.query</groupId>
+			<artifactId>query-liquibase</artifactId>
 			<version>${revision}</version>
 		</dependency>
 
@@ -241,22 +163,22 @@
 
 	</dependencies>
 
-<!--	<build>-->
-<!--		<plugins>-->
-<!--			<plugin>-->
-<!--				<groupId>org.springframework.boot</groupId>-->
-<!--				<artifactId>spring-boot-maven-plugin</artifactId>-->
-<!--				<configuration>-->
-<!--					<mainClass>com.homebase.ecom.query.QueryBuildApplication</mainClass>-->
-<!--				</configuration>-->
-<!--				<executions>-->
-<!--					<execution>-->
-<!--						<goals>-->
-<!--							<goal>repackage</goal>-->
-<!--						</goals>-->
-<!--					</execution>-->
-<!--				</executions>-->
-<!--			</plugin>-->
-<!--		</plugins>-->
-<!--	</build>-->
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.homebase.ecom.query.QueryBuildApplication</mainClass>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

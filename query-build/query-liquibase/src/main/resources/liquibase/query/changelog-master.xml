@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+      Query Read Database — Master Changelog
+      This database manages its OWN denormalized view tables for CQRS.
+      It does NOT copy the tables from upstream microservices.
+    -->
+
+    <!-- Chenile Infrastructure (service registry, events, etc. — if needed by query framework) -->
+    <include file="liquibase/infrastructure/db.changelog-service-registry.xml"/>
+
+    <!-- Query Views -->
+    <include file="liquibase/query/views/changelog-views-master.xml"/>
+
+    <!-- Query DB seed data (realistic Indian ecommerce data) -->
+    <include file="liquibase/query/seed/db.changelog-seed-data.xml"/>
+
+</databaseChangeLog>

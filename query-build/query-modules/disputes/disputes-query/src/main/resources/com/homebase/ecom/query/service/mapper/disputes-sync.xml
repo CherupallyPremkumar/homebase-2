@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="DisputesSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query.disputes_flat from OLTP                   -->
+<!-- Source: dispute + orders + user_profiles + supplier                     -->
+<!-- Called by DisputeSyncService                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateDisputesFlat">
+    TRUNCATE TABLE hm_query.disputes_flat
+</update>
+
+<insert id="syncDisputesFlat">
+    INSERT INTO hm_query.disputes_flat (
+        id, tenant, last_synced_at,
+        order_id, order_number,
+        customer_id, customer_name, customer_email,
+        seller_id, seller_name,
+        dispute_type, reason, disputed_amount,
+        priority, assigned_to,
+        customer_complaint, seller_response, evidence_links,
+        investigator_id, investigation_notes,
+        resolution_outcome, resolution_notes, resolution_date,
+        refund_amount, sla_target_days,
+        state_id, flow_id, created_time
+    )
+    SELECT
+        d.id,
+        d.tenant,
+        NOW(),
+        d.order_id,
+        COALESCE(o.order_number, ''),
+        d.customer_id,
+        COALESCE(u.first_name || ' ' || COALESCE(u.last_name, ''), ''),
+        COALESCE(u.email, ''),
+        d.seller_id,
+        COALESCE(s.business_name, ''),
+        d.dispute_type,
+        d.reason,
+        COALESCE(d.disputed_amount, 0),
+        d.priority,
+        d.assigned_to,
+        d.customer_complaint,
+        d.seller_response,
+        d.evidence_links,
+        d.investigator_id,
+        d.investigation_notes,
+        d.resolution_outcome,
+        d.resolution_notes,
+        d.resolution_date,
+        COALESCE(d.refund_amount, 0),
+        COALESCE(d.sla_target_days, 5),
+        d.state_id,
+        d.flow_id,
+        d.created_time
+    FROM hm_disputes.dispute d
+    LEFT JOIN hm_order.orders o ON d.order_id = o.id
+    LEFT JOIN hm_user.user_profiles u ON d.customer_id = u.id
+    LEFT JOIN hm_supplier.supplier s ON d.seller_id = s.id
+</insert>
+
+</mapper>

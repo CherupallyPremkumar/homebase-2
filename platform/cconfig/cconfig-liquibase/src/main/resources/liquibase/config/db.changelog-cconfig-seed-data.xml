@@ -31,7 +31,7 @@
         <!-- ============================================================ -->
         <!-- CART MODULE                                                   -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-cart-max-items"/>
             <column name="module_name" value="cart"/>
             <column name="key_name" value="max.items"/>
@@ -39,7 +39,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-cart-max-qty-per-item"/>
             <column name="module_name" value="cart"/>
             <column name="key_name" value="max.quantity.per.item"/>
@@ -47,7 +47,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-cart-max-qty-high-value"/>
             <column name="module_name" value="cart"/>
             <column name="key_name" value="max.quantity.high.value.item"/>
@@ -55,7 +55,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-cart-high-value-threshold"/>
             <column name="module_name" value="cart"/>
             <column name="key_name" value="high.value.threshold"/>
@@ -63,7 +63,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-cart-expiry-hours"/>
             <column name="module_name" value="cart"/>
             <column name="key_name" value="expiry.hours"/>
@@ -71,7 +71,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-cart-merge-on-login"/>
             <column name="module_name" value="cart"/>
             <column name="key_name" value="merge.on.login"/>
@@ -79,7 +79,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-cart-max-value"/>
             <column name="module_name" value="cart"/>
             <column name="key_name" value="max.cart.value"/>
@@ -87,7 +87,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-cart-min-order-value"/>
             <column name="module_name" value="cart"/>
             <column name="key_name" value="min.order.value"/>
@@ -99,7 +99,7 @@
         <!-- ============================================================ -->
         <!-- CHECKOUT MODULE                                               -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-checkout-timeout"/>
             <column name="module_name" value="checkout"/>
             <column name="key_name" value="session.timeout.minutes"/>
@@ -107,7 +107,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-checkout-payment-retry"/>
             <column name="module_name" value="checkout"/>
             <column name="key_name" value="payment.retry.max"/>
@@ -115,7 +115,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-checkout-address-required"/>
             <column name="module_name" value="checkout"/>
             <column name="key_name" value="address.pincode.validation"/>
@@ -123,7 +123,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-checkout-cod-max"/>
             <column name="module_name" value="checkout"/>
             <column name="key_name" value="cod.max.amount"/>
@@ -131,7 +131,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-checkout-cod-enabled"/>
             <column name="module_name" value="checkout"/>
             <column name="key_name" value="cod.enabled"/>
@@ -143,7 +143,7 @@
         <!-- ============================================================ -->
         <!-- ORDER MODULE                                                  -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-order-cancel-window"/>
             <column name="module_name" value="order"/>
             <column name="key_name" value="cancellation.window.hours"/>
@@ -151,7 +151,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-order-fraud-threshold"/>
             <column name="module_name" value="order"/>
             <column name="key_name" value="fraud.review.threshold"/>
@@ -159,7 +159,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-order-max-per-day"/>
             <column name="module_name" value="order"/>
             <column name="key_name" value="max.orders.per.day"/>
@@ -167,7 +167,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-order-auto-complete-days"/>
             <column name="module_name" value="order"/>
             <column name="key_name" value="auto.complete.after.delivery.days"/>
@@ -179,7 +179,7 @@
         <!-- ============================================================ -->
         <!-- PAYMENT MODULE                                                -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-payment-gateway-primary"/>
             <column name="module_name" value="payment"/>
             <column name="key_name" value="gateway.primary"/>
@@ -187,7 +187,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-payment-gateway-fallback"/>
             <column name="module_name" value="payment"/>
             <column name="key_name" value="gateway.fallback"/>
@@ -195,7 +195,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-payment-retry-max"/>
             <column name="module_name" value="payment"/>
             <column name="key_name" value="retry.max.attempts"/>
@@ -203,7 +203,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-payment-refund-auto-days"/>
             <column name="module_name" value="payment"/>
             <column name="key_name" value="refund.auto.process.days"/>
@@ -211,7 +211,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-payment-upi-enabled"/>
             <column name="module_name" value="payment"/>
             <column name="key_name" value="upi.enabled"/>
@@ -219,7 +219,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-payment-wallet-max"/>
             <column name="module_name" value="payment"/>
             <column name="key_name" value="wallet.max.balance"/>
@@ -231,7 +231,7 @@
         <!-- ============================================================ -->
         <!-- SHIPPING MODULE                                               -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-shipping-free-threshold"/>
             <column name="module_name" value="shipping"/>
             <column name="key_name" value="free.threshold"/>
@@ -239,7 +239,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-shipping-default-carrier"/>
             <column name="module_name" value="shipping"/>
             <column name="key_name" value="default.carrier"/>
@@ -247,7 +247,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-shipping-max-delivery-days"/>
             <column name="module_name" value="shipping"/>
             <column name="key_name" value="max.delivery.days"/>
@@ -255,7 +255,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-shipping-express-surcharge"/>
             <column name="module_name" value="shipping"/>
             <column name="key_name" value="express.surcharge"/>
@@ -263,7 +263,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-shipping-max-attempts"/>
             <column name="module_name" value="shipping"/>
             <column name="key_name" value="delivery.max.attempts"/>
@@ -271,7 +271,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-shipping-cod-charge"/>
             <column name="module_name" value="shipping"/>
             <column name="key_name" value="cod.handling.charge"/>
@@ -283,7 +283,7 @@
         <!-- ============================================================ -->
         <!-- RETURN MODULE                                                 -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-return-window"/>
             <column name="module_name" value="return"/>
             <column name="key_name" value="eligibility.days"/>
@@ -291,7 +291,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-return-window-electronics"/>
             <column name="module_name" value="return"/>
             <column name="key_name" value="eligibility.days.electronics"/>
@@ -299,7 +299,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-return-restocking-fee-pct"/>
             <column name="module_name" value="return"/>
             <column name="key_name" value="restocking.fee.percent"/>
@@ -307,7 +307,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-return-auto-approve"/>
             <column name="module_name" value="return"/>
             <column name="key_name" value="auto.approve.below.amount"/>
@@ -315,7 +315,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-return-pickup-sla-hours"/>
             <column name="module_name" value="return"/>
             <column name="key_name" value="pickup.sla.hours"/>
@@ -323,7 +323,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-return-non-returnable-categories"/>
             <column name="module_name" value="return"/>
             <column name="key_name" value="non.returnable.categories"/>
@@ -335,7 +335,7 @@
         <!-- ============================================================ -->
         <!-- PRODUCT MODULE                                                -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-product-max-images"/>
             <column name="module_name" value="product"/>
             <column name="key_name" value="max.images.per.product"/>
@@ -343,7 +343,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-product-max-variants"/>
             <column name="module_name" value="product"/>
             <column name="key_name" value="max.variants.per.product"/>
@@ -351,7 +351,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-product-title-max-length"/>
             <column name="module_name" value="product"/>
             <column name="key_name" value="title.max.length"/>
@@ -359,7 +359,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-product-description-max"/>
             <column name="module_name" value="product"/>
             <column name="key_name" value="description.max.length"/>
@@ -367,7 +367,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-product-min-price"/>
             <column name="module_name" value="product"/>
             <column name="key_name" value="min.selling.price"/>
@@ -375,7 +375,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-product-max-price"/>
             <column name="module_name" value="product"/>
             <column name="key_name" value="max.selling.price"/>
@@ -387,7 +387,7 @@
         <!-- ============================================================ -->
         <!-- INVENTORY MODULE                                              -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-inv-low-stock-threshold"/>
             <column name="module_name" value="inventory"/>
             <column name="key_name" value="low.stock.threshold"/>
@@ -395,7 +395,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-inv-reservation-ttl"/>
             <column name="module_name" value="inventory"/>
             <column name="key_name" value="reservation.ttl.minutes"/>
@@ -403,7 +403,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-inv-oversell-allowed"/>
             <column name="module_name" value="inventory"/>
             <column name="key_name" value="oversell.allowed"/>
@@ -415,7 +415,7 @@
         <!-- ============================================================ -->
         <!-- PROMO MODULE                                                  -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-promo-max-coupons-per-order"/>
             <column name="module_name" value="promo"/>
             <column name="key_name" value="max.coupons.per.order"/>
@@ -423,7 +423,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-promo-max-discount-pct"/>
             <column name="module_name" value="promo"/>
             <column name="key_name" value="max.discount.percent"/>
@@ -431,7 +431,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-promo-max-uses-per-user"/>
             <column name="module_name" value="promo"/>
             <column name="key_name" value="max.uses.per.user"/>
@@ -443,7 +443,7 @@
         <!-- ============================================================ -->
         <!-- REVIEW MODULE                                                 -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-review-auto-publish-min-rating"/>
             <column name="module_name" value="review"/>
             <column name="key_name" value="auto.publish.min.rating"/>
@@ -451,7 +451,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-review-verified-only"/>
             <column name="module_name" value="review"/>
             <column name="key_name" value="verified.purchase.required"/>
@@ -459,7 +459,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-review-flag-threshold"/>
             <column name="module_name" value="review"/>
             <column name="key_name" value="flag.report.threshold"/>
@@ -467,7 +467,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-review-max-images"/>
             <column name="module_name" value="review"/>
             <column name="key_name" value="max.images.per.review"/>
@@ -479,7 +479,7 @@
         <!-- ============================================================ -->
         <!-- SUPPORT MODULE                                                -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-support-sla-first-response-hours"/>
             <column name="module_name" value="support"/>
             <column name="key_name" value="sla.first.response.hours"/>
@@ -487,7 +487,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-support-sla-resolution-hours"/>
             <column name="module_name" value="support"/>
             <column name="key_name" value="sla.resolution.hours"/>
@@ -495,7 +495,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-support-auto-close-days"/>
             <column name="module_name" value="support"/>
             <column name="key_name" value="auto.close.after.resolve.days"/>
@@ -503,7 +503,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-support-escalation-enabled"/>
             <column name="module_name" value="support"/>
             <column name="key_name" value="auto.escalation.enabled"/>
@@ -515,7 +515,7 @@
         <!-- ============================================================ -->
         <!-- SETTLEMENT MODULE                                             -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-settlement-payout-cycle-days"/>
             <column name="module_name" value="settlement"/>
             <column name="key_name" value="payout.cycle.days"/>
@@ -523,7 +523,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-settlement-default-commission-pct"/>
             <column name="module_name" value="settlement"/>
             <column name="key_name" value="default.commission.percent"/>
@@ -531,7 +531,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-settlement-tds-rate"/>
             <column name="module_name" value="settlement"/>
             <column name="key_name" value="tds.rate.percent"/>
@@ -539,7 +539,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-settlement-min-payout"/>
             <column name="module_name" value="settlement"/>
             <column name="key_name" value="min.payout.amount"/>
@@ -551,7 +551,7 @@
         <!-- ============================================================ -->
         <!-- NOTIFICATION MODULE                                           -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-notif-sms-enabled"/>
             <column name="module_name" value="notification"/>
             <column name="key_name" value="sms.enabled"/>
@@ -559,7 +559,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-notif-email-enabled"/>
             <column name="module_name" value="notification"/>
             <column name="key_name" value="email.enabled"/>
@@ -567,7 +567,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-notif-push-enabled"/>
             <column name="module_name" value="notification"/>
             <column name="key_name" value="push.enabled"/>
@@ -575,7 +575,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-notif-dnd-start"/>
             <column name="module_name" value="notification"/>
             <column name="key_name" value="dnd.start.hour"/>
@@ -583,7 +583,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-notif-dnd-end"/>
             <column name="module_name" value="notification"/>
             <column name="key_name" value="dnd.end.hour"/>
@@ -591,7 +591,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-notif-retry-max"/>
             <column name="module_name" value="notification"/>
             <column name="key_name" value="retry.max.attempts"/>
@@ -603,7 +603,7 @@
         <!-- ============================================================ -->
         <!-- SUPPLIER MODULE                                               -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-supplier-probation-days"/>
             <column name="module_name" value="supplier"/>
             <column name="key_name" value="probation.duration.days"/>
@@ -611,7 +611,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-supplier-min-rating"/>
             <column name="module_name" value="supplier"/>
             <column name="key_name" value="min.performance.rating"/>
@@ -619,7 +619,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-supplier-max-return-rate"/>
             <column name="module_name" value="supplier"/>
             <column name="key_name" value="max.return.rate.percent"/>
@@ -627,7 +627,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-supplier-max-cancel-rate"/>
             <column name="module_name" value="supplier"/>
             <column name="key_name" value="max.cancellation.rate.percent"/>
@@ -639,7 +639,7 @@
         <!-- ============================================================ -->
         <!-- PLATFORM / FEATURE FLAGS                                      -->
         <!-- ============================================================ -->
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-platform-maintenance-mode"/>
             <column name="module_name" value="platform"/>
             <column name="key_name" value="maintenance.mode"/>
@@ -647,7 +647,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-platform-new-registration"/>
             <column name="module_name" value="platform"/>
             <column name="key_name" value="registration.enabled"/>
@@ -655,7 +655,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-platform-seller-registration"/>
             <column name="module_name" value="platform"/>
             <column name="key_name" value="seller.registration.enabled"/>
@@ -663,7 +663,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-platform-currency"/>
             <column name="module_name" value="platform"/>
             <column name="key_name" value="default.currency"/>
@@ -671,7 +671,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-platform-country"/>
             <column name="module_name" value="platform"/>
             <column name="key_name" value="default.country"/>
@@ -679,7 +679,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-platform-gst-enabled"/>
             <column name="module_name" value="platform"/>
             <column name="key_name" value="gst.enabled"/>
@@ -687,7 +687,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-platform-pagination-default"/>
             <column name="module_name" value="platform"/>
             <column name="key_name" value="pagination.default.size"/>
@@ -695,7 +695,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cfg-platform-pagination-max"/>
             <column name="module_name" value="platform"/>
             <column name="key_name" value="pagination.max.size"/>

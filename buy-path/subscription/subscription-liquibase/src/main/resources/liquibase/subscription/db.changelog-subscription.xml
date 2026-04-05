@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="subscription-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_subscription</sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- subscriptions (STM entity)                                         -->
+    <!-- ================================================================== -->
+    <changeSet id="subscription-001-create-subscriptions" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="subscriptions" schemaName="hm_subscription"/></not></preConditions>
+        <createTable tableName="subscriptions" schemaName="hm_subscription">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="plan_id" type="VARCHAR(255)"/>
+            <column name="shipping_address_id" type="VARCHAR(255)"/>
+            <column name="billing_address_id" type="VARCHAR(255)"/>
+            <column name="subscribe_after_trial" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="trial_start_date" type="TIMESTAMP"/>
+            <column name="trial_end_date" type="TIMESTAMP"/>
+            <column name="valid_from_date" type="TIMESTAMP"/>
+            <column name="valid_to_date" type="TIMESTAMP"/>
+            <column name="date_unsubscribed" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- subscription_items                                                 -->
+    <!-- ================================================================== -->
+    <changeSet id="subscription-002-create-subscription-items" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="subscription_items" schemaName="hm_subscription"/></not></preConditions>
+        <createTable tableName="subscription_items" schemaName="hm_subscription">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="subscription_id" type="VARCHAR(255)"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT"/>
+            <column name="unit_price" type="BIGINT"/>
+            <column name="discount_percentage" type="INT"/>
+            <column name="line_total" type="BIGINT"/>
+            <column name="tax_amount" type="BIGINT"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="next_delivery_date" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- subscription_schedules                                             -->
+    <!-- ================================================================== -->
+    <changeSet id="subscription-003-create-subscription-schedules" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="subscription_schedules" schemaName="hm_subscription"/></not></preConditions>
+        <createTable tableName="subscription_schedules" schemaName="hm_subscription">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="subscription_id" type="VARCHAR(255)"/>
+            <column name="frequency_type" type="VARCHAR(20)"/>
+            <column name="frequency_interval" type="INT"/>
+            <column name="next_scheduled_date" type="TIMESTAMP"/>
+            <column name="previous_scheduled_date" type="TIMESTAMP"/>
+            <column name="recurrence_pattern" type="VARCHAR(20)"/>
+            <column name="preferred_day_of_month" type="INT"/>
+            <column name="preferred_day_of_week" type="INT"/>
+            <column name="is_recurring" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="max_occurrences" type="INT"/>
+            <column name="occurrence_count" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- subscription_deliveries                                            -->
+    <!-- ================================================================== -->
+    <changeSet id="subscription-004-create-subscription-deliveries" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="subscription_deliveries" schemaName="hm_subscription"/></not></preConditions>
+        <createTable tableName="subscription_deliveries" schemaName="hm_subscription">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="subscription_id" type="VARCHAR(255)"/>
+            <column name="scheduled_date" type="TIMESTAMP"/>
+            <column name="actual_delivery_date" type="TIMESTAMP"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="associated_order_id" type="VARCHAR(255)"/>
+            <column name="delivery_attempt_count" type="INT" defaultValueNumeric="0"/>
+            <column name="total_amount" type="BIGINT"/>
+            <column name="shipping_cost" type="BIGINT"/>
+            <column name="tax_amount" type="BIGINT"/>
+            <column name="discount_amount" type="BIGINT"/>
+            <column name="final_amount" type="BIGINT"/>
+            <column name="payment_method_id" type="VARCHAR(255)"/>
+            <column name="failure_reason" type="VARCHAR(500)"/>
+            <column name="tracking_number" type="VARCHAR(100)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- subscription_pauses                                                -->
+    <!-- ================================================================== -->
+    <changeSet id="subscription-005-create-subscription-pauses" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="subscription_pauses" schemaName="hm_subscription"/></not></preConditions>
+        <createTable tableName="subscription_pauses" schemaName="hm_subscription">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="subscription_id" type="VARCHAR(255)"/>
+            <column name="pause_type" type="VARCHAR(50)"/>
+            <column name="pause_start_date" type="TIMESTAMP"/>
+            <column name="paused_until_date" type="TIMESTAMP"/>
+            <column name="pause_reason" type="VARCHAR(500)"/>
+            <column name="resume_date" type="TIMESTAMP"/>
+            <column name="skip_next_delivery" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- subscription_plans                                                 -->
+    <!-- ================================================================== -->
+    <changeSet id="subscription-006-create-subscription-plans" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="subscription_plans" schemaName="hm_subscription"/></not></preConditions>
+        <createTable tableName="subscription_plans" schemaName="hm_subscription">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="plan_name" type="VARCHAR(100)"/>
+            <column name="frequency_type" type="VARCHAR(20)"/>
+            <column name="frequency_interval" type="INT"/>
+            <column name="base_discount_percentage" type="INT"/>
+            <column name="min_items_for_higher_discount" type="INT"/>
+            <column name="higher_discount_percentage" type="INT"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- subscription_payment_methods                                       -->
+    <!-- ================================================================== -->
+    <changeSet id="subscription-007-create-subscription-payment-methods" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="subscription_payment_methods" schemaName="hm_subscription"/></not></preConditions>
+        <createTable tableName="subscription_payment_methods" schemaName="hm_subscription">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="subscription_id" type="VARCHAR(255)"/>
+            <column name="payment_type" type="VARCHAR(50)"/>
+            <column name="is_primary" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="processor" type="VARCHAR(50)"/>
+            <column name="processor_token_id" type="VARCHAR(255)"/>
+            <column name="last_four_digits" type="VARCHAR(4)"/>
+            <column name="expiration_date" type="TIMESTAMP"/>
+            <column name="status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- subscription_activity_log (no version/last_modified)               -->
+    <!-- ================================================================== -->
+    <changeSet id="subscription-008-create-subscription-activity-log" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="subscription_activity_log" schemaName="hm_subscription"/></not></preConditions>
+        <createTable tableName="subscription_activity_log" schemaName="hm_subscription">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="subscription_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Indexes                                                            -->
+    <!-- ================================================================== -->
+    <changeSet id="subscription-009-add-subscriptions-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="subscriptions" schemaName="hm_subscription"/>
+            <not><indexExists indexName="idx_subscriptions_customer" schemaName="hm_subscription"/></not>
+        </preConditions>
+        <createIndex indexName="idx_subscriptions_customer" tableName="subscriptions" schemaName="hm_subscription">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex indexName="idx_subscriptions_plan" tableName="subscriptions" schemaName="hm_subscription">
+            <column name="plan_id"/>
+        </createIndex>
+        <createIndex indexName="idx_subscriptions_state" tableName="subscriptions" schemaName="hm_subscription">
+            <column name="state_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="subscription-010-add-subscription-items-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="subscription_items" schemaName="hm_subscription"/>
+            <not><indexExists indexName="idx_sub_items_subscription" schemaName="hm_subscription"/></not>
+        </preConditions>
+        <createIndex indexName="idx_sub_items_subscription" tableName="subscription_items" schemaName="hm_subscription">
+            <column name="subscription_id"/>
+        </createIndex>
+        <createIndex indexName="idx_sub_items_product" tableName="subscription_items" schemaName="hm_subscription">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="subscription-011-add-subscription-schedules-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="subscription_schedules" schemaName="hm_subscription"/>
+            <not><indexExists indexName="idx_sub_sched_subscription" schemaName="hm_subscription"/></not>
+        </preConditions>
+        <createIndex indexName="idx_sub_sched_subscription" tableName="subscription_schedules" schemaName="hm_subscription" unique="true">
+            <column name="subscription_id"/>
+        </createIndex>
+        <createIndex indexName="idx_sub_sched_next_date" tableName="subscription_schedules" schemaName="hm_subscription">
+            <column name="next_scheduled_date"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="subscription-012-add-subscription-deliveries-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="subscription_deliveries" schemaName="hm_subscription"/>
+            <not><indexExists indexName="idx_sub_deliveries_subscription" schemaName="hm_subscription"/></not>
+        </preConditions>
+        <createIndex indexName="idx_sub_deliveries_subscription" tableName="subscription_deliveries" schemaName="hm_subscription">
+            <column name="subscription_id"/>
+        </createIndex>
+        <createIndex indexName="idx_sub_deliveries_status" tableName="subscription_deliveries" schemaName="hm_subscription">
+            <column name="status"/>
+        </createIndex>
+        <createIndex indexName="idx_sub_deliveries_order" tableName="subscription_deliveries" schemaName="hm_subscription">
+            <column name="associated_order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="subscription-013-add-subscription-pauses-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="subscription_pauses" schemaName="hm_subscription"/>
+            <not><indexExists indexName="idx_sub_pauses_subscription" schemaName="hm_subscription"/></not>
+        </preConditions>
+        <createIndex indexName="idx_sub_pauses_subscription" tableName="subscription_pauses" schemaName="hm_subscription">
+            <column name="subscription_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="subscription-014-add-subscription-payment-methods-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="subscription_payment_methods" schemaName="hm_subscription"/>
+            <not><indexExists indexName="idx_sub_pm_subscription" schemaName="hm_subscription"/></not>
+        </preConditions>
+        <createIndex indexName="idx_sub_pm_subscription" tableName="subscription_payment_methods" schemaName="hm_subscription">
+            <column name="subscription_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="subscription-015-add-activity-log-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="subscription_activity_log" schemaName="hm_subscription"/>
+            <not><indexExists indexName="idx_sub_activity_subscription" schemaName="hm_subscription"/></not>
+        </preConditions>
+        <createIndex indexName="idx_sub_activity_subscription" tableName="subscription_activity_log" schemaName="hm_subscription">
+            <column name="subscription_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Foreign keys                                                       -->
+    <!-- ================================================================== -->
+    <changeSet id="subscription-016-add-foreign-keys" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><foreignKeyConstraintExists foreignKeyName="fk_sub_items_subscription" schemaName="hm_subscription"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="subscription_items" baseTableSchemaName="hm_subscription" baseColumnNames="subscription_id"
+            referencedTableName="subscriptions" referencedTableSchemaName="hm_subscription" referencedColumnNames="id"
+            constraintName="fk_sub_items_subscription"/>
+        <addForeignKeyConstraint baseTableName="subscription_schedules" baseTableSchemaName="hm_subscription" baseColumnNames="subscription_id"
+            referencedTableName="subscriptions" referencedTableSchemaName="hm_subscription" referencedColumnNames="id"
+            constraintName="fk_sub_sched_subscription"/>
+        <addForeignKeyConstraint baseTableName="subscription_deliveries" baseTableSchemaName="hm_subscription" baseColumnNames="subscription_id"
+            referencedTableName="subscriptions" referencedTableSchemaName="hm_subscription" referencedColumnNames="id"
+            constraintName="fk_sub_deliveries_subscription"/>
+        <addForeignKeyConstraint baseTableName="subscription_pauses" baseTableSchemaName="hm_subscription" baseColumnNames="subscription_id"
+            referencedTableName="subscriptions" referencedTableSchemaName="hm_subscription" referencedColumnNames="id"
+            constraintName="fk_sub_pauses_subscription"/>
+        <addForeignKeyConstraint baseTableName="subscription_payment_methods" baseTableSchemaName="hm_subscription" baseColumnNames="subscription_id"
+            referencedTableName="subscriptions" referencedTableSchemaName="hm_subscription" referencedColumnNames="id"
+            constraintName="fk_sub_pm_subscription"/>
+    </changeSet>
+
+</databaseChangeLog>

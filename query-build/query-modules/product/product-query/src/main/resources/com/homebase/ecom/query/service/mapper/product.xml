@@ -1,0 +1,622 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Product">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema (CQRS read model).         -->
+<!-- Source tables populated by ProductCatalogSyncService ETL.              -->
+<!--                                                                        -->
+<!-- OLAP tables used:                                                      -->
+<!--   hm_query.product_catalog_flat   — products + inventory + seller + reviews -->
+<!--   hm_query.product_variant_flat   — per-variant detail                 -->
+<!--   hm_query.category_config_flat   — categories + tax + attributes      -->
+<!--   hm_query.category_performance_daily — category benchmarks            -->
+<!--   hm_query.inventory_health_flat  — restock forecast                   -->
+<!--   hm_query.seller_dashboard_flat  — supplier contact                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- RESULT MAPS                                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<resultMap id="productDetailMap" type="com.homebase.ecom.dto.ProductDto">
+    <id property="id" column="id"/>
+    <result property="name" column="name"/>
+    <result property="description" column="description"/>
+    <result property="shortDescription" column="shortDescription"/>
+    <result property="brand" column="brand"/>
+    <result property="categoryId" column="categoryId"/>
+    <result property="categoryName" column="categoryName"/>
+    <result property="slug" column="slug"/>
+    <result property="stateId" column="stateId"/>
+    <result property="flowId" column="flowId"/>
+    <result property="basePrice" column="basePrice"/>
+    <result property="hsnCode" column="hsnCode"/>
+    <result property="countryOfOrigin" column="countryOfOrigin"/>
+    <result property="weightGrams" column="weightGrams"/>
+    <result property="warrantyMonths" column="warrantyMonths"/>
+    <result property="isActive" column="isActive"/>
+    <result property="isReturnable" column="isReturnable"/>
+    <result property="returnWindowDays" column="returnWindowDays"/>
+    <result property="createdTime" column="createdTime"/>
+    <collection property="variants" ofType="com.homebase.ecom.dto.VariantDto"
+                select="getVariantsForProduct" column="id"/>
+</resultMap>
+
+<!-- Sub-select: variants from OLAP flat table -->
+<select id="getVariantsForProduct" resultType="com.homebase.ecom.dto.VariantDto">
+    SELECT
+        variant_id    as "id",
+        product_id    as "productId",
+        variant_name  as "variantName",
+        sku           as "sku",
+        ean           as "ean",
+        mrp           as "mrp",
+        selling_price as "sellingPrice",
+        available_qty as "availableQty",
+        reserved_qty  as "reservedQty",
+        inbound_qty   as "inboundQty",
+        variant_status as "status"
+    FROM hm_query.product_variant_flat
+    WHERE product_id = #{id}
+    ORDER BY sku
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- STOREFRONT QUERIES (public — no ACL or minimal ACL)                    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="getPublished-count" resultType="int">
+    SELECT count(*) FROM hm_query.product_catalog_flat
+    <where>
+        product_status = 'PUBLISHED'
+        <if test="name != null">AND product_name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="brand != null">AND brand = #{brand}</if>
+        <if test="categoryId != null">AND category_id = #{categoryId}</if>
+    </where>
+</select>
+
+<select id="getPublished" resultType="com.homebase.ecom.dto.ProductDto">
+    SELECT
+        product_id       as "id",
+        product_name     as "name",
+        description      as "description",
+        short_description as "shortDescription",
+        brand            as "brand",
+        category_id      as "categoryId",
+        category_name    as "categoryName",
+        slug             as "slug",
+        product_status   as "stateId",
+        base_price       as "basePrice",
+        avg_rating       as "avgRating",
+        review_count     as "reviewCount",
+        total_available_qty as "availableQty",
+        stock_status     as "stockStatus",
+        seller_name      as "sellerName"
+    FROM hm_query.product_catalog_flat
+    <where>
+        product_status = 'PUBLISHED'
+        <if test="name != null">AND product_name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="brand != null">AND brand = #{brand}</if>
+        <if test="categoryId != null">AND category_id = #{categoryId}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<select id="getBySlug" resultMap="productDetailMap">
+    SELECT
+        product_id          as "id",
+        product_name        as "name",
+        description         as "description",
+        short_description   as "shortDescription",
+        brand               as "brand",
+        category_id         as "categoryId",
+        category_name       as "categoryName",
+        slug                as "slug",
+        product_status      as "stateId",
+        base_price          as "basePrice",
+        hsn_code            as "hsnCode",
+        country_of_origin   as "countryOfOrigin",
+        weight_grams        as "weightGrams",
+        warranty_months     as "warrantyMonths",
+        is_returnable       as "isReturnable",
+        return_window_days  as "returnWindowDays",
+        created_date        as "createdTime"
+    FROM hm_query.product_catalog_flat
+    WHERE slug = #{slug} AND product_status = 'PUBLISHED'
+</select>
+
+<select id="searchProducts-count" resultType="int">
+    SELECT count(*) FROM hm_query.product_catalog_flat
+    WHERE product_status = 'PUBLISHED'
+      AND (product_name LIKE CONCAT('%', #{q}, '%')
+           OR description LIKE CONCAT('%', #{q}, '%')
+           OR brand LIKE CONCAT('%', #{q}, '%'))
+</select>
+
+<select id="searchProducts" resultType="com.homebase.ecom.dto.ProductDto">
+    SELECT
+        product_id   as "id",
+        product_name as "name",
+        brand        as "brand",
+        category_name as "categoryName",
+        slug         as "slug",
+        product_status as "stateId",
+        base_price   as "basePrice",
+        avg_rating   as "avgRating",
+        review_count as "reviewCount",
+        seller_name  as "sellerName"
+    FROM hm_query.product_catalog_flat
+    WHERE product_status = 'PUBLISHED'
+      AND (product_name LIKE CONCAT('%', #{q}, '%')
+           OR description LIKE CONCAT('%', #{q}, '%')
+           OR brand LIKE CONCAT('%', #{q}, '%'))
+    ${orderby} ${pagination}
+</select>
+
+<select id="getByCategory-count" resultType="int">
+    SELECT count(*) FROM hm_query.product_catalog_flat
+    WHERE category_id = #{categoryId} AND product_status = 'PUBLISHED'
+</select>
+
+<select id="getByCategory" resultType="com.homebase.ecom.dto.ProductDto">
+    SELECT
+        product_id   as "id",
+        product_name as "name",
+        brand        as "brand",
+        slug         as "slug",
+        base_price   as "basePrice",
+        avg_rating   as "avgRating",
+        review_count as "reviewCount",
+        stock_status as "stockStatus",
+        seller_name  as "sellerName"
+    FROM hm_query.product_catalog_flat
+    WHERE category_id = #{categoryId} AND product_status = 'PUBLISHED'
+    ${orderby} ${pagination}
+</select>
+
+<select id="getCategoryTree" resultType="com.homebase.ecom.dto.CategoryDto">
+    SELECT
+        category_id   as "id",
+        name          as "name",
+        slug          as "slug",
+        parent_id     as "parentId",
+        depth         as "depth",
+        active        as "active",
+        product_count as "productCount"
+    FROM hm_query.category_config_flat
+    WHERE active = true
+    ORDER BY depth, display_order, name
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ADMIN QUERIES (platform UI — ACL required)                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Admin product listing (products/index.html) -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.product_catalog_flat
+    <where>
+        <if test="name != null">AND product_name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="brand != null">AND brand = #{brand}</if>
+        <if test="categoryId != null">AND category_id = #{categoryId}</if>
+        <if test="stateId != null">AND product_status = #{stateId}</if>
+        <if test="slug != null">AND slug = #{slug}</if>
+        <if test="sellerId != null">AND seller_id = #{sellerId}</if>
+        <if test="stockStatus != null">AND stock_status = #{stockStatus}</if>
+        <if test="sellerTier != null">AND seller_tier = #{sellerTier}</if>
+        <if test="minPrice != null">AND base_price &gt;= #{minPrice}</if>
+        <if test="maxPrice != null">AND base_price &lt;= #{maxPrice}</if>
+        <if test="minRating != null">AND avg_rating &gt;= #{minRating}</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.dto.ProductDto">
+    SELECT
+        product_id       as "id",
+        product_name     as "name",
+        primary_sku      as "sku",
+        brand            as "brand",
+        category_id      as "categoryId",
+        category_name    as "categoryName",
+        slug             as "slug",
+        product_status   as "stateId",
+        base_price       as "basePrice",
+        total_available_qty as "availableQty",
+        stock_status     as "stockStatus",
+        seller_id        as "sellerId",
+        seller_name      as "sellerName",
+        seller_tier      as "sellerTier",
+        avg_rating       as "avgRating",
+        review_count     as "reviewCount",
+        violations_count as "violationsCount",
+        units_sold_30d   as "unitsSold30d",
+        revenue_30d      as "revenue30d",
+        conversion_rate  as "conversionRate",
+        created_date     as "createdTime"
+    FROM hm_query.product_catalog_flat
+    <where>
+        <if test="name != null">AND product_name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="brand != null">AND brand = #{brand}</if>
+        <if test="categoryId != null">AND category_id = #{categoryId}</if>
+        <if test="stateId != null">AND product_status = #{stateId}</if>
+        <if test="slug != null">AND slug = #{slug}</if>
+        <if test="sellerId != null">AND seller_id = #{sellerId}</if>
+        <if test="stockStatus != null">AND stock_status = #{stockStatus}</if>
+        <if test="sellerTier != null">AND seller_tier = #{sellerTier}</if>
+        <if test="minPrice != null">AND base_price &gt;= #{minPrice}</if>
+        <if test="maxPrice != null">AND base_price &lt;= #{maxPrice}</if>
+        <if test="minRating != null">AND avg_rating &gt;= #{minRating}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Admin product detail (products/detail.html) -->
+<select id="getById" resultMap="productDetailMap">
+    SELECT
+        product_id          as "id",
+        product_name        as "name",
+        description         as "description",
+        short_description   as "shortDescription",
+        brand               as "brand",
+        category_id         as "categoryId",
+        category_name       as "categoryName",
+        slug                as "slug",
+        product_status      as "stateId",
+        base_price          as "basePrice",
+        hsn_code            as "hsnCode",
+        country_of_origin   as "countryOfOrigin",
+        weight_grams        as "weightGrams",
+        warranty_months     as "warrantyMonths",
+        is_returnable       as "isReturnable",
+        return_window_days  as "returnWindowDays",
+        created_date        as "createdTime",
+        primary_sku         as "sku",
+        variant_count       as "variantCount",
+        total_available_qty as "availableQty",
+        total_reserved_qty  as "reservedQty",
+        stock_status        as "stockStatus",
+        seller_id           as "sellerId",
+        seller_name         as "sellerName",
+        seller_tier         as "sellerTier",
+        avg_rating          as "avgRating",
+        review_count        as "reviewCount",
+        rating_5_pct        as "rating5Pct",
+        rating_4_pct        as "rating4Pct",
+        rating_3_pct        as "rating3Pct",
+        rating_2_pct        as "rating2Pct",
+        rating_1_pct        as "rating1Pct",
+        sentiment_positive_pct as "sentimentPositivePct",
+        sentiment_neutral_pct  as "sentimentNeutralPct",
+        sentiment_negative_pct as "sentimentNegativePct",
+        units_sold_30d      as "unitsSold30d",
+        revenue_30d         as "revenue30d",
+        conversion_rate     as "conversionRate",
+        return_rate         as "returnRate",
+        views_30d           as "views30d",
+        violations_count    as "violationsCount"
+    FROM hm_query.product_catalog_flat
+    WHERE product_id = #{id}
+</select>
+
+<!-- State counts for tab badges -->
+<select id="getStateCounts" resultType="com.homebase.ecom.dto.StateCountDto">
+    SELECT
+        product_status as "stateId",
+        COUNT(*)       as "count"
+    FROM hm_query.product_catalog_flat
+    GROUP BY product_status
+</select>
+
+<!-- Pending review products -->
+<select id="getPendingReview-count" resultType="int">
+    SELECT count(*) FROM hm_query.product_catalog_flat
+    <where>
+        product_status = 'UNDER_REVIEW'
+        <if test="name != null">AND product_name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="brand != null">AND brand = #{brand}</if>
+        <if test="sellerId != null">AND seller_id = #{sellerId}</if>
+    </where>
+</select>
+
+<select id="getPendingReview" resultType="com.homebase.ecom.dto.ProductDto">
+    SELECT
+        product_id   as "id",
+        product_name as "name",
+        primary_sku  as "sku",
+        brand        as "brand",
+        category_name as "categoryName",
+        seller_name  as "sellerName",
+        seller_id    as "sellerId",
+        created_date as "createdTime"
+    FROM hm_query.product_catalog_flat
+    <where>
+        product_status = 'UNDER_REVIEW'
+        <if test="name != null">AND product_name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="brand != null">AND brand = #{brand}</if>
+        <if test="sellerId != null">AND seller_id = #{sellerId}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Variant queries -->
+<select id="getVariantsByProduct" resultType="com.homebase.ecom.dto.VariantDto">
+    SELECT
+        variant_id     as "id",
+        product_id     as "productId",
+        variant_name   as "variantName",
+        sku            as "sku",
+        ean            as "ean",
+        mrp            as "mrp",
+        selling_price  as "sellingPrice",
+        available_qty  as "availableQty",
+        reserved_qty   as "reservedQty",
+        inbound_qty    as "inboundQty",
+        variant_status as "status",
+        attributes_json as "attributesJson"
+    FROM hm_query.product_variant_flat
+    WHERE product_id = #{productId}
+    ORDER BY sku
+</select>
+
+<select id="getVariantBySku" resultType="com.homebase.ecom.dto.VariantDto">
+    SELECT
+        variant_id     as "id",
+        product_id     as "productId",
+        sku            as "sku",
+        selling_price  as "sellingPrice",
+        available_qty  as "availableQty",
+        variant_status as "status"
+    FROM hm_query.product_variant_flat
+    WHERE sku = #{sku}
+</select>
+
+<select id="variantExists" resultType="int">
+    SELECT count(*) FROM hm_query.product_variant_flat pvf
+    JOIN hm_query.product_catalog_flat pcf ON pvf.product_id = pcf.product_id
+    WHERE pvf.product_id = #{productId}
+      AND pvf.variant_id = #{variantId}
+      AND pcf.product_status = 'PUBLISHED'
+      AND pvf.available_qty > 0
+</select>
+
+<!-- Category queries for admin -->
+<select id="getCategories-count" resultType="int">
+    SELECT count(*) FROM hm_query.category_config_flat
+    <where>
+        <if test="active != null">AND active = #{active}</if>
+        <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="parentId != null">AND parent_id = #{parentId}</if>
+    </where>
+</select>
+
+<select id="getCategories" resultType="com.homebase.ecom.dto.CategoryDto">
+    SELECT
+        category_id             as "id",
+        name                    as "name",
+        slug                    as "slug",
+        parent_id               as "parentId",
+        path                    as "path",
+        depth                   as "depth",
+        active                  as "active",
+        commission_rate_bps     as "commissionRateBps",
+        is_gated                as "isGated",
+        return_policy_days      as "returnPolicyDays",
+        listing_min_images      as "listingMinImages",
+        hsn_code                as "hsnCode",
+        gst_rate_pct            as "gstRatePct",
+        product_count           as "productCount",
+        seller_count            as "sellerCount",
+        gmv_30d                 as "gmv30d"
+    FROM hm_query.category_config_flat
+    <where>
+        <if test="active != null">AND active = #{active}</if>
+        <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="parentId != null">AND parent_id = #{parentId}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Performance benchmark for product detail page -->
+<select id="getCategoryBenchmark" resultType="map">
+    SELECT
+        avg_product_rating     as "avgCategoryRating",
+        avg_views_per_product  as "avgCategoryViews",
+        conversion_rate        as "avgCategoryConversion",
+        return_rate            as "avgCategoryReturnRate"
+    FROM hm_query.category_performance_daily
+    WHERE category_id = #{categoryId}
+    ORDER BY summary_date DESC
+    LIMIT 1
+</select>
+
+<!-- Restock forecast -->
+<select id="getRestockForecast" resultType="map">
+    SELECT
+        available_qty    as "availableQty",
+        avg_daily_sales  as "avgDailySales",
+        days_of_supply   as "daysOfSupply",
+        last_restock_at  as "lastRestockAt",
+        last_sale_at     as "lastSaleAt",
+        locked_capital   as "lockedCapital"
+    FROM hm_query.inventory_health_flat
+    WHERE product_id = #{id}
+    LIMIT 1
+</select>
+
+<!-- Supplier contact -->
+<select id="getSupplierContact" resultType="map">
+    SELECT
+        business_name       as "businessName",
+        store_name          as "storeName",
+        contact_email       as "contactEmail",
+        contact_phone       as "contactPhone",
+        rating              as "rating",
+        avg_lead_time_days  as "avgLeadTimeDays",
+        tier                as "tier",
+        health_score        as "healthScore"
+    FROM hm_query.seller_dashboard_flat
+    WHERE seller_id = #{sellerId}
+</select>
+
+<!-- Competitor pricing -->
+<select id="getCompetitorPricing" resultType="com.homebase.ecom.dto.ProductDto">
+    SELECT
+        product_id   as "id",
+        product_name as "name",
+        primary_sku  as "sku",
+        base_price   as "basePrice",
+        seller_name  as "sellerName",
+        avg_rating   as "avgRating"
+    FROM hm_query.product_catalog_flat
+    WHERE category_id = #{categoryId}
+      AND product_id != #{excludeProductId}
+      AND product_status = 'PUBLISHED'
+    ORDER BY units_sold_30d DESC
+    LIMIT 5
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- BRAND QUERIES (products/brands.html)                                   -->
+<!-- Source: hm_query.brand_registry_flat                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="getBrands-count" resultType="int">
+    SELECT count(*) FROM hm_query.brand_registry_flat
+    <where>
+        <if test="brandStatus != null">AND brand_status = #{brandStatus}</if>
+        <if test="brandName != null">AND brand_name LIKE CONCAT('%', #{brandName}, '%')</if>
+        <if test="industryCategory != null">AND industry_category = #{industryCategory}</if>
+    </where>
+</select>
+
+<select id="getBrands" resultType="map">
+    SELECT
+        brand_id              as "id",
+        brand_name            as "brandName",
+        brand_slug            as "brandSlug",
+        company_name          as "companyName",
+        country_of_origin     as "countryOfOrigin",
+        industry_category     as "industryCategory",
+        brand_website         as "brandWebsite",
+        brand_status          as "brandStatus",
+        verified_at           as "verifiedAt",
+        created_time          as "createdTime",
+        product_count         as "productCount",
+        authorized_seller_count as "authorizedSellerCount",
+        trademark_count       as "trademarkCount",
+        violation_count       as "violationCount",
+        brand_health_score    as "brandHealthScore"
+    FROM hm_query.brand_registry_flat
+    <where>
+        <if test="brandStatus != null">AND brand_status = #{brandStatus}</if>
+        <if test="brandName != null">AND brand_name LIKE CONCAT('%', #{brandName}, '%')</if>
+        <if test="industryCategory != null">AND industry_category = #{industryCategory}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<select id="getBrandStateCounts" resultType="com.homebase.ecom.dto.StateCountDto">
+    SELECT
+        brand_status as "stateId",
+        COUNT(*)     as "count"
+    FROM hm_query.brand_registry_flat
+    GROUP BY brand_status
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ATTRIBUTE QUERIES (products/attributes.html)                           -->
+<!-- Source: hm_query.attribute_definition_flat, attribute_set_flat          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Attribute definitions listing -->
+<select id="getAttributes-count" resultType="int">
+    SELECT count(*) FROM hm_query.attribute_definition_flat
+    <where>
+        <if test="code != null">AND code LIKE CONCAT('%', #{code}, '%')</if>
+        <if test="label != null">AND label LIKE CONCAT('%', #{label}, '%')</if>
+        <if test="inputType != null">AND input_type = #{inputType}</if>
+        <if test="filterable != null">AND filterable = #{filterable}</if>
+        <if test="searchable != null">AND searchable = #{searchable}</if>
+    </where>
+</select>
+
+<select id="getAttributes" resultType="com.homebase.ecom.dto.AttributeDefinitionDto">
+    SELECT
+        attribute_id    as "id",
+        code            as "code",
+        label           as "label",
+        input_type      as "inputType",
+        filterable      as "filterable",
+        searchable      as "searchable",
+        required        as "required",
+        display_order   as "displayOrder",
+        variation_count as "variationCount",
+        product_count   as "productCount",
+        category_count  as "categoryCount",
+        options_json    as "optionsJson",
+        options_count   as "optionsCount"
+    FROM hm_query.attribute_definition_flat
+    <where>
+        <if test="code != null">AND code LIKE CONCAT('%', #{code}, '%')</if>
+        <if test="label != null">AND label LIKE CONCAT('%', #{label}, '%')</if>
+        <if test="inputType != null">AND input_type = #{inputType}</if>
+        <if test="filterable != null">AND filterable = #{filterable}</if>
+        <if test="searchable != null">AND searchable = #{searchable}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Attribute stat counts for cards -->
+<select id="getAttributeStats" resultType="map">
+    SELECT
+        COUNT(*)                                  as "total",
+        COUNT(CASE WHEN filterable THEN 1 END)    as "filterable",
+        COUNT(CASE WHEN searchable THEN 1 END)    as "searchable",
+        COUNT(CASE WHEN variation_count > 0 THEN 1 END) as "usedInVariations"
+    FROM hm_query.attribute_definition_flat
+</select>
+
+<!-- Attribute sets listing -->
+<select id="getAttributeSets-count" resultType="int">
+    SELECT count(*) FROM hm_query.attribute_set_flat
+    <where>
+        <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+    </where>
+</select>
+
+<select id="getAttributeSets" resultType="map">
+    SELECT
+        set_id           as "id",
+        name             as "name",
+        attribute_count  as "attributeCount",
+        product_count    as "productCount",
+        categories_json  as "categoriesJson",
+        attributes_json  as "attributesJson",
+        created_time     as "createdTime"
+    FROM hm_query.attribute_set_flat
+    <where>
+        <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Category-attribute mapping -->
+<select id="getCategoryAttributeMapping-count" resultType="int">
+    SELECT count(*) FROM hm_query.category_config_flat
+    WHERE required_attributes_count > 0
+    <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+</select>
+
+<select id="getCategoryAttributeMapping" resultType="map">
+    SELECT
+        ccf.category_id     as "categoryId",
+        ccf.name            as "categoryName",
+        ccf.required_attributes_json as "requiredAttributesJson",
+        ccf.required_attributes_count as "requiredAttributesCount"
+    FROM hm_query.category_config_flat ccf
+    WHERE ccf.required_attributes_count > 0
+    <if test="name != null">AND ccf.name LIKE CONCAT('%', #{name}, '%')</if>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

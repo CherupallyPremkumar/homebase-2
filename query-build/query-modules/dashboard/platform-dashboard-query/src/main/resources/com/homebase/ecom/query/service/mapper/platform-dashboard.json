@@ -1,0 +1,112 @@
+[
+	{
+		"id": "PlatformDashboard.platformKpi",
+		"name": "platform-kpi",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "PlatformDashboard.liveOrderPipeline",
+		"name": "live-order-pipeline",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "PlatformDashboard.topProductsToday",
+		"name": "top-products-today",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "PlatformDashboard.topSellersToday",
+		"name": "top-sellers-today",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "PlatformDashboard.categoryPerformance",
+		"name": "category-performance",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "PlatformDashboard.sellerHealthSummary",
+		"name": "seller-health-summary",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "PlatformDashboard.conversionFunnel",
+		"name": "conversion-funnel",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "PlatformDashboard.revenueByRegion",
+		"name": "revenue-by-region",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "PlatformDashboard.platformAlerts",
+		"name": "platform-alerts",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"severity": { "name": "severity", "filterable": true, "columnType": "Text" },
+			"is_active": { "name": "is_active", "filterable": true, "columnType": "Boolean" },
+			"alert_type": { "name": "alert_type", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "PlatformDashboard.customerHealth",
+		"name": "customer-health",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"cohortMonth": { "name": "cohortMonth", "filterable": true, "columnType": "Date" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

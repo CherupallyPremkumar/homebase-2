@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Dashboard Aggregation Tables (OLAP)                                -->
+    <!-- Batch-computed by Spring Batch schedulers (nightly at 2 AM IST).   -->
+    <!-- One row per day per tenant. Queried by dashboard-query module.     -->
+    <!-- All money in paisa (BIGINT), rates in basis points (INT).          -->
+    <!-- ================================================================== -->
+
+    <!-- ====== PLATFORM KPI SNAPSHOTS (daily rollup of entire platform) ====== -->
+    <changeSet id="query-dash-001-platform-kpi-snapshots" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="platform_kpi_snapshots" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="platform_kpi_snapshots" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="snapshot_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <!-- Revenue & GMV -->
+            <column name="gmv" type="BIGINT" defaultValueNumeric="0" remarks="Gross Merchandise Value in paisa"/>
+            <column name="total_revenue" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="total_commission_earned" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="total_platform_fees" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="total_seller_payouts" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="pending_payouts" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="total_refund_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="take_rate" type="INT" defaultValueNumeric="0" remarks="Basis points: 1280 = 12.80%"/>
+            <!-- Orders -->
+            <column name="total_orders" type="INT" defaultValueNumeric="0"/>
+            <column name="total_units_sold" type="INT" defaultValueNumeric="0"/>
+            <column name="avg_order_value" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="cancellation_count" type="INT" defaultValueNumeric="0"/>
+            <column name="rto_count" type="INT" defaultValueNumeric="0"/>
+            <column name="return_count" type="INT" defaultValueNumeric="0"/>
+            <!-- Users -->
+            <column name="active_buyers" type="INT" defaultValueNumeric="0"/>
+            <column name="active_sellers" type="INT" defaultValueNumeric="0"/>
+            <column name="new_buyers" type="INT" defaultValueNumeric="0"/>
+            <column name="new_sellers" type="INT" defaultValueNumeric="0"/>
+            <!-- Catalog -->
+            <column name="total_products_listed" type="INT" defaultValueNumeric="0"/>
+            <column name="total_skus" type="INT" defaultValueNumeric="0"/>
+            <!-- Traffic -->
+            <column name="total_sessions" type="INT" defaultValueNumeric="0"/>
+            <column name="total_page_views" type="INT" defaultValueNumeric="0"/>
+            <column name="conversion_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="cart_abandonment_rate" type="INT" defaultValueNumeric="0"/>
+            <!-- Operations -->
+            <column name="fraud_attempts_blocked" type="INT" defaultValueNumeric="0"/>
+            <column name="open_support_tickets" type="INT" defaultValueNumeric="0"/>
+            <column name="avg_delivery_days" type="INT" defaultValueNumeric="0"/>
+            <column name="on_time_delivery_rate" type="INT" defaultValueNumeric="0"/>
+            <!-- Payment mix (basis points of total) -->
+            <column name="upi_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="card_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="cod_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="wallet_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="netbanking_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="payment_success_rate" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <addUniqueConstraint tableName="platform_kpi_snapshots" schemaName="hm_query"
+            columnNames="snapshot_date, tenant" constraintName="uk_query_kpi_date_tenant"/>
+        <createIndex indexName="idx_query_kpi_date" tableName="platform_kpi_snapshots" schemaName="hm_query">
+            <column name="snapshot_date"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== CATEGORY PERFORMANCE (per category per day) ====== -->
+    <changeSet id="query-dash-002-category-performance-daily" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="category_performance_daily" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="category_performance_daily" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="summary_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="category_id" type="VARCHAR(255)"/>
+            <column name="category_name" type="VARCHAR(255)"/>
+            <column name="gmv" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="total_orders" type="INT" defaultValueNumeric="0"/>
+            <column name="total_units_sold" type="INT" defaultValueNumeric="0"/>
+            <column name="total_returns" type="INT" defaultValueNumeric="0"/>
+            <column name="return_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="avg_order_value" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="active_sellers" type="INT" defaultValueNumeric="0"/>
+            <column name="active_listings" type="INT" defaultValueNumeric="0"/>
+            <column name="conversion_rate" type="INT" defaultValueNumeric="0"/>
+            <!-- Benchmark averages (for product detail comparison) -->
+            <column name="avg_product_rating" type="INT" defaultValueNumeric="0" remarks="Avg rating of products in this category"/>
+            <column name="avg_views_per_product" type="INT" defaultValueNumeric="0" remarks="Avg daily views per product"/>
+        </createTable>
+        <createIndex indexName="idx_query_catperf_date" tableName="category_performance_daily" schemaName="hm_query">
+            <column name="summary_date"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== CONVERSION FUNNEL (one row per day) ====== -->
+    <changeSet id="query-dash-003-conversion-funnel-daily" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="conversion_funnel_daily" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="conversion_funnel_daily" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="funnel_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="total_sessions" type="INT" defaultValueNumeric="0"/>
+            <column name="product_views" type="INT" defaultValueNumeric="0"/>
+            <column name="add_to_cart" type="INT" defaultValueNumeric="0"/>
+            <column name="checkout_initiated" type="INT" defaultValueNumeric="0"/>
+            <column name="purchase_completed" type="INT" defaultValueNumeric="0"/>
+            <column name="browse_to_cart_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="cart_to_checkout_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="checkout_to_purchase_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="overall_conversion_rate" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <addUniqueConstraint tableName="conversion_funnel_daily" schemaName="hm_query"
+            columnNames="funnel_date, tenant" constraintName="uk_query_funnel_date_tenant"/>
+    </changeSet>
+
+    <!-- ====== SELLER HEALTH SUMMARY (daily rollup) ====== -->
+    <changeSet id="query-dash-004-seller-health-summary-daily" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="seller_health_summary_daily" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="seller_health_summary_daily" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="summary_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="total_sellers" type="INT" defaultValueNumeric="0"/>
+            <column name="healthy_sellers" type="INT" defaultValueNumeric="0"/>
+            <column name="at_risk_sellers" type="INT" defaultValueNumeric="0"/>
+            <column name="unhealthy_sellers" type="INT" defaultValueNumeric="0"/>
+            <column name="new_applications" type="INT" defaultValueNumeric="0"/>
+            <column name="pending_approvals" type="INT" defaultValueNumeric="0"/>
+            <column name="suspended_sellers" type="INT" defaultValueNumeric="0"/>
+            <column name="avg_health_score" type="INT" defaultValueNumeric="0"/>
+            <column name="avg_rating" type="INT" defaultValueNumeric="0"/>
+            <column name="avg_fulfillment_rate" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <addUniqueConstraint tableName="seller_health_summary_daily" schemaName="hm_query"
+            columnNames="summary_date, tenant" constraintName="uk_query_sellerhealth_date_tenant"/>
+    </changeSet>
+
+    <!-- ====== CUSTOMER COHORT METRICS (monthly cohort × measurement) ====== -->
+    <changeSet id="query-dash-005-customer-cohort-metrics" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="customer_cohort_metrics" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="customer_cohort_metrics" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="cohort_month" type="DATE"><constraints nullable="false"/></column>
+            <column name="measurement_month" type="DATE"><constraints nullable="false"/></column>
+            <column name="cohort_size" type="INT" defaultValueNumeric="0"/>
+            <column name="active_count" type="INT" defaultValueNumeric="0"/>
+            <column name="retention_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="revenue_per_user" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="total_orders" type="INT" defaultValueNumeric="0"/>
+            <column name="churn_count" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <addUniqueConstraint tableName="customer_cohort_metrics" schemaName="hm_query"
+            columnNames="cohort_month, measurement_month, tenant" constraintName="uk_query_cohort_tenant"/>
+    </changeSet>
+
+    <!-- ====== PLATFORM ALERTS (event-driven, not batch) ====== -->
+    <changeSet id="query-dash-006-platform-alerts" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="platform_alerts" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="platform_alerts" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="alert_type" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="severity" type="VARCHAR(10)"><constraints nullable="false"/></column>
+            <column name="metric_name" type="VARCHAR(100)"/>
+            <column name="threshold_value" type="INT"/>
+            <column name="current_value" type="INT"/>
+            <column name="alert_message" type="VARCHAR(500)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="is_acknowledged" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="acknowledged_by" type="VARCHAR(100)"/>
+            <column name="acknowledged_at" type="TIMESTAMP"/>
+            <column name="resolved_at" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_query_alerts_active" tableName="platform_alerts" schemaName="hm_query">
+            <column name="is_active"/>
+            <column name="severity"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== REVENUE BY REGION (daily per state) ====== -->
+    <changeSet id="query-dash-007-revenue-by-region-daily" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="revenue_by_region_daily" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="revenue_by_region_daily" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="summary_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="state" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="gmv" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="total_orders" type="INT" defaultValueNumeric="0"/>
+            <column name="avg_order_value" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="active_sellers" type="INT" defaultValueNumeric="0"/>
+            <column name="active_buyers" type="INT" defaultValueNumeric="0"/>
+            <column name="on_time_delivery_rate" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_query_region_date" tableName="revenue_by_region_daily" schemaName="hm_query">
+            <column name="summary_date"/>
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

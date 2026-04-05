@@ -1,0 +1,49 @@
+[
+	{
+		"id": "Analytics.getDailySales",
+		"name": "dailySales",
+		"description": "Platform KPI snapshots from OLAP (daily sales, AOV, customers)",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"summaryDate": { "name": "summaryDate", "columnType": "Date", "filterable": true, "sortable": true },
+			"totalOrders": { "name": "totalOrders", "columnType": "Number", "sortable": true },
+			"totalRevenue": { "name": "totalRevenue", "columnType": "Number", "sortable": true },
+			"avgOrderValue": { "name": "avgOrderValue", "columnType": "Number", "sortable": true },
+			"currency": { "name": "currency", "columnType": "Text", "filterable": true },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Analytics.getProductPerformance",
+		"name": "productPerformance",
+		"description": "Product-level performance metrics from OLAP",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"productId": { "name": "productId", "columnType": "Text", "filterable": true },
+			"periodDate": { "name": "periodDate", "columnType": "Date", "filterable": true, "sortable": true },
+			"views": { "name": "views", "columnType": "Number", "sortable": true },
+			"purchases": { "name": "purchases", "columnType": "Number", "sortable": true },
+			"revenue": { "name": "revenue", "columnType": "Number", "sortable": true },
+			"avgRating": { "name": "avgRating", "columnType": "Number", "sortable": true },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Analytics.getRevenueTrend",
+		"name": "revenueTrend",
+		"description": "Revenue trend over time for charting",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" }
+		},
+		"paginated": false
+	}
+]

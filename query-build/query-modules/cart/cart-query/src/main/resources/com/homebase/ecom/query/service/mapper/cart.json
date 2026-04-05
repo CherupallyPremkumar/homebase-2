@@ -1,0 +1,391 @@
+[
+	{
+		"id": "Cart.getAll",
+		"name": "carts",
+		"acls": ["ADMIN"],
+		"workflowName": "cart",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"responseClass": "com.homebase.ecom.dto.CartDto",
+		"columnMetadata": {
+			"id": {
+				"name": "cart_id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"userId": {
+				"name": "customer_id",
+				"columnType": "Text",
+				"filterable": true
+			},
+			"customerName": {
+				"name": "customer_name",
+				"columnType": "Text",
+				"filterable": true,
+				"likeQuery": true
+			},
+			"customerEmail": {
+				"name": "customer_email",
+				"columnType": "Text",
+				"filterable": true,
+				"likeQuery": true
+			},
+			"stateId": {
+				"name": "state_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"currency": {
+				"name": "currency",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"subtotal": {
+				"name": "subtotal",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"total": {
+				"name": "total",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"itemCount": {
+				"name": "item_count",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"createdTime": {
+				"name": "created_time",
+				"columnType": "Date",
+				"sortable": true
+			},
+			"lastModifiedTime": {
+				"name": "last_modified_time",
+				"columnType": "Date",
+				"sortable": true
+			},
+			"minTotal": { "name": "minTotal", "filterable": true, "columnType": "Number" },
+			"maxTotal": { "name": "maxTotal", "filterable": true, "columnType": "Number" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cart.getStateCounts",
+		"name": "cartStateCounts",
+		"acls": ["ADMIN"],
+		"responseClass": "java.util.Map",
+		"columnMetadata": {},
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getAbandonedCarts",
+		"name": "abandonedCarts",
+		"acls": ["ADMIN"],
+		"responseClass": "com.homebase.ecom.dto.CartDto",
+		"columnMetadata": {
+			"id": {
+				"name": "cart_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"userId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"customerName": {
+				"name": "customer_name",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"lastModifiedTime": {
+				"name": "last_modified_time",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cart.getExpiredCarts",
+		"name": "expiredCarts",
+		"acls": ["ADMIN"],
+		"responseClass": "com.homebase.ecom.dto.CartDto",
+		"columnMetadata": {
+			"id": {
+				"name": "cart_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"userId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdTime": {
+				"name": "created_time",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cart.getByCustomerId",
+		"name": "cartsByCustomer",
+		"acls": ["CUSTOMER"],
+		"responseClass": "com.homebase.ecom.dto.CartDto",
+		"columnMetadata": {
+			"userId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "state_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cart.getActiveCart",
+		"name": "activeCart",
+		"acls": ["CUSTOMER"],
+		"responseClass": "com.homebase.ecom.dto.CartDto",
+		"columnMetadata": {
+			"userId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getItemsByCartId",
+		"name": "cartItems",
+		"acls": ["ADMIN"],
+		"responseClass": "com.homebase.ecom.dto.CartItemDto",
+		"columnMetadata": {
+			"cartId": {
+				"name": "cart_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"productName": {
+				"name": "product_name",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cart.getAllItems",
+		"name": "allCartItems",
+		"acls": ["ADMIN"],
+		"responseClass": "com.homebase.ecom.dto.CartItemDto",
+		"columnMetadata": {
+			"cartId": {
+				"name": "cart_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"productId": {
+				"name": "product_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"sku": {
+				"name": "sku",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"productName": {
+				"name": "product_name",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cart.getCartDetail",
+		"name": "cartDetail",
+		"acls": ["ADMIN"],
+		"workflowName": "cart",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"responseClass": "com.homebase.ecom.dto.CartDetailDto",
+		"columnMetadata": {
+			"cartId": {
+				"name": "f.cart_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cart.getActivitiesByCartId",
+		"name": "cartActivities",
+		"acls": ["ADMIN"],
+		"responseClass": "com.homebase.ecom.dto.CartActivityDto",
+		"columnMetadata": {
+			"cartId": {
+				"name": "cart_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"activityName": {
+				"name": "activity_name",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdTime": {
+				"name": "created_time",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Cart.getStorefrontCart",
+		"name": "storefrontCart",
+		"acls": ["CUSTOMER"],
+		"responseClass": "com.homebase.ecom.dto.StorefrontCartDto",
+		"columnMetadata": {
+			"userId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getStorefrontCartById",
+		"name": "storefrontCartById",
+		"acls": ["CUSTOMER"],
+		"responseClass": "com.homebase.ecom.dto.StorefrontCartDto",
+		"columnMetadata": {
+			"cartId": {
+				"name": "cart_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getActiveCartIdsWithVariant",
+		"name": "activeCartIdsWithVariant",
+		"acls": ["SYSTEM"],
+		"responseClass": "java.util.Map",
+		"columnMetadata": {
+			"variantId": {
+				"name": "variant_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getActiveCartIdsWithCoupon",
+		"name": "activeCartIdsWithCoupon",
+		"acls": ["SYSTEM"],
+		"responseClass": "java.util.Map",
+		"columnMetadata": {
+			"couponCode": {
+				"name": "coupon_codes",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getExpiredCartIds",
+		"name": "expiredCartIds",
+		"acls": ["SYSTEM"],
+		"responseClass": "java.util.Map",
+		"columnMetadata": {},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getIdleCartIds",
+		"name": "idleCartIds",
+		"acls": ["SYSTEM"],
+		"responseClass": "java.util.Map",
+		"columnMetadata": {
+			"thresholdHours": {
+				"name": "threshold_hours",
+				"filterable": true,
+				"columnType": "Number"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Cart.getCartFull",
+		"name": "cartFull",
+		"acls": ["ADMIN"],
+		"workflowName": "cart",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"responseClass": "com.homebase.ecom.dto.CartFullDto",
+		"columnMetadata": {
+			"cartId": {
+				"name": "f.cart_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"flexiblePropnames": false,
+		"paginated": true,
+		"sortable": true
+	}
+]

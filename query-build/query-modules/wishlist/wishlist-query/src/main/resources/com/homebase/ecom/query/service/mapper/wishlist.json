@@ -1,0 +1,95 @@
+[
+	{
+		"id": "Wishlist.getAll",
+		"name": "wishlistItems",
+		"acls": ["CUSTOMER", "ADMIN"],
+		"columnMetadata": {
+			"id": {
+				"name": "wishlist_item_id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"userId": {
+				"name": "user_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"productId": {
+				"name": "product_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"variantId": {
+				"name": "variant_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"productName": {
+				"name": "product_name",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"brand": {
+				"name": "brand",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"addedAt": {
+				"name": "added_at",
+				"filterable": true,
+				"columnType": "Date",
+				"sortable": true
+			},
+			"priceWhenAdded": {
+				"name": "price_when_added",
+				"filterable": false,
+				"columnType": "Number",
+				"sortable": true
+			},
+			"currentPrice": {
+				"name": "current_price",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"notifyOnPriceDrop": {
+				"name": "notify_on_price_drop",
+				"filterable": true,
+				"columnType": "CheckBox"
+			},
+			"stockStatus": {
+				"name": "stock_status",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"inStock": { "name": "inStock", "filterable": true, "columnType": "CheckBox" },
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Wishlist.getByUserId",
+		"name": "wishlistByUser",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"userId": {
+				"name": "user_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": false
+	},
+	{
+		"id": "Wishlist.getPriceDropCandidates",
+		"name": "priceDropCandidates",
+		"acls": ["SYSTEM"],
+		"columnMetadata": {},
+		"paginated": false,
+		"sortable": false
+	}
+]

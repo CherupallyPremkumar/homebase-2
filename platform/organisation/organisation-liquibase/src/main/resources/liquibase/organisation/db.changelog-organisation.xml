@@ -5,11 +5,18 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
     <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="organisation-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_organisation</sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
     <!-- organisation — aggregate root                                      -->
     <!-- ================================================================== -->
     <changeSet id="org-001-create-organisation" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation"/></not></preConditions>
-        <createTable tableName="organisation">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation" schemaName="hm_organisation"/></not></preConditions>
+        <createTable tableName="organisation" schemaName="hm_organisation">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -31,8 +38,8 @@
     <!-- organisation_branding                                               -->
     <!-- ================================================================== -->
     <changeSet id="org-002-create-branding" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_branding"/></not></preConditions>
-        <createTable tableName="organisation_branding">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_branding" schemaName="hm_organisation"/></not></preConditions>
+        <createTable tableName="organisation_branding" schemaName="hm_organisation">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -47,16 +54,18 @@
             <column name="copyright_text" type="VARCHAR(500)"/>
             <column name="founded_year" type="INT"/>
         </createTable>
-        <addForeignKeyConstraint baseTableName="organisation_branding" baseColumnNames="organisation_id"
-            referencedTableName="organisation" referencedColumnNames="id" constraintName="fk_branding_org"/>
+        <addForeignKeyConstraint baseTableName="organisation_branding" baseTableSchemaName="hm_organisation"
+            baseColumnNames="organisation_id"
+            referencedTableName="organisation" referencedTableSchemaName="hm_organisation"
+            referencedColumnNames="id" constraintName="fk_branding_org"/>
     </changeSet>
 
     <!-- ================================================================== -->
     <!-- organisation_contact                                                -->
     <!-- ================================================================== -->
     <changeSet id="org-003-create-contact" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_contact"/></not></preConditions>
-        <createTable tableName="organisation_contact">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_contact" schemaName="hm_organisation"/></not></preConditions>
+        <createTable tableName="organisation_contact" schemaName="hm_organisation">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -71,16 +80,18 @@
             <column name="support_phone" type="VARCHAR(30)"/>
             <column name="website_url" type="VARCHAR(500)"/>
         </createTable>
-        <addForeignKeyConstraint baseTableName="organisation_contact" baseColumnNames="organisation_id"
-            referencedTableName="organisation" referencedColumnNames="id" constraintName="fk_contact_org"/>
+        <addForeignKeyConstraint baseTableName="organisation_contact" baseTableSchemaName="hm_organisation"
+            baseColumnNames="organisation_id"
+            referencedTableName="organisation" referencedTableSchemaName="hm_organisation"
+            referencedColumnNames="id" constraintName="fk_contact_org"/>
     </changeSet>
 
     <!-- ================================================================== -->
     <!-- organisation_address                                                -->
     <!-- ================================================================== -->
     <changeSet id="org-004-create-address" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_address"/></not></preConditions>
-        <createTable tableName="organisation_address">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_address" schemaName="hm_organisation"/></not></preConditions>
+        <createTable tableName="organisation_address" schemaName="hm_organisation">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -96,16 +107,18 @@
             <column name="pincode" type="VARCHAR(20)"/>
             <column name="country" type="VARCHAR(100)"/>
         </createTable>
-        <addForeignKeyConstraint baseTableName="organisation_address" baseColumnNames="organisation_id"
-            referencedTableName="organisation" referencedColumnNames="id" constraintName="fk_address_org"/>
+        <addForeignKeyConstraint baseTableName="organisation_address" baseTableSchemaName="hm_organisation"
+            baseColumnNames="organisation_id"
+            referencedTableName="organisation" referencedTableSchemaName="hm_organisation"
+            referencedColumnNames="id" constraintName="fk_address_org"/>
     </changeSet>
 
     <!-- ================================================================== -->
     <!-- organisation_locale                                                 -->
     <!-- ================================================================== -->
     <changeSet id="org-005-create-locale" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_locale"/></not></preConditions>
-        <createTable tableName="organisation_locale">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_locale" schemaName="hm_organisation"/></not></preConditions>
+        <createTable tableName="organisation_locale" schemaName="hm_organisation">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -120,16 +133,18 @@
             <column name="date_format" type="VARCHAR(30)" defaultValue="dd/MM/yyyy"/>
             <column name="country_code" type="VARCHAR(5)" defaultValue="IN"/>
         </createTable>
-        <addForeignKeyConstraint baseTableName="organisation_locale" baseColumnNames="organisation_id"
-            referencedTableName="organisation" referencedColumnNames="id" constraintName="fk_locale_org"/>
+        <addForeignKeyConstraint baseTableName="organisation_locale" baseTableSchemaName="hm_organisation"
+            baseColumnNames="organisation_id"
+            referencedTableName="organisation" referencedTableSchemaName="hm_organisation"
+            referencedColumnNames="id" constraintName="fk_locale_org"/>
     </changeSet>
 
     <!-- ================================================================== -->
     <!-- organisation_social                                                 -->
     <!-- ================================================================== -->
     <changeSet id="org-006-create-social" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_social"/></not></preConditions>
-        <createTable tableName="organisation_social">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_social" schemaName="hm_organisation"/></not></preConditions>
+        <createTable tableName="organisation_social" schemaName="hm_organisation">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -144,8 +159,10 @@
             <column name="linkedin_url" type="VARCHAR(500)"/>
             <column name="youtube_url" type="VARCHAR(500)"/>
         </createTable>
-        <addForeignKeyConstraint baseTableName="organisation_social" baseColumnNames="organisation_id"
-            referencedTableName="organisation" referencedColumnNames="id" constraintName="fk_social_org"/>
+        <addForeignKeyConstraint baseTableName="organisation_social" baseTableSchemaName="hm_organisation"
+            baseColumnNames="organisation_id"
+            referencedTableName="organisation" referencedTableSchemaName="hm_organisation"
+            referencedColumnNames="id" constraintName="fk_social_org"/>
     </changeSet>
 
 </databaseChangeLog>

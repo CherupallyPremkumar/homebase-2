@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Review">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: fact_reviews_flat                                               -->
+<!-- Populated by ReviewSyncService ETL.                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ================================================================ -->
+<!-- Dashboard: Admin review listing                                   -->
+<!-- ================================================================ -->
+
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.fact_reviews_flat
+    <where>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="rating != null">AND rating = #{rating}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="verifiedPurchase != null">AND verified_purchase = #{verifiedPurchase}</if>
+        <if test="startDate != null">AND created_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_at &lt;= #{endDate}</if>
+        <if test="q != null">AND (product_name LIKE CONCAT('%', #{q}, '%') OR customer_name LIKE CONCAT('%', #{q}, '%') OR title LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.review.dto.ReviewDto">
+    SELECT
+        id                 as "id",
+        product_id         as "productId",
+        product_name       as "productName",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        order_id           as "orderId",
+        rating             as "rating",
+        title              as "title",
+        body               as "body",
+        verified_purchase  as "verifiedPurchase",
+        helpful_count      as "helpfulCount",
+        report_count       as "reportCount",
+        moderator_notes    as "moderatorNotes",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_at         as "createdAt"
+    FROM hm_query.fact_reviews_flat
+    <where>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="rating != null">AND rating = #{rating}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="verifiedPurchase != null">AND verified_purchase = #{verifiedPurchase}</if>
+        <if test="startDate != null">AND created_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_at &lt;= #{endDate}</if>
+        <if test="q != null">AND (product_name LIKE CONCAT('%', #{q}, '%') OR customer_name LIKE CONCAT('%', #{q}, '%') OR title LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Dashboard: getById — single review detail                         -->
+<!-- ================================================================ -->
+
+<select id="getById" resultType="com.homebase.ecom.review.dto.ReviewDto">
+    SELECT
+        id                 as "id",
+        product_id         as "productId",
+        product_name       as "productName",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        order_id           as "orderId",
+        rating             as "rating",
+        title              as "title",
+        body               as "body",
+        verified_purchase  as "verifiedPurchase",
+        helpful_count      as "helpfulCount",
+        report_count       as "reportCount",
+        moderator_notes    as "moderatorNotes",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_at         as "createdAt"
+    FROM hm_query.fact_reviews_flat
+    WHERE id = #{id}
+</select>
+
+<!-- ================================================================ -->
+<!-- Dashboard: State counts for tab badges                            -->
+<!-- ================================================================ -->
+
+<select id="getStateCounts" resultType="com.homebase.ecom.review.dto.ReviewStateCountDto">
+    SELECT
+        state_id as "stateId",
+        count(*) as "count"
+    FROM hm_query.fact_reviews_flat
+    GROUP BY state_id
+</select>
+
+<!-- ================================================================ -->
+<!-- Dashboard: Flagged reviews for moderation                         -->
+<!-- ================================================================ -->
+
+<select id="getFlaggedReviews-count" resultType="int">
+    SELECT count(*)
+    FROM hm_query.fact_reviews_flat
+    WHERE state_id = 'FLAGGED'
+    <if test="productId != null">AND product_id = #{productId}</if>
+</select>
+
+<select id="getFlaggedReviews" resultType="com.homebase.ecom.review.dto.ReviewDto">
+    SELECT
+        id                 as "id",
+        product_id         as "productId",
+        product_name       as "productName",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        rating             as "rating",
+        title              as "title",
+        report_count       as "reportCount",
+        moderator_notes    as "moderatorNotes",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_at         as "createdAt"
+    FROM hm_query.fact_reviews_flat
+    WHERE state_id = 'FLAGGED'
+    <if test="productId != null">AND product_id = #{productId}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Dashboard: Moderation queue                                       -->
+<!-- ================================================================ -->
+
+<select id="getByModeration-count" resultType="int">
+    SELECT count(*)
+    FROM hm_query.fact_reviews_flat
+    WHERE state_id IN ('UNDER_MODERATION', 'FLAGGED')
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+</select>
+
+<select id="getByModeration" resultType="com.homebase.ecom.review.dto.ReviewDto">
+    SELECT
+        id                 as "id",
+        product_id         as "productId",
+        product_name       as "productName",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        rating             as "rating",
+        title              as "title",
+        body               as "body",
+        verified_purchase  as "verifiedPurchase",
+        report_count       as "reportCount",
+        moderator_notes    as "moderatorNotes",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_at         as "createdAt"
+    FROM hm_query.fact_reviews_flat
+    WHERE state_id IN ('UNDER_MODERATION', 'FLAGGED')
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Storefront: Published reviews for a product                       -->
+<!-- ================================================================ -->
+
+<select id="getByProductId-count" resultType="int">
+    SELECT count(*)
+    FROM hm_query.fact_reviews_flat
+    WHERE product_id = #{productId}
+      AND state_id = 'PUBLISHED'
+</select>
+
+<select id="getByProductId" resultType="com.homebase.ecom.review.dto.ReviewDto">
+    SELECT
+        id                 as "id",
+        product_id         as "productId",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        rating             as "rating",
+        title              as "title",
+        body               as "body",
+        verified_purchase  as "verifiedPurchase",
+        helpful_count      as "helpfulCount",
+        state_id           as "stateId",
+        created_at         as "createdAt"
+    FROM hm_query.fact_reviews_flat
+    WHERE product_id = #{productId}
+      AND state_id = 'PUBLISHED'
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Storefront: Average rating for a product                          -->
+<!-- ================================================================ -->
+
+<select id="getAverageRating" resultType="com.homebase.ecom.review.dto.AverageRatingDto">
+    SELECT
+        product_id         as "productId",
+        ROUND(AVG(rating::numeric), 2) as "averageRating",
+        count(*)           as "reviewCount"
+    FROM hm_query.fact_reviews_flat
+    WHERE product_id = #{productId}
+      AND state_id = 'PUBLISHED'
+    GROUP BY product_id
+</select>
+
+<!-- ================================================================ -->
+<!-- Storefront: Recent reviews for a product                          -->
+<!-- ================================================================ -->
+
+<select id="getRecentReviews-count" resultType="int">
+    SELECT count(*)
+    FROM hm_query.fact_reviews_flat
+    WHERE product_id = #{productId}
+      AND state_id = 'PUBLISHED'
+</select>
+
+<select id="getRecentReviews" resultType="com.homebase.ecom.review.dto.ReviewDto">
+    SELECT
+        id                 as "id",
+        product_id         as "productId",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        rating             as "rating",
+        title              as "title",
+        body               as "body",
+        verified_purchase  as "verifiedPurchase",
+        helpful_count      as "helpfulCount",
+        created_at         as "createdAt"
+    FROM hm_query.fact_reviews_flat
+    WHERE product_id = #{productId}
+      AND state_id = 'PUBLISHED'
+    ORDER BY created_at DESC
+    ${pagination}
+</select>
+
+</mapper>

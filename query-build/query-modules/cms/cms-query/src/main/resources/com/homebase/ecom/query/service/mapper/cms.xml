@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Cms">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: cms_pages_flat, cms_banners_flat, cms_blocks_flat, etc.         -->
+<!-- Populated by CmsSyncService ETL.                                       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ================================================================ -->
+<!-- CMS Pages                                                         -->
+<!-- ================================================================ -->
+
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.cms_pages_flat
+    <where>
+        <if test="slug != null">AND slug LIKE CONCAT('%', #{slug}, '%')</if>
+        <if test="title != null">AND title LIKE CONCAT('%', #{title}, '%')</if>
+        <if test="pageType != null">AND page_type = #{pageType}</if>
+        <if test="published != null">AND published = #{published}</if>
+        <if test="startDate != null">AND published_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND published_at &lt;= #{endDate}</if>
+        <if test="q != null">AND (title LIKE CONCAT('%', #{q}, '%') OR slug LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.cms.dto.CmsPageQueryDto">
+    SELECT
+        id                 as "id",
+        slug               as "slug",
+        title              as "title",
+        page_type          as "pageType",
+        published          as "published",
+        published_at       as "publishedAt"
+    FROM hm_query.cms_pages_flat
+    <where>
+        <if test="slug != null">AND slug LIKE CONCAT('%', #{slug}, '%')</if>
+        <if test="title != null">AND title LIKE CONCAT('%', #{title}, '%')</if>
+        <if test="pageType != null">AND page_type = #{pageType}</if>
+        <if test="published != null">AND published = #{published}</if>
+        <if test="startDate != null">AND published_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND published_at &lt;= #{endDate}</if>
+        <if test="q != null">AND (title LIKE CONCAT('%', #{q}, '%') OR slug LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Banners                                                           -->
+<!-- ================================================================ -->
+
+<select id="getAllBanners-count" resultType="int">
+    SELECT count(*) FROM hm_query.cms_banners_flat
+    <where>
+        <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="position != null">AND position = #{position}</if>
+        <if test="active != null">AND active = #{active}</if>
+        <if test="startDate != null">AND created_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_at &lt;= #{endDate}</if>
+        <if test="q != null">AND name LIKE CONCAT('%', #{q}, '%')</if>
+    </where>
+</select>
+
+<select id="getAllBanners" resultType="com.homebase.ecom.cms.dto.BannerQueryDto">
+    SELECT
+        id                 as "id",
+        name               as "name",
+        image_url          as "imageUrl",
+        position           as "position",
+        active             as "active",
+        created_at         as "createdAt"
+    FROM hm_query.cms_banners_flat
+    <where>
+        <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+        <if test="position != null">AND position = #{position}</if>
+        <if test="active != null">AND active = #{active}</if>
+        <if test="startDate != null">AND created_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_at &lt;= #{endDate}</if>
+        <if test="q != null">AND name LIKE CONCAT('%', #{q}, '%')</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- CMS Blocks                                                        -->
+<!-- ================================================================ -->
+
+<select id="getAllBlocks-count" resultType="int">
+    SELECT count(*) FROM hm_query.cms_blocks_flat
+    <where>
+        <if test="pageId != null">AND page_id = #{pageId}</if>
+        <if test="blockType != null">AND block_type = #{blockType}</if>
+        <if test="active != null">AND active = #{active}</if>
+    </where>
+</select>
+
+<select id="getAllBlocks" resultType="com.homebase.ecom.cms.dto.BlockQueryDto">
+    SELECT
+        id                 as "id",
+        page_id            as "pageId",
+        block_type         as "blockType",
+        data               as "data",
+        sort_order         as "sortOrder",
+        active             as "active"
+    FROM hm_query.cms_blocks_flat
+    <where>
+        <if test="pageId != null">AND page_id = #{pageId}</if>
+        <if test="blockType != null">AND block_type = #{blockType}</if>
+        <if test="active != null">AND active = #{active}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- CMS Media                                                         -->
+<!-- ================================================================ -->
+
+<select id="getAllMedia-count" resultType="int">
+    SELECT count(*) FROM hm_query.cms_media_flat
+    <where>
+        <if test="originalName != null">AND original_name LIKE CONCAT('%', #{originalName}, '%')</if>
+        <if test="mimeType != null">AND mime_type = #{mimeType}</if>
+        <if test="folder != null">AND folder = #{folder}</if>
+        <if test="q != null">AND (original_name LIKE CONCAT('%', #{q}, '%') OR alt_text LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getAllMedia" resultType="com.homebase.ecom.cms.dto.MediaQueryDto">
+    SELECT
+        id                 as "id",
+        file_key           as "fileKey",
+        original_name      as "originalName",
+        cdn_url            as "cdnUrl",
+        mime_type          as "mimeType",
+        file_size_bytes    as "fileSizeBytes",
+        width              as "width",
+        height             as "height",
+        alt_text           as "altText",
+        folder             as "folder"
+    FROM hm_query.cms_media_flat
+    <where>
+        <if test="originalName != null">AND original_name LIKE CONCAT('%', #{originalName}, '%')</if>
+        <if test="mimeType != null">AND mime_type = #{mimeType}</if>
+        <if test="folder != null">AND folder = #{folder}</if>
+        <if test="q != null">AND (original_name LIKE CONCAT('%', #{q}, '%') OR alt_text LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- CMS Page Versions                                                 -->
+<!-- ================================================================ -->
+
+<select id="getAllVersions-count" resultType="int">
+    SELECT count(*) FROM hm_query.cms_page_versions_flat
+    <where>
+        <if test="pageId != null">AND page_id = #{pageId}</if>
+        <if test="publishedBy != null">AND published_by = #{publishedBy}</if>
+        <if test="startDate != null">AND published_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND published_at &lt;= #{endDate}</if>
+    </where>
+</select>
+
+<select id="getAllVersions" resultType="com.homebase.ecom.cms.dto.PageVersionQueryDto">
+    SELECT
+        id                 as "id",
+        page_id            as "pageId",
+        version_number     as "versionNumber",
+        published_by       as "publishedBy",
+        published_at       as "publishedAt",
+        change_summary     as "changeSummary"
+    FROM hm_query.cms_page_versions_flat
+    <where>
+        <if test="pageId != null">AND page_id = #{pageId}</if>
+        <if test="publishedBy != null">AND published_by = #{publishedBy}</if>
+        <if test="startDate != null">AND published_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND published_at &lt;= #{endDate}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- CMS Schedules                                                     -->
+<!-- ================================================================ -->
+
+<select id="getAllSchedules-count" resultType="int">
+    SELECT count(*) FROM hm_query.cms_schedules_flat
+    <where>
+        <if test="pageId != null">AND page_id = #{pageId}</if>
+        <if test="active != null">AND is_active = #{active}</if>
+        <if test="startDate != null">AND publish_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND unpublish_at &lt;= #{endDate}</if>
+    </where>
+</select>
+
+<select id="getAllSchedules" resultType="com.homebase.ecom.cms.dto.ScheduleQueryDto">
+    SELECT
+        id                 as "id",
+        page_id            as "pageId",
+        publish_at         as "publishAt",
+        unpublish_at       as "unpublishAt",
+        timezone           as "timezone",
+        is_active          as "isActive"
+    FROM hm_query.cms_schedules_flat
+    <where>
+        <if test="pageId != null">AND page_id = #{pageId}</if>
+        <if test="active != null">AND is_active = #{active}</if>
+        <if test="startDate != null">AND publish_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND unpublish_at &lt;= #{endDate}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Announcements                                                     -->
+<!-- ================================================================ -->
+
+<select id="getAllAnnouncements-count" resultType="int">
+    SELECT count(*) FROM hm_query.cms_announcements_flat
+    <where>
+        <if test="title != null">AND title LIKE CONCAT('%', #{title}, '%')</if>
+        <if test="announcementType != null">AND announcement_type = #{announcementType}</if>
+        <if test="targetAudience != null">AND target_audience = #{targetAudience}</if>
+        <if test="priority != null">AND priority = #{priority}</if>
+        <if test="status != null">AND status = #{status}</if>
+        <if test="startDate != null">AND created_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_at &lt;= #{endDate}</if>
+        <if test="q != null">AND title LIKE CONCAT('%', #{q}, '%')</if>
+    </where>
+</select>
+
+<select id="getAllAnnouncements" resultType="com.homebase.ecom.cms.dto.AnnouncementQueryDto">
+    SELECT
+        id                 as "id",
+        title              as "title",
+        announcement_type  as "announcementType",
+        target_audience    as "targetAudience",
+        priority           as "priority",
+        status             as "status",
+        dismissible        as "dismissible",
+        scheduled_date     as "scheduledDate",
+        expiry_date        as "expiryDate",
+        created_at         as "createdAt"
+    FROM hm_query.cms_announcements_flat
+    <where>
+        <if test="title != null">AND title LIKE CONCAT('%', #{title}, '%')</if>
+        <if test="announcementType != null">AND announcement_type = #{announcementType}</if>
+        <if test="targetAudience != null">AND target_audience = #{targetAudience}</if>
+        <if test="priority != null">AND priority = #{priority}</if>
+        <if test="status != null">AND status = #{status}</if>
+        <if test="startDate != null">AND created_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_at &lt;= #{endDate}</if>
+        <if test="q != null">AND title LIKE CONCAT('%', #{q}, '%')</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- CMS SEO Meta                                                      -->
+<!-- ================================================================ -->
+
+<select id="getAllSeoMeta-count" resultType="int">
+    SELECT count(*) FROM hm_query.cms_seo_meta_flat
+    <where>
+        <if test="pageId != null">AND page_id = #{pageId}</if>
+        <if test="ogTitle != null">AND og_title LIKE CONCAT('%', #{ogTitle}, '%')</if>
+        <if test="ogType != null">AND og_type = #{ogType}</if>
+        <if test="robots != null">AND robots = #{robots}</if>
+        <if test="keywords != null">AND keywords LIKE CONCAT('%', #{keywords}, '%')</if>
+        <if test="startDate != null">AND created_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_at &lt;= #{endDate}</if>
+    </where>
+</select>
+
+<select id="getAllSeoMeta" resultType="com.homebase.ecom.cms.dto.CmsSeoMetaQueryDto">
+    SELECT
+        id                 as "id",
+        page_id            as "pageId",
+        og_title           as "ogTitle",
+        og_type            as "ogType",
+        canonical_url      as "canonicalUrl",
+        robots             as "robots",
+        keywords           as "keywords",
+        created_at         as "createdAt"
+    FROM hm_query.cms_seo_meta_flat
+    <where>
+        <if test="pageId != null">AND page_id = #{pageId}</if>
+        <if test="ogTitle != null">AND og_title LIKE CONCAT('%', #{ogTitle}, '%')</if>
+        <if test="ogType != null">AND og_type = #{ogType}</if>
+        <if test="robots != null">AND robots = #{robots}</if>
+        <if test="keywords != null">AND keywords LIKE CONCAT('%', #{keywords}, '%')</if>
+        <if test="startDate != null">AND created_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_at &lt;= #{endDate}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+
+    <!-- ================================================================== -->
+    <!-- Chenile Service Registry — remote service discovery                -->
+    <!-- ================================================================== -->
+
+    <!-- service_definition (ChenileRemoteServiceDefinition extends BaseJpaEntity) -->
+    <changeSet id="svc-reg-001-create-service-definition" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="service_definition" /></not>
+        </preConditions>
+        <createTable tableName="service_definition" >
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="service_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="service_version" type="VARCHAR(50)"/>
+            <column name="module_name" type="VARCHAR(255)"/>
+            <column name="base_url" type="VARCHAR(500)"><constraints nullable="false"/></column>
+        </createTable>
+        <addUniqueConstraint tableName="service_definition" columnNames="service_id, service_version"
+            constraintName="uq_sd_service_version" />
+        <createIndex tableName="service_definition" indexName="idx_sd_service_id" >
+            <column name="service_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- operation_definition (ChenileRemoteOperationDefinition extends BaseJpaEntity) -->
+    <changeSet id="svc-reg-002-create-operation-definition" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="operation_definition" /></not>
+        </preConditions>
+        <createTable tableName="operation_definition" >
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="service_definition_id" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="description" type="VARCHAR(1000)"/>
+            <column name="url" type="VARCHAR(500)"/>
+            <column name="http_method" type="VARCHAR(10)"><constraints nullable="false"/></column>
+            <column name="consumes" type="VARCHAR(50)" defaultValue="JSON"/>
+            <column name="output" type="VARCHAR(500)"/>
+            <column name="output_as_string_reference" type="VARCHAR(500)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="operation_definition" 
+            baseColumnNames="service_definition_id"
+            referencedTableName="service_definition" 
+            referencedColumnNames="id"
+            constraintName="fk_od_service_def"/>
+        <createIndex tableName="operation_definition" indexName="idx_od_service_def" >
+            <column name="service_definition_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- param_definition (ChenileRemoteParamDefinition extends BaseJpaEntity) -->
+    <changeSet id="svc-reg-003-create-param-definition" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="param_definition" /></not>
+        </preConditions>
+        <createTable tableName="param_definition" >
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="operation_definition_id" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="description" type="VARCHAR(1000)"/>
+            <column name="param_class_name" type="VARCHAR(500)"/>
+            <column name="type" type="VARCHAR(20)"><constraints nullable="false"/></column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="param_definition" 
+            baseColumnNames="operation_definition_id"
+            referencedTableName="operation_definition" 
+            referencedColumnNames="id"
+            constraintName="fk_pd_operation_def"/>
+        <createIndex tableName="param_definition" indexName="idx_pd_operation_def" >
+            <column name="operation_definition_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- client_service_interceptors (@ElementCollection on service_definition) -->
+    <changeSet id="svc-reg-004-create-client-service-interceptors" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="client_service_interceptors" /></not>
+        </preConditions>
+        <createTable tableName="client_service_interceptors" >
+            <column name="service_definition_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="interceptor_name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="client_service_interceptors" 
+            baseColumnNames="service_definition_id"
+            referencedTableName="service_definition" 
+            referencedColumnNames="id"
+            constraintName="fk_csi_service_def"/>
+        <createIndex tableName="client_service_interceptors" indexName="idx_csi_service_def" >
+            <column name="service_definition_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- client_op_interceptors (@ElementCollection on operation_definition) -->
+    <changeSet id="svc-reg-005-create-client-op-interceptors" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="client_op_interceptors" /></not>
+        </preConditions>
+        <createTable tableName="client_op_interceptors" >
+            <column name="operation_definition_id" type="VARCHAR(255)"/>
+            <column name="interceptor_name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="client_op_interceptors" 
+            baseColumnNames="operation_definition_id"
+            referencedTableName="operation_definition" 
+            referencedColumnNames="id"
+            constraintName="fk_coi_operation_def"/>
+        <createIndex tableName="client_op_interceptors" indexName="idx_coi_operation_def" >
+            <column name="operation_definition_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Fix: Chenile's @JoinColumn(name = "id") expects FK columns to be named "id" -->
+    <changeSet id="svc-reg-004b-fix-client-service-interceptors-fk" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="client_service_interceptors" columnName="service_definition_id" />
+        </preConditions>
+        <dropForeignKeyConstraint baseTableName="client_service_interceptors"  constraintName="fk_csi_service_def"/>
+        <dropIndex tableName="client_service_interceptors" indexName="idx_csi_service_def" />
+        <renameColumn tableName="client_service_interceptors" oldColumnName="service_definition_id" newColumnName="id" columnDataType="VARCHAR(255)" />
+        <addForeignKeyConstraint baseTableName="client_service_interceptors" 
+            baseColumnNames="id"
+            referencedTableName="service_definition" 
+            referencedColumnNames="id"
+            constraintName="fk_csi_service_def"/>
+        <createIndex tableName="client_service_interceptors" indexName="idx_csi_service_def" >
+            <column name="id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="svc-reg-005b-fix-client-op-interceptors-fk" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="client_op_interceptors" columnName="operation_definition_id" />
+        </preConditions>
+        <dropForeignKeyConstraint baseTableName="client_op_interceptors"  constraintName="fk_coi_operation_def"/>
+        <dropIndex tableName="client_op_interceptors" indexName="idx_coi_operation_def" />
+        <renameColumn tableName="client_op_interceptors" oldColumnName="operation_definition_id" newColumnName="id" columnDataType="VARCHAR(255)" />
+        <addForeignKeyConstraint baseTableName="client_op_interceptors" 
+            baseColumnNames="id"
+            referencedTableName="operation_definition" 
+            referencedColumnNames="id"
+            constraintName="fk_coi_operation_def"/>
+        <createIndex tableName="client_op_interceptors" indexName="idx_coi_operation_def" >
+            <column name="id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- operation_definition_params (Hibernate join table for OperationDefinition → ParamDefinition) -->
+    <changeSet id="svc-reg-006-create-operation-definition-params" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="operation_definition_params" /></not>
+        </preConditions>
+        <createTable tableName="operation_definition_params" >
+            <column name="chenile_remote_operation_definition_id" type="VARCHAR(255)"/>
+            <column name="params_id" type="VARCHAR(255)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="operation_definition_params" 
+            baseColumnNames="chenile_remote_operation_definition_id"
+            referencedTableName="operation_definition" 
+            referencedColumnNames="id"
+            constraintName="fk_odp_operation_def"/>
+        <addForeignKeyConstraint baseTableName="operation_definition_params" 
+            baseColumnNames="params_id"
+            referencedTableName="param_definition" 
+            referencedColumnNames="id"
+            constraintName="fk_odp_param_def"/>
+    </changeSet>
+
+    <!-- service_definition_operations (Hibernate join table for ServiceDefinition → OperationDefinition) -->
+    <changeSet id="svc-reg-007-create-service-definition-operations" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="service_definition_operations" /></not>
+        </preConditions>
+        <createTable tableName="service_definition_operations" >
+            <column name="chenile_remote_service_definition_id" type="VARCHAR(255)"/>
+            <column name="operations_id" type="VARCHAR(255)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="service_definition_operations" 
+            baseColumnNames="chenile_remote_service_definition_id"
+            referencedTableName="service_definition" 
+            referencedColumnNames="id"
+            constraintName="fk_sdo_service_def"/>
+        <addForeignKeyConstraint baseTableName="service_definition_operations" 
+            baseColumnNames="operations_id"
+            referencedTableName="operation_definition" 
+            referencedColumnNames="id"
+            constraintName="fk_sdo_operation_def"/>
+    </changeSet>
+
+</databaseChangeLog>

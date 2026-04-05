@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Schema creation -->
+    <changeSet id="advertising-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_advertising</sql>
+    </changeSet>
+
+    <!-- ad_campaigns (STM entity: extends AbstractJpaStateEntity) -->
+    <changeSet id="advertising-001-create-ad-campaigns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="ad_campaigns" schemaName="hm_advertising"/></not>
+        </preConditions>
+        <createTable tableName="ad_campaigns" schemaName="hm_advertising">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="advertiser_id" type="VARCHAR(255)"/>
+            <column name="campaign_name" type="VARCHAR(255)"/>
+            <column name="objective" type="VARCHAR(100)"/>
+            <column name="budget_type" type="VARCHAR(50)"/>
+            <column name="daily_budget" type="BIGINT"/>
+            <column name="spending_limit" type="BIGINT"/>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="end_date" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ad_groups -->
+    <changeSet id="advertising-002-create-ad-groups" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="ad_groups" schemaName="hm_advertising"/></not>
+        </preConditions>
+        <createTable tableName="ad_groups" schemaName="hm_advertising">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="campaign_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="ad_group_name" type="VARCHAR(255)"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="default_bid_amount" type="BIGINT"/>
+            <column name="targeting_type" type="VARCHAR(50)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="ad_groups" baseTableSchemaName="hm_advertising" baseColumnNames="campaign_id"
+                                 referencedTableName="ad_campaigns" referencedTableSchemaName="hm_advertising" referencedColumnNames="id"
+                                 constraintName="fk_ad_groups_campaign"/>
+    </changeSet>
+
+    <!-- ads -->
+    <changeSet id="advertising-003-create-ads" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="ads" schemaName="hm_advertising"/></not>
+        </preConditions>
+        <createTable tableName="ads" schemaName="hm_advertising">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="ad_group_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="campaign_id" type="VARCHAR(255)"/>
+            <column name="ad_type" type="VARCHAR(50)"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="headline" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="display_url" type="VARCHAR(500)"/>
+            <column name="landing_url" type="VARCHAR(500)"/>
+            <column name="creative_url" type="VARCHAR(500)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="ads" baseTableSchemaName="hm_advertising" baseColumnNames="ad_group_id"
+                                 referencedTableName="ad_groups" referencedTableSchemaName="hm_advertising" referencedColumnNames="id"
+                                 constraintName="fk_ads_ad_group"/>
+    </changeSet>
+
+    <!-- ad_placements -->
+    <changeSet id="advertising-004-create-ad-placements" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="ad_placements" schemaName="hm_advertising"/></not>
+        </preConditions>
+        <createTable tableName="ad_placements" schemaName="hm_advertising">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="ad_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="campaign_id" type="VARCHAR(255)"/>
+            <column name="placement_type" type="VARCHAR(50)"/>
+            <column name="placement_name" type="VARCHAR(255)"/>
+            <column name="targeting_criteria" type="VARCHAR(2000)"/>
+            <column name="status" type="VARCHAR(50)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="ad_placements" baseTableSchemaName="hm_advertising" baseColumnNames="ad_id"
+                                 referencedTableName="ads" referencedTableSchemaName="hm_advertising" referencedColumnNames="id"
+                                 constraintName="fk_ad_placements_ad"/>
+    </changeSet>
+
+    <!-- ad_impressions (log table: no version/last_modified) -->
+    <changeSet id="advertising-005-create-ad-impressions" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="ad_impressions" schemaName="hm_advertising"/></not>
+        </preConditions>
+        <createTable tableName="ad_impressions" schemaName="hm_advertising">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="ad_id" type="VARCHAR(255)"/>
+            <column name="ad_group_id" type="VARCHAR(255)"/>
+            <column name="campaign_id" type="VARCHAR(255)"/>
+            <column name="placement_id" type="VARCHAR(255)"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="impression_timestamp" type="TIMESTAMP"/>
+            <column name="device_type" type="VARCHAR(50)"/>
+            <column name="country" type="VARCHAR(2)"/>
+            <column name="viewable" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ad_clicks (log table: no version/last_modified) -->
+    <changeSet id="advertising-006-create-ad-clicks" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="ad_clicks" schemaName="hm_advertising"/></not>
+        </preConditions>
+        <createTable tableName="ad_clicks" schemaName="hm_advertising">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="impression_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="ad_id" type="VARCHAR(255)"/>
+            <column name="ad_group_id" type="VARCHAR(255)"/>
+            <column name="campaign_id" type="VARCHAR(255)"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="click_timestamp" type="TIMESTAMP"/>
+            <column name="device_type" type="VARCHAR(50)"/>
+            <column name="country" type="VARCHAR(2)"/>
+            <column name="click_position" type="INT"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="ad_clicks" baseTableSchemaName="hm_advertising" baseColumnNames="impression_id"
+                                 referencedTableName="ad_impressions" referencedTableSchemaName="hm_advertising" referencedColumnNames="id"
+                                 constraintName="fk_ad_clicks_impression"/>
+    </changeSet>
+
+    <!-- ad_budgets -->
+    <changeSet id="advertising-007-create-ad-budgets" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="ad_budgets" schemaName="hm_advertising"/></not>
+        </preConditions>
+        <createTable tableName="ad_budgets" schemaName="hm_advertising">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="campaign_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="ad_group_id" type="VARCHAR(255)"/>
+            <column name="budget_amount" type="BIGINT"/>
+            <column name="budget_period" type="VARCHAR(50)"/>
+            <column name="pacing_strategy" type="VARCHAR(50)"/>
+            <column name="actual_spend" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="remaining_budget" type="BIGINT"/>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="end_date" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="ad_budgets" baseTableSchemaName="hm_advertising" baseColumnNames="campaign_id"
+                                 referencedTableName="ad_campaigns" referencedTableSchemaName="hm_advertising" referencedColumnNames="id"
+                                 constraintName="fk_ad_budgets_campaign"/>
+    </changeSet>
+
+    <!-- bid_strategies -->
+    <changeSet id="advertising-008-create-bid-strategies" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="bid_strategies" schemaName="hm_advertising"/></not>
+        </preConditions>
+        <createTable tableName="bid_strategies" schemaName="hm_advertising">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="ad_group_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="campaign_id" type="VARCHAR(255)"/>
+            <column name="strategy_type" type="VARCHAR(50)"/>
+            <column name="base_bid" type="BIGINT"/>
+            <column name="max_bid" type="BIGINT"/>
+            <column name="min_bid" type="BIGINT"/>
+            <column name="target_cpc" type="BIGINT"/>
+            <column name="target_cpa" type="BIGINT"/>
+            <column name="enhanced_cpc_enabled" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="bid_strategies" baseTableSchemaName="hm_advertising" baseColumnNames="ad_group_id"
+                                 referencedTableName="ad_groups" referencedTableSchemaName="hm_advertising" referencedColumnNames="id"
+                                 constraintName="fk_bid_strategies_ad_group"/>
+    </changeSet>
+
+    <!-- Indexes -->
+    <changeSet id="advertising-009-create-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists indexName="idx_campaigns_advertiser" schemaName="hm_advertising"/></not>
+        </preConditions>
+        <createIndex indexName="idx_campaigns_advertiser" tableName="ad_campaigns" schemaName="hm_advertising">
+            <column name="advertiser_id"/>
+        </createIndex>
+        <createIndex indexName="idx_ad_groups_campaign" tableName="ad_groups" schemaName="hm_advertising">
+            <column name="campaign_id"/>
+        </createIndex>
+        <createIndex indexName="idx_ads_ad_group" tableName="ads" schemaName="hm_advertising">
+            <column name="ad_group_id"/>
+        </createIndex>
+        <createIndex indexName="idx_impressions_campaign" tableName="ad_impressions" schemaName="hm_advertising">
+            <column name="campaign_id"/>
+        </createIndex>
+        <createIndex indexName="idx_impressions_timestamp" tableName="ad_impressions" schemaName="hm_advertising">
+            <column name="impression_timestamp"/>
+        </createIndex>
+        <createIndex indexName="idx_clicks_campaign" tableName="ad_clicks" schemaName="hm_advertising">
+            <column name="campaign_id"/>
+        </createIndex>
+        <createIndex indexName="idx_clicks_impression" tableName="ad_clicks" schemaName="hm_advertising">
+            <column name="impression_id"/>
+        </createIndex>
+        <createIndex indexName="idx_budgets_campaign" tableName="ad_budgets" schemaName="hm_advertising">
+            <column name="campaign_id"/>
+        </createIndex>
+        <createIndex indexName="idx_strategies_ad_group" tableName="bid_strategies" schemaName="hm_advertising">
+            <column name="ad_group_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

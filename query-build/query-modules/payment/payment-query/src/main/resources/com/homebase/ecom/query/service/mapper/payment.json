@@ -1,0 +1,228 @@
+[
+	{
+		"id": "Payment.getAll",
+		"name": "payments",
+		"acls": ["ADMIN"],
+		"workflowName": "payment",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "fp.id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"orderId": {
+				"name": "fp.order_id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"customerId": {
+				"name": "fp.customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"customerName": {
+				"name": "dc.customer_name",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"amount": {
+				"name": "fp.amount",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"currency": {
+				"name": "fp.currency",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"paymentMethod": {
+				"name": "fp.payment_method",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "fp.state_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"retryCount": {
+				"name": "fp.retry_count",
+				"columnType": "Number"
+			},
+			"createdTime": {
+				"name": "fp.created_time",
+				"columnType": "Date",
+				"sortable": true,
+				"filterable": true
+			},
+			"q": {
+				"name": "q",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Payment.getById",
+		"name": "payment",
+		"acls": ["ADMIN"],
+		"workflowName": "payment",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "fp.id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "Payment.getStateCounts",
+		"name": "payment-state-counts",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Payment.getByMethod",
+		"name": "payments-by-method",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"paymentMethod": {
+				"name": "fp.payment_method",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Payment.getFailedPayments",
+		"name": "failed-payments",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Payment.getDailyRevenue",
+		"name": "daily-revenue",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Payment.getByOrderId",
+		"name": "payment-by-order",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"orderId": {
+				"name": "fp.order_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "Payment.getPaymentDetail",
+		"name": "payment-detail",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"id": {
+				"name": "fp.id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "Payment.getRefunds",
+		"name": "refunds",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"paymentId": {
+				"name": "payment_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"amount": {
+				"name": "amount",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"reason": {
+				"name": "reason",
+				"columnType": "Text"
+			},
+			"status": {
+				"name": "status",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdTime": {
+				"name": "created_time",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Payment.getWebhookLogs",
+		"name": "webhookLogs",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"paymentId": {
+				"name": "payment_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"eventType": {
+				"name": "event_type",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"provider": {
+				"name": "provider",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"status": {
+				"name": "status",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdTime": {
+				"name": "created_time",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

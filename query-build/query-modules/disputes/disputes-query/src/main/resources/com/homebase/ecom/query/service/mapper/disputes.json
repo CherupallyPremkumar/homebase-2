@@ -1,0 +1,130 @@
+[
+	{
+		"id": "Disputes.getAll",
+		"name": "disputes",
+		"acls": ["ADMIN", "AGENT"],
+		"workflowName": "dispute",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"orderId": {
+				"name": "order_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "state_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"priority": {
+				"name": "priority",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"disputeType": {
+				"name": "dispute_type",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"assignedTo": {
+				"name": "assigned_to",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"customerId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"sellerId": {
+				"name": "seller_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"disputedAmount": {
+				"name": "disputed_amount",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"createdAt": {
+				"name": "created_time",
+				"filterable": true,
+				"columnType": "Date",
+				"sortable": true
+			},
+			"q": {
+				"name": "q",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Disputes.getById",
+		"name": "disputeById",
+		"acls": ["ADMIN", "AGENT"],
+		"workflowName": "dispute",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Disputes.getStateCounts",
+		"name": "disputeStateCounts",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {},
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Disputes.getByPriority",
+		"name": "disputesByPriority",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {
+			"priority": {
+				"name": "priority",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"stateId": {
+				"name": "state_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Disputes.getOpenDisputes",
+		"name": "openDisputes",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {
+			"assignedTo": {
+				"name": "assigned_to",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

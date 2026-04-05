@@ -1,0 +1,425 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Wms">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: wms_overview_stats_flat, wms_inventory_with_product_flat,       -->
+<!--         wms_fulfillment_with_order_flat, wms_pick_list_flat,           -->
+<!--         wms_fulfillment_line_items_flat, dim_warehouse,                -->
+<!--         wms_inventory_by_location_flat, wms_inbound_shipments_flat     -->
+<!-- Populated by WmsSyncService ETL.                                       -->
+<!-- NEVER reference any OLTP schema here.                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- WMS OVERVIEW STATS (precomputed KPIs)                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="wmsOverviewStats" resultType="com.homebase.ecom.wms.dto.WmsOverviewStatsQueryDto">
+    SELECT
+        active_warehouses      as "activeWarehouses",
+        total_skus             as "totalSkus",
+        low_stock_items        as "lowStockItems",
+        out_of_stock_items     as "outOfStockItems",
+        pending_fulfillments   as "pendingFulfillments",
+        shipped_today          as "shippedToday",
+        pending_pick_lists     as "pendingPickLists"
+    FROM hm_query.wms_overview_stats_flat
+    <where>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="warehouseId == null">AND warehouse_id = '__ALL__'</if>
+    </where>
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- INVENTORY WITH PRODUCT (cross-BC: inventory + product + warehouse)    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="inventoryWithProduct-count" resultType="int">
+    SELECT count(*) FROM hm_query.wms_inventory_with_product_flat
+    <where>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="sku != null">AND sku = #{sku}</if>
+        <if test="stateId != null">AND stm_state = #{stateId}</if>
+        <if test="lowStock != null and lowStock == 'true'">AND is_low_stock = true</if>
+        <if test="q != null">AND (
+            sku LIKE CONCAT('%', #{q}, '%')
+            OR product_name LIKE CONCAT('%', #{q}, '%')
+            OR brand LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_code LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="inventoryWithProduct" resultType="com.homebase.ecom.wms.dto.InventoryWithProductQueryDto">
+    SELECT
+        inventory_id         as "inventoryId",
+        sku                  as "sku",
+        product_id           as "productId",
+        variant_id           as "variantId",
+        total_quantity       as "totalQuantity",
+        available_quantity   as "availableQuantity",
+        reserved_quantity    as "reservedQuantity",
+        damaged_quantity     as "damagedQuantity",
+        inbound_quantity     as "inboundQuantity",
+        low_stock_threshold  as "lowStockThreshold",
+        inventory_status     as "inventoryStatus",
+        stm_state            as "stateId",
+        warehouse_id         as "warehouseId",
+        product_name         as "productName",
+        brand                as "brand",
+        product_state        as "productState",
+        category_name        as "categoryName",
+        warehouse_name       as "warehouseName",
+        warehouse_code       as "warehouseCode",
+        warehouse_city       as "warehouseCity",
+        is_low_stock         as "isLowStock",
+        is_out_of_stock      as "isOutOfStock"
+    FROM hm_query.wms_inventory_with_product_flat
+    <where>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="sku != null">AND sku = #{sku}</if>
+        <if test="stateId != null">AND stm_state = #{stateId}</if>
+        <if test="lowStock != null and lowStock == 'true'">AND is_low_stock = true</if>
+        <if test="q != null">AND (
+            sku LIKE CONCAT('%', #{q}, '%')
+            OR product_name LIKE CONCAT('%', #{q}, '%')
+            OR brand LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_code LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- FULFILLMENT WITH ORDER DETAIL                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="fulfillmentWithOrderDetail-count" resultType="int">
+    SELECT count(*) FROM hm_query.wms_fulfillment_with_order_flat
+    <where>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="stateId != null">AND fulfillment_state = #{stateId}</if>
+        <if test="priority != null">AND priority = #{priority}</if>
+        <if test="assignedPickerId != null">AND assigned_picker = #{assignedPickerId}</if>
+        <if test="carrier != null">AND carrier = #{carrier}</if>
+        <if test="q != null">AND (
+            order_number LIKE CONCAT('%', #{q}, '%')
+            OR tracking_number LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR customer_first_name LIKE CONCAT('%', #{q}, '%')
+            OR customer_last_name LIKE CONCAT('%', #{q}, '%')
+            OR carrier LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="fulfillmentWithOrderDetail" resultType="com.homebase.ecom.wms.dto.FulfillmentWithOrderDetailQueryDto">
+    SELECT
+        fulfillment_id       as "fulfillmentId",
+        order_id             as "orderId",
+        fulfillment_state    as "fulfillmentState",
+        priority             as "priority",
+        fulfillment_type     as "fulfillmentType",
+        total_items          as "totalItems",
+        total_weight_grams   as "totalWeightGrams",
+        assigned_picker      as "assignedPicker",
+        assigned_packer      as "assignedPacker",
+        pick_started_at      as "pickStartedAt",
+        pick_completed_at    as "pickCompletedAt",
+        pack_started_at      as "packStartedAt",
+        pack_completed_at    as "packCompletedAt",
+        shipped_at           as "shippedAt",
+        carrier              as "carrier",
+        tracking_number      as "trackingNumber",
+        shipping_method      as "shippingMethod",
+        estimated_ship_date  as "estimatedShipDate",
+        estimated_delivery_date as "estimatedDeliveryDate",
+        notes                as "notes",
+        created_time         as "createdTime",
+        warehouse_id         as "warehouseId",
+        warehouse_name       as "warehouseName",
+        warehouse_code       as "warehouseCode",
+        order_number         as "orderNumber",
+        order_state          as "orderState",
+        order_amount         as "orderAmount",
+        order_currency       as "orderCurrency",
+        customer_id          as "customerId",
+        customer_first_name  as "customerFirstName",
+        customer_last_name   as "customerLastName",
+        shipping_status      as "shippingStatus",
+        current_location     as "currentLocation"
+    FROM hm_query.wms_fulfillment_with_order_flat
+    <where>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="stateId != null">AND fulfillment_state = #{stateId}</if>
+        <if test="priority != null">AND priority = #{priority}</if>
+        <if test="assignedPickerId != null">AND assigned_picker = #{assignedPickerId}</if>
+        <if test="carrier != null">AND carrier = #{carrier}</if>
+        <if test="q != null">AND (
+            order_number LIKE CONCAT('%', #{q}, '%')
+            OR tracking_number LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR customer_first_name LIKE CONCAT('%', #{q}, '%')
+            OR customer_last_name LIKE CONCAT('%', #{q}, '%')
+            OR carrier LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PICK LIST WITH PRODUCT                                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="pickListWithProduct-count" resultType="int">
+    SELECT count(*) FROM hm_query.wms_pick_list_flat
+    <where>
+        <if test="fulfillmentOrderId != null">AND fulfillment_order_id = #{fulfillmentOrderId}</if>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="status != null">AND pick_status = #{status}</if>
+        <if test="assignedTo != null">AND assigned_to = #{assignedTo}</if>
+        <if test="q != null">AND (
+            order_number LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_code LIKE CONCAT('%', #{q}, '%')
+            OR assigned_to LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="pickListWithProduct" resultType="com.homebase.ecom.wms.dto.PickListWithProductQueryDto">
+    SELECT
+        pick_list_id          as "pickListId",
+        fulfillment_order_id  as "fulfillmentOrderId",
+        warehouse_id          as "warehouseId",
+        assigned_to           as "assignedTo",
+        pick_status           as "pickStatus",
+        item_count            as "itemCount",
+        picked_count          as "pickedCount",
+        started_at            as "startedAt",
+        completed_at          as "completedAt",
+        notes                 as "notes",
+        created_time          as "createdTime",
+        warehouse_name        as "warehouseName",
+        warehouse_code        as "warehouseCode",
+        order_id              as "orderId",
+        fulfillment_state     as "fulfillmentState",
+        fulfillment_priority  as "fulfillmentPriority",
+        fulfillment_total_items as "fulfillmentTotalItems",
+        order_number          as "orderNumber",
+        customer_id           as "customerId"
+    FROM hm_query.wms_pick_list_flat
+    <where>
+        <if test="fulfillmentOrderId != null">AND fulfillment_order_id = #{fulfillmentOrderId}</if>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="status != null">AND pick_status = #{status}</if>
+        <if test="assignedTo != null">AND assigned_to = #{assignedTo}</if>
+        <if test="q != null">AND (
+            order_number LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_code LIKE CONCAT('%', #{q}, '%')
+            OR assigned_to LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- FULFILLMENT LINE ITEMS                                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="fulfillmentLineItems" resultType="com.homebase.ecom.wms.dto.FulfillmentLineItemQueryDto">
+    SELECT
+        line_item_id         as "lineItemId",
+        fulfillment_order_id as "fulfillmentOrderId",
+        order_item_id        as "orderItemId",
+        product_id           as "productId",
+        variant_id           as "variantId",
+        sku                  as "sku",
+        quantity_ordered     as "quantityOrdered",
+        quantity_allocated   as "quantityAllocated",
+        quantity_picked      as "quantityPicked",
+        quantity_packed      as "quantityPacked",
+        quantity_shipped     as "quantityShipped",
+        quantity_short       as "quantityShort",
+        bin_location         as "binLocation",
+        item_status          as "itemStatus",
+        product_name         as "productName",
+        brand                as "brand",
+        weight_grams         as "weightGrams",
+        unit_price           as "unitPrice",
+        total_price          as "totalPrice"
+    FROM hm_query.wms_fulfillment_line_items_flat
+    WHERE fulfillment_order_id = #{fulfillmentOrderId}
+    ORDER BY sku
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- WAREHOUSE UTILIZATION (reads from dim_warehouse — already denormalized)-->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="warehouseUtilization-count" resultType="int">
+    SELECT count(*) FROM hm_query.dim_warehouse
+    <where>
+        <if test="warehouseId != null">AND id = #{warehouseId}</if>
+        <if test="warehouseType != null">AND warehouse_type = #{warehouseType}</if>
+        <if test="isActive != null">AND is_active = CAST(#{isActive} AS boolean)</if>
+        <if test="q != null">AND (
+            warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_code LIKE CONCAT('%', #{q}, '%')
+            OR city LIKE CONCAT('%', #{q}, '%')
+            OR state LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="warehouseUtilization" resultType="com.homebase.ecom.wms.dto.WarehouseUtilizationQueryDto">
+    SELECT
+        id                     as "warehouseId",
+        warehouse_code         as "warehouseCode",
+        warehouse_name         as "warehouseName",
+        warehouse_type         as "warehouseType",
+        city                   as "city",
+        state                  as "state",
+        max_capacity_units     as "maxCapacityUnits",
+        current_utilization_pct as "currentUtilizationPct",
+        is_active              as "isActive",
+        total_skus             as "totalSkus",
+        total_units            as "totalUnits",
+        low_stock_count        as "lowStockCount",
+        pending_fulfillments   as "pendingFulfillments"
+    FROM hm_query.dim_warehouse
+    <where>
+        <if test="warehouseId != null">AND id = #{warehouseId}</if>
+        <if test="warehouseType != null">AND warehouse_type = #{warehouseType}</if>
+        <if test="isActive != null">AND is_active = CAST(#{isActive} AS boolean)</if>
+        <if test="q != null">AND (
+            warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_code LIKE CONCAT('%', #{q}, '%')
+            OR city LIKE CONCAT('%', #{q}, '%')
+            OR state LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- INVENTORY BY WAREHOUSE LOCATION                                       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="inventoryByWarehouseLocation-count" resultType="int">
+    SELECT count(*) FROM hm_query.wms_inventory_by_location_flat
+    <where>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="zone != null">AND zone = #{zone}</if>
+        <if test="locationType != null">AND location_type = #{locationType}</if>
+        <if test="q != null">AND (
+            sku LIKE CONCAT('%', #{q}, '%')
+            OR product_name LIKE CONCAT('%', #{q}, '%')
+            OR brand LIKE CONCAT('%', #{q}, '%')
+            OR location_code LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="inventoryByWarehouseLocation" resultType="com.homebase.ecom.wms.dto.InventoryByLocationQueryDto">
+    SELECT
+        warehouse_inventory_id as "warehouseInventoryId",
+        location_id            as "locationId",
+        product_id             as "productId",
+        variant_id             as "variantId",
+        sku                    as "sku",
+        quantity_on_hand       as "quantityOnHand",
+        quantity_reserved      as "quantityReserved",
+        quantity_available     as "quantityAvailable",
+        quantity_damaged       as "quantityDamaged",
+        quantity_in_transit    as "quantityInTransit",
+        last_counted_at        as "lastCountedAt",
+        location_code          as "locationCode",
+        zone                   as "zone",
+        aisle                  as "aisle",
+        shelf                  as "shelf",
+        bin                    as "bin",
+        location_type          as "locationType",
+        location_capacity      as "locationCapacity",
+        location_current_units as "locationCurrentUnits",
+        product_name           as "productName",
+        brand                  as "brand",
+        warehouse_name         as "warehouseName",
+        warehouse_code         as "warehouseCode"
+    FROM hm_query.wms_inventory_by_location_flat
+    <where>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="zone != null">AND zone = #{zone}</if>
+        <if test="locationType != null">AND location_type = #{locationType}</if>
+        <if test="q != null">AND (
+            sku LIKE CONCAT('%', #{q}, '%')
+            OR product_name LIKE CONCAT('%', #{q}, '%')
+            OR brand LIKE CONCAT('%', #{q}, '%')
+            OR location_code LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- INBOUND SHIPMENTS                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="inboundShipments-count" resultType="int">
+    SELECT count(*) FROM hm_query.wms_inbound_shipments_flat
+    <where>
+        <if test="warehouseId != null">AND fulfillment_center_id = #{warehouseId}</if>
+        <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+        <if test="q != null">AND (
+            sku LIKE CONCAT('%', #{q}, '%')
+            OR product_name LIKE CONCAT('%', #{q}, '%')
+            OR brand LIKE CONCAT('%', #{q}, '%')
+            OR supplier_name LIKE CONCAT('%', #{q}, '%')
+            OR fulfillment_center_name LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="inboundShipments" resultType="com.homebase.ecom.wms.dto.InboundShipmentQueryDto">
+    SELECT
+        inventory_item_id      as "inventoryItemId",
+        product_id             as "productId",
+        variant_id             as "variantId",
+        sku                    as "sku",
+        quantity               as "quantity",
+        movement_type          as "movementType",
+        reference_id           as "referenceId",
+        fulfillment_center_id  as "fulfillmentCenterId",
+        movement_time          as "movementTime",
+        reason                 as "reason",
+        supplier_id            as "supplierId",
+        product_name           as "productName",
+        brand                  as "brand",
+        fulfillment_center_name as "fulfillmentCenterName",
+        fulfillment_center_code as "fulfillmentCenterCode",
+        supplier_name          as "supplierName",
+        supplier_state         as "supplierState"
+    FROM hm_query.wms_inbound_shipments_flat
+    <where>
+        <if test="warehouseId != null">AND fulfillment_center_id = #{warehouseId}</if>
+        <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+        <if test="q != null">AND (
+            sku LIKE CONCAT('%', #{q}, '%')
+            OR product_name LIKE CONCAT('%', #{q}, '%')
+            OR brand LIKE CONCAT('%', #{q}, '%')
+            OR supplier_name LIKE CONCAT('%', #{q}, '%')
+            OR fulfillment_center_name LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

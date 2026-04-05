@@ -1,0 +1,77 @@
+[
+  {
+    "id": "Tax.getRates",
+    "name": "taxRates",
+    "description": "Tax rates from OLAP tax_rates_flat",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
+      "hsnCode": { "name": "hsnCode", "filterable": true, "columnType": "Text", "sortable": true },
+      "description": { "name": "description", "filterable": true, "columnType": "Text", "likeQuery": true },
+      "gstRate": { "name": "gstRate", "filterable": true, "columnType": "Number", "sortable": true },
+      "cessRate": { "name": "cessRate", "filterable": true, "columnType": "Number" },
+      "active": { "name": "active", "filterable": true, "columnType": "CheckBox" },
+      "q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+    },
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "Tax.getCategoryMappings",
+    "name": "taxCategoryMappings",
+    "description": "Tax category-to-HSN mappings from OLAP",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "productCategory": { "name": "productCategory", "filterable": true, "columnType": "Text", "sortable": true },
+      "hsnCode": { "name": "hsnCode", "filterable": true, "columnType": "Text", "sortable": true },
+      "description": { "name": "description", "filterable": true, "columnType": "Text", "likeQuery": true },
+      "q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+    },
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "Tax.getRegions",
+    "name": "taxRegions",
+    "description": "Indian state tax regions from OLAP",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "stateCode": { "name": "stateCode", "filterable": true, "columnType": "Text", "sortable": true },
+      "stateName": { "name": "stateName", "filterable": true, "columnType": "Text", "likeQuery": true, "sortable": true },
+      "unionTerritory": { "name": "unionTerritory", "filterable": true, "columnType": "CheckBox" },
+      "q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+    },
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "Tax.getExemptions",
+    "name": "taxExemptions",
+    "description": "Tax exemptions from OLAP",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "exemptionType": { "name": "exemptionType", "filterable": true, "columnType": "Text", "sortable": true },
+      "value": { "name": "value", "filterable": true, "columnType": "Text" },
+      "description": { "name": "description", "filterable": true, "columnType": "Text", "likeQuery": true },
+      "fullExemption": { "name": "fullExemption", "filterable": true, "columnType": "CheckBox" },
+      "active": { "name": "active", "filterable": true, "columnType": "CheckBox" },
+      "q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+    },
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "Tax.getOrderTaxLines",
+    "name": "orderTaxLines",
+    "description": "Order tax line items from OLAP",
+    "acls": ["ADMIN", "AGENT"],
+    "columnMetadata": {
+      "orderId": { "name": "orderId", "filterable": true, "columnType": "Text" },
+      "hsnCode": { "name": "hsnCode", "filterable": true, "columnType": "Text" },
+      "taxType": { "name": "taxType", "filterable": true, "columnType": "Text" },
+      "totalTax": { "name": "totalTax", "filterable": true, "columnType": "Number", "sortable": true }
+    },
+    "paginated": true,
+    "sortable": true
+  }
+]

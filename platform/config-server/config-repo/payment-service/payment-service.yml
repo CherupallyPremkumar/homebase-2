@@ -1,0 +1,9 @@
+server:
+  port: 8083
+payment:
+  gateway: ${PAYMENT_GATEWAY:stripe}
+  retry:
+    max-attempts: 3
+    backoff-ms: 1000
+  webhook:
+    timeout-seconds: 30

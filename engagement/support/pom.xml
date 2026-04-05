@@ -8,8 +8,6 @@
 		<module>support-api</module>
 		<module>support-infrastructure</module>
 		<module>support-service</module>
-		<module>support-query</module>
-		<module>support-query-api</module>
 		<module>support-app</module>
 		<module>support-client</module>
 	        <module>support-liquibase</module>

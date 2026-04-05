@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<parent>
+        <groupId>com.homebase.ecom.query.product</groupId>
+        <artifactId>product-query-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.homebase.ecom.product</groupId>
+	<artifactId>product-query-api</artifactId>
+	<name>product-query-api</name>
+	<description>
+		Pure DTO jar. Contains OfferDto used as MyBatis resultType in offer.xml
+		and as return type in ChenileRepository consumer interfaces (e.g., cart-service).
+	</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.homebase.ecom.shared</groupId>
+			<artifactId>shared-api</artifactId>
+		</dependency>
+	</dependencies>
+
+</project>

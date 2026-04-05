@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="WishlistSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SYNC: OLTP → OLAP                                                      -->
+<!-- Reads from hm_wishlist.wishlist_items, hm_product.*, hm_inventory.*    -->
+<!-- Writes to hm_query.wishlist_flat                                       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateWishlistFlat">
+    TRUNCATE TABLE hm_query.wishlist_flat
+</update>
+
+<insert id="syncWishlistFlat">
+    INSERT INTO hm_query.wishlist_flat (
+        id, tenant, last_synced_at,
+        wishlist_item_id, user_id,
+        product_id, variant_id, product_name, brand, sku,
+        image_url, category_name,
+        added_at, price_when_added, current_price,
+        notify_on_price_drop, available_quantity, stock_status,
+        notes, created_time
+    )
+    SELECT
+        w.id, 'homebase', NOW(),
+        w.id, w.user_id,
+        w.product_id, w.variant_id,
+        COALESCE(p.name, ''),
+        p.brand,
+        pv.sku,
+        COALESCE(vma.cdn_url, vma.original_url, pma.cdn_url, pma.original_url),
+        cat.name,
+        w.added_at, w.price_when_added,
+        COALESCE(pv.selling_price, p.base_price, w.price_when_added),
+        w.notify_on_price_drop,
+        COALESCE(inv.available_quantity, 0),
+        COALESCE(inv.status, 'UNKNOWN'),
+        w.notes, w.created_time
+    FROM hm_wishlist.wishlist_items w
+    LEFT JOIN hm_product.products p ON p.id = w.product_id
+    LEFT JOIN hm_product.categories cat ON cat.id = p.category_id
+    LEFT JOIN hm_product.product_variants pv ON pv.id = w.variant_id
+    LEFT JOIN hm_product.variant_media vm
+        ON vm.variant_id = w.variant_id AND vm.is_primary = true
+    LEFT JOIN hm_product.media_assets vma ON vma.id = vm.asset_id
+    LEFT JOIN hm_product.product_media pm
+        ON pm.product_id = w.product_id AND pm.is_primary = true
+    LEFT JOIN hm_product.media_assets pma ON pma.id = pm.asset_id
+    LEFT JOIN hm_inventory.inventory_item inv ON inv.variant_id = w.variant_id
+</insert>
+
+</mapper>

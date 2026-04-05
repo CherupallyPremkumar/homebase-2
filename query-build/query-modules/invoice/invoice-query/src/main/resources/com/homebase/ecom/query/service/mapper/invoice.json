@@ -1,0 +1,123 @@
+[
+	{
+		"id": "Invoice.getAll",
+		"name": "invoices",
+		"acls": ["ADMIN", "FINANCE"],
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true
+			},
+			"orderId": {
+				"name": "order_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"invoiceNumber": {
+				"name": "invoice_number",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true,
+				"sortable": true
+			},
+			"customerId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"customerName": {
+				"name": "customer_name",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"totalAmount": {
+				"name": "total_amount",
+				"filterable": true,
+				"columnType": "Number",
+				"sortable": true
+			},
+			"taxAmount": {
+				"name": "tax_amount",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"status": {
+				"name": "status",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"createdAt": {
+				"name": "created_time",
+				"filterable": true,
+				"columnType": "Date",
+				"sortable": true
+			},
+			"q": {
+				"name": "q",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Invoice.getById",
+		"name": "invoiceById",
+		"acls": ["ADMIN", "FINANCE"],
+		"columnMetadata": {
+			"id": {
+				"name": "id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Invoice.getStateCounts",
+		"name": "invoiceStateCounts",
+		"acls": ["ADMIN", "FINANCE"],
+		"columnMetadata": {},
+		"paginated": false,
+		"sortable": false
+	},
+	{
+		"id": "Invoice.getByCustomerId",
+		"name": "invoicesByCustomer",
+		"acls": ["ADMIN", "FINANCE", "CUSTOMER"],
+		"columnMetadata": {
+			"customerId": {
+				"name": "customer_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"status": {
+				"name": "status",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Invoice.getByOrderId",
+		"name": "invoicesByOrder",
+		"acls": ["ADMIN", "FINANCE"],
+		"columnMetadata": {
+			"orderId": {
+				"name": "order_id",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false,
+		"sortable": false
+	}
+]

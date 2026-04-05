@@ -1,0 +1,3 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://prod-checkout-db.homebase.internal:5432/homebase_checkout

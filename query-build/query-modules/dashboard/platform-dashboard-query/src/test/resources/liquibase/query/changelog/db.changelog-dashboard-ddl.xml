@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Creates hm_query OLAP schema and all 10 dashboard tables for H2 test mode.
+        Mirrors production DDL from query-liquibase but simplified for H2 compatibility.
+    -->
+
+    <changeSet id="dashboard-ddl-schema" author="homebase-test">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_query;</sql>
+    </changeSet>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 1. platform_kpi_snapshots — daily KPI rollup                      -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <changeSet id="dashboard-ddl-kpi" author="homebase-test">
+        <createTable schemaName="hm_query" tableName="platform_kpi_snapshots">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="snapshot_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="gmv" type="BIGINT"/>
+            <column name="total_revenue" type="BIGINT"/>
+            <column name="total_commission_earned" type="BIGINT"/>
+            <column name="total_platform_fees" type="BIGINT"/>
+            <column name="total_seller_payouts" type="BIGINT"/>
+            <column name="pending_payouts" type="BIGINT"/>
+            <column name="total_refund_amount" type="BIGINT"/>
+            <column name="take_rate" type="INT"/>
+            <column name="total_orders" type="INT"/>
+            <column name="total_units_sold" type="INT"/>
+            <column name="avg_order_value" type="BIGINT"/>
+            <column name="cancellation_count" type="INT"/>
+            <column name="rto_count" type="INT"/>
+            <column name="return_count" type="INT"/>
+            <column name="active_buyers" type="INT"/>
+            <column name="active_sellers" type="INT"/>
+            <column name="new_buyers" type="INT"/>
+            <column name="new_sellers" type="INT"/>
+            <column name="total_products_listed" type="INT"/>
+            <column name="total_skus" type="INT"/>
+            <column name="total_sessions" type="INT"/>
+            <column name="total_page_views" type="INT"/>
+            <column name="conversion_rate" type="INT"/>
+            <column name="cart_abandonment_rate" type="INT"/>
+            <column name="fraud_attempts_blocked" type="INT"/>
+            <column name="open_support_tickets" type="INT"/>
+            <column name="avg_delivery_days" type="INT"/>
+            <column name="on_time_delivery_rate" type="INT"/>
+            <column name="upi_pct" type="INT"/>
+            <column name="card_pct" type="INT"/>
+            <column name="cod_pct" type="INT"/>
+            <column name="wallet_pct" type="INT"/>
+            <column name="netbanking_pct" type="INT"/>
+            <column name="payment_success_rate" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 2. live_order_pipeline — real-time order funnel                    -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <changeSet id="dashboard-ddl-pipeline" author="homebase-test">
+        <createTable schemaName="hm_query" tableName="live_order_pipeline">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="pipeline_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="refreshed_at" type="TIMESTAMP"/>
+            <column name="placed_count" type="INT"/>
+            <column name="confirmed_count" type="INT"/>
+            <column name="packed_count" type="INT"/>
+            <column name="shipped_count" type="INT"/>
+            <column name="out_for_delivery_count" type="INT"/>
+            <column name="delivered_count" type="INT"/>
+            <column name="cancelled_count" type="INT"/>
+            <column name="returned_count" type="INT"/>
+            <column name="rto_count" type="INT"/>
+            <column name="placed_breach_4hr" type="INT"/>
+            <column name="placed_breach_8hr" type="INT"/>
+            <column name="packed_breach_4hr" type="INT"/>
+            <column name="shipped_breach_24hr" type="INT"/>
+            <column name="cancellation_rate" type="INT"/>
+            <column name="rto_rate" type="INT"/>
+            <column name="return_rate" type="INT"/>
+            <column name="orders_per_minute" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 3. top_products_today                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <changeSet id="dashboard-ddl-top-products" author="homebase-test">
+        <createTable schemaName="hm_query" tableName="top_products_today">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="refreshed_at" type="TIMESTAMP"/>
+            <column name="rank" type="INT"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="category_name" type="VARCHAR(255)"/>
+            <column name="seller_name" type="VARCHAR(255)"/>
+            <column name="units_sold" type="INT"/>
+            <column name="revenue" type="BIGINT"/>
+            <column name="stock_remaining" type="INT"/>
+            <column name="stock_status" type="VARCHAR(30)"/>
+            <column name="avg_rating" type="INT"/>
+            <column name="review_count" type="INT"/>
+            <column name="conversion_rate" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 4. top_sellers_today                                               -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <changeSet id="dashboard-ddl-top-sellers" author="homebase-test">
+        <createTable schemaName="hm_query" tableName="top_sellers_today">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="refreshed_at" type="TIMESTAMP"/>
+            <column name="rank" type="INT"/>
+            <column name="seller_id" type="VARCHAR(255)"/>
+            <column name="seller_name" type="VARCHAR(255)"/>
+            <column name="tier" type="VARCHAR(50)"/>
+            <column name="gmv_today" type="BIGINT"/>
+            <column name="orders_today" type="INT"/>
+            <column name="products_count" type="INT"/>
+            <column name="fulfillment_rate" type="INT"/>
+            <column name="rating" type="INT"/>
+            <column name="health_score" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 5. category_performance_daily                                      -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <changeSet id="dashboard-ddl-category-perf" author="homebase-test">
+        <createTable schemaName="hm_query" tableName="category_performance_daily">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="summary_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="category_id" type="VARCHAR(255)"/>
+            <column name="category_name" type="VARCHAR(255)"/>
+            <column name="gmv" type="BIGINT"/>
+            <column name="total_orders" type="INT"/>
+            <column name="total_units_sold" type="INT"/>
+            <column name="total_returns" type="INT"/>
+            <column name="return_rate" type="INT"/>
+            <column name="avg_order_value" type="BIGINT"/>
+            <column name="active_sellers" type="INT"/>
+            <column name="active_listings" type="INT"/>
+            <column name="conversion_rate" type="INT"/>
+            <column name="avg_product_rating" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 6. seller_health_summary_daily                                     -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <changeSet id="dashboard-ddl-seller-health" author="homebase-test">
+        <createTable schemaName="hm_query" tableName="seller_health_summary_daily">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="summary_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="total_sellers" type="INT"/>
+            <column name="healthy_sellers" type="INT"/>
+            <column name="at_risk_sellers" type="INT"/>
+            <column name="unhealthy_sellers" type="INT"/>
+            <column name="new_applications" type="INT"/>
+            <column name="pending_approvals" type="INT"/>
+            <column name="suspended_sellers" type="INT"/>
+            <column name="avg_health_score" type="INT"/>
+            <column name="avg_rating" type="INT"/>
+            <column name="avg_fulfillment_rate" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 7. conversion_funnel_daily                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <changeSet id="dashboard-ddl-funnel" author="homebase-test">
+        <createTable schemaName="hm_query" tableName="conversion_funnel_daily">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="funnel_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="total_sessions" type="INT"/>
+            <column name="product_views" type="INT"/>
+            <column name="add_to_cart" type="INT"/>
+            <column name="checkout_initiated" type="INT"/>
+            <column name="purchase_completed" type="INT"/>
+            <column name="browse_to_cart_rate" type="INT"/>
+            <column name="cart_to_checkout_rate" type="INT"/>
+            <column name="checkout_to_purchase_rate" type="INT"/>
+            <column name="overall_conversion_rate" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 8. revenue_by_region_daily                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <changeSet id="dashboard-ddl-region" author="homebase-test">
+        <createTable schemaName="hm_query" tableName="revenue_by_region_daily">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="summary_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="state" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="gmv" type="BIGINT"/>
+            <column name="total_orders" type="INT"/>
+            <column name="avg_order_value" type="BIGINT"/>
+            <column name="active_sellers" type="INT"/>
+            <column name="active_buyers" type="INT"/>
+            <column name="on_time_delivery_rate" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 9. platform_alerts                                                 -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <changeSet id="dashboard-ddl-alerts" author="homebase-test">
+        <createTable schemaName="hm_query" tableName="platform_alerts">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="alert_type" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="severity" type="VARCHAR(10)"><constraints nullable="false"/></column>
+            <column name="metric_name" type="VARCHAR(100)"/>
+            <column name="threshold_value" type="INT"/>
+            <column name="current_value" type="INT"/>
+            <column name="alert_message" type="VARCHAR(500)"/>
+            <column name="is_active" type="BOOLEAN"/>
+            <column name="is_acknowledged" type="BOOLEAN"/>
+            <column name="acknowledged_by" type="VARCHAR(100)"/>
+            <column name="acknowledged_at" type="TIMESTAMP"/>
+            <column name="resolved_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- 10. customer_cohort_metrics                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <changeSet id="dashboard-ddl-cohort" author="homebase-test">
+        <createTable schemaName="hm_query" tableName="customer_cohort_metrics">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="cohort_month" type="DATE"><constraints nullable="false"/></column>
+            <column name="measurement_month" type="DATE"><constraints nullable="false"/></column>
+            <column name="cohort_size" type="INT"/>
+            <column name="active_count" type="INT"/>
+            <column name="retention_rate" type="INT"/>
+            <column name="revenue_per_user" type="BIGINT"/>
+            <column name="total_orders" type="INT"/>
+            <column name="churn_count" type="INT"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <property name="schemaName" value="hm_digital_delivery"/>
+
+    <!-- ===================== SCHEMA ===================== -->
+    <changeSet id="digital-delivery-001-schema" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><sqlCheck expectedResult="1">SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = '${schemaName}'</sqlCheck></not>
+        </preConditions>
+        <sql>CREATE SCHEMA IF NOT EXISTS ${schemaName}</sql>
+    </changeSet>
+
+    <!-- ===================== 1. digital_products ===================== -->
+    <changeSet id="digital-delivery-002-digital-products" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="${schemaName}" tableName="digital_products"/></not>
+        </preConditions>
+        <createTable schemaName="${schemaName}" tableName="digital_products">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(1000)"/>
+            <column name="category" type="VARCHAR(100)"/>
+            <column name="file_type" type="VARCHAR(100)"/>
+            <column name="file_size" type="BIGINT"/>
+            <column name="vendor_id" type="VARCHAR(255)"/>
+            <column name="price" type="BIGINT"/>
+            <column name="product_version" type="VARCHAR(50)"/>
+            <column name="release_date" type="TIMESTAMP"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ===================== 2. digital_licenses (STM) ===================== -->
+    <changeSet id="digital-delivery-003-digital-licenses" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="${schemaName}" tableName="digital_licenses"/></not>
+        </preConditions>
+        <createTable schemaName="${schemaName}" tableName="digital_licenses">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="product_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_licenses_product" references="${schemaName}.digital_products(id)"/>
+            </column>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="license_key" type="VARCHAR(255)">
+                <constraints unique="true" uniqueConstraintName="uq_licenses_key"/>
+            </column>
+            <column name="license_type" type="VARCHAR(50)"/>
+            <column name="max_activations" type="INT" defaultValueNumeric="1"/>
+            <column name="current_activations" type="INT" defaultValueNumeric="0"/>
+            <column name="issue_date" type="TIMESTAMP"/>
+            <column name="expiration_date" type="TIMESTAMP"/>
+            <column name="terms_accepted" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ===================== 3. download_links ===================== -->
+    <changeSet id="digital-delivery-004-download-links" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="${schemaName}" tableName="download_links"/></not>
+        </preConditions>
+        <createTable schemaName="${schemaName}" tableName="download_links">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="license_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_links_license" references="${schemaName}.digital_licenses(id)"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="download_url" type="VARCHAR(500)">
+                <constraints unique="true" uniqueConstraintName="uq_links_download_url"/>
+            </column>
+            <column name="file_path" type="VARCHAR(500)"/>
+            <column name="cdn_url" type="VARCHAR(500)"/>
+            <column name="access_token" type="VARCHAR(255)"/>
+            <column name="token_expiration" type="TIMESTAMP"/>
+            <column name="max_downloads" type="INT" defaultValueNumeric="5"/>
+            <column name="remaining_downloads" type="INT" defaultValueNumeric="5"/>
+            <column name="is_used" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ===================== 4. download_history (log table) ===================== -->
+    <changeSet id="digital-delivery-005-download-history" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="${schemaName}" tableName="download_history"/></not>
+        </preConditions>
+        <createTable schemaName="${schemaName}" tableName="download_history">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="license_id" type="VARCHAR(255)"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="link_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_history_link" references="${schemaName}.download_links(id)"/>
+            </column>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="download_timestamp" type="TIMESTAMP"/>
+            <column name="ip_address" type="VARCHAR(50)"/>
+            <column name="user_agent" type="VARCHAR(500)"/>
+            <column name="file_size_downloaded" type="BIGINT"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="error_code" type="VARCHAR(50)"/>
+            <column name="device_fingerprint" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ===================== 5. license_activations ===================== -->
+    <changeSet id="digital-delivery-006-license-activations" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="${schemaName}" tableName="license_activations"/></not>
+        </preConditions>
+        <createTable schemaName="${schemaName}" tableName="license_activations">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="license_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_activations_license" references="${schemaName}.digital_licenses(id)"/>
+            </column>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="device_id" type="VARCHAR(255)"/>
+            <column name="device_name" type="VARCHAR(255)"/>
+            <column name="device_type" type="VARCHAR(50)"/>
+            <column name="os_version" type="VARCHAR(100)"/>
+            <column name="application_version" type="VARCHAR(50)"/>
+            <column name="activation_timestamp" type="TIMESTAMP"/>
+            <column name="last_verified" type="TIMESTAMP"/>
+            <column name="deactivation_timestamp" type="TIMESTAMP"/>
+            <column name="activation_status" type="VARCHAR(50)"/>
+            <column name="activation_location" type="VARCHAR(100)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ===================== 6. digital_libraries ===================== -->
+    <changeSet id="digital-delivery-007-digital-libraries" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="${schemaName}" tableName="digital_libraries"/></not>
+        </preConditions>
+        <createTable schemaName="${schemaName}" tableName="digital_libraries">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="license_id" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_libraries_license" references="${schemaName}.digital_licenses(id)"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="added_date" type="TIMESTAMP"/>
+            <column name="is_archived" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="last_accessed" type="TIMESTAMP"/>
+            <column name="bookmark_position" type="INT"/>
+            <column name="sync_status" type="VARCHAR(50)"/>
+            <column name="local_backup_status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ===================== INDEXES ===================== -->
+    <changeSet id="digital-delivery-008-indexes" author="homebase">
+        <createIndex schemaName="${schemaName}" tableName="digital_products" indexName="idx_products_vendor">
+            <column name="vendor_id"/>
+        </createIndex>
+        <createIndex schemaName="${schemaName}" tableName="digital_products" indexName="idx_products_category">
+            <column name="category"/>
+        </createIndex>
+        <createIndex schemaName="${schemaName}" tableName="digital_licenses" indexName="idx_licenses_product">
+            <column name="product_id"/>
+        </createIndex>
+        <createIndex schemaName="${schemaName}" tableName="digital_licenses" indexName="idx_licenses_customer">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex schemaName="${schemaName}" tableName="digital_licenses" indexName="idx_licenses_key">
+            <column name="license_key"/>
+        </createIndex>
+        <createIndex schemaName="${schemaName}" tableName="download_links" indexName="idx_links_license">
+            <column name="license_id"/>
+        </createIndex>
+        <createIndex schemaName="${schemaName}" tableName="download_links" indexName="idx_links_token">
+            <column name="access_token"/>
+        </createIndex>
+        <createIndex schemaName="${schemaName}" tableName="download_history" indexName="idx_history_license">
+            <column name="license_id"/>
+        </createIndex>
+        <createIndex schemaName="${schemaName}" tableName="download_history" indexName="idx_history_customer">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex schemaName="${schemaName}" tableName="license_activations" indexName="idx_activations_license">
+            <column name="license_id"/>
+        </createIndex>
+        <createIndex schemaName="${schemaName}" tableName="license_activations" indexName="idx_activations_device">
+            <column name="device_id"/>
+        </createIndex>
+        <createIndex schemaName="${schemaName}" tableName="digital_libraries" indexName="idx_libraries_customer">
+            <column name="customer_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

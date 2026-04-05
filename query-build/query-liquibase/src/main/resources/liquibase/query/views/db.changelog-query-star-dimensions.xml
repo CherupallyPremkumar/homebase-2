@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- STAR SCHEMA — DIMENSION TABLES                                     -->
+    <!-- Dimensions are "what you GROUP BY / FILTER BY"                     -->
+    <!-- Each entity stored ONCE. Facts reference via foreign key.           -->
+    <!-- ================================================================== -->
+
+    <!-- ====== DIM_DATE (calendar dimension — pre-filled) ====== -->
+    <changeSet id="query-star-001-dim-date" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="dim_date" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="dim_date" schemaName="hm_query">
+            <column name="date_key" type="DATE"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="day_of_week" type="INT" remarks="1=Monday, 7=Sunday"/>
+            <column name="day_of_month" type="INT"/>
+            <column name="day_name" type="VARCHAR(10)" remarks="Monday, Tuesday..."/>
+            <column name="week_of_year" type="INT"/>
+            <column name="month" type="INT"/>
+            <column name="month_name" type="VARCHAR(10)"/>
+            <column name="quarter" type="INT"/>
+            <column name="year" type="INT"/>
+            <column name="fiscal_year" type="INT" remarks="Apr-Mar in India"/>
+            <column name="fiscal_quarter" type="INT"/>
+            <column name="is_weekend" type="BOOLEAN"/>
+            <column name="is_holiday" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="holiday_name" type="VARCHAR(100)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ====== DIM_CUSTOMER ====== -->
+    <changeSet id="query-star-002-dim-customer" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="dim_customer" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="dim_customer" schemaName="hm_query">
+            <column name="customer_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="first_name" type="VARCHAR(100)"/>
+            <column name="last_name" type="VARCHAR(100)"/>
+            <column name="phone" type="VARCHAR(20)"/>
+            <column name="customer_status" type="VARCHAR(50)"/>
+            <column name="customer_tier" type="VARCHAR(50)" remarks="VIP, GOLD, SILVER, STANDARD"/>
+            <column name="segment" type="VARCHAR(50)" remarks="VIP, HIGH_VALUE, REGULAR, NEW, AT_RISK, CHURNED"/>
+            <column name="registered_date" type="TIMESTAMP"/>
+            <column name="last_login_at" type="TIMESTAMP"/>
+            <column name="last_active_at" type="TIMESTAMP"/>
+            <column name="last_purchase_date" type="TIMESTAMP"/>
+            <column name="email_verified" type="BOOLEAN"/>
+            <column name="phone_verified" type="BOOLEAN"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="state" type="VARCHAR(100)"/>
+            <column name="pincode" type="VARCHAR(10)"/>
+            <column name="total_orders" type="INT" defaultValueNumeric="0"/>
+            <column name="total_spent" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="avg_order_value" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="ltv" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="total_returns" type="INT" defaultValueNumeric="0"/>
+            <column name="return_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="churn_risk" type="VARCHAR(20)"/>
+            <column name="fraud_score" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_dim_cust_tier" tableName="dim_customer" schemaName="hm_query"><column name="customer_tier"/></createIndex>
+        <createIndex indexName="idx_dim_cust_segment" tableName="dim_customer" schemaName="hm_query"><column name="segment"/></createIndex>
+        <createIndex indexName="idx_dim_cust_state" tableName="dim_customer" schemaName="hm_query"><column name="state"/></createIndex>
+    </changeSet>
+
+    <!-- ====== DIM_SELLER ====== -->
+    <changeSet id="query-star-003-dim-seller" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="dim_seller" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="dim_seller" schemaName="hm_query">
+            <column name="seller_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="business_name" type="VARCHAR(255)"/>
+            <column name="store_name" type="VARCHAR(255)"/>
+            <column name="seller_status" type="VARCHAR(50)"/>
+            <column name="tier" type="VARCHAR(50)"/>
+            <column name="business_type" type="VARCHAR(50)"/>
+            <column name="contact_email" type="VARCHAR(255)"/>
+            <column name="contact_phone" type="VARCHAR(20)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="state" type="VARCHAR(100)"/>
+            <column name="gstin" type="VARCHAR(20)"/>
+            <column name="gst_verified" type="BOOLEAN"/>
+            <column name="pan_verified" type="BOOLEAN"/>
+            <column name="bank_account_verified" type="BOOLEAN"/>
+            <column name="active_date" type="TIMESTAMP"/>
+            <column name="commission_rate" type="INT"/>
+            <column name="health_score" type="INT" defaultValueNumeric="0"/>
+            <column name="rating" type="INT" defaultValueNumeric="0"/>
+            <column name="fulfillment_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="dispatch_sla_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="return_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="response_time_hours" type="INT" defaultValueNumeric="0"/>
+            <column name="violations_count" type="INT" defaultValueNumeric="0"/>
+            <column name="total_products" type="INT" defaultValueNumeric="0"/>
+            <column name="active_listings" type="INT" defaultValueNumeric="0"/>
+            <column name="payout_frequency" type="VARCHAR(20)"/>
+            <column name="avg_lead_time_days" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_dim_seller_status" tableName="dim_seller" schemaName="hm_query"><column name="seller_status"/></createIndex>
+        <createIndex indexName="idx_dim_seller_tier" tableName="dim_seller" schemaName="hm_query"><column name="tier"/></createIndex>
+        <createIndex indexName="idx_dim_seller_health" tableName="dim_seller" schemaName="hm_query"><column name="health_score"/></createIndex>
+    </changeSet>
+
+    <!-- ====== DIM_PRODUCT ====== -->
+    <changeSet id="query-star-004-dim-product" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="dim_product" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="dim_product" schemaName="hm_query">
+            <column name="product_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="slug" type="VARCHAR(300)"/>
+            <column name="brand" type="VARCHAR(255)"/>
+            <column name="product_status" type="VARCHAR(50)"/>
+            <column name="category_key" type="VARCHAR(255)"/>
+            <column name="category_name" type="VARCHAR(255)"/>
+            <column name="hsn_code" type="VARCHAR(20)"/>
+            <column name="base_price" type="BIGINT"/>
+            <column name="primary_sku" type="VARCHAR(255)"/>
+            <column name="seller_key" type="VARCHAR(255)"/>
+            <column name="seller_name" type="VARCHAR(255)"/>
+            <column name="avg_rating" type="INT" defaultValueNumeric="0"/>
+            <column name="review_count" type="INT" defaultValueNumeric="0"/>
+            <column name="total_available_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="stock_status" type="VARCHAR(30)"/>
+            <column name="weight_grams" type="INT"/>
+            <column name="is_returnable" type="BOOLEAN"/>
+            <column name="return_window_days" type="INT"/>
+            <column name="description" type="TEXT"/>
+            <column name="country_of_origin" type="VARCHAR(100)"/>
+            <column name="warranty_months" type="INT"/>
+            <column name="variant_count" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_dim_prod_status" tableName="dim_product" schemaName="hm_query"><column name="product_status"/></createIndex>
+        <createIndex indexName="idx_dim_prod_category" tableName="dim_product" schemaName="hm_query"><column name="category_key"/></createIndex>
+        <createIndex indexName="idx_dim_prod_seller" tableName="dim_product" schemaName="hm_query"><column name="seller_key"/></createIndex>
+        <createIndex indexName="idx_dim_prod_brand" tableName="dim_product" schemaName="hm_query"><column name="brand"/></createIndex>
+    </changeSet>
+
+    <!-- ====== DIM_CATEGORY ====== -->
+    <changeSet id="query-star-005-dim-category" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="dim_category" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="dim_category" schemaName="hm_query">
+            <column name="category_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="slug" type="VARCHAR(255)"/>
+            <column name="parent_key" type="VARCHAR(255)"/>
+            <column name="path" type="VARCHAR(255)"/>
+            <column name="depth" type="INT"/>
+            <column name="active" type="BOOLEAN"/>
+            <column name="commission_rate_bps" type="INT" defaultValueNumeric="0"/>
+            <column name="is_gated" type="BOOLEAN"/>
+            <column name="return_policy_days" type="INT"/>
+            <column name="hsn_code" type="VARCHAR(8)"/>
+            <column name="gst_rate_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="product_count" type="INT" defaultValueNumeric="0"/>
+            <column name="seller_count" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_dim_cat_parent" tableName="dim_category" schemaName="hm_query"><column name="parent_key"/></createIndex>
+    </changeSet>
+
+    <!-- ====== DIM_GEOGRAPHY ====== -->
+    <changeSet id="query-star-006-dim-geography" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="dim_geography" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="dim_geography" schemaName="hm_query">
+            <column name="geo_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="pincode" type="VARCHAR(10)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="district" type="VARCHAR(100)"/>
+            <column name="state" type="VARCHAR(100)"/>
+            <column name="region" type="VARCHAR(50)" remarks="NORTH, SOUTH, EAST, WEST, CENTRAL, NE"/>
+            <column name="zone" type="VARCHAR(30)" remarks="METRO, TIER1, TIER2, REMOTE, NE_INDIA, JK_ISLANDS"/>
+            <column name="country" type="VARCHAR(2)" defaultValue="IN"/>
+            <column name="is_serviceable" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <createIndex indexName="idx_dim_geo_state" tableName="dim_geography" schemaName="hm_query"><column name="state"/></createIndex>
+        <createIndex indexName="idx_dim_geo_pincode" tableName="dim_geography" schemaName="hm_query"><column name="pincode"/></createIndex>
+    </changeSet>
+
+    <!-- ====== DIM_PAYMENT_METHOD (small — ~6 rows) ====== -->
+    <changeSet id="query-star-007-dim-payment-method" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="dim_payment_method" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="dim_payment_method" schemaName="hm_query">
+            <column name="method_key" type="VARCHAR(50)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="display_name" type="VARCHAR(100)"/>
+            <column name="method_type" type="VARCHAR(50)" remarks="PREPAID, POSTPAID"/>
+            <column name="gateway" type="VARCHAR(100)"/>
+            <column name="fee_pct" type="INT" defaultValueNumeric="0" remarks="Basis points"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <!-- Seed data -->
+        <insert tableName="dim_payment_method" schemaName="hm_query">
+            <column name="method_key" value="UPI"/><column name="display_name" value="UPI"/><column name="method_type" value="PREPAID"/><column name="gateway" value="Razorpay"/><column name="fee_pct" valueNumeric="0"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="dim_payment_method" schemaName="hm_query">
+            <column name="method_key" value="CARD"/><column name="display_name" value="Credit/Debit Card"/><column name="method_type" value="PREPAID"/><column name="gateway" value="Razorpay"/><column name="fee_pct" valueNumeric="200"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="dim_payment_method" schemaName="hm_query">
+            <column name="method_key" value="COD"/><column name="display_name" value="Cash on Delivery"/><column name="method_type" value="POSTPAID"/><column name="gateway" value="Internal"/><column name="fee_pct" valueNumeric="0"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="dim_payment_method" schemaName="hm_query">
+            <column name="method_key" value="WALLET"/><column name="display_name" value="Wallet"/><column name="method_type" value="PREPAID"/><column name="gateway" value="Razorpay"/><column name="fee_pct" valueNumeric="150"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="dim_payment_method" schemaName="hm_query">
+            <column name="method_key" value="NETBANKING"/><column name="display_name" value="Net Banking"/><column name="method_type" value="PREPAID"/><column name="gateway" value="Razorpay"/><column name="fee_pct" valueNumeric="150"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="dim_payment_method" schemaName="hm_query">
+            <column name="method_key" value="EMI"/><column name="display_name" value="EMI"/><column name="method_type" value="PREPAID"/><column name="gateway" value="Razorpay"/><column name="fee_pct" valueNumeric="200"/><column name="is_active" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+
+    <!-- ====== DIM_CARRIER (small — ~5 rows) ====== -->
+    <changeSet id="query-star-008-dim-carrier" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="dim_carrier" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="dim_carrier" schemaName="hm_query">
+            <column name="carrier_key" type="VARCHAR(100)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="display_name" type="VARCHAR(100)"/>
+            <column name="carrier_type" type="VARCHAR(50)" remarks="EXPRESS, STANDARD, ECONOMY"/>
+            <column name="avg_delivery_days" type="INT"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <insert tableName="dim_carrier" schemaName="hm_query">
+            <column name="carrier_key" value="DELHIVERY"/><column name="display_name" value="Delhivery"/><column name="carrier_type" value="EXPRESS"/><column name="avg_delivery_days" valueNumeric="3"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="dim_carrier" schemaName="hm_query">
+            <column name="carrier_key" value="BLUEDART"/><column name="display_name" value="BlueDart"/><column name="carrier_type" value="EXPRESS"/><column name="avg_delivery_days" valueNumeric="2"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="dim_carrier" schemaName="hm_query">
+            <column name="carrier_key" value="DTDC"/><column name="display_name" value="DTDC"/><column name="carrier_type" value="STANDARD"/><column name="avg_delivery_days" valueNumeric="5"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="dim_carrier" schemaName="hm_query">
+            <column name="carrier_key" value="ECOM_EXPRESS"/><column name="display_name" value="Ecom Express"/><column name="carrier_type" value="STANDARD"/><column name="avg_delivery_days" valueNumeric="4"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="dim_carrier" schemaName="hm_query">
+            <column name="carrier_key" value="INDIA_POST"/><column name="display_name" value="India Post"/><column name="carrier_type" value="ECONOMY"/><column name="avg_delivery_days" valueNumeric="7"/><column name="is_active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- ====== DIM_WAREHOUSE ====== -->
+    <changeSet id="query-star-009-dim-warehouse" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="dim_warehouse" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="dim_warehouse" schemaName="hm_query">
+            <column name="warehouse_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="warehouse_code" type="VARCHAR(20)"/>
+            <column name="warehouse_name" type="VARCHAR(255)"/>
+            <column name="warehouse_type" type="VARCHAR(30)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="state" type="VARCHAR(100)"/>
+            <column name="pincode" type="VARCHAR(10)"/>
+            <column name="is_active" type="BOOLEAN"/>
+            <column name="max_capacity_units" type="INT"/>
+            <column name="current_utilization_pct" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

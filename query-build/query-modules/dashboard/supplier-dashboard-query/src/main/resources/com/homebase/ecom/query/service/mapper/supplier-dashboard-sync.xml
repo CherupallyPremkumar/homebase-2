@@ -1,0 +1,24 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SupplierDashboardSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC -- Supplier Dashboard shares seller_dashboard_flat with       -->
+<!-- SellerDashboardSyncService. No additional supplier-specific flat tables-->
+<!-- are needed since all queries read from shared hm_query.* tables:       -->
+<!--   seller_dashboard_flat, order_details_flat, order_items_flat,         -->
+<!--   settlement_flat, product_catalog_flat, inventory_health_flat,        -->
+<!--   return_detail_flat, fulfillment_flat.                                -->
+<!--                                                                        -->
+<!-- This sync service is a no-op placeholder. If supplier-specific OLAP   -->
+<!-- tables are needed in the future (e.g. supplier_compliance_flat,        -->
+<!-- supplier_onboarding_flat), add them here.                              -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Placeholder: no supplier-specific tables to sync yet.                  -->
+<!-- All underlying flat tables are synced by:                              -->
+<!--   - SellerDashboardSyncService (seller_dashboard_flat)                 -->
+<!--   - OmsSyncService (fulfillment_flat, settlement_flat)                 -->
+<!--   - PlatformDashboardSyncService (inventory_health_flat, product_catalog_flat) -->
+<!--   - UiQuerySyncService (return_detail_flat)                            -->
+
+</mapper>

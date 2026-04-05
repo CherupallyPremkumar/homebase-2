@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        OMS Query cross-module test data.
+        Populates: users, suppliers, products, categories, inventory, orders,
+                   order_items, payment, shipments, fulfillment, support_tickets,
+                   returnrequests, settlements, order_activity.
+    -->
+    <changeSet id="oms-query-test-data" author="homebase-test">
+
+        <!-- USERS -->
+        <sql>
+            INSERT INTO user_profiles (id, first_name, last_name, email, phone, role, state_id, flow_id, tenant, created_time)
+            VALUES ('cust-1', 'Priya', 'Sharma', 'priya@example.com', '9876543210', 'CUSTOMER', 'VERIFIED', 'user-flow', 'homebase', TIMESTAMP '2025-01-15 10:00:00');
+
+            INSERT INTO user_profiles (id, first_name, last_name, email, phone, role, state_id, flow_id, tenant, created_time)
+            VALUES ('cust-2', 'Rahul', 'Patel', 'rahul@example.com', '9876543211', 'CUSTOMER', 'VERIFIED', 'user-flow', 'homebase', TIMESTAMP '2025-01-20 10:00:00');
+
+            INSERT INTO user_profiles (id, first_name, last_name, email, phone, role, state_id, flow_id, tenant, created_time)
+            VALUES ('cust-3', 'Anita', 'Desai', 'anita@example.com', '9876543212', 'CUSTOMER', 'VERIFIED', 'user-flow', 'homebase', TIMESTAMP '2025-02-01 10:00:00');
+        </sql>
+
+        <!-- SUPPLIERS -->
+        <sql>
+            INSERT INTO supplier (id, business_name, name, email, status, state_id, flow_id, tenant, created_time)
+            VALUES ('seller-1', 'TechWorld Electronics', 'TechWorld', 'tech@example.com', 'ACTIVE', 'ACTIVE', 'supplier-flow', 'homebase', NOW());
+
+            INSERT INTO supplier (id, business_name, name, email, status, state_id, flow_id, tenant, created_time)
+            VALUES ('seller-2', 'Fashion Hub India', 'Fashion Hub', 'fashion@example.com', 'ACTIVE', 'ACTIVE', 'supplier-flow', 'homebase', NOW());
+        </sql>
+
+        <!-- CATEGORIES -->
+        <sql>
+            INSERT INTO categories (id, name, slug) VALUES ('cat-electronics', 'Electronics', 'electronics');
+            INSERT INTO categories (id, name, slug) VALUES ('cat-fashion', 'Fashion', 'fashion');
+        </sql>
+
+        <!-- PRODUCTS -->
+        <sql>
+            INSERT INTO products (id, name, brand, category_id, slug, state_id, flow_id, tenant, created_time)
+            VALUES ('prod-1', 'Wireless Headphones', 'SoundMax', 'cat-electronics', 'wireless-headphones', 'PUBLISHED', 'product-flow', 'homebase', NOW());
+
+            INSERT INTO products (id, name, brand, category_id, slug, state_id, flow_id, tenant, created_time)
+            VALUES ('prod-2', 'Cotton T-Shirt', 'BasicWear', 'cat-fashion', 'cotton-tshirt', 'PUBLISHED', 'product-flow', 'homebase', NOW());
+        </sql>
+
+        <!-- INVENTORY -->
+        <sql>
+            INSERT INTO inventory_item (id, sku, product_id, variant_id, quantity, available_quantity, reserved_quantity, low_stock_threshold, status, state_id, flow_id, tenant)
+            VALUES ('inv-1a', 'WH-BLK-001', 'prod-1', 'var-1a', 50, 45, 5, 10, 'AVAILABLE', 'AVAILABLE', 'inventory-flow', 'homebase');
+        </sql>
+
+        <!-- ORDERS -->
+        <sql>
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, total_amount, currency, item_count, created_time, last_modified_time, state_id, flow_id)
+            VALUES ('ord-1', 'HB-2025-0001', 'cust-1', 3098.00, 557.64, 0.00, 3655.64, 'INR', 2, TIMESTAMP '2025-02-10 14:30:00', TIMESTAMP '2025-02-12 10:00:00', 'DELIVERED', 'order-flow');
+
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, total_amount, currency, item_count, created_time, last_modified_time, state_id, flow_id)
+            VALUES ('ord-2', 'HB-2025-0002', 'cust-2', 2499.00, 449.82, 50.00, 2748.82, 'INR', 1, TIMESTAMP '2025-02-15 09:00:00', TIMESTAMP '2025-02-15 09:00:00', 'CONFIRMED', 'order-flow');
+
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, total_amount, currency, item_count, created_time, last_modified_time, state_id, flow_id)
+            VALUES ('ord-3', 'HB-2025-0003', 'cust-1', 1999.00, 359.82, 0.00, 2358.82, 'INR', 1, TIMESTAMP '2025-03-01 16:00:00', TIMESTAMP '2025-03-02 08:00:00', 'SHIPPED', 'order-flow');
+
+            INSERT INTO orders (id, order_number, customer_id, subtotal, tax_amount, shipping_amount, total_amount, currency, item_count, created_time, last_modified_time, state_id, flow_id)
+            VALUES ('ord-4', 'HB-2025-0004', 'cust-3', 599.00, 107.82, 0.00, 706.82, 'INR', 1, TIMESTAMP '2025-03-05 11:00:00', TIMESTAMP '2025-03-05 11:00:00', 'CANCELLED', 'order-flow');
+        </sql>
+
+        <!-- ORDER ITEMS -->
+        <insert tableName="order_items">
+            <column name="id" value="oi-1a"/><column name="order_id" value="ord-1"/><column name="product_id" value="prod-1"/>
+            <column name="variant_id" value="var-1a"/><column name="sku" value="WH-BLK-001"/><column name="product_name" value="Wireless Headphones"/>
+            <column name="quantity" valueNumeric="1"/><column name="unit_price" valueNumeric="2499.00"/><column name="total_price" valueNumeric="2499.00"/>
+            <column name="supplier_id" value="seller-1"/><column name="fulfillment_status" value="SHIPPED"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" value="oi-1b"/><column name="order_id" value="ord-1"/><column name="product_id" value="prod-2"/>
+            <column name="variant_id" value="var-2b"/><column name="sku" value="TS-BLK-M"/><column name="product_name" value="Cotton T-Shirt"/>
+            <column name="quantity" valueNumeric="1"/><column name="unit_price" valueNumeric="599.00"/><column name="total_price" valueNumeric="599.00"/>
+            <column name="supplier_id" value="seller-1"/><column name="fulfillment_status" value="SHIPPED"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" value="oi-2a"/><column name="order_id" value="ord-2"/><column name="product_id" value="prod-1"/>
+            <column name="variant_id" value="var-1b"/><column name="sku" value="WH-WHT-001"/><column name="product_name" value="Wireless Headphones"/>
+            <column name="quantity" valueNumeric="1"/><column name="unit_price" valueNumeric="2499.00"/><column name="total_price" valueNumeric="2499.00"/>
+            <column name="supplier_id" value="seller-2"/><column name="fulfillment_status" value="PENDING"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" value="oi-3a"/><column name="order_id" value="ord-3"/><column name="product_id" value="prod-1"/>
+            <column name="variant_id" value="var-1a"/><column name="sku" value="WH-BLK-001"/><column name="product_name" value="Wireless Headphones"/>
+            <column name="quantity" valueNumeric="1"/><column name="unit_price" valueNumeric="1999.00"/><column name="total_price" valueNumeric="1999.00"/>
+            <column name="supplier_id" value="seller-1"/><column name="fulfillment_status" value="PICKED"/>
+        </insert>
+
+        <!-- PAYMENT -->
+        <sql>
+            INSERT INTO payment (id, order_id, customer_id, amount, currency, payment_method, state_id, flow_id, tenant, created_time)
+            VALUES ('pay-1', 'ord-1', 'cust-1', 3655.64, 'INR', 'UPI', 'SUCCEEDED', 'payment-flow', 'homebase', TIMESTAMP '2025-02-10 14:35:00');
+
+            INSERT INTO payment (id, order_id, customer_id, amount, currency, payment_method, state_id, flow_id, tenant, created_time)
+            VALUES ('pay-2', 'ord-2', 'cust-2', 2748.82, 'INR', 'CARD', 'SUCCEEDED', 'payment-flow', 'homebase', TIMESTAMP '2025-02-15 09:05:00');
+
+            INSERT INTO payment (id, order_id, customer_id, amount, currency, payment_method, state_id, flow_id, tenant, created_time, failure_reason)
+            VALUES ('pay-3', 'ord-3', 'cust-1', 2358.82, 'INR', 'NETBANKING', 'FAILED', 'payment-flow', 'homebase', TIMESTAMP '2025-03-01 16:05:00', 'Bank timeout');
+        </sql>
+
+        <!-- SHIPMENTS -->
+        <sql>
+            INSERT INTO shipments (id, order_id, carrier, tracking_number, shipping_method, delivery_attempts, estimated_delivery_date, actual_delivery_date, state_id, flow_id, created_time)
+            VALUES ('ship-1', 'ord-1', 'HOMEBASE-LOGISTICS', 'HBL-TRK-001', 'EXPRESS', 1, TIMESTAMP '2025-02-14 18:00:00', TIMESTAMP '2025-02-13 15:00:00', 'DELIVERED', 'shipping-flow', TIMESTAMP '2025-02-11 08:00:00');
+
+            INSERT INTO shipments (id, order_id, carrier, tracking_number, shipping_method, delivery_attempts, current_location, estimated_delivery_date, state_id, flow_id, created_time)
+            VALUES ('ship-3', 'ord-3', 'DELHIVERY', 'DLV-TRK-003', 'STANDARD', 0, 'Mumbai Hub', TIMESTAMP '2025-03-05 18:00:00', 'IN_TRANSIT', 'shipping-flow', TIMESTAMP '2025-03-02 08:00:00');
+        </sql>
+
+        <!-- WAREHOUSES -->
+        <sql>
+            INSERT INTO warehouses (id, warehouse_code, warehouse_name, warehouse_type, city, state, max_capacity_units, current_utilization_pct, is_active, tenant, created_time)
+            VALUES ('wh-1', 'BLR-FC1', 'Bangalore Fulfillment Center', 'FULFILLMENT_CENTER', 'Bangalore', 'Karnataka', 50000, 72.5, TRUE, 'homebase', NOW());
+        </sql>
+
+        <!-- FULFILLMENT ORDERS -->
+        <sql>
+            INSERT INTO fulfillment_orders (id, order_id, warehouse_id, user_id, priority, fulfillment_type, total_items, assigned_picker_id, assigned_packer_id, state_id, flow_id, tenant, created_time)
+            VALUES ('fo-1', 'ord-1', 'wh-1', 'cust-1', 'HIGH', 'SHIP_TO_CUSTOMER', 2, 'picker-1', 'packer-1', 'SHIPPED', 'fulfillment-flow', 'homebase', TIMESTAMP '2025-02-10 15:00:00');
+
+            INSERT INTO fulfillment_orders (id, order_id, warehouse_id, user_id, priority, fulfillment_type, total_items, assigned_picker_id, state_id, flow_id, tenant, created_time)
+            VALUES ('fo-3', 'ord-3', 'wh-1', 'cust-1', 'STANDARD', 'SHIP_TO_CUSTOMER', 1, 'picker-2', 'PICKING', 'fulfillment-flow', 'homebase', TIMESTAMP '2025-03-01 17:00:00');
+        </sql>
+
+        <!-- SUPPORT TICKETS -->
+        <insert tableName="support_tickets">
+            <column name="id" value="tkt-1"/>
+            <column name="customer_id" value="cust-2"/>
+            <column name="order_id" value="ord-2"/>
+            <column name="subject" value="Order not confirmed -- payment deducted"/>
+            <column name="category" value="PAYMENT"/>
+            <column name="priority" value="HIGH"/>
+            <column name="assigned_agent_id" value="agent-1"/>
+            <column name="state_id" value="IN_PROGRESS"/>
+            <column name="flow_id" value="support-flow"/>
+            <column name="created_time" valueDate="2025-02-15T10:00:00"/>
+        </insert>
+        <insert tableName="support_tickets">
+            <column name="id" value="tkt-2"/>
+            <column name="customer_id" value="cust-3"/>
+            <column name="order_id" value="ord-4"/>
+            <column name="subject" value="Refund not processed"/>
+            <column name="category" value="REFUND"/>
+            <column name="priority" value="CRITICAL"/>
+            <column name="state_id" value="OPEN"/>
+            <column name="flow_id" value="support-flow"/>
+            <column name="created_time" valueDate="2025-03-06T08:00:00"/>
+        </insert>
+
+        <!-- RETURN REQUESTS -->
+        <sql>
+            INSERT INTO returnrequest (id, order_id, customer_id, reason, return_type, total_refund_amount, state_id, flow_id, tenant, created_time, last_modified_time)
+            VALUES ('ret-1', 'ord-1', 'cust-1', 'Wrong size', 'EXCHANGE', 599.00, 'APPROVED', 'returnrequest-flow', 'homebase', TIMESTAMP '2025-02-13 10:00:00', TIMESTAMP '2025-02-13 10:00:00');
+
+            INSERT INTO returnrequest (id, order_id, customer_id, reason, return_type, total_refund_amount, state_id, flow_id, tenant, created_time, last_modified_time)
+            VALUES ('ret-2', 'ord-1', 'cust-1', 'Defective product', 'REFUND', 2499.00, 'REQUESTED', 'returnrequest-flow', 'homebase', TIMESTAMP '2025-02-14 09:00:00', TIMESTAMP '2025-02-14 09:00:00');
+        </sql>
+
+        <!-- SETTLEMENTS -->
+        <sql>
+            INSERT INTO settlements (id, supplier_id, order_id, order_amount, commission_amount, commission_rate, platform_fee, tds_amount, gst_on_commission, net_amount, currency, settlement_period_start, settlement_period_end, state_id, flow_id, tenant, created_time)
+            VALUES ('stl-1', 'seller-1', 'ord-1', 365564, 43868, 12.00, 5000, 438.68, 7896.24, 308361, 'INR', '2025-02-01', '2025-02-28', 'APPROVED', 'settlement-flow', 'homebase', TIMESTAMP '2025-03-01 00:00:00');
+
+            INSERT INTO settlements (id, supplier_id, order_id, order_amount, commission_amount, commission_rate, platform_fee, tds_amount, gst_on_commission, net_amount, currency, settlement_period_start, settlement_period_end, state_id, flow_id, tenant, created_time)
+            VALUES ('stl-2', 'seller-2', 'ord-2', 274882, 41232, 15.00, 5000, 412.32, 7421.76, 220816, 'INR', '2025-02-01', '2025-02-28', 'PENDING', 'settlement-flow', 'homebase', TIMESTAMP '2025-03-01 00:00:00');
+        </sql>
+
+        <!-- ORDER ACTIVITY (timeline) -->
+        <insert tableName="order_activity">
+            <column name="id" value="oa-1"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="activity_name" value="CREATE"/>
+            <column name="activity_comment" value="Order placed by customer"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="created_by" value="cust-1"/>
+            <column name="created_time" valueDate="2025-02-10T14:30:00"/>
+        </insert>
+        <insert tableName="order_activity">
+            <column name="id" value="oa-2"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="activity_name" value="PAYMENT_SUCCEEDED"/>
+            <column name="activity_comment" value="Payment confirmed via UPI"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-10T14:35:00"/>
+        </insert>
+        <insert tableName="order_activity">
+            <column name="id" value="oa-3"/>
+            <column name="order_id" value="ord-1"/>
+            <column name="activity_name" value="MARK_DELIVERED"/>
+            <column name="activity_comment" value="Delivered to customer"/>
+            <column name="activity_success" valueBoolean="true"/>
+            <column name="created_by" value="system"/>
+            <column name="created_time" valueDate="2025-02-13T15:00:00"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

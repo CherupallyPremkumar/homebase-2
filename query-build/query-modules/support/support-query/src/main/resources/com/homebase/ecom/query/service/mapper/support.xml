@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Support">
+
+<!-- ════════════���═══════════════════���══════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: fact_support_tickets_flat                                       -->
+<!-- Populated by SupportSyncService ETL.                                   -->
+<!-- ════��══════════��═══════════════════════════════════════════════════════ -->
+
+<!-- ================================================================ -->
+<!-- Dashboard: getAll — paginated list with filters                   -->
+<!-- ================================================================ -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.fact_support_tickets_flat
+    <where>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="subject != null">AND subject LIKE CONCAT('%', #{subject}, '%')</if>
+        <if test="category != null">AND category = #{category}</if>
+        <if test="priority != null">AND priority = #{priority}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="assignedAgentId != null">AND assigned_agent_id = #{assignedAgentId}</if>
+        <if test="startDate != null">AND created_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_at &lt;= #{endDate}</if>
+        <if test="q != null">AND (subject LIKE CONCAT('%', #{q}, '%') OR customer_name LIKE CONCAT('%', #{q}, '%') OR category LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.support.dto.SupportTicketDto">
+    SELECT
+        id                 as "id",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        customer_email     as "customerEmail",
+        subject            as "subject",
+        category           as "category",
+        priority           as "priority",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        assigned_agent_id  as "assignedAgentId",
+        reopen_count       as "reopenCount",
+        created_at         as "createdAt"
+    FROM hm_query.fact_support_tickets_flat
+    <where>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="subject != null">AND subject LIKE CONCAT('%', #{subject}, '%')</if>
+        <if test="category != null">AND category = #{category}</if>
+        <if test="priority != null">AND priority = #{priority}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="assignedAgentId != null">AND assigned_agent_id = #{assignedAgentId}</if>
+        <if test="startDate != null">AND created_at &gt;= #{startDate}</if>
+        <if test="endDate != null">AND created_at &lt;= #{endDate}</if>
+        <if test="q != null">AND (subject LIKE CONCAT('%', #{q}, '%') OR customer_name LIKE CONCAT('%', #{q}, '%') OR category LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Dashboard: getById — single ticket with full detail               -->
+<!-- ================================================================ -->
+<select id="getById" resultType="com.homebase.ecom.support.dto.SupportTicketDetailDto">
+    SELECT
+        id                 as "id",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        customer_email     as "customerEmail",
+        order_id           as "orderId",
+        subject            as "subject",
+        category           as "category",
+        priority           as "priority",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        assigned_agent_id  as "assignedAgentId",
+        description        as "description",
+        resolved_at        as "resolvedAt",
+        reopen_count       as "reopenCount",
+        hours_open         as "hoursOpen",
+        created_at         as "createdAt"
+    FROM hm_query.fact_support_tickets_flat
+    WHERE id = #{id}
+</select>
+
+<!-- ================================================================ -->
+<!-- Dashboard: getStateCounts                                         -->
+<!-- ================================================================ -->
+<select id="getStateCounts" resultType="com.homebase.ecom.support.dto.SupportStateCountDto">
+    SELECT
+        state_id           as "stateId",
+        COUNT(*)           as "ticketCount"
+    FROM hm_query.fact_support_tickets_flat
+    GROUP BY state_id
+</select>
+
+<!-- ================================================================ -->
+<!-- Dashboard: getOverdueTickets                                      -->
+<!-- ================================================================ -->
+<select id="getOverdueTickets-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.fact_support_tickets_flat
+    WHERE state_id NOT IN ('CLOSED', 'RESOLVED')
+      AND hours_open &gt; COALESCE(#{slaHours}, 24)
+</select>
+
+<select id="getOverdueTickets" resultType="com.homebase.ecom.support.dto.SupportOverdueTicketDto">
+    SELECT
+        id                 as "id",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        subject            as "subject",
+        category           as "category",
+        priority           as "priority",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        assigned_agent_id  as "assignedAgentId",
+        created_at         as "createdAt",
+        hours_open         as "hoursOpen"
+    FROM hm_query.fact_support_tickets_flat
+    WHERE state_id NOT IN ('CLOSED', 'RESOLVED')
+      AND hours_open &gt; COALESCE(#{slaHours}, 24)
+    ORDER BY created_at ASC
+    ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Dashboard: getByAgent                                             -->
+<!-- ================================================================ -->
+<select id="getByAgent-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.fact_support_tickets_flat
+    WHERE assigned_agent_id = #{assignedAgentId}
+</select>
+
+<select id="getByAgent" resultType="com.homebase.ecom.support.dto.SupportTicketDto">
+    SELECT
+        id                 as "id",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        subject            as "subject",
+        category           as "category",
+        priority           as "priority",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        assigned_agent_id  as "assignedAgentId",
+        created_at         as "createdAt"
+    FROM hm_query.fact_support_tickets_flat
+    WHERE assigned_agent_id = #{assignedAgentId}
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Dashboard: getByPriority                                          -->
+<!-- ================================================================ -->
+<select id="getByPriority-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.fact_support_tickets_flat
+    WHERE priority = #{priority}
+</select>
+
+<select id="getByPriority" resultType="com.homebase.ecom.support.dto.SupportTicketDto">
+    SELECT
+        id                 as "id",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        subject            as "subject",
+        category           as "category",
+        priority           as "priority",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        assigned_agent_id  as "assignedAgentId",
+        created_at         as "createdAt"
+    FROM hm_query.fact_support_tickets_flat
+    WHERE priority = #{priority}
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Customer: getByCustomerId                                         -->
+<!-- ================================================================ -->
+<select id="getByCustomerId-count" resultType="int">
+    SELECT COUNT(*)
+    FROM hm_query.fact_support_tickets_flat
+    WHERE customer_id = #{customerId}
+</select>
+
+<select id="getByCustomerId" resultType="com.homebase.ecom.support.dto.SupportTicketDetailDto">
+    SELECT
+        id                 as "id",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        order_id           as "orderId",
+        subject            as "subject",
+        category           as "category",
+        priority           as "priority",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        assigned_agent_id  as "assignedAgentId",
+        resolved_at        as "resolvedAt",
+        created_at         as "createdAt"
+    FROM hm_query.fact_support_tickets_flat
+    WHERE customer_id = #{customerId}
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

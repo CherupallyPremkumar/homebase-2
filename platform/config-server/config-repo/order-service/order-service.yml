@@ -1,0 +1,6 @@
+server:
+  port: 8082
+order:
+  max-items-per-order: 50
+  cancellation-window-minutes: 30
+  auto-confirm-after-hours: 48

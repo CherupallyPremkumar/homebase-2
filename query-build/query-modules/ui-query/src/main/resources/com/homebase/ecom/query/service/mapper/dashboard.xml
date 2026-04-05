@@ -1,0 +1,439 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Dashboard">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL READS FROM hm_query.* OLAP SCHEMA ONLY — NEVER FROM OLTP          -->
+<!-- Sources: hm_query.platform_kpi_snapshots, hm_query.order_details_flat, -->
+<!--          hm_query.order_items_flat, hm_query.settlement_flat,          -->
+<!--          hm_query.seller_dashboard_flat, hm_query.inventory_health_flat-->
+<!--          hm_query.product_catalog_flat, hm_query.support_ticket_flat,  -->
+<!--          hm_query.customer_360_flat, hm_query.audit_log_flat,          -->
+<!--          hm_query.category_performance_daily, hm_query.live_order_pipeline -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- OVERVIEW STATS (Admin dashboard top-level KPIs)                       -->
+<!-- Source: hm_query.platform_kpi_snapshots (latest snapshot)             -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="overviewStats" resultType="com.homebase.ecom.uiquery.dto.OverviewStatsQueryDto">
+    SELECT
+        COALESCE(kpi.total_orders, 0) as "totalOrders",
+        COALESCE(kpi.total_orders, 0) - COALESCE(kpi.cancellation_count, 0) as "activeOrders",
+        COALESCE(kpi.total_revenue, 0) as "totalRevenue",
+        COALESCE(kpi.active_buyers, 0) as "totalCustomers",
+        COALESCE(kpi.total_products_listed, 0) as "publishedProducts",
+        0 as "pendingReviewProducts",
+        COALESCE(kpi.active_sellers, 0) as "activeSuppliers",
+        COALESCE(kpi.open_support_tickets, 0) as "openTickets"
+    FROM hm_query.platform_kpi_snapshots kpi
+    WHERE kpi.tenant = 'homebase'
+    <if test="dateFrom != null">AND kpi.snapshot_date &gt;= CAST(#{dateFrom} AS DATE)</if>
+    <if test="dateTo != null">AND kpi.snapshot_date &lt;= CAST(#{dateTo} AS DATE)</if>
+    ORDER BY kpi.snapshot_date DESC
+    LIMIT 1
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ORDER ANALYTICS                                                        -->
+<!-- Source: hm_query.live_order_pipeline + hm_query.order_details_flat    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Orders by state — for pie chart -->
+<select id="ordersByState" resultType="com.homebase.ecom.uiquery.dto.StateCountQueryDto">
+    SELECT
+        order_status as "state",
+        COUNT(*) as "count"
+    FROM hm_query.order_details_flat
+    WHERE order_status IS NOT NULL
+    <if test="startDate != null">AND order_date &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+    <if test="endDate != null">AND order_date &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+    GROUP BY order_status
+    ORDER BY "count" DESC
+</select>
+
+<!-- Daily order count + revenue — for line chart -->
+<select id="dailyOrderStats-count" resultType="int">
+    SELECT COUNT(DISTINCT order_date::DATE) FROM hm_query.order_details_flat
+    <where>
+        AND order_status NOT IN ('CANCELLED', 'PAYMENT_FAILED')
+        <if test="startDate != null">AND order_date::DATE &gt;= CAST(#{startDate} AS DATE)</if>
+        <if test="endDate != null">AND order_date::DATE &lt;= CAST(#{endDate} AS DATE)</if>
+        <if test="q != null">AND (order_number ILIKE CONCAT('%', #{q}, '%') OR customer_id ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="dailyOrderStats" resultType="com.homebase.ecom.uiquery.dto.DailyOrderStatsQueryDto">
+    SELECT
+        order_date::DATE as "date",
+        COUNT(*) as "orderCount",
+        COALESCE(SUM(total_amount), 0) as "revenue"
+    FROM hm_query.order_details_flat
+    <where>
+        AND order_status NOT IN ('CANCELLED', 'PAYMENT_FAILED')
+        <if test="startDate != null">AND order_date::DATE &gt;= CAST(#{startDate} AS DATE)</if>
+        <if test="endDate != null">AND order_date::DATE &lt;= CAST(#{endDate} AS DATE)</if>
+        <if test="q != null">AND (order_number ILIKE CONCAT('%', #{q}, '%') OR customer_id ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    GROUP BY order_date::DATE
+    ${orderby} ${pagination}
+</select>
+
+<!-- Recent orders — for dashboard table -->
+<select id="recentOrders-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.order_details_flat
+    <where>
+        <if test="q != null">AND (order_number ILIKE CONCAT('%', #{q}, '%') OR customer_id ILIKE CONCAT('%', #{q}, '%'))</if>
+        <if test="stateId != null">AND order_status = #{stateId}</if>
+    </where>
+</select>
+
+<select id="recentOrders" resultType="com.homebase.ecom.uiquery.dto.RecentOrderQueryDto">
+    SELECT
+        o.order_id as "id",
+        o.order_number as "orderNumber",
+        o.order_status as "stateId",
+        o.total_amount as "total",
+        o.currency as "currency",
+        o.order_date as "createdTime",
+        o.total_items as "itemCount",
+        o.customer_id as "customerId"
+    FROM hm_query.order_details_flat o
+    <where>
+        <if test="q != null">AND (o.order_number ILIKE CONCAT('%', #{q}, '%') OR o.customer_id ILIKE CONCAT('%', #{q}, '%'))</if>
+        <if test="stateId != null">AND o.order_status = #{stateId}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- INVENTORY HEALTH                                                       -->
+<!-- Source: hm_query.inventory_health_flat + hm_query.product_catalog_flat -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Low stock alerts — variants below threshold -->
+<select id="lowStockAlerts-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.inventory_health_flat
+    WHERE stock_status = 'LOW_STOCK'
+    <if test="q != null">AND (sku ILIKE CONCAT('%', #{q}, '%') OR product_name ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="lowStockAlerts" resultType="com.homebase.ecom.uiquery.dto.LowStockAlertQueryDto">
+    SELECT
+        inv.variant_id as "variantId",
+        inv.sku as "sku",
+        inv.product_id as "productId",
+        inv.product_name as "productName",
+        inv.available_qty as "availableQuantity",
+        inv.low_stock_threshold as "threshold",
+        inv.reserved_qty as "reservedQuantity"
+    FROM hm_query.inventory_health_flat inv
+    WHERE inv.stock_status = 'LOW_STOCK'
+    <if test="q != null">AND (inv.sku ILIKE CONCAT('%', #{q}, '%') OR inv.product_name ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Out of stock products -->
+<select id="outOfStock-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.product_catalog_flat
+    WHERE stock_status = 'OUT_OF_STOCK'
+      AND product_status = 'PUBLISHED'
+    <if test="q != null">AND (product_name ILIKE CONCAT('%', #{q}, '%') OR primary_sku ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="outOfStock" resultType="com.homebase.ecom.uiquery.dto.OutOfStockQueryDto">
+    SELECT
+        p.product_id as "productId",
+        p.product_name as "productName",
+        p.primary_sku as "variantId",
+        p.primary_sku as "sku"
+    FROM hm_query.product_catalog_flat p
+    WHERE p.stock_status = 'OUT_OF_STOCK'
+      AND p.product_status = 'PUBLISHED'
+    <if test="q != null">AND (p.product_name ILIKE CONCAT('%', #{q}, '%') OR p.primary_sku ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SUPPLIER PERFORMANCE                                                   -->
+<!-- Source: hm_query.seller_dashboard_flat                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="supplierPerformance-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.seller_dashboard_flat
+    WHERE seller_status = 'ACTIVE'
+    <if test="q != null">AND (business_name ILIKE CONCAT('%', #{q}, '%') OR seller_id ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="supplierPerformance" resultType="com.homebase.ecom.uiquery.dto.SupplierPerformanceQueryDto">
+    SELECT
+        s.seller_id as "supplierId",
+        s.business_name as "businessName",
+        s.seller_status as "supplierState",
+        s.total_products as "activeOffers",
+        s.total_orders_30d as "totalOrders",
+        s.gmv_30d as "totalRevenue"
+    FROM hm_query.seller_dashboard_flat s
+    WHERE s.seller_status = 'ACTIVE'
+    <if test="q != null">AND (s.business_name ILIKE CONCAT('%', #{q}, '%') OR s.seller_id ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- RETURN / SUPPORT DASHBOARD                                             -->
+<!-- Source: hm_query.order_details_flat + hm_query.support_ticket_flat    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Return requests by state -->
+<select id="returnsByState" resultType="com.homebase.ecom.uiquery.dto.StateCountQueryDto">
+    SELECT
+        return_status as "state",
+        COUNT(*) as "count"
+    FROM hm_query.order_details_flat
+    WHERE return_status IS NOT NULL
+    GROUP BY return_status
+    ORDER BY "count" DESC
+</select>
+
+<!-- Open support tickets needing attention -->
+<select id="openTickets-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.support_ticket_flat
+    WHERE ticket_status NOT IN ('CLOSED', 'RESOLVED')
+    <if test="q != null">AND (subject ILIKE CONCAT('%', #{q}, '%') OR ticket_id ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="openTickets" resultType="com.homebase.ecom.uiquery.dto.OpenTicketQueryDto">
+    SELECT
+        t.ticket_id as "ticketId",
+        t.ticket_status as "ticketState",
+        t.subject as "subject",
+        t.priority as "priority",
+        t.customer_id as "customerId",
+        t.order_id as "orderId",
+        t.created_time as "createdTime",
+        t.assigned_agent_id as "assignedTo"
+    FROM hm_query.support_ticket_flat t
+    WHERE t.ticket_status NOT IN ('CLOSED', 'RESOLVED')
+    <if test="q != null">AND (t.subject ILIKE CONCAT('%', #{q}, '%') OR t.ticket_id ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- FINANCE DASHBOARD                                                     -->
+<!-- Source: hm_query.platform_kpi_snapshots + hm_query.settlement_flat    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="financeStats" resultType="com.homebase.ecom.uiquery.dto.FinanceStatsQueryDto">
+    SELECT
+        COALESCE((SELECT SUM(total_revenue) FROM hm_query.platform_kpi_snapshots WHERE tenant = 'homebase'), 0) as "totalRevenue",
+        COALESCE((SELECT total_revenue FROM hm_query.platform_kpi_snapshots WHERE tenant = 'homebase' AND snapshot_date = CURRENT_DATE), 0) as "todayRevenue",
+        COALESCE((SELECT COUNT(*) FROM hm_query.settlement_flat WHERE settlement_status = 'DISBURSED'), 0) as "disbursedSettlements",
+        COALESCE((SELECT SUM(net_payout) FROM hm_query.settlement_flat WHERE settlement_status = 'DISBURSED'), 0) as "totalPayouts",
+        COALESCE((SELECT COUNT(*) FROM hm_query.settlement_flat WHERE settlement_status = 'PENDING'), 0) as "pendingSettlements",
+        COALESCE((SELECT SUM(net_payout) FROM hm_query.settlement_flat WHERE settlement_status = 'PENDING'), 0) as "pendingPayoutAmount",
+        COALESCE((SELECT COUNT(*) FROM hm_query.settlement_flat WHERE settlement_status = 'DISPUTED'), 0) as "disputedSettlements",
+        COALESCE((SELECT SUM(total_refund_amount) FROM hm_query.platform_kpi_snapshots WHERE tenant = 'homebase'), 0) as "totalRefunds",
+        COALESCE((SELECT SUM(total_refund_amount) FROM hm_query.platform_kpi_snapshots WHERE tenant = 'homebase'), 0) as "totalRefundAmount"
+</select>
+
+<!-- Daily revenue trend over N days -->
+<select id="revenueTrend" resultType="com.homebase.ecom.uiquery.dto.RevenueTrendQueryDto">
+    SELECT
+        kpi.snapshot_date as "date",
+        COALESCE(kpi.total_revenue, 0) as "revenue",
+        COALESCE(kpi.total_orders, 0) as "orderCount"
+    FROM hm_query.platform_kpi_snapshots kpi
+    WHERE kpi.tenant = 'homebase'
+      AND kpi.snapshot_date &gt;= CURRENT_DATE - COALESCE(#{days}, 30)
+    ORDER BY kpi.snapshot_date ASC
+</select>
+
+<!-- Settlements grouped by state -->
+<select id="settlementsByState" resultType="com.homebase.ecom.uiquery.dto.SettlementsByStateQueryDto">
+    SELECT
+        settlement_status as "state",
+        COUNT(*) as "count",
+        COALESCE(SUM(net_payout), 0) as "totalAmount"
+    FROM hm_query.settlement_flat
+    GROUP BY settlement_status
+    ORDER BY "count" DESC
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SELLER DASHBOARD                                                      -->
+<!-- Source: hm_query.seller_dashboard_flat + hm_query.order_details_flat  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Seller-specific KPIs -->
+<select id="sellerStats" resultType="com.homebase.ecom.uiquery.dto.SellerStatsQueryDto">
+    SELECT
+        COALESCE(s.total_products, 0) as "activeProducts",
+        COALESCE(s.total_orders_30d, 0) as "totalOrders",
+        COALESCE(s.gmv_30d, 0) as "totalRevenue",
+        COALESCE(s.rating, 0) as "averageRating",
+        0 as "productsChange",
+        0 as "ordersChange",
+        0 as "revenueChange"
+    FROM hm_query.seller_dashboard_flat s
+    WHERE 1=1
+    <if test="supplierId != null">AND s.seller_id = #{supplierId}</if>
+    LIMIT 1
+</select>
+
+<!-- Seller daily sales -->
+<select id="sellerDailySales" resultType="com.homebase.ecom.uiquery.dto.DailyOrderStatsQueryDto">
+    SELECT
+        o.order_date::DATE as "date",
+        COUNT(DISTINCT o.order_id) as "orderCount",
+        COALESCE(SUM(o.total_amount), 0) as "revenue"
+    FROM hm_query.order_details_flat o
+    WHERE o.order_status NOT IN ('CANCELLED', 'PAYMENT_FAILED')
+    <if test="supplierId != null">AND o.seller_id = #{supplierId}</if>
+      AND o.order_date &gt;= CURRENT_DATE - COALESCE(#{days}, 30)
+    GROUP BY o.order_date::DATE
+    ORDER BY "date" ASC
+</select>
+
+<!-- Seller top products by revenue -->
+<select id="sellerTopProducts-count" resultType="int">
+    SELECT COUNT(DISTINCT oi.product_id) FROM hm_query.order_items_flat oi
+    JOIN hm_query.order_details_flat o ON oi.order_id = o.order_id
+    WHERE o.order_status NOT IN ('CANCELLED', 'PAYMENT_FAILED')
+    <if test="supplierId != null">AND o.seller_id = #{supplierId}</if>
+    <if test="q != null">AND (oi.product_name ILIKE CONCAT('%', #{q}, '%') OR oi.sku ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="sellerTopProducts" resultType="com.homebase.ecom.uiquery.dto.SellerTopProductQueryDto">
+    SELECT
+        oi.product_id as "productId",
+        oi.product_name as "productName",
+        COUNT(DISTINCT o.order_id) as "orderCount",
+        SUM(oi.quantity) as "unitsSold",
+        COALESCE(SUM(oi.total_price), 0) as "revenue"
+    FROM hm_query.order_items_flat oi
+    JOIN hm_query.order_details_flat o ON oi.order_id = o.order_id
+    WHERE o.order_status NOT IN ('CANCELLED', 'PAYMENT_FAILED')
+    <if test="supplierId != null">AND o.seller_id = #{supplierId}</if>
+    <if test="q != null">AND (oi.product_name ILIKE CONCAT('%', #{q}, '%') OR oi.sku ILIKE CONCAT('%', #{q}, '%'))</if>
+    GROUP BY oi.product_id, oi.product_name
+    ${orderby} ${pagination}
+</select>
+
+<!-- Seller recent orders -->
+<select id="sellerRecentOrders-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.order_details_flat o
+    WHERE 1=1
+    <if test="supplierId != null">AND o.seller_id = #{supplierId}</if>
+    <if test="q != null">AND (o.order_number ILIKE CONCAT('%', #{q}, '%') OR o.order_id ILIKE CONCAT('%', #{q}, '%'))</if>
+</select>
+
+<select id="sellerRecentOrders" resultType="com.homebase.ecom.uiquery.dto.SellerRecentOrderQueryDto">
+    SELECT
+        o.order_id as "orderId",
+        o.order_status as "orderState",
+        o.total_amount as "totalAmount",
+        o.currency as "currency",
+        o.order_date as "createdTime",
+        o.total_items as "itemCount"
+    FROM hm_query.order_details_flat o
+    WHERE 1=1
+    <if test="supplierId != null">AND o.seller_id = #{supplierId}</if>
+    <if test="q != null">AND (o.order_number ILIKE CONCAT('%', #{q}, '%') OR o.order_id ILIKE CONCAT('%', #{q}, '%'))</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- GST SUMMARY                                                           -->
+<!-- Source: hm_query.order_details_flat (tax breakdown)                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="gstSummary" resultType="com.homebase.ecom.uiquery.dto.GstSummaryQueryDto">
+    SELECT
+        o.payment_method as "taxType",
+        0 as "taxRate",
+        COALESCE(SUM(o.tax_amount), 0) as "totalTaxAmount",
+        COUNT(*) as "lineCount"
+    FROM hm_query.order_details_flat o
+    WHERE o.order_status NOT IN ('CANCELLED', 'PAYMENT_FAILED')
+    <if test="startDate != null">AND o.order_date &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+    <if test="endDate != null">AND o.order_date &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+    GROUP BY o.payment_method
+    ORDER BY "totalTaxAmount" DESC
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- AUDIT LOG                                                             -->
+<!-- Source: hm_query.audit_log_flat                                       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="auditLog-count" resultType="int">
+    SELECT COUNT(*) FROM hm_query.audit_log_flat
+    <where>
+        <if test="entityType != null">AND entity_type = #{entityType}</if>
+        <if test="action != null">AND action = #{action}</if>
+        <if test="changedBy != null">AND changed_by = #{changedBy}</if>
+        <if test="startDate != null">AND created_time &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+        <if test="endDate != null">AND created_time &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+        <if test="q != null">AND (entity_type ILIKE CONCAT('%', #{q}, '%') OR entity_id ILIKE CONCAT('%', #{q}, '%') OR changed_by ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="auditLog" resultType="com.homebase.ecom.uiquery.dto.AuditLogQueryDto">
+    SELECT
+        al.id as "id",
+        al.entity_type as "entityType",
+        al.entity_id as "entityId",
+        al.action as "action",
+        al.old_value as "oldValue",
+        al.new_value as "newValue",
+        al.changed_by as "changedBy",
+        al.ip_address as "ipAddress",
+        al.correlation_id as "correlationId",
+        al.is_critical as "isCritical",
+        al.details as "details",
+        al.created_time as "createdTime"
+    FROM hm_query.audit_log_flat al
+    <where>
+        <if test="entityType != null">AND al.entity_type = #{entityType}</if>
+        <if test="action != null">AND al.action = #{action}</if>
+        <if test="changedBy != null">AND al.changed_by = #{changedBy}</if>
+        <if test="startDate != null">AND al.created_time &gt;= CAST(#{startDate} AS TIMESTAMP)</if>
+        <if test="endDate != null">AND al.created_time &lt;= CAST(#{endDate} AS TIMESTAMP)</if>
+        <if test="q != null">AND (al.entity_type ILIKE CONCAT('%', #{q}, '%') OR al.entity_id ILIKE CONCAT('%', #{q}, '%') OR al.changed_by ILIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CUSTOMER SUMMARY                                                      -->
+<!-- Source: hm_query.customer_360_flat                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="customerSummary" resultType="com.homebase.ecom.uiquery.dto.StateCountQueryDto">
+    SELECT
+        customer_status as "state",
+        COUNT(*) as "count"
+    FROM hm_query.customer_360_flat
+    GROUP BY customer_status
+    ORDER BY "count" DESC
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- REVENUE BY CATEGORY                                                   -->
+<!-- Source: hm_query.category_performance_daily                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="revenueByCategory" resultType="com.homebase.ecom.uiquery.dto.RevenueByCategoryQueryDto">
+    SELECT
+        COALESCE(cpd.category_name, 'Uncategorized') as "categoryName",
+        cpd.category_id as "categoryId",
+        COALESCE(SUM(cpd.total_orders), 0) as "orderCount",
+        COALESCE(SUM(cpd.total_units_sold), 0) as "unitsSold",
+        COALESCE(SUM(cpd.gmv), 0) as "totalRevenue"
+    FROM hm_query.category_performance_daily cpd
+    WHERE cpd.tenant = 'homebase'
+    GROUP BY cpd.category_id, cpd.category_name
+    ORDER BY "totalRevenue" DESC
+</select>
+
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- UI-driven column additions for user_profiles table                 -->
+    <!-- Fills schema gaps from customer admin pages (customers, detail)     -->
+    <!-- ================================================================== -->
+
+    <changeSet id="user-ui-001-activity-tracking-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="user_profiles" schemaName="hm_user"/>
+                <not><columnExists tableName="user_profiles" schemaName="hm_user" columnName="last_active_at"/></not>
+            </and>
+        </preConditions>
+        <addColumn tableName="user_profiles" schemaName="hm_user">
+            <column name="last_active_at" type="TIMESTAMP" remarks="Last activity timestamp (updated on any authenticated action)"/>
+            <column name="last_purchase_date" type="TIMESTAMP" remarks="Most recent completed purchase (denormalized from orders)"/>
+        </addColumn>
+        <createIndex indexName="idx_user_last_active" tableName="user_profiles" schemaName="hm_user">
+            <column name="last_active_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

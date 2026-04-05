@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- STAR SCHEMA — FACT TABLES                                          -->
+    <!-- Facts are "what you SUM / COUNT / AVG"                             -->
+    <!-- Foreign keys to dimension tables. Measures are numbers.            -->
+    <!-- All money in paisa (BIGINT), rates in basis points (INT).          -->
+    <!-- ================================================================== -->
+
+    <!-- ====== FACT_ORDERS (one row per order) ====== -->
+    <changeSet id="query-star-010-fact-orders" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="fact_orders" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="fact_orders" schemaName="hm_query">
+            <column name="order_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <!-- Dimension FKs -->
+            <column name="date_key" type="DATE"><constraints nullable="false"/></column>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="seller_key" type="VARCHAR(255)"/>
+            <column name="geo_key" type="VARCHAR(255)"/>
+            <column name="payment_method_key" type="VARCHAR(50)"/>
+            <column name="carrier_key" type="VARCHAR(100)"/>
+            <!-- Degenerate dimensions (don't need separate table) -->
+            <column name="order_number" type="VARCHAR(50)"/>
+            <column name="order_status" type="VARCHAR(50)"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="payment_status" type="VARCHAR(50)"/>
+            <column name="sla_status" type="VARCHAR(20)"/>
+            <column name="tracking_number" type="VARCHAR(100)"/>
+            <column name="coupon_codes" type="VARCHAR(500)"/>
+            <!-- Measures -->
+            <column name="total_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="subtotal" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="tax_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="shipping_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="discount_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="commission_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="commission_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="gateway_fee" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="seller_payout" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="item_count" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_breach_hours" type="INT" defaultValueNumeric="0"/>
+            <!-- Timestamps -->
+            <column name="order_time" type="TIMESTAMP"/>
+            <column name="shipped_at" type="TIMESTAMP"/>
+            <column name="delivered_at" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_fact_orders_date" tableName="fact_orders" schemaName="hm_query"><column name="date_key"/></createIndex>
+        <createIndex indexName="idx_fact_orders_customer" tableName="fact_orders" schemaName="hm_query"><column name="customer_key"/></createIndex>
+        <createIndex indexName="idx_fact_orders_seller" tableName="fact_orders" schemaName="hm_query"><column name="seller_key"/></createIndex>
+        <createIndex indexName="idx_fact_orders_status" tableName="fact_orders" schemaName="hm_query"><column name="order_status"/></createIndex>
+        <createIndex indexName="idx_fact_orders_geo" tableName="fact_orders" schemaName="hm_query"><column name="geo_key"/></createIndex>
+        <createIndex indexName="idx_fact_orders_payment" tableName="fact_orders" schemaName="hm_query"><column name="payment_method_key"/></createIndex>
+    </changeSet>
+
+    <!-- ====== FACT_ORDER_ITEMS (one row per line item) ====== -->
+    <changeSet id="query-star-011-fact-order-items" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="fact_order_items" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="fact_order_items" schemaName="hm_query">
+            <column name="item_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <!-- Dimension FKs -->
+            <column name="order_key" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="date_key" type="DATE"/>
+            <column name="product_key" type="VARCHAR(255)"/>
+            <column name="seller_key" type="VARCHAR(255)"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <!-- Degenerate dimensions -->
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="fulfillment_status" type="VARCHAR(50)"/>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <!-- Measures -->
+            <column name="quantity" type="INT" defaultValueNumeric="0"/>
+            <column name="unit_price" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="total_price" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="tax_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="discount_amount" type="BIGINT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_fact_oitems_order" tableName="fact_order_items" schemaName="hm_query"><column name="order_key"/></createIndex>
+        <createIndex indexName="idx_fact_oitems_product" tableName="fact_order_items" schemaName="hm_query"><column name="product_key"/></createIndex>
+        <createIndex indexName="idx_fact_oitems_date" tableName="fact_order_items" schemaName="hm_query"><column name="date_key"/></createIndex>
+        <createIndex indexName="idx_fact_oitems_seller" tableName="fact_order_items" schemaName="hm_query"><column name="seller_key"/></createIndex>
+    </changeSet>
+
+    <!-- ====== FACT_PAYMENTS (one row per payment transaction) ====== -->
+    <changeSet id="query-star-012-fact-payments" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="fact_payments" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="fact_payments" schemaName="hm_query">
+            <column name="payment_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="order_key" type="VARCHAR(255)"/>
+            <column name="date_key" type="DATE"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="payment_method_key" type="VARCHAR(50)"/>
+            <column name="payment_status" type="VARCHAR(50)"/>
+            <column name="gateway_name" type="VARCHAR(100)"/>
+            <column name="gateway_transaction_id" type="VARCHAR(255)"/>
+            <!-- Measures -->
+            <column name="amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="gateway_fee" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="refund_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="retry_count" type="INT" defaultValueNumeric="0"/>
+            <column name="payment_time" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_fact_pay_date" tableName="fact_payments" schemaName="hm_query"><column name="date_key"/></createIndex>
+        <createIndex indexName="idx_fact_pay_method" tableName="fact_payments" schemaName="hm_query"><column name="payment_method_key"/></createIndex>
+        <createIndex indexName="idx_fact_pay_status" tableName="fact_payments" schemaName="hm_query"><column name="payment_status"/></createIndex>
+    </changeSet>
+
+    <!-- ====== FACT_SHIPMENTS (one row per shipment) ====== -->
+    <changeSet id="query-star-013-fact-shipments" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="fact_shipments" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="fact_shipments" schemaName="hm_query">
+            <column name="shipment_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="order_key" type="VARCHAR(255)"/>
+            <column name="date_key" type="DATE"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="seller_key" type="VARCHAR(255)"/>
+            <column name="carrier_key" type="VARCHAR(100)"/>
+            <column name="geo_key" type="VARCHAR(255)"/>
+            <column name="warehouse_key" type="VARCHAR(255)"/>
+            <column name="shipment_status" type="VARCHAR(50)"/>
+            <column name="tracking_number" type="VARCHAR(100)"/>
+            <!-- Measures -->
+            <column name="shipping_cost" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="weight_grams" type="INT" defaultValueNumeric="0"/>
+            <column name="delivery_days" type="INT" defaultValueNumeric="0" remarks="Actual days to deliver"/>
+            <column name="sla_days" type="INT" defaultValueNumeric="0" remarks="Promised days"/>
+            <column name="is_on_time" type="BOOLEAN"/>
+            <column name="is_rto" type="BOOLEAN" defaultValueBoolean="false"/>
+            <!-- Timestamps -->
+            <column name="shipped_at" type="TIMESTAMP"/>
+            <column name="estimated_delivery" type="TIMESTAMP"/>
+            <column name="actual_delivery" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_fact_ship_date" tableName="fact_shipments" schemaName="hm_query"><column name="date_key"/></createIndex>
+        <createIndex indexName="idx_fact_ship_carrier" tableName="fact_shipments" schemaName="hm_query"><column name="carrier_key"/></createIndex>
+        <createIndex indexName="idx_fact_ship_status" tableName="fact_shipments" schemaName="hm_query"><column name="shipment_status"/></createIndex>
+    </changeSet>
+
+    <!-- ====== FACT_RETURNS (one row per return request) ====== -->
+    <changeSet id="query-star-014-fact-returns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="fact_returns" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="fact_returns" schemaName="hm_query">
+            <column name="return_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="order_key" type="VARCHAR(255)"/>
+            <column name="date_key" type="DATE"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="seller_key" type="VARCHAR(255)"/>
+            <column name="product_key" type="VARCHAR(255)"/>
+            <column name="return_status" type="VARCHAR(50)"/>
+            <column name="return_reason" type="VARCHAR(100)"/>
+            <column name="return_type" type="VARCHAR(50)" remarks="RETURN, EXCHANGE, REFUND_ONLY"/>
+            <!-- Measures -->
+            <column name="refund_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="restocking_fee" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="return_shipping_cost" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="quantity" type="INT" defaultValueNumeric="1"/>
+            <column name="resolution_days" type="INT" defaultValueNumeric="0"/>
+            <column name="return_time" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_fact_ret_date" tableName="fact_returns" schemaName="hm_query"><column name="date_key"/></createIndex>
+        <createIndex indexName="idx_fact_ret_status" tableName="fact_returns" schemaName="hm_query"><column name="return_status"/></createIndex>
+        <createIndex indexName="idx_fact_ret_reason" tableName="fact_returns" schemaName="hm_query"><column name="return_reason"/></createIndex>
+    </changeSet>
+
+    <!-- ====== FACT_REVIEWS (one row per review) ====== -->
+    <changeSet id="query-star-015-fact-reviews" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="fact_reviews" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="fact_reviews" schemaName="hm_query">
+            <column name="review_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="date_key" type="DATE"/>
+            <column name="product_key" type="VARCHAR(255)"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="order_key" type="VARCHAR(255)"/>
+            <column name="review_status" type="VARCHAR(50)"/>
+            <!-- Measures -->
+            <column name="rating" type="INT"/>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="body" type="TEXT"/>
+            <column name="verified_purchase" type="BOOLEAN"/>
+            <column name="helpful_count" type="INT" defaultValueNumeric="0"/>
+            <column name="report_count" type="INT" defaultValueNumeric="0"/>
+            <column name="review_time" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_fact_rev_product" tableName="fact_reviews" schemaName="hm_query"><column name="product_key"/></createIndex>
+        <createIndex indexName="idx_fact_rev_date" tableName="fact_reviews" schemaName="hm_query"><column name="date_key"/></createIndex>
+    </changeSet>
+
+    <!-- ====== FACT_INVENTORY (current snapshot — one row per SKU per warehouse) ====== -->
+    <changeSet id="query-star-016-fact-inventory" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="fact_inventory" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="fact_inventory" schemaName="hm_query">
+            <column name="inventory_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="product_key" type="VARCHAR(255)"/>
+            <column name="seller_key" type="VARCHAR(255)"/>
+            <column name="warehouse_key" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="stm_state" type="VARCHAR(50)"/>
+            <column name="stock_status" type="VARCHAR(30)"/>
+            <!-- Measures -->
+            <column name="available_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="reserved_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="damaged_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="inbound_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="cost_price" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="locked_capital" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="low_stock_threshold" type="INT"/>
+            <column name="days_of_supply" type="INT" defaultValueNumeric="0"/>
+            <column name="avg_daily_sales" type="INT" defaultValueNumeric="0"/>
+            <column name="days_without_sale" type="INT" defaultValueNumeric="0"/>
+            <column name="last_sale_at" type="TIMESTAMP"/>
+            <column name="last_restock_at" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_fact_inv_product" tableName="fact_inventory" schemaName="hm_query"><column name="product_key"/></createIndex>
+        <createIndex indexName="idx_fact_inv_warehouse" tableName="fact_inventory" schemaName="hm_query"><column name="warehouse_key"/></createIndex>
+        <createIndex indexName="idx_fact_inv_stock" tableName="fact_inventory" schemaName="hm_query"><column name="stock_status"/></createIndex>
+        <createIndex indexName="idx_fact_inv_seller" tableName="fact_inventory" schemaName="hm_query"><column name="seller_key"/></createIndex>
+    </changeSet>
+
+    <!-- ====== FACT_SETTLEMENTS (one row per settlement batch) ====== -->
+    <changeSet id="query-star-017-fact-settlements" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="fact_settlements" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="fact_settlements" schemaName="hm_query">
+            <column name="settlement_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="date_key" type="DATE"/>
+            <column name="seller_key" type="VARCHAR(255)"/>
+            <column name="settlement_status" type="VARCHAR(50)"/>
+            <column name="period_start" type="DATE"/>
+            <column name="period_end" type="DATE"/>
+            <!-- Measures -->
+            <column name="order_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="commission_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="platform_fee" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="tax_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="net_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="adjustment_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="order_count" type="INT" defaultValueNumeric="0"/>
+            <column name="settlement_time" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_fact_settle_date" tableName="fact_settlements" schemaName="hm_query"><column name="date_key"/></createIndex>
+        <createIndex indexName="idx_fact_settle_seller" tableName="fact_settlements" schemaName="hm_query"><column name="seller_key"/></createIndex>
+        <createIndex indexName="idx_fact_settle_status" tableName="fact_settlements" schemaName="hm_query"><column name="settlement_status"/></createIndex>
+    </changeSet>
+
+    <!-- ====== FACT_SUPPORT_TICKETS ====== -->
+    <changeSet id="query-star-018-fact-support-tickets" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="fact_support_tickets" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="fact_support_tickets" schemaName="hm_query">
+            <column name="ticket_key" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="date_key" type="DATE"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="seller_key" type="VARCHAR(255)"/>
+            <column name="order_key" type="VARCHAR(255)"/>
+            <column name="ticket_status" type="VARCHAR(50)"/>
+            <column name="ticket_category" type="VARCHAR(100)"/>
+            <column name="priority" type="VARCHAR(20)"/>
+            <column name="channel" type="VARCHAR(50)" remarks="EMAIL, PHONE, CHAT"/>
+            <!-- Measures -->
+            <column name="response_time_minutes" type="INT" defaultValueNumeric="0"/>
+            <column name="resolution_time_minutes" type="INT" defaultValueNumeric="0"/>
+            <column name="message_count" type="INT" defaultValueNumeric="0"/>
+            <column name="is_escalated" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="sla_breached" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_fact_ticket_date" tableName="fact_support_tickets" schemaName="hm_query"><column name="date_key"/></createIndex>
+        <createIndex indexName="idx_fact_ticket_status" tableName="fact_support_tickets" schemaName="hm_query"><column name="ticket_status"/></createIndex>
+    </changeSet>
+
+</databaseChangeLog>

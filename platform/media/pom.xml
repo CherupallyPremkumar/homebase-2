@@ -7,7 +7,6 @@
     <description>Media — file storage, image processing, CDN</description>
     <modules>
         <module>media-api</module><module>media-domain</module><module>media-infrastructure</module>
-        <module>media-service</module><module>media-liquibase</module><module>media-query-api</module>
-        <module>media-query</module><module>media-app</module><module>media-client</module>
+        <module>media-service</module><module>media-liquibase</module><module>media-app</module><module>media-client</module>
     </modules>
 </project>

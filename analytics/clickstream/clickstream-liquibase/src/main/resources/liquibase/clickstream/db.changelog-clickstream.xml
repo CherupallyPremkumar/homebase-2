@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Schema creation -->
+    <changeSet id="clickstream-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_clickstream</sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Clickstream — page views and click event tracking                  -->
+    <!-- Infrastructure module (no STM — append-only event data)            -->
+    <!-- ================================================================== -->
+
+    <!-- page_views (append-only event log) -->
+    <changeSet id="clickstream-001-create-page-views" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="page_views" schemaName="hm_clickstream"/></not>
+        </preConditions>
+        <createTable tableName="page_views" schemaName="hm_clickstream">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="session_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="page_url" type="VARCHAR(2000)"><constraints nullable="false"/></column>
+            <column name="page_type" type="VARCHAR(50)"/>
+            <column name="referrer_url" type="VARCHAR(2000)"/>
+            <column name="device_type" type="VARCHAR(30)"/>
+            <column name="browser" type="VARCHAR(100)"/>
+            <column name="ip_address" type="VARCHAR(45)"/>
+            <column name="country" type="VARCHAR(50)"/>
+            <column name="duration_ms" type="BIGINT"/>
+        </createTable>
+        <createIndex indexName="idx_page_views_session" tableName="page_views" schemaName="hm_clickstream">
+            <column name="session_id"/>
+        </createIndex>
+        <createIndex indexName="idx_page_views_user" tableName="page_views" schemaName="hm_clickstream">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_page_views_page_type" tableName="page_views" schemaName="hm_clickstream">
+            <column name="page_type"/>
+        </createIndex>
+        <createIndex indexName="idx_page_views_created" tableName="page_views" schemaName="hm_clickstream">
+            <column name="created_time"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- click_events (append-only event log) -->
+    <changeSet id="clickstream-002-create-click-events" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="click_events" schemaName="hm_clickstream"/></not>
+        </preConditions>
+        <createTable tableName="click_events" schemaName="hm_clickstream">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="session_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="element_type" type="VARCHAR(50)"/>
+            <column name="element_id" type="VARCHAR(255)"/>
+            <column name="page_url" type="VARCHAR(2000)"/>
+            <column name="event_data_json" type="TEXT"/>
+        </createTable>
+        <createIndex indexName="idx_click_events_session" tableName="click_events" schemaName="hm_clickstream">
+            <column name="session_id"/>
+        </createIndex>
+        <createIndex indexName="idx_click_events_user" tableName="click_events" schemaName="hm_clickstream">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_click_events_element_type" tableName="click_events" schemaName="hm_clickstream">
+            <column name="element_type"/>
+        </createIndex>
+        <createIndex indexName="idx_click_events_created" tableName="click_events" schemaName="hm_clickstream">
+            <column name="created_time"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

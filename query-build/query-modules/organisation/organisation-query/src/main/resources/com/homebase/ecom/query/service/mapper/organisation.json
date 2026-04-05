@@ -1,0 +1,30 @@
+[
+  {
+    "id": "Organisation.getAll",
+    "name": "organisations",
+    "description": "Organisation listing from OLAP organisation_flat",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
+      "companyName": { "name": "companyName", "filterable": true, "columnType": "Text", "likeQuery": true, "sortable": true },
+      "legalName": { "name": "legalName", "filterable": true, "columnType": "Text", "likeQuery": true },
+      "gstNumber": { "name": "gstNumber", "filterable": true, "columnType": "Text" },
+      "domain": { "name": "domain", "filterable": true, "columnType": "Text" },
+      "active": { "name": "active", "filterable": true, "columnType": "CheckBox" },
+      "q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+      "createdAt": { "name": "createdAt", "filterable": true, "columnType": "Date", "sortable": true }
+    },
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "Organisation.getProfile",
+    "name": "organisationProfile",
+    "description": "Organisation profile with branding, contact, and locale from OLAP",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "id": { "name": "id", "filterable": true, "columnType": "Text" }
+    },
+    "paginated": false
+  }
+]

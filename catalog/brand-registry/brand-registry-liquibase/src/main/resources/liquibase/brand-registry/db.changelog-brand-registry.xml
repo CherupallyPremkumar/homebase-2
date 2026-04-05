@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ==================== SCHEMA ==================== -->
+    <changeSet id="brand-registry-001-schema" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><sqlCheck expectedResult="1">SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = 'hm_brand_registry'</sqlCheck></not>
+        </preConditions>
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_brand_registry</sql>
+    </changeSet>
+
+    <!-- ==================== 1. brands (STM entity) ==================== -->
+    <changeSet id="brand-registry-002-brands" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="hm_brand_registry" tableName="brands"/></not>
+        </preConditions>
+        <createTable schemaName="hm_brand_registry" tableName="brands">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- STM columns -->
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <!-- Domain columns -->
+            <column name="brand_name" type="VARCHAR(255)"/>
+            <column name="brand_slug" type="VARCHAR(100)"><constraints unique="true"/></column>
+            <column name="company_name" type="VARCHAR(255)"/>
+            <column name="country_of_origin" type="VARCHAR(2)"/>
+            <column name="industry_category" type="VARCHAR(100)"/>
+            <column name="brand_website" type="VARCHAR(500)"/>
+            <column name="contact_email" type="VARCHAR(255)"/>
+            <column name="verified_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== 2. brand_registrations ==================== -->
+    <changeSet id="brand-registry-003-brand-registrations" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="hm_brand_registry" tableName="brand_registrations"/></not>
+        </preConditions>
+        <createTable schemaName="hm_brand_registry" tableName="brand_registrations">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- Domain columns -->
+            <column name="brand_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_registrations_brand" references="hm_brand_registry.brands(id)"/></column>
+            <column name="registry_country" type="VARCHAR(2)"/>
+            <column name="registration_date" type="DATE"/>
+            <column name="registration_number" type="VARCHAR(100)"><constraints unique="true"/></column>
+            <column name="expiration_date" type="DATE"/>
+            <column name="renewal_date" type="DATE"/>
+            <column name="registration_type" type="VARCHAR(50)"/>
+            <column name="goods_services_description" type="VARCHAR(1000)"/>
+            <column name="certificate_url" type="VARCHAR(500)"/>
+            <column name="verified_by" type="VARCHAR(100)"/>
+            <column name="verified_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== 3. brand_trademarks ==================== -->
+    <changeSet id="brand-registry-004-brand-trademarks" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="hm_brand_registry" tableName="brand_trademarks"/></not>
+        </preConditions>
+        <createTable schemaName="hm_brand_registry" tableName="brand_trademarks">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- Domain columns -->
+            <column name="brand_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_trademarks_brand" references="hm_brand_registry.brands(id)"/></column>
+            <column name="trademark_text" type="VARCHAR(255)"/>
+            <column name="trademark_type" type="VARCHAR(50)"/>
+            <column name="class_code" type="VARCHAR(50)"/>
+            <column name="registration_number" type="VARCHAR(100)"/>
+            <column name="registration_office" type="VARCHAR(100)"/>
+            <column name="registration_date" type="DATE"/>
+            <column name="expiration_date" type="DATE"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="logo_image_url" type="VARCHAR(500)"/>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="countries_protected" type="VARCHAR(1000)"/>
+            <column name="enforcement_priority" type="INT" defaultValueNumeric="3"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== 4. ip_violations (STM entity) ==================== -->
+    <changeSet id="brand-registry-005-ip-violations" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="hm_brand_registry" tableName="ip_violations"/></not>
+        </preConditions>
+        <createTable schemaName="hm_brand_registry" tableName="ip_violations">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- STM columns -->
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <!-- Domain columns -->
+            <column name="brand_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_violations_brand" references="hm_brand_registry.brands(id)"/></column>
+            <column name="trademark_id" type="VARCHAR(255)"/>
+            <column name="violation_type" type="VARCHAR(50)"/>
+            <column name="violation_date" type="TIMESTAMP"/>
+            <column name="severity_level" type="VARCHAR(50)"/>
+            <column name="infringer_name" type="VARCHAR(255)"/>
+            <column name="infringer_store_id" type="VARCHAR(255)"/>
+            <column name="marketplace_id" type="VARCHAR(255)"/>
+            <column name="listing_url" type="VARCHAR(500)"/>
+            <column name="product_asin_sku" type="VARCHAR(255)"/>
+            <column name="violation_details" type="VARCHAR(2000)"/>
+            <column name="evidence_files" type="VARCHAR(2000)"/>
+            <column name="action_taken" type="VARCHAR(500)"/>
+            <column name="resolution_date" type="DATE"/>
+            <column name="assigned_to" type="VARCHAR(100)"/>
+            <column name="case_reference" type="VARCHAR(100)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== 5. brand_stores ==================== -->
+    <changeSet id="brand-registry-006-brand-stores" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="hm_brand_registry" tableName="brand_stores"/></not>
+        </preConditions>
+        <createTable schemaName="hm_brand_registry" tableName="brand_stores">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- Domain columns -->
+            <column name="brand_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_stores_brand" references="hm_brand_registry.brands(id)"/></column>
+            <column name="store_name" type="VARCHAR(255)"/>
+            <column name="store_type" type="VARCHAR(50)"/>
+            <column name="marketplace_platform" type="VARCHAR(100)"/>
+            <column name="seller_id" type="VARCHAR(255)"/>
+            <column name="seller_account_status" type="VARCHAR(50)"/>
+            <column name="store_url" type="VARCHAR(500)"/>
+            <column name="authorization_date" type="DATE"/>
+            <column name="authorization_expiration_date" type="DATE"/>
+            <column name="authorization_status" type="VARCHAR(50)"/>
+            <column name="sales_territory" type="VARCHAR(255)"/>
+            <column name="compliance_score" type="INT" defaultValueNumeric="100"/>
+            <column name="violation_count" type="INT" defaultValueNumeric="0"/>
+            <column name="last_audit_date" type="DATE"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== 6. authorized_sellers ==================== -->
+    <changeSet id="brand-registry-007-authorized-sellers" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="hm_brand_registry" tableName="authorized_sellers"/></not>
+        </preConditions>
+        <createTable schemaName="hm_brand_registry" tableName="authorized_sellers">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- Domain columns -->
+            <column name="brand_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_authorized_brand" references="hm_brand_registry.brands(id)"/></column>
+            <column name="seller_name" type="VARCHAR(255)"/>
+            <column name="seller_email" type="VARCHAR(255)"/>
+            <column name="seller_type" type="VARCHAR(50)"/>
+            <column name="company_legal_name" type="VARCHAR(255)"/>
+            <column name="seller_rank" type="VARCHAR(50)"/>
+            <column name="registration_date" type="DATE"/>
+            <column name="approval_date" type="DATE"/>
+            <column name="expiration_date" type="DATE"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="sales_territory" type="VARCHAR(255)"/>
+            <column name="performance_rating" type="INT"/>
+            <column name="territory_exclusivity" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== 7. brand_analytics ==================== -->
+    <changeSet id="brand-registry-008-brand-analytics" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists schemaName="hm_brand_registry" tableName="brand_analytics"/></not>
+        </preConditions>
+        <createTable schemaName="hm_brand_registry" tableName="brand_analytics">
+            <!-- BaseJpaEntity columns -->
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- Domain columns -->
+            <column name="brand_id" type="VARCHAR(255)"><constraints nullable="false" foreignKeyName="fk_analytics_brand" references="hm_brand_registry.brands(id)"/></column>
+            <column name="reporting_period" type="DATE"/>
+            <column name="total_listings_monitored" type="INT"/>
+            <column name="counterfeit_listings_detected" type="INT"/>
+            <column name="counterfeit_listings_removed" type="INT"/>
+            <column name="removal_rate_percentage" type="INT"/>
+            <column name="authorized_seller_count" type="INT"/>
+            <column name="violation_trend" type="VARCHAR(50)"/>
+            <column name="estimated_lost_revenue" type="BIGINT"/>
+            <column name="brand_health_score" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== INDEXES ==================== -->
+    <changeSet id="brand-registry-009-indexes" author="homebase">
+        <createIndex schemaName="hm_brand_registry" tableName="brands" indexName="idx_brands_slug">
+            <column name="brand_slug"/>
+        </createIndex>
+        <createIndex schemaName="hm_brand_registry" tableName="brand_registrations" indexName="idx_registrations_brand">
+            <column name="brand_id"/>
+        </createIndex>
+        <createIndex schemaName="hm_brand_registry" tableName="brand_registrations" indexName="idx_registrations_number">
+            <column name="registration_number"/>
+        </createIndex>
+        <createIndex schemaName="hm_brand_registry" tableName="brand_trademarks" indexName="idx_trademarks_brand">
+            <column name="brand_id"/>
+        </createIndex>
+        <createIndex schemaName="hm_brand_registry" tableName="ip_violations" indexName="idx_violations_brand">
+            <column name="brand_id"/>
+        </createIndex>
+        <createIndex schemaName="hm_brand_registry" tableName="ip_violations" indexName="idx_violations_type">
+            <column name="violation_type"/>
+        </createIndex>
+        <createIndex schemaName="hm_brand_registry" tableName="brand_stores" indexName="idx_stores_brand">
+            <column name="brand_id"/>
+        </createIndex>
+        <createIndex schemaName="hm_brand_registry" tableName="brand_stores" indexName="idx_stores_seller">
+            <column name="seller_id"/>
+        </createIndex>
+        <createIndex schemaName="hm_brand_registry" tableName="authorized_sellers" indexName="idx_authorized_brand">
+            <column name="brand_id"/>
+        </createIndex>
+        <createIndex schemaName="hm_brand_registry" tableName="brand_analytics" indexName="idx_analytics_brand">
+            <column name="brand_id"/>
+        </createIndex>
+        <createIndex schemaName="hm_brand_registry" tableName="brand_analytics" indexName="idx_analytics_period">
+            <column name="reporting_period"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

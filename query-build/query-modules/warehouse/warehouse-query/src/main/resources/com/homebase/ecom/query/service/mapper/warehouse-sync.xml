@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="WarehouseSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query warehouse OLAP tables from OLTP           -->
+<!-- Source: warehouses + warehouse_locations + warehouse_inventory +        -->
+<!--         inventory_item + products + fulfillment_orders                  -->
+<!-- Called by WarehouseSyncService                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== dim_warehouse ====== -->
+<update id="truncateDimWarehouse">
+    TRUNCATE TABLE hm_query.dim_warehouse
+</update>
+
+<insert id="syncDimWarehouse">
+    INSERT INTO hm_query.dim_warehouse (
+        id, tenant, last_synced_at,
+        warehouse_code, warehouse_name, warehouse_type,
+        address_line1, address_line2,
+        city, state, pincode, country,
+        latitude, longitude, timezone,
+        contact_phone, contact_email, manager_id,
+        max_capacity_units, current_utilization_pct,
+        is_active, is_returns_center,
+        operating_hours_json, supported_carriers_json,
+        total_skus, total_units, low_stock_count,
+        pending_fulfillments,
+        created_time, last_modified_time
+    )
+    SELECT
+        w.id,
+        w.tenant,
+        NOW(),
+        w.warehouse_code,
+        w.warehouse_name,
+        w.warehouse_type,
+        w.address_line1,
+        w.address_line2,
+        w.city,
+        w.state,
+        w.pincode,
+        w.country,
+        w.latitude,
+        w.longitude,
+        w.timezone,
+        w.contact_phone,
+        w.contact_email,
+        w.manager_id,
+        w.max_capacity_units,
+        w.current_utilization_pct,
+        w.is_active,
+        w.is_returns_center,
+        w.operating_hours_json,
+        w.supported_carriers_json,
+        COALESCE(inv_stats.total_skus, 0),
+        COALESCE(inv_stats.total_units, 0),
+        COALESCE(inv_stats.low_stock_count, 0),
+        COALESCE(ful_stats.pending_fulfillments, 0),
+        w.created_time,
+        w.last_modified_time
+    FROM hm_warehouse.warehouses w
+    LEFT JOIN (
+        SELECT
+            primary_fc,
+            COUNT(*) as total_skus,
+            SUM(available_quantity) as total_units,
+            COUNT(*) FILTER (WHERE available_quantity &lt;= low_stock_threshold) as low_stock_count
+        FROM hm_inventory.inventory_item
+        WHERE state_id NOT IN ('DISCARDED', 'DAMAGED_SEVERE')
+        GROUP BY primary_fc
+    ) inv_stats ON inv_stats.primary_fc = w.id
+    LEFT JOIN (
+        SELECT
+            warehouse_id,
+            COUNT(*) as pending_fulfillments
+        FROM hm_fulfillment.fulfillment_orders
+        WHERE state_id IN ('INITIATED', 'PICKING', 'PACKING')
+        GROUP BY warehouse_id
+    ) ful_stats ON ful_stats.warehouse_id = w.id
+</insert>
+
+<!-- ====== warehouse_locations_flat ====== -->
+<update id="truncateWarehouseLocationsFlat">
+    TRUNCATE TABLE hm_query.warehouse_locations_flat
+</update>
+
+<insert id="syncWarehouseLocationsFlat">
+    INSERT INTO hm_query.warehouse_locations_flat (
+        id, tenant, last_synced_at,
+        warehouse_id, warehouse_name,
+        location_code, zone, aisle, shelf, bin,
+        location_type, capacity_units, current_units,
+        is_active
+    )
+    SELECT
+        wl.id,
+        w.tenant,
+        NOW(),
+        wl.warehouse_id,
+        w.warehouse_name,
+        wl.location_code,
+        wl.zone,
+        wl.aisle,
+        wl.shelf,
+        wl.bin,
+        wl.location_type,
+        COALESCE(wl.capacity_units, 0),
+        COALESCE(wl.current_units, 0),
+        wl.is_active
+    FROM hm_warehouse.warehouse_locations wl
+    JOIN hm_warehouse.warehouses w ON wl.warehouse_id = w.id
+</insert>
+
+<!-- ====== warehouse_inventory_flat ====== -->
+<update id="truncateWarehouseInventoryFlat">
+    TRUNCATE TABLE hm_query.warehouse_inventory_flat
+</update>
+
+<insert id="syncWarehouseInventoryFlat">
+    INSERT INTO hm_query.warehouse_inventory_flat (
+        warehouse_inventory_id, tenant, last_synced_at,
+        warehouse_id, location_id, location_code,
+        zone, aisle, shelf, bin, location_type,
+        product_id, variant_id, sku,
+        quantity_on_hand, quantity_reserved,
+        quantity_available, quantity_damaged,
+        last_counted_at,
+        product_name, brand
+    )
+    SELECT
+        wi.id,
+        w.tenant,
+        NOW(),
+        wl.warehouse_id,
+        wi.location_id,
+        wl.location_code,
+        wl.zone,
+        wl.aisle,
+        wl.shelf,
+        wl.bin,
+        wl.location_type,
+        wi.product_id,
+        wi.variant_id,
+        wi.sku,
+        COALESCE(wi.quantity_on_hand, 0),
+        COALESCE(wi.quantity_reserved, 0),
+        COALESCE(wi.quantity_available, 0),
+        COALESCE(wi.quantity_damaged, 0),
+        wi.last_counted_at,
+        COALESCE(p.name, ''),
+        COALESCE(p.brand, '')
+    FROM hm_warehouse.warehouse_inventory wi
+    JOIN hm_warehouse.warehouse_locations wl ON wi.location_id = wl.id
+    JOIN hm_warehouse.warehouses w ON wl.warehouse_id = w.id
+    LEFT JOIN hm_product.products p ON wi.product_id = p.id
+</insert>
+
+</mapper>

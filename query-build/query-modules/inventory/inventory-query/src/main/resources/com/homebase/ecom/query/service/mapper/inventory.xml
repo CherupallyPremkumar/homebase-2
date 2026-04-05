@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Inventory">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema (CQRS read model).         -->
+<!-- Source tables: inventory_health_flat, stock_movement_flat              -->
+<!-- Populated by InventorySyncService ETL.                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- STOREFRONT QUERIES                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<select id="checkAvailability" resultType="com.homebase.ecom.inventory.dto.InventoryDto">
+    SELECT
+        id, sku,
+        product_id      as "productId",
+        variant_id      as "variantId",
+        available_qty   as "availableQuantity",
+        reserved_qty    as "reserved",
+        stock_status    as "status",
+        stm_state       as "stateId"
+    FROM hm_query.inventory_health_flat
+    <where>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="variantId != null">AND variant_id = #{variantId}</if>
+    </where>
+</select>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ADMIN QUERIES (products/inventory.html)                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Inventory listing — full table -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.inventory_health_flat
+    <where>
+        <if test="sku != null">AND sku LIKE CONCAT('%', #{sku}, '%')</if>
+        <if test="productName != null">AND product_name LIKE CONCAT('%', #{productName}, '%')</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="sellerId != null">AND seller_id = #{sellerId}</if>
+        <if test="sellerName != null">AND seller_name LIKE CONCAT('%', #{sellerName}, '%')</if>
+        <if test="stockStatus != null">AND stock_status = #{stockStatus}</if>
+        <if test="stmState != null">AND stm_state = #{stmState}</if>
+        <if test="warehouseName != null">AND warehouse_name = #{warehouseName}</if>
+        <if test="q != null">AND (sku LIKE CONCAT('%', #{q}, '%') OR product_name LIKE CONCAT('%', #{q}, '%') OR seller_name LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.inventory.dto.InventoryDto">
+    SELECT
+        id,
+        sku,
+        product_id       as "productId",
+        product_name     as "productName",
+        category_name    as "categoryName",
+        seller_id        as "sellerId",
+        seller_name      as "sellerName",
+        warehouse_name   as "warehouseName",
+        warehouse_code   as "warehouseCode",
+        variant_id       as "variantId",
+        available_qty    as "availableQuantity",
+        reserved_qty     as "reserved",
+        damaged_qty      as "damagedQuantity",
+        inbound_qty      as "inboundQuantity",
+        low_stock_threshold as "lowStockThreshold",
+        stock_status     as "status",
+        stm_state        as "stateId",
+        days_of_supply   as "daysOfSupply",
+        avg_daily_sales  as "avgDailySales",
+        last_sale_at     as "lastSaleAt",
+        last_restock_at  as "lastRestockAt",
+        cost_price       as "costPrice",
+        locked_capital   as "lockedCapital",
+        days_without_sale as "daysWithoutSale"
+    FROM hm_query.inventory_health_flat
+    <where>
+        <if test="sku != null">AND sku LIKE CONCAT('%', #{sku}, '%')</if>
+        <if test="productName != null">AND product_name LIKE CONCAT('%', #{productName}, '%')</if>
+        <if test="productId != null">AND product_id = #{productId}</if>
+        <if test="sellerId != null">AND seller_id = #{sellerId}</if>
+        <if test="sellerName != null">AND seller_name LIKE CONCAT('%', #{sellerName}, '%')</if>
+        <if test="stockStatus != null">AND stock_status = #{stockStatus}</if>
+        <if test="stmState != null">AND stm_state = #{stmState}</if>
+        <if test="warehouseName != null">AND warehouse_name = #{warehouseName}</if>
+        <if test="q != null">AND (sku LIKE CONCAT('%', #{q}, '%') OR product_name LIKE CONCAT('%', #{q}, '%') OR seller_name LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Get by ID -->
+<select id="getById" resultType="com.homebase.ecom.inventory.dto.InventoryDto">
+    SELECT
+        id, sku,
+        product_id      as "productId",
+        product_name    as "productName",
+        category_name   as "categoryName",
+        seller_id       as "sellerId",
+        seller_name     as "sellerName",
+        warehouse_name  as "warehouseName",
+        variant_id      as "variantId",
+        available_qty   as "availableQuantity",
+        reserved_qty    as "reserved",
+        damaged_qty     as "damagedQuantity",
+        inbound_qty     as "inboundQuantity",
+        low_stock_threshold as "lowStockThreshold",
+        stock_status    as "status",
+        stm_state       as "stateId",
+        days_of_supply  as "daysOfSupply",
+        avg_daily_sales as "avgDailySales",
+        last_sale_at    as "lastSaleAt",
+        last_restock_at as "lastRestockAt",
+        cost_price      as "costPrice",
+        locked_capital  as "lockedCapital",
+        batch_number    as "batchNumber",
+        expiry_date     as "expiryDate"
+    FROM hm_query.inventory_health_flat
+    WHERE id = #{id}
+</select>
+
+<!-- Get by product ID -->
+<select id="getByProductId" resultType="com.homebase.ecom.inventory.dto.InventoryDto">
+    SELECT
+        id, sku,
+        product_id      as "productId",
+        variant_id      as "variantId",
+        warehouse_name  as "warehouseName",
+        available_qty   as "availableQuantity",
+        reserved_qty    as "reserved",
+        damaged_qty     as "damagedQuantity",
+        stock_status    as "status",
+        stm_state       as "stateId"
+    FROM hm_query.inventory_health_flat
+    WHERE product_id = #{productId}
+</select>
+
+<!-- Stat counts by stock status (for tab badges: In Stock / Low / Out) -->
+<select id="getStateCounts" resultType="com.homebase.ecom.inventory.dto.InventoryStateCountDto">
+    SELECT
+        stock_status as "stateId",
+        COUNT(*) as "count"
+    FROM hm_query.inventory_health_flat
+    GROUP BY stock_status
+    ORDER BY "count" DESC
+</select>
+
+<!-- STM state counts (for STM State column filter dropdown) -->
+<select id="getStmStateCounts" resultType="com.homebase.ecom.inventory.dto.InventoryStateCountDto">
+    SELECT
+        stm_state as "stateId",
+        COUNT(*) as "count"
+    FROM hm_query.inventory_health_flat
+    WHERE stm_state IS NOT NULL
+    GROUP BY stm_state
+    ORDER BY "count" DESC
+</select>
+
+<!-- Distinct sellers for dropdown filter -->
+<select id="getDistinctSellers" resultType="map">
+    SELECT DISTINCT
+        seller_id   as "sellerId",
+        seller_name as "sellerName"
+    FROM hm_query.inventory_health_flat
+    WHERE seller_id IS NOT NULL
+    ORDER BY seller_name
+</select>
+
+<!-- Distinct warehouses for dropdown filter -->
+<select id="getDistinctWarehouses" resultType="map">
+    SELECT DISTINCT
+        warehouse_name as "warehouseName",
+        warehouse_code as "warehouseCode"
+    FROM hm_query.inventory_health_flat
+    WHERE warehouse_name IS NOT NULL
+    ORDER BY warehouse_name
+</select>
+
+<!-- Low stock items -->
+<select id="getLowStock-count" resultType="int">
+    SELECT count(*) FROM hm_query.inventory_health_flat
+    WHERE stock_status = 'LOW_STOCK'
+    <if test="warehouseName != null">AND warehouse_name = #{warehouseName}</if>
+    <if test="sellerId != null">AND seller_id = #{sellerId}</if>
+</select>
+
+<select id="getLowStock" resultType="com.homebase.ecom.inventory.dto.InventoryDto">
+    SELECT
+        id, sku,
+        product_id      as "productId",
+        product_name    as "productName",
+        seller_name     as "sellerName",
+        warehouse_name  as "warehouseName",
+        available_qty   as "availableQuantity",
+        reserved_qty    as "reserved",
+        low_stock_threshold as "lowStockThreshold",
+        days_of_supply  as "daysOfSupply",
+        stock_status    as "status",
+        stm_state       as "stateId"
+    FROM hm_query.inventory_health_flat
+    WHERE stock_status = 'LOW_STOCK'
+    <if test="warehouseName != null">AND warehouse_name = #{warehouseName}</if>
+    <if test="sellerId != null">AND seller_id = #{sellerId}</if>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Out of stock items -->
+<select id="getOutOfStock-count" resultType="int">
+    SELECT count(*) FROM hm_query.inventory_health_flat
+    WHERE stock_status = 'OUT_OF_STOCK'
+</select>
+
+<select id="getOutOfStock" resultType="com.homebase.ecom.inventory.dto.InventoryDto">
+    SELECT
+        id, sku,
+        product_id      as "productId",
+        product_name    as "productName",
+        seller_name     as "sellerName",
+        warehouse_name  as "warehouseName",
+        available_qty   as "availableQuantity",
+        days_without_sale as "daysWithoutSale",
+        stock_status    as "status",
+        stm_state       as "stateId"
+    FROM hm_query.inventory_health_flat
+    WHERE stock_status = 'OUT_OF_STOCK'
+    ${orderby} ${pagination}
+</select>
+
+<!-- FC Health summary (grouped by warehouse) -->
+<select id="getByFulfillmentCenter" resultType="com.homebase.ecom.inventory.dto.FulfillmentCenterSummaryDto">
+    SELECT
+        warehouse_name        as "fulfillmentCenter",
+        warehouse_code        as "warehouseCode",
+        COUNT(*)              as "itemCount",
+        SUM(available_qty)    as "totalAvailable",
+        SUM(reserved_qty)     as "totalReserved",
+        SUM(damaged_qty)      as "totalDamaged",
+        COUNT(CASE WHEN stock_status = 'IN_STOCK' THEN 1 END) as "inStockCount",
+        COUNT(CASE WHEN stock_status = 'LOW_STOCK' THEN 1 END) as "lowStockCount",
+        COUNT(CASE WHEN stock_status = 'OUT_OF_STOCK' THEN 1 END) as "outOfStockCount"
+    FROM hm_query.inventory_health_flat
+    GROUP BY warehouse_name, warehouse_code
+    ORDER BY warehouse_name
+</select>
+
+<!-- Dead stock (no sale in 30+ days) -->
+<select id="getDeadStock-count" resultType="int">
+    SELECT count(*) FROM hm_query.inventory_health_flat
+    WHERE days_without_sale >= 30 AND available_qty > 0
+</select>
+
+<select id="getDeadStock" resultType="com.homebase.ecom.inventory.dto.InventoryDto">
+    SELECT
+        id, sku,
+        product_id      as "productId",
+        product_name    as "productName",
+        seller_name     as "sellerName",
+        warehouse_name  as "warehouseName",
+        available_qty   as "availableQuantity",
+        cost_price      as "costPrice",
+        locked_capital  as "lockedCapital",
+        days_without_sale as "daysWithoutSale",
+        last_sale_at    as "lastSaleAt"
+    FROM hm_query.inventory_health_flat
+    WHERE days_without_sale >= 30 AND available_qty > 0
+    ORDER BY locked_capital DESC
+    ${pagination}
+</select>
+
+<!-- Recent stock movements -->
+<select id="getRecentMovements-count" resultType="int">
+    SELECT count(*) FROM hm_query.stock_movement_flat
+    <where>
+        <if test="movementType != null">AND movement_type = #{movementType}</if>
+        <if test="sku != null">AND sku LIKE CONCAT('%', #{sku}, '%')</if>
+        <if test="warehouseName != null">AND warehouse_name = #{warehouseName}</if>
+    </where>
+</select>
+
+<select id="getRecentMovements" resultType="com.homebase.ecom.inventory.dto.StockMovementDto">
+    SELECT
+        id,
+        movement_type    as "type",
+        sku              as "sku",
+        product_name     as "productName",
+        quantity         as "quantity",
+        warehouse_name   as "warehouseName",
+        reason           as "reason",
+        reference_id     as "referenceId",
+        performed_by     as "performedBy",
+        movement_time    as "movementTime"
+    FROM hm_query.stock_movement_flat
+    <where>
+        <if test="movementType != null">AND movement_type = #{movementType}</if>
+        <if test="sku != null">AND sku LIKE CONCAT('%', #{sku}, '%')</if>
+        <if test="warehouseName != null">AND warehouse_name = #{warehouseName}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

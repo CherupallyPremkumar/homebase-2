@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PricingSync">
+
+<update id="truncatePricingRuleFlat">
+    TRUNCATE TABLE hm_query.pricing_rule_flat
+</update>
+
+<update id="truncatePriceChangeLogFlat">
+    TRUNCATE TABLE hm_query.price_change_log_flat
+</update>
+
+<!-- SYNC: pricing_rule_flat -->
+<insert id="syncPricingRuleFlat">
+    INSERT INTO hm_query.pricing_rule_flat (
+        id, tenant, last_synced_at,
+        rule_id, name, rule_type, priority,
+        discount_type, discount_value, active, active_from, active_to,
+        conditions_json, applicable_categories_json, applicable_products_json,
+        created_time, created_by,
+        products_affected, conversions_30d, conversion_rate, revenue_impact,
+        has_conflict, conflict_details
+    )
+    SELECT
+        pr.id,
+        pr.tenant,
+        NOW(),
+        pr.id,
+        pr.name,
+        pr.rule_type,
+        pr.priority,
+        pr.discount_type,
+        (pr.discount_value * 100)::INT,
+        pr.active,
+        pr.active_from,
+        pr.active_to,
+        pr.conditions,
+        pr.applicable_categories,
+        pr.applicable_products,
+        pr.created_time,
+        pr.created_by,
+        -- products_affected: count products matching rule's applicable_products/categories
+        COALESCE(
+            CASE
+                WHEN pr.applicable_products IS NOT NULL AND pr.applicable_products != ''
+                THEN (SELECT COUNT(*) FROM hm_product.products p
+                      WHERE p.id = ANY(STRING_TO_ARRAY(pr.applicable_products, ',')))
+                WHEN pr.applicable_categories IS NOT NULL AND pr.applicable_categories != ''
+                THEN (SELECT COUNT(*) FROM hm_product.products p
+                      WHERE p.category_id = ANY(STRING_TO_ARRAY(pr.applicable_categories, ',')))
+                ELSE (SELECT COUNT(*) FROM hm_product.products)
+            END, 0),
+        -- conversions_30d: orders with discount matching this rule (simplified)
+        COALESCE((SELECT COUNT(DISTINCT o.id) FROM hm_order.orders o
+                  WHERE o.discount_amount > 0
+                  AND o.coupon_codes LIKE CONCAT('%', pr.name, '%')
+                  AND o.created_time >= NOW() - INTERVAL '30 days'), 0),
+        0, -- conversion_rate: computed in application layer
+        -- revenue_impact: total discount amount attributed to this rule
+        COALESCE((SELECT SUM(o.discount_amount) FROM hm_order.orders o
+                  WHERE o.coupon_codes LIKE CONCAT('%', pr.name, '%')
+                  AND o.created_time >= NOW() - INTERVAL '30 days'), 0),
+        false, -- has_conflict: computed by conflict detection logic below
+        NULL
+    FROM hm_pricing.pricing_rules pr
+</insert>
+
+<!-- Detect conflicts: floor + discount that drops below floor -->
+<update id="detectRuleConflicts">
+    UPDATE hm_query.pricing_rule_flat prf
+    SET has_conflict = true,
+        conflict_details = 'Floor rule ' || floor_rule.name || ' (min ' || floor_rule.discount_value || ') conflicts with discount'
+    FROM hm_query.pricing_rule_flat floor_rule
+    WHERE prf.rule_type = 'DISCOUNT'
+      AND floor_rule.rule_type = 'FLOOR'
+      AND prf.active = true
+      AND floor_rule.active = true
+      AND prf.applicable_categories_json = floor_rule.applicable_categories_json
+      AND prf.id != floor_rule.id
+</update>
+
+<!-- SYNC: price_change_log_flat (last 90 days) -->
+<insert id="syncPriceChangeLogFlat">
+    INSERT INTO hm_query.price_change_log_flat (
+        id, tenant, change_time,
+        product_id, product_name, sku,
+        old_price, new_price, change_pct,
+        change_reason, changed_by
+    )
+    SELECT
+        ph.id,
+        ph.tenant,
+        ph.created_time,
+        ph.product_id,
+        COALESCE(p.name, ''),
+        COALESCE((SELECT pv.sku FROM hm_product.product_variants pv
+                  WHERE pv.product_id = ph.product_id LIMIT 1), ''),
+        (ph.old_price * 100)::BIGINT,
+        (ph.new_price * 100)::BIGINT,
+        CASE WHEN ph.old_price > 0
+             THEN ((ph.new_price - ph.old_price) * 10000 / ph.old_price)::INT
+             ELSE 0 END,
+        ph.change_reason,
+        ph.changed_by
+    FROM hm_pricing.price_history ph
+    LEFT JOIN hm_product.products p ON ph.product_id = p.id
+    WHERE ph.created_time >= NOW() - INTERVAL '90 days'
+</insert>
+
+</mapper>

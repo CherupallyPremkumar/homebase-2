@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MediaSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SYNC: OLTP -> OLAP                                                     -->
+<!-- Reads from hm_cms.cms_media (media assets stored by CMS)              -->
+<!-- Writes to hm_query.media_flat                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateMediaFlat">
+    TRUNCATE TABLE hm_query.media_flat
+</update>
+
+<insert id="syncMediaFlat">
+    INSERT INTO hm_query.media_flat (
+        id, tenant, last_synced_at,
+        file_key, original_name, cdn_url, mime_type,
+        file_size_bytes, width, height, alt_text,
+        folder, created_at
+    )
+    SELECT
+        m.id, m.tenant, NOW(),
+        m.file_key, m.original_name, m.cdn_url, m.mime_type,
+        m.file_size_bytes, m.width, m.height, m.alt_text,
+        m.folder, m.created_time
+    FROM hm_cms.cms_media m
+</insert>
+
+</mapper>

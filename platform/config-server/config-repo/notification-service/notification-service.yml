@@ -1,0 +1,9 @@
+server:
+  port: 8089
+notification:
+  email:
+    from: noreply@homebase.com
+  sms:
+    enabled: true
+  push:
+    enabled: true

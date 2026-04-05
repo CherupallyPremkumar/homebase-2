@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<groupId>com.homebase.ecom.query.compliance</groupId>
+		<artifactId>compliance-query-parent</artifactId>
+		<version>${revision}</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>compliance-query-service</artifactId>
+	<version>${revision}</version>
+	<name>compliance-query-service</name>
+	<properties>
+		<java.version>25</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
+	</properties>
+	<dependencies>
+		<dependency><groupId>com.homebase.ecom.compliance</groupId><artifactId>compliance-query-api</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>org.chenile</groupId><artifactId>query-api</artifactId></dependency>
+		<dependency><groupId>org.chenile</groupId><artifactId>chenile-http</artifactId></dependency>
+		<dependency><groupId>org.chenile</groupId><artifactId>chenile-query-controller</artifactId></dependency>
+		<dependency><groupId>org.chenile</groupId><artifactId>chenile-query-service</artifactId></dependency>
+		<dependency><groupId>com.homebase.ecom.compliance</groupId><artifactId>compliance-service</artifactId><version>${revision}</version></dependency>
+		<dependency><groupId>org.chenile</groupId><artifactId>chenile-security</artifactId></dependency>
+		<dependency><groupId>org.chenile</groupId><artifactId>chenile-security-api</artifactId></dependency>
+		<dependency><groupId>org.chenile</groupId><artifactId>security-interceptor</artifactId></dependency>
+		<dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+		<dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-jdbc</artifactId><scope>test</scope></dependency>
+		<dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-jpa</artifactId><scope>test</scope></dependency>
+		<dependency><groupId>org.chenile</groupId><artifactId>cucumber-utils</artifactId><scope>test</scope></dependency>
+		<dependency><groupId>org.chenile</groupId><artifactId>cucumber-sec-utils</artifactId><scope>test</scope></dependency>
+		<dependency><groupId>com.h2database</groupId><artifactId>h2</artifactId><scope>test</scope></dependency>
+		<dependency><groupId>org.junit.vintage</groupId><artifactId>junit-vintage-engine</artifactId><scope>test</scope></dependency>
+		<dependency><groupId>com.homebase.ecom</groupId><artifactId>db-migrations</artifactId><version>${revision}</version><scope>test</scope></dependency>
+		<dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-liquibase</artifactId></dependency>
+		<dependency><groupId>com.github.dasniko</groupId><artifactId>testcontainers-keycloak</artifactId><version>3.4.0</version><scope>test</scope></dependency>
+		<dependency><groupId>org.chenile</groupId><artifactId>chenile-kafka</artifactId></dependency>
+	</dependencies>
+</project>

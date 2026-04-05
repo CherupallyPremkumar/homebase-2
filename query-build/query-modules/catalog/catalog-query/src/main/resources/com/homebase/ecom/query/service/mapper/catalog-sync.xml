@@ -1,0 +1,41 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CatalogSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query OLAP tables for catalog reads            -->
+<!-- Called by CatalogSyncService (Spring scheduler)                        -->
+<!-- Strategy: TRUNCATE + INSERT (full refresh)                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateCollectionFlat">TRUNCATE TABLE hm_query.collection_flat</update>
+<update id="truncateProductTagFlat">TRUNCATE TABLE hm_query.product_tag_flat</update>
+
+<!-- ====== SYNC: collection_flat ====== -->
+<insert id="syncCollectionFlat">
+    INSERT INTO hm_query.collection_flat (
+        id, tenant, last_synced_at,
+        collection_id, collection_name, slug, type, image_url,
+        featured, active, product_count
+    )
+    SELECT
+        col.id, col.tenant, NOW(),
+        col.id, col.name, col.slug, col.type, col.image_url,
+        col.featured, col.active,
+        COALESCE(col.product_count, 0)
+    FROM hm_catalog.collections col
+</insert>
+
+<!-- ====== SYNC: product_tag_flat ====== -->
+<insert id="syncProductTagFlat">
+    INSERT INTO hm_query.product_tag_flat (
+        id, tenant, last_synced_at,
+        product_id, tag
+    )
+    SELECT
+        cit.id, 'homebase', NOW(),
+        ci.product_id, cit.tag
+    FROM hm_catalog.catalog_item_tags cit
+    JOIN hm_catalog.catalog_items ci ON ci.id = cit.catalog_item_id
+</insert>
+
+</mapper>

@@ -7,9 +7,7 @@
 		<module>notification-api</module>
 		<module>notification-domain</module>
 		<module>notification-infrastructure</module>
-		<module>notification-query-api</module>
 		<module>notification-service</module>
-		<module>notification-query</module>
 		<module>notification-app</module>
 		<module>notification-client</module>
 	        <module>notification-liquibase</module>

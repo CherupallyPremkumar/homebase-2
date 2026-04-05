@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Order">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: order_details_flat                                              -->
+<!-- Populated by OrderSyncService ETL.                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN ORDER LISTING (orders/index.html) ====== -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.order_details_flat
+    <where>
+        <!-- State filter: accepts grouped tab name OR raw STM state -->
+        <if test="stateId == 'PENDING'">AND order_status IN ('CREATED', 'PAYMENT_PENDING', 'PAYMENT_FAILED')</if>
+        <if test="stateId == 'PROCESSING'">AND order_status IN ('PAID', 'CHECK_FRAUD', 'FRAUD_HOLD', 'PROCESSING', 'ON_HOLD')</if>
+        <if test="stateId == 'SHIPPED'">AND order_status IN ('SHIPPED', 'PARTIALLY_SHIPPED')</if>
+        <if test="stateId == 'DELIVERED'">AND order_status IN ('DELIVERED', 'COMPLETED')</if>
+        <if test="stateId == 'CANCELLED'">AND order_status IN ('CANCELLED', 'CANCEL_REQUESTED', 'CANCELLATION_DENIED', 'CHECK_CANCELLATION_WINDOW')</if>
+        <if test="stateId == 'RETURNS'">AND order_status IN ('RETURN_REQUESTED', 'REFUND_REQUESTED', 'REFUNDED', 'DELIVERY_FAILED')</if>
+        <if test="stateId != null and stateId != 'PENDING' and stateId != 'PROCESSING' and stateId != 'SHIPPED' and stateId != 'DELIVERED' and stateId != 'CANCELLED' and stateId != 'RETURNS'">AND order_status = #{stateId}</if>
+        <if test="orderNumber != null">AND order_number LIKE CONCAT('%', #{orderNumber}, '%')</if>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="customerName != null">AND customer_name LIKE CONCAT('%', #{customerName}, '%')</if>
+        <if test="customerEmail != null">AND customer_email LIKE CONCAT('%', #{customerEmail}, '%')</if>
+        <if test="sellerId != null">AND seller_id = #{sellerId}</if>
+        <if test="sellerName != null">AND seller_name LIKE CONCAT('%', #{sellerName}, '%')</if>
+        <if test="paymentMethod != null">AND payment_method = #{paymentMethod}</if>
+        <if test="shippingState != null">AND shipping_state = #{shippingState}</if>
+        <if test="carrier != null">AND carrier = #{carrier}</if>
+        <if test="slaStatus != null">AND sla_status = #{slaStatus}</if>
+        <if test="minAmount != null">AND total_amount &gt;= #{minAmount}</if>
+        <if test="maxAmount != null">AND total_amount &lt;= #{maxAmount}</if>
+        <if test="startDate != null">AND order_date &gt;= #{startDate}</if>
+        <if test="endDate != null">AND order_date &lt;= #{endDate}</if>
+        <if test="q != null">AND (order_number LIKE CONCAT('%', #{q}, '%') OR customer_name LIKE CONCAT('%', #{q}, '%') OR seller_name LIKE CONCAT('%', #{q}, '%') OR first_product_name LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.dto.OrderDto">
+    SELECT
+        order_id           as "id",
+        order_number       as "orderNumber",
+        order_date         as "createdAt",
+        order_status       as "stateId",
+        flow_id            as "flowId",
+        total_amount       as "totalAmount",
+        subtotal           as "subtotal",
+        tax_amount         as "taxAmount",
+        shipping_amount    as "shippingAmount",
+        discount_amount    as "discountAmount",
+        item_count         as "itemCount",
+        currency           as "currency",
+        coupon_codes       as "couponCodes",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        customer_email     as "customerEmail",
+        customer_tier      as "customerTier",
+        seller_id          as "sellerId",
+        seller_name        as "sellerName",
+        seller_tier        as "sellerTier",
+        first_product_name as "productName",
+        total_items        as "totalItems",
+        payment_method     as "paymentMethod",
+        payment_status     as "paymentStatus",
+        carrier            as "carrier",
+        tracking_number    as "trackingNumber",
+        shipping_state     as "shippingState",
+        shipping_city      as "shippingCity",
+        sla_status         as "slaStatus",
+        sla_breach_hours   as "slaBreachHours",
+        commission_amount  as "commissionAmount"
+    FROM hm_query.order_details_flat
+    <where>
+        <!-- State filter: accepts grouped tab name OR raw STM state -->
+        <if test="stateId == 'PENDING'">AND order_status IN ('CREATED', 'PAYMENT_PENDING', 'PAYMENT_FAILED')</if>
+        <if test="stateId == 'PROCESSING'">AND order_status IN ('PAID', 'CHECK_FRAUD', 'FRAUD_HOLD', 'PROCESSING', 'ON_HOLD')</if>
+        <if test="stateId == 'SHIPPED'">AND order_status IN ('SHIPPED', 'PARTIALLY_SHIPPED')</if>
+        <if test="stateId == 'DELIVERED'">AND order_status IN ('DELIVERED', 'COMPLETED')</if>
+        <if test="stateId == 'CANCELLED'">AND order_status IN ('CANCELLED', 'CANCEL_REQUESTED', 'CANCELLATION_DENIED', 'CHECK_CANCELLATION_WINDOW')</if>
+        <if test="stateId == 'RETURNS'">AND order_status IN ('RETURN_REQUESTED', 'REFUND_REQUESTED', 'REFUNDED', 'DELIVERY_FAILED')</if>
+        <if test="stateId != null and stateId != 'PENDING' and stateId != 'PROCESSING' and stateId != 'SHIPPED' and stateId != 'DELIVERED' and stateId != 'CANCELLED' and stateId != 'RETURNS'">AND order_status = #{stateId}</if>
+        <if test="orderNumber != null">AND order_number LIKE CONCAT('%', #{orderNumber}, '%')</if>
+        <if test="customerId != null">AND customer_id = #{customerId}</if>
+        <if test="customerName != null">AND customer_name LIKE CONCAT('%', #{customerName}, '%')</if>
+        <if test="customerEmail != null">AND customer_email LIKE CONCAT('%', #{customerEmail}, '%')</if>
+        <if test="sellerId != null">AND seller_id = #{sellerId}</if>
+        <if test="sellerName != null">AND seller_name LIKE CONCAT('%', #{sellerName}, '%')</if>
+        <if test="paymentMethod != null">AND payment_method = #{paymentMethod}</if>
+        <if test="shippingState != null">AND shipping_state = #{shippingState}</if>
+        <if test="carrier != null">AND carrier = #{carrier}</if>
+        <if test="slaStatus != null">AND sla_status = #{slaStatus}</if>
+        <if test="minAmount != null">AND total_amount &gt;= #{minAmount}</if>
+        <if test="maxAmount != null">AND total_amount &lt;= #{maxAmount}</if>
+        <if test="startDate != null">AND order_date &gt;= #{startDate}</if>
+        <if test="endDate != null">AND order_date &lt;= #{endDate}</if>
+        <if test="q != null">AND (order_number LIKE CONCAT('%', #{q}, '%') OR customer_name LIKE CONCAT('%', #{q}, '%') OR seller_name LIKE CONCAT('%', #{q}, '%') OR first_product_name LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- Status counts for tab badges (grouped from 20 STM states into 6 UI tabs) -->
+<select id="getStateCounts" resultType="com.homebase.ecom.dto.StateCountDto">
+    SELECT
+        CASE
+            WHEN order_status IN ('CREATED', 'PAYMENT_PENDING', 'PAYMENT_FAILED') THEN 'PENDING'
+            WHEN order_status IN ('PAID', 'CHECK_FRAUD', 'FRAUD_HOLD', 'PROCESSING', 'ON_HOLD') THEN 'PROCESSING'
+            WHEN order_status IN ('SHIPPED', 'PARTIALLY_SHIPPED') THEN 'SHIPPED'
+            WHEN order_status IN ('DELIVERED', 'COMPLETED') THEN 'DELIVERED'
+            WHEN order_status IN ('CANCELLED', 'CANCEL_REQUESTED', 'CANCELLATION_DENIED', 'CHECK_CANCELLATION_WINDOW') THEN 'CANCELLED'
+            WHEN order_status IN ('RETURN_REQUESTED', 'REFUND_REQUESTED', 'REFUNDED', 'DELIVERY_FAILED') THEN 'RETURNS'
+            ELSE order_status
+        END as "stateId",
+        COUNT(*) as "count"
+    FROM hm_query.order_details_flat
+    GROUP BY "stateId"
+</select>
+
+<!-- Raw STM state counts (for admin drill-down) -->
+<select id="getRawStateCounts" resultType="com.homebase.ecom.dto.StateCountDto">
+    SELECT order_status as "stateId", COUNT(*) as "count"
+    FROM hm_query.order_details_flat
+    GROUP BY order_status
+    ORDER BY "count" DESC
+</select>
+
+<!-- SLA breach count for stat card -->
+<select id="getSlaBreachCount" resultType="map">
+    SELECT
+        COUNT(CASE WHEN sla_status = 'BREACHED' THEN 1 END) as "breached",
+        COUNT(CASE WHEN sla_status = 'AT_RISK' THEN 1 END) as "atRisk",
+        COUNT(CASE WHEN total_amount > 1000000 THEN 1 END) as "highValue"
+    FROM hm_query.order_details_flat
+    WHERE order_status NOT IN ('DELIVERED', 'CANCELLED')
+</select>
+
+<!-- Smart recommendations: orders at risk of SLA breach -->
+<select id="getSlaAtRiskOrders-count" resultType="int">
+    SELECT count(*) FROM hm_query.order_details_flat
+    WHERE sla_status IN ('AT_RISK', 'BREACHED')
+      AND order_status NOT IN ('DELIVERED', 'COMPLETED', 'CANCELLED', 'REFUNDED')
+</select>
+
+<select id="getSlaAtRiskOrders" resultType="com.homebase.ecom.dto.OrderDto">
+    SELECT
+        order_id           as "id",
+        order_number       as "orderNumber",
+        order_date         as "createdAt",
+        order_status       as "stateId",
+        total_amount       as "totalAmount",
+        customer_name      as "customerName",
+        seller_name        as "sellerName",
+        carrier            as "carrier",
+        sla_status         as "slaStatus",
+        sla_breach_hours   as "slaBreachHours",
+        shipping_state     as "shippingState"
+    FROM hm_query.order_details_flat
+    WHERE sla_status IN ('AT_RISK', 'BREACHED')
+      AND order_status NOT IN ('DELIVERED', 'COMPLETED', 'CANCELLED', 'REFUNDED')
+    ORDER BY sla_breach_hours DESC
+    ${pagination}
+</select>
+
+<!-- Smart recommendations: summary for the alert banner -->
+<select id="getSlaAlertSummary" resultType="map">
+    SELECT
+        COUNT(CASE WHEN sla_breach_hours >= 4 AND sla_breach_hours &lt; 8 THEN 1 END) as "pending4hrs",
+        COUNT(CASE WHEN sla_breach_hours >= 8 THEN 1 END) as "pending8hrs",
+        COUNT(CASE WHEN sla_status = 'AT_RISK' THEN 1 END) as "atRisk",
+        COUNT(CASE WHEN sla_status = 'BREACHED' THEN 1 END) as "breached",
+        COUNT(*) as "total"
+    FROM hm_query.order_details_flat
+    WHERE sla_status IN ('AT_RISK', 'BREACHED')
+      AND order_status NOT IN ('DELIVERED', 'COMPLETED', 'CANCELLED', 'REFUNDED')
+</select>
+
+<!-- Distinct values for filter dropdowns -->
+<select id="getDistinctPaymentMethods" resultType="map">
+    SELECT DISTINCT payment_method as "paymentMethod", COUNT(*) as "count"
+    FROM hm_query.order_details_flat
+    WHERE payment_method IS NOT NULL
+    GROUP BY payment_method ORDER BY "count" DESC
+</select>
+
+<select id="getDistinctRegions" resultType="map">
+    SELECT DISTINCT shipping_state as "state", COUNT(*) as "count"
+    FROM hm_query.order_details_flat
+    WHERE shipping_state IS NOT NULL
+    GROUP BY shipping_state ORDER BY "count" DESC
+</select>
+
+<select id="getDistinctCarriers" resultType="map">
+    SELECT DISTINCT carrier as "carrier", COUNT(*) as "count"
+    FROM hm_query.order_details_flat
+    WHERE carrier IS NOT NULL
+    GROUP BY carrier ORDER BY "count" DESC
+</select>
+
+<select id="getDistinctSellers" resultType="map">
+    SELECT DISTINCT seller_id as "sellerId", seller_name as "sellerName"
+    FROM hm_query.order_details_flat
+    WHERE seller_id IS NOT NULL
+    ORDER BY seller_name
+</select>
+
+<!-- ====== ORDER DETAIL (orders/detail.html) ====== -->
+<select id="getById" resultType="com.homebase.ecom.dto.OrderDto">
+    SELECT
+        order_id           as "id",
+        order_number       as "orderNumber",
+        order_date         as "createdAt",
+        order_status       as "stateId",
+        flow_id            as "flowId",
+        total_amount       as "totalAmount",
+        subtotal           as "subtotal",
+        tax_amount         as "taxAmount",
+        shipping_amount    as "shippingAmount",
+        discount_amount    as "discountAmount",
+        item_count         as "itemCount",
+        currency           as "currency",
+        coupon_codes       as "couponCodes",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        customer_email     as "customerEmail",
+        customer_phone     as "customerPhone",
+        customer_tier      as "customerTier",
+        seller_id          as "sellerId",
+        seller_name        as "sellerName",
+        seller_tier        as "sellerTier",
+        first_product_name as "productName",
+        payment_id         as "paymentId",
+        payment_method     as "paymentMethod",
+        payment_status     as "paymentStatus",
+        gateway_name       as "gatewayName",
+        gateway_fee        as "gatewayFee",
+        shipment_id        as "shipmentId",
+        carrier            as "carrier",
+        tracking_number    as "trackingNumber",
+        shipped_at         as "shippedAt",
+        estimated_delivery_date as "estimatedDelivery",
+        actual_delivery_date as "actualDelivery",
+        shipping_address_line as "shippingAddress",
+        shipping_city      as "shippingCity",
+        shipping_state     as "shippingState",
+        shipping_pincode   as "shippingPincode",
+        sla_status         as "slaStatus",
+        sla_breach_hours   as "slaBreachHours",
+        commission_amount  as "commissionAmount",
+        commission_rate    as "commissionRate",
+        seller_payout      as "sellerPayout"
+    FROM hm_query.order_details_flat
+    WHERE order_id = #{id}
+</select>
+
+<!-- ====== ORDER ITEMS (from OLAP — zero OLTP reads) ====== -->
+<select id="getOrderItems" resultType="map">
+    SELECT
+        id,
+        product_id      as "productId",
+        product_name    as "productName",
+        sku             as "sku",
+        quantity        as "quantity",
+        unit_price      as "unitPrice",
+        total_price     as "totalPrice",
+        tax_amount      as "taxAmount",
+        discount_amount as "discountAmount",
+        supplier_id     as "supplierId",
+        supplier_name   as "supplierName",
+        image_url       as "imageUrl",
+        hsn_code        as "hsnCode",
+        return_eligible as "returnEligible",
+        fulfillment_status as "fulfillmentStatus"
+    FROM hm_query.order_items_flat
+    WHERE order_id = #{orderId}
+</select>
+
+<!-- ====== ORDER ACTIVITY LOG (from OLAP) ====== -->
+<select id="getOrderActivity" resultType="map">
+    SELECT
+        id,
+        action          as "action",
+        description     as "description",
+        performed_by    as "performedBy",
+        created_time    as "createdTime"
+    FROM hm_query.order_activity_flat
+    WHERE order_id = #{orderId}
+    ORDER BY created_time DESC
+</select>
+
+<!-- ====== RELATED ORDERS (same customer, for detail page) ====== -->
+<select id="getRelatedOrders" resultType="com.homebase.ecom.dto.OrderDto">
+    SELECT
+        order_id        as "id",
+        order_number    as "orderNumber",
+        order_date      as "createdAt",
+        order_status    as "stateId",
+        total_amount    as "totalAmount",
+        first_product_name as "productName"
+    FROM hm_query.order_details_flat
+    WHERE customer_id = #{customerId}
+      AND order_id != #{excludeOrderId}
+    ORDER BY order_date DESC
+    LIMIT 5
+</select>
+
+<!-- ====== SHIPMENT TRACKING EVENTS (from OLAP) ====== -->
+<select id="getShipmentTrackingEvents" resultType="map">
+    SELECT
+        id,
+        event_type   as "eventType",
+        location     as "location",
+        description  as "description",
+        event_time   as "eventTime"
+    FROM hm_query.shipment_tracking_flat
+    WHERE order_id = #{orderId}
+    ORDER BY event_time ASC
+</select>
+
+<!-- ====== RISK ASSESSMENT (from OLAP) ====== -->
+<select id="getOrderRiskAssessment" resultType="map">
+    SELECT
+        id,
+        risk_score        as "riskScore",
+        risk_level        as "riskLevel",
+        payment_risk      as "paymentRisk",
+        address_verified  as "addressVerified",
+        assessment_status as "status",
+        assessed_at       as "assessedAt"
+    FROM hm_query.order_risk_flat
+    WHERE order_id = #{orderId}
+</select>
+
+<!-- ====== STOREFRONT: My Orders ====== -->
+<select id="getMyOrders-count" resultType="int">
+    SELECT count(*) FROM hm_query.order_details_flat
+    <where>
+        AND customer_id = #{customerId}
+        <if test="stateId != null">AND order_status = #{stateId}</if>
+        <if test="startDate != null">AND order_date &gt;= #{startDate}</if>
+        <if test="endDate != null">AND order_date &lt;= #{endDate}</if>
+    </where>
+</select>
+
+<select id="getMyOrders" resultType="com.homebase.ecom.dto.OrderDto">
+    SELECT
+        order_id        as "id",
+        order_number    as "orderNumber",
+        order_date      as "createdAt",
+        order_status    as "stateId",
+        total_amount    as "totalAmount",
+        currency        as "currency",
+        first_product_name as "productName",
+        total_items     as "totalItems",
+        carrier         as "carrier",
+        tracking_number as "trackingNumber"
+    FROM hm_query.order_details_flat
+    <where>
+        AND customer_id = #{customerId}
+        <if test="stateId != null">AND order_status = #{stateId}</if>
+        <if test="startDate != null">AND order_date &gt;= #{startDate}</if>
+        <if test="endDate != null">AND order_date &lt;= #{endDate}</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== SETTLEMENT: Delivered items for supplier payout ====== -->
+<select id="getDeliveredOrderItemsForSupplier" resultType="com.homebase.ecom.dto.DeliveredItemDto">
+    SELECT
+        order_id           as "orderId",
+        order_number       as "orderNumber",
+        first_product_name as "productName",
+        total_items        as "totalItems",
+        total_amount       as "itemSalesAmount",
+        order_date         as "orderDate",
+        commission_amount  as "commissionAmount",
+        seller_payout      as "sellerPayout"
+    FROM hm_query.order_details_flat
+    WHERE seller_id = #{supplierId}
+      AND order_status = 'DELIVERED'
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

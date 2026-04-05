@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Organisation">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: organisation_flat                                               -->
+<!-- Populated by OrganisationSyncService ETL.                              -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ================================================================ -->
+<!-- Organisation Listing                                              -->
+<!-- ================================================================ -->
+
+<select id="getAll-count" resultType="long">
+    SELECT COUNT(*) FROM hm_query.organisation_flat
+    <where>
+        <if test="id != null">AND id = #{id}</if>
+        <if test="companyName != null">AND LOWER(company_name) LIKE LOWER(CONCAT('%', #{companyName}, '%'))</if>
+        <if test="active != null">AND active = #{active}</if>
+        <if test="domain != null">AND domain = #{domain}</if>
+        <if test="q != null">AND (LOWER(company_name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR LOWER(legal_name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR domain LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.organisation.dto.OrganisationQueryDto">
+    SELECT
+        id,
+        company_name       AS "companyName",
+        legal_name         AS "legalName",
+        gst_number         AS "gstNumber",
+        pan_number         AS "panNumber",
+        domain,
+        active,
+        created_at         AS "createdAt"
+    FROM hm_query.organisation_flat
+    <where>
+        <if test="id != null">AND id = #{id}</if>
+        <if test="companyName != null">AND LOWER(company_name) LIKE LOWER(CONCAT('%', #{companyName}, '%'))</if>
+        <if test="active != null">AND active = #{active}</if>
+        <if test="domain != null">AND domain = #{domain}</if>
+        <if test="q != null">AND (LOWER(company_name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR LOWER(legal_name) LIKE LOWER(CONCAT('%', #{q}, '%')) OR domain LIKE CONCAT('%', #{q}, '%'))</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ================================================================ -->
+<!-- Organisation Profile (detail with branding, contact, etc.)        -->
+<!-- ================================================================ -->
+
+<select id="getProfile-count" resultType="long">
+    SELECT COUNT(*) FROM hm_query.organisation_flat
+    WHERE id = #{id}
+</select>
+
+<select id="getProfile" resultType="com.homebase.ecom.organisation.dto.OrganisationProfileDto">
+    SELECT
+        id,
+        company_name           AS "companyName",
+        legal_name             AS "legalName",
+        registration_number    AS "registrationNumber",
+        gst_number             AS "gstNumber",
+        pan_number             AS "panNumber",
+        domain,
+        active,
+        logo_url               AS "logoUrl",
+        favicon_url            AS "faviconUrl",
+        primary_color          AS "primaryColor",
+        copyright_text         AS "copyrightText",
+        founded_year           AS "foundedYear",
+        primary_email          AS "primaryEmail",
+        support_email          AS "supportEmail",
+        primary_phone          AS "primaryPhone",
+        support_phone          AS "supportPhone",
+        website_url            AS "websiteUrl",
+        address_line1          AS "addressLine1",
+        address_line2          AS "addressLine2",
+        city,
+        state,
+        pincode,
+        country,
+        currency,
+        timezone,
+        locale,
+        date_format            AS "dateFormat",
+        country_code           AS "countryCode",
+        facebook_url           AS "facebookUrl",
+        twitter_url            AS "twitterUrl",
+        instagram_url          AS "instagramUrl",
+        linkedin_url           AS "linkedinUrl",
+        youtube_url            AS "youtubeUrl"
+    FROM hm_query.organisation_flat
+    WHERE id = #{id}
+</select>
+
+</mapper>

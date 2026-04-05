@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ComplianceSync">
+
+<!-- ====== Platform Policies ====== -->
+<update id="truncatePlatformPoliciesFlat">TRUNCATE TABLE hm_query.platform_policies_flat</update>
+<insert id="syncPlatformPoliciesFlat">
+    INSERT INTO hm_query.platform_policies_flat (
+        id, tenant, last_synced_at, title, policy_category, version_label,
+        state_id, flow_id, effective_date, summary_text, created_time, last_modified_time
+    )
+    SELECT p.id, p.tenant, NOW(),
+           COALESCE(p.title, p.name),
+           COALESCE(p.policy_category, p.category),
+           COALESCE(p.version_label, p.version_number),
+           p.state_id, p.flow_id,
+           COALESCE(p.effective_date, p.effective_from),
+           p.summary_text, p.created_time, p.last_modified_time
+    FROM hm_compliance.platform_policies p
+</insert>
+
+<!-- ====== Agreements ====== -->
+<update id="truncateAgreementsFlat">TRUNCATE TABLE hm_query.agreements_flat</update>
+<insert id="syncAgreementsFlat">
+    INSERT INTO hm_query.agreements_flat (
+        id, tenant, last_synced_at, title, agreement_type, version_label,
+        state_id, flow_id, effective_date, expiry_date,
+        mandatory_acceptance, created_time, last_modified_time
+    )
+    SELECT a.id, a.tenant, NOW(),
+           COALESCE(a.title, a.name),
+           a.agreement_type,
+           COALESCE(a.version_label, a.version_number),
+           a.state_id, a.flow_id,
+           COALESCE(a.effective_date, a.effective_from),
+           COALESCE(a.expiry_date, a.effective_until),
+           COALESCE(a.mandatory_acceptance, a.requires_acceptance),
+           a.created_time, a.last_modified_time
+    FROM hm_compliance.agreements a
+</insert>
+
+<!-- ====== Acceptances ====== -->
+<update id="truncateAcceptancesFlat">TRUNCATE TABLE hm_query.acceptances_flat</update>
+<insert id="syncAcceptancesFlat">
+    INSERT INTO hm_query.acceptances_flat (
+        id, tenant, last_synced_at, agreement_title, user_id, user_type,
+        accepted_at, acceptance_method, is_current, agreement_id
+    )
+    SELECT aa.id, aa.tenant, NOW(),
+           COALESCE(a.title, a.name),
+           aa.user_id, aa.user_type,
+           aa.accepted_at, aa.acceptance_method, aa.is_current, aa.agreement_id
+    FROM hm_compliance.agreement_acceptances aa
+    JOIN hm_compliance.agreements a ON aa.agreement_id = a.id
+</insert>
+
+<!-- ====== Regulations ====== -->
+<update id="truncateRegulationsFlat">TRUNCATE TABLE hm_query.regulations_flat</update>
+<insert id="syncRegulationsFlat">
+    INSERT INTO hm_query.regulations_flat (
+        id, tenant, last_synced_at, act_name, section, requirement_summary,
+        jurisdiction, applicable_to, enforcement_date, category, is_active
+    )
+    SELECT r.id, r.tenant, NOW(),
+           r.act_name, r.section, r.requirement_summary,
+           r.jurisdiction, r.applicable_to, r.enforcement_date,
+           r.category, r.is_active
+    FROM hm_compliance.regulations r
+</insert>
+
+</mapper>

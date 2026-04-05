@@ -1,0 +1,3 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://sit-promo-db.homebase.internal:5432/homebase_promo

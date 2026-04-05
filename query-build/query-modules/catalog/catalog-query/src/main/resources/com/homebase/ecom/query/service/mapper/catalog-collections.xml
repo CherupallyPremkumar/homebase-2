@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CatalogCollections">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL READS FROM hm_query.* OLAP SCHEMA ONLY — NEVER FROM OLTP          -->
+<!-- Source: hm_query.collection_flat                                       -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+    <resultMap id="collectionResult" type="map">
+        <result property="id" column="ID"/>
+        <result property="name" column="name"/>
+        <result property="slug" column="slug"/>
+        <result property="description" column="description"/>
+        <result property="type" column="type"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="featured" column="featured"/>
+        <result property="active" column="active"/>
+        <result property="productCount" column="product_count"/>
+    </resultMap>
+
+    <!-- userCollections: Active collections by type -->
+    <select id='getUserCollections-count' resultType="int">
+        SELECT COUNT(*) FROM hm_query.collection_flat
+        <where>
+            <if test="featured != null">AND featured = #{featured}</if>
+            <if test="active != null">AND active = #{active}</if>
+            <if test="type != null">AND type = #{type}</if>
+            <if test="name != null">AND collection_name ILIKE CONCAT('%', #{name}, '%')</if>
+            <if test="q != null">AND (collection_name ILIKE CONCAT('%', #{q}, '%') OR slug ILIKE CONCAT('%', #{q}, '%') OR type ILIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+    </select>
+
+    <select id="getUserCollections" resultMap="collectionResult">
+        SELECT
+            cl.collection_id as ID,
+            cl.collection_name as name,
+            cl.slug as slug,
+            '' as description,
+            cl.type as type,
+            cl.image_url as image_url,
+            cl.featured as featured,
+            cl.active as active,
+            cl.product_count as product_count
+        FROM hm_query.collection_flat cl
+        <where>
+            <if test="featured != null">AND cl.featured = #{featured}</if>
+            <if test="active != null">AND cl.active = #{active}</if>
+            <if test="type != null">AND cl.type = #{type}</if>
+            <if test="name != null">AND cl.collection_name ILIKE CONCAT('%', #{name}, '%')</if>
+            <if test="q != null">AND (cl.collection_name ILIKE CONCAT('%', #{q}, '%') OR cl.slug ILIKE CONCAT('%', #{q}, '%') OR cl.type ILIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+</mapper>

@@ -1,0 +1,102 @@
+[
+	{
+		"id": "Wms.inventoryWithProduct",
+		"name": "inventory-with-product",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"warehouseId": { "name": "warehouse_id", "filterable": true, "columnType": "Text" },
+			"productId": { "name": "product_id", "filterable": true, "columnType": "Text" },
+			"sku": { "name": "sku", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stm_state", "filterable": true, "columnType": "Text" },
+			"lowStock": { "name": "lowStock", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Wms.fulfillmentWithOrderDetail",
+		"name": "fulfillment-with-order",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"warehouseId": { "name": "warehouse_id", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "fulfillment_state", "filterable": true, "columnType": "Text" },
+			"priority": { "name": "priority", "filterable": true, "columnType": "Text" },
+			"assignedPickerId": { "name": "assigned_picker", "filterable": true, "columnType": "Text" },
+			"carrier": { "name": "carrier", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Wms.pickListWithProduct",
+		"name": "pick-list-with-product",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"fulfillmentOrderId": { "name": "fulfillment_order_id", "filterable": true, "columnType": "Text" },
+			"warehouseId": { "name": "warehouse_id", "filterable": true, "columnType": "Text" },
+			"status": { "name": "pick_status", "filterable": true, "columnType": "Text" },
+			"assignedTo": { "name": "assigned_to", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Wms.warehouseUtilization",
+		"name": "warehouse-utilization",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"warehouseId": { "name": "id", "filterable": true, "columnType": "Text" },
+			"warehouseType": { "name": "warehouse_type", "filterable": true, "columnType": "Text" },
+			"isActive": { "name": "is_active", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Wms.inventoryByWarehouseLocation",
+		"name": "inventory-by-location",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"warehouseId": { "name": "warehouse_id", "filterable": true, "columnType": "Text" },
+			"zone": { "name": "zone", "filterable": true, "columnType": "Text" },
+			"locationType": { "name": "location_type", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Wms.wmsOverviewStats",
+		"name": "wms-overview-stats",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"warehouseId": { "name": "warehouse_id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Wms.fulfillmentLineItems",
+		"name": "fulfillment-line-items",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"fulfillmentOrderId": { "name": "fulfillment_order_id", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Wms.inboundShipments",
+		"name": "inbound-shipments",
+		"acls": ["ADMIN", "WAREHOUSE"],
+		"columnMetadata": {
+			"warehouseId": { "name": "fulfillment_center_id", "filterable": true, "columnType": "Text" },
+			"supplierId": { "name": "supplier_id", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

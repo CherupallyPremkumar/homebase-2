@@ -36,18 +36,17 @@
         <!-- Shared foundation -->
         <module>db-migrations</module>
 
-        <!-- 8 Domain groups -->
+        <!-- 8 Domain groups (industry-standard naming) -->
         <module>platform</module>
-        <module>identity-platform</module>
-        <module>product-catalog</module>
-        <module>commerce</module>
-        <module>order-platform</module>
-        <module>logistics</module>
+        <module>identity</module>
+        <module>catalog</module>
+        <module>buy-path</module>
+        <module>order-management</module>
+        <module>supply-chain</module>
         <module>engagement</module>
-        <module>analytics-platform</module>
+        <module>analytics</module>
 
-        <!-- Cross-module queries -->
-        <module>query-modules</module>
+        <!-- Query build (includes all query modules) -->
         <module>query-build</module>
 
         <!-- Deployable -->

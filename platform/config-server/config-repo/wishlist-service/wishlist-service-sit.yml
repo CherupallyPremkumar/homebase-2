@@ -1,0 +1,3 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://sit-wishlist-db.homebase.internal:5432/homebase_wishlist

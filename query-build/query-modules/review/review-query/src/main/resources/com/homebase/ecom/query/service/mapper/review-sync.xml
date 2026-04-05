@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ReviewSync">
+
+<update id="truncateFactReviewsFlat">
+    TRUNCATE TABLE hm_query.fact_reviews_flat
+</update>
+
+<!-- SYNC: fact_reviews_flat -->
+<!-- Source: product_reviews + dim_product (products) + dim_customer (user_profiles) -->
+<insert id="syncFactReviewsFlat">
+    INSERT INTO hm_query.fact_reviews_flat (
+        id, tenant, last_synced_at,
+        product_id, product_name, product_sku,
+        customer_id, customer_name, customer_email,
+        order_id, rating, title, body,
+        verified_purchase, helpful_count, report_count,
+        moderator_notes, state_id, flow_id, created_at
+    )
+    SELECT
+        r.id, r.tenant, NOW(),
+        r.product_id,
+        COALESCE(p.name, ''),
+        COALESCE(p.sku, ''),
+        r.customer_id,
+        COALESCE(u.first_name || ' ' || COALESCE(u.last_name, ''), ''),
+        COALESCE(u.email, ''),
+        r.order_id, r.rating, r.title, r.body,
+        r.verified_purchase, COALESCE(r.helpful_count, 0), COALESCE(r.report_count, 0),
+        r.moderator_notes, r.state_id, r.flow_id, r.created_time
+    FROM hm_review.product_reviews r
+    LEFT JOIN hm_product.products p ON r.product_id = p.id
+    LEFT JOIN hm_user.user_profiles u ON r.customer_id = u.id
+</insert>
+
+</mapper>

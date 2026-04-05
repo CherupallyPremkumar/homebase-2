@@ -188,4 +188,19 @@
         </addColumn>
     </changeSet>
 
+    <!-- Add missing instrument, retry, failure, chargeback, and session columns to payment -->
+    <changeSet id="payment-009-add-instrument-retry-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="payment"/>
+            <not><columnExists tableName="payment" columnName="masked_instrument"/></not>
+        </preConditions>
+        <addColumn tableName="payment">
+            <column name="masked_instrument" type="VARCHAR(50)"/>
+            <column name="max_retries" type="INT" defaultValueNumeric="3"/>
+            <column name="failure_code" type="VARCHAR(100)"/>
+            <column name="chargeback_won" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="session_expires_at" type="TIMESTAMP"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

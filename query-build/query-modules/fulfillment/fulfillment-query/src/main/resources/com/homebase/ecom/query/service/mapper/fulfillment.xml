@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Fulfillment">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read ONLY from hm_query OLAP schema.                      -->
+<!-- Source: fulfillment_flat (denormalized), fulfillment_line_items_flat   -->
+<!-- Populated by FulfillmentSyncService ETL.                              -->
+<!-- NEVER reference any OLTP schema here.                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN LISTING ====== -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.fulfillment_flat
+    <where>
+        <if test="orderId != null">AND order_id = #{orderId}</if>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="priority != null">AND priority = #{priority}</if>
+        <if test="fulfillmentType != null">AND fulfillment_type = #{fulfillmentType}</if>
+        <if test="carrier != null">AND carrier = #{carrier}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="trackingNumber != null">AND tracking_number = #{trackingNumber}</if>
+        <if test="q != null">AND (
+            order_id LIKE CONCAT('%', #{q}, '%')
+            OR tracking_number LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR carrier LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.fulfillment.dto.FulfillmentQueryDto">
+    SELECT
+        id,
+        order_id               as "orderId",
+        warehouse_id           as "warehouseId",
+        warehouse_name         as "warehouseName",
+        user_id                as "userId",
+        saga_id                as "sagaId",
+        priority,
+        fulfillment_type       as "fulfillmentType",
+        shipping_method        as "shippingMethod",
+        carrier,
+        tracking_number        as "trackingNumber",
+        total_items            as "totalItems",
+        state_id               as "stateId",
+        flow_id                as "flowId",
+        estimated_ship_date    as "estimatedShipDate",
+        estimated_delivery_date as "estimatedDeliveryDate",
+        created_time           as "createdTime"
+    FROM hm_query.fulfillment_flat
+    <where>
+        <if test="orderId != null">AND order_id = #{orderId}</if>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="priority != null">AND priority = #{priority}</if>
+        <if test="fulfillmentType != null">AND fulfillment_type = #{fulfillmentType}</if>
+        <if test="carrier != null">AND carrier = #{carrier}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="trackingNumber != null">AND tracking_number = #{trackingNumber}</if>
+        <if test="q != null">AND (
+            order_id LIKE CONCAT('%', #{q}, '%')
+            OR tracking_number LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR carrier LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== DETAIL ====== -->
+<select id="getById" resultType="com.homebase.ecom.fulfillment.dto.FulfillmentDetailDto">
+    SELECT
+        id,
+        order_id               as "orderId",
+        warehouse_id           as "warehouseId",
+        warehouse_name         as "warehouseName",
+        user_id                as "userId",
+        saga_id                as "sagaId",
+        priority,
+        fulfillment_type       as "fulfillmentType",
+        assigned_picker_id     as "assignedPickerId",
+        assigned_packer_id     as "assignedPackerId",
+        pick_started_at        as "pickStartedAt",
+        pick_completed_at      as "pickCompletedAt",
+        pack_started_at        as "packStartedAt",
+        pack_completed_at      as "packCompletedAt",
+        shipped_at             as "shippedAt",
+        delivered_at           as "deliveredAt",
+        cancelled_at           as "cancelledAt",
+        cancellation_reason    as "cancellationReason",
+        total_items            as "totalItems",
+        total_weight_grams     as "totalWeightGrams",
+        shipping_method        as "shippingMethod",
+        carrier,
+        tracking_number        as "trackingNumber",
+        estimated_ship_date    as "estimatedShipDate",
+        estimated_delivery_date as "estimatedDeliveryDate",
+        notes,
+        state_id               as "stateId",
+        flow_id                as "flowId",
+        created_time           as "createdTime",
+        last_modified_time     as "lastModifiedTime"
+    FROM hm_query.fulfillment_flat
+    WHERE id = #{id}
+</select>
+
+<!-- ====== STATE COUNTS ====== -->
+<select id="getStateCounts" resultType="com.homebase.ecom.fulfillment.dto.FulfillmentStateCountDto">
+    SELECT state_id as "stateId", count(*) as "count"
+    FROM hm_query.fulfillment_flat
+    GROUP BY state_id
+    ORDER BY count(*) DESC
+</select>
+
+<!-- ====== LINE ITEMS ====== -->
+<select id="getLineItems" resultType="com.homebase.ecom.fulfillment.dto.FulfillmentLineItemDto">
+    SELECT
+        line_item_id        as "lineItemId",
+        fulfillment_order_id as "fulfillmentOrderId",
+        order_item_id       as "orderItemId",
+        product_id          as "productId",
+        variant_id          as "variantId",
+        sku                 as "sku",
+        quantity_ordered    as "quantityOrdered",
+        quantity_allocated  as "quantityAllocated",
+        quantity_picked     as "quantityPicked",
+        quantity_packed     as "quantityPacked",
+        quantity_shipped    as "quantityShipped",
+        quantity_short      as "quantityShort",
+        bin_location        as "binLocation",
+        item_status         as "itemStatus",
+        product_name        as "productName",
+        brand               as "brand",
+        weight_grams        as "weightGrams",
+        unit_price          as "unitPrice",
+        total_price         as "totalPrice"
+    FROM hm_query.fulfillment_line_items_flat
+    WHERE fulfillment_order_id = #{fulfillmentId}
+    ORDER BY bin_location, sku
+</select>
+
+<!-- ====== BY WAREHOUSE ====== -->
+<select id="getByWarehouse-count" resultType="int">
+    SELECT count(*) FROM hm_query.fulfillment_flat
+    WHERE warehouse_id = #{warehouseId}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+</select>
+
+<select id="getByWarehouse" resultType="com.homebase.ecom.fulfillment.dto.FulfillmentQueryDto">
+    SELECT
+        id,
+        order_id               as "orderId",
+        warehouse_id           as "warehouseId",
+        warehouse_name         as "warehouseName",
+        priority,
+        fulfillment_type       as "fulfillmentType",
+        carrier,
+        tracking_number        as "trackingNumber",
+        total_items            as "totalItems",
+        state_id               as "stateId",
+        flow_id                as "flowId",
+        estimated_ship_date    as "estimatedShipDate",
+        created_time           as "createdTime"
+    FROM hm_query.fulfillment_flat
+    WHERE warehouse_id = #{warehouseId}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

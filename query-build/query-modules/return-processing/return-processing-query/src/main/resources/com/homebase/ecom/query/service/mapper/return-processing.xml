@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ReturnProcessing">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read ONLY from hm_query OLAP schema.                      -->
+<!-- Source: return_processing_flat (denormalized flat table)               -->
+<!-- Populated by ReturnProcessingSyncService ETL.                         -->
+<!-- NEVER reference any OLTP schema here.                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== ADMIN LISTING ====== -->
+<select id="getAll-count" resultType="int">
+    SELECT count(*) FROM hm_query.return_processing_flat
+    <where>
+        <if test="returnRequestId != null">AND return_request_id = #{returnRequestId}</if>
+        <if test="orderId != null">AND order_id = #{orderId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="returnType != null">AND return_type = #{returnType}</if>
+        <if test="inspectionResult != null">AND inspection_result = #{inspectionResult}</if>
+        <if test="q != null">AND (
+            return_request_id LIKE CONCAT('%', #{q}, '%')
+            OR customer_name LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR order_id LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+</select>
+
+<select id="getAll" resultType="com.homebase.ecom.returnprocessing.dto.ReturnProcessingQueryDto">
+    SELECT
+        id,
+        return_request_id  as "returnRequestId",
+        order_id           as "orderId",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        warehouse_id       as "warehouseId",
+        warehouse_name     as "warehouseName",
+        return_type        as "returnType",
+        refund_amount      as "refundAmount",
+        inspection_result  as "inspectionResult",
+        restocked_quantity as "restockedQuantity",
+        damaged_quantity   as "damagedQuantity",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_time       as "createdAt"
+    FROM hm_query.return_processing_flat
+    <where>
+        <if test="returnRequestId != null">AND return_request_id = #{returnRequestId}</if>
+        <if test="orderId != null">AND order_id = #{orderId}</if>
+        <if test="stateId != null">AND state_id = #{stateId}</if>
+        <if test="warehouseId != null">AND warehouse_id = #{warehouseId}</if>
+        <if test="returnType != null">AND return_type = #{returnType}</if>
+        <if test="inspectionResult != null">AND inspection_result = #{inspectionResult}</if>
+        <if test="q != null">AND (
+            return_request_id LIKE CONCAT('%', #{q}, '%')
+            OR customer_name LIKE CONCAT('%', #{q}, '%')
+            OR warehouse_name LIKE CONCAT('%', #{q}, '%')
+            OR order_id LIKE CONCAT('%', #{q}, '%')
+        )</if>
+    </where>
+    ${orderby} ${pagination}
+</select>
+
+<!-- ====== DETAIL ====== -->
+<select id="getById" resultType="com.homebase.ecom.returnprocessing.dto.ReturnProcessingQueryDto">
+    SELECT
+        id,
+        return_request_id  as "returnRequestId",
+        order_id           as "orderId",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        warehouse_id       as "warehouseId",
+        warehouse_name     as "warehouseName",
+        return_type        as "returnType",
+        refund_amount      as "refundAmount",
+        inspection_result  as "inspectionResult",
+        inspection_notes   as "inspectionNotes",
+        restocked_quantity as "restockedQuantity",
+        damaged_quantity   as "damagedQuantity",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_time       as "createdAt"
+    FROM hm_query.return_processing_flat
+    WHERE id = #{id}
+</select>
+
+<!-- ====== STATE COUNTS ====== -->
+<select id="getStateCounts" resultType="map">
+    SELECT state_id as "stateId", count(*) as "count"
+    FROM hm_query.return_processing_flat
+    GROUP BY state_id
+    ORDER BY count(*) DESC
+</select>
+
+<!-- ====== BY WAREHOUSE ====== -->
+<select id="getByWarehouse-count" resultType="int">
+    SELECT count(*) FROM hm_query.return_processing_flat
+    WHERE warehouse_id = #{warehouseId}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+</select>
+
+<select id="getByWarehouse" resultType="com.homebase.ecom.returnprocessing.dto.ReturnProcessingQueryDto">
+    SELECT
+        id,
+        return_request_id  as "returnRequestId",
+        order_id           as "orderId",
+        customer_id        as "customerId",
+        customer_name      as "customerName",
+        warehouse_id       as "warehouseId",
+        warehouse_name     as "warehouseName",
+        return_type        as "returnType",
+        refund_amount      as "refundAmount",
+        inspection_result  as "inspectionResult",
+        state_id           as "stateId",
+        flow_id            as "flowId",
+        created_time       as "createdAt"
+    FROM hm_query.return_processing_flat
+    WHERE warehouse_id = #{warehouseId}
+    <if test="stateId != null">AND state_id = #{stateId}</if>
+    ${orderby} ${pagination}
+</select>
+
+</mapper>

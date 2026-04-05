@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Schema creation -->
+    <changeSet id="seller-analytics-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_seller_analytics</sql>
+    </changeSet>
+
+    <!-- seller_metrics -->
+    <changeSet id="seller-analytics-001-create-seller-metrics" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="seller_metrics" schemaName="hm_seller_analytics"/></not>
+        </preConditions>
+        <createTable tableName="seller_metrics" schemaName="hm_seller_analytics">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="seller_id" type="VARCHAR(255)"/>
+            <column name="metric_date" type="DATE"/>
+            <column name="metric_period" type="VARCHAR(20)"/>
+            <column name="gmv" type="BIGINT"/>
+            <column name="revenue" type="BIGINT"/>
+            <column name="total_orders" type="INT"/>
+            <column name="total_units_sold" type="INT"/>
+            <column name="avg_order_value" type="BIGINT"/>
+            <column name="unique_customers" type="INT"/>
+            <column name="order_fulfillment_rate" type="INT"/>
+            <column name="return_rate" type="INT"/>
+            <column name="cancellation_rate" type="INT"/>
+            <column name="customer_response_time_hours" type="INT"/>
+            <column name="negative_feedback_count" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- seller_scorecards -->
+    <changeSet id="seller-analytics-002-create-seller-scorecards" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="seller_scorecards" schemaName="hm_seller_analytics"/></not>
+        </preConditions>
+        <createTable tableName="seller_scorecards" schemaName="hm_seller_analytics">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="seller_id" type="VARCHAR(255)"/>
+            <column name="scorecard_period_start" type="DATE"/>
+            <column name="scorecard_period_end" type="DATE"/>
+            <column name="order_defect_rate" type="INT"/>
+            <column name="on_time_delivery_rate" type="INT"/>
+            <column name="valid_tracking_rate" type="INT"/>
+            <column name="seller_response_rate" type="INT"/>
+            <column name="return_rate" type="INT"/>
+            <column name="cancellation_rate" type="INT"/>
+            <column name="account_health_score" type="INT"/>
+            <column name="health_status" type="VARCHAR(50)"/>
+            <column name="seller_rating_stars" type="INT"/>
+            <column name="seller_rating_count" type="INT"/>
+            <column name="product_quality_score" type="INT"/>
+            <column name="logistics_score" type="INT"/>
+            <column name="communication_score" type="INT"/>
+            <column name="compliance_score" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- seller_violations (STM entity: extends AbstractJpaStateEntity) -->
+    <changeSet id="seller-analytics-003-create-seller-violations" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="seller_violations" schemaName="hm_seller_analytics"/></not>
+        </preConditions>
+        <createTable tableName="seller_violations" schemaName="hm_seller_analytics">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="seller_id" type="VARCHAR(255)"/>
+            <column name="violation_type" type="VARCHAR(100)"/>
+            <column name="violation_date" type="TIMESTAMP"/>
+            <column name="severity_level" type="INT"/>
+            <column name="account_health_deduction" type="INT"/>
+            <column name="description" type="VARCHAR(1000)"/>
+            <column name="policy_reference_url" type="VARCHAR(500)"/>
+            <column name="corrective_action_taken" type="VARCHAR(1000)"/>
+            <column name="repeat_violation_flag" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="repeat_count_180d" type="INT" defaultValueNumeric="0"/>
+            <column name="suspension_risk" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <!-- seller_reports -->
+    <changeSet id="seller-analytics-004-create-seller-reports" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="seller_reports" schemaName="hm_seller_analytics"/></not>
+        </preConditions>
+        <createTable tableName="seller_reports" schemaName="hm_seller_analytics">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="seller_id" type="VARCHAR(255)"/>
+            <column name="report_type" type="VARCHAR(50)"/>
+            <column name="report_period_start" type="DATE"/>
+            <column name="report_period_end" type="DATE"/>
+            <column name="sales_revenue" type="BIGINT"/>
+            <column name="orders_placed" type="INT"/>
+            <column name="units_sold" type="INT"/>
+            <column name="page_views" type="INT"/>
+            <column name="buy_box_percentage" type="INT"/>
+            <column name="advertising_spend" type="BIGINT"/>
+            <column name="total_fees" type="BIGINT"/>
+            <column name="net_proceeds" type="BIGINT"/>
+            <column name="returns_count" type="INT"/>
+            <column name="refund_amount" type="BIGINT"/>
+            <column name="chargeback_count" type="INT"/>
+            <column name="report_url" type="VARCHAR(500)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- performance_thresholds -->
+    <changeSet id="seller-analytics-005-create-performance-thresholds" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="performance_thresholds" schemaName="hm_seller_analytics"/></not>
+        </preConditions>
+        <createTable tableName="performance_thresholds" schemaName="hm_seller_analytics">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="threshold_name" type="VARCHAR(100)"/>
+            <column name="metric_type" type="VARCHAR(50)"/>
+            <column name="metric_name" type="VARCHAR(100)"/>
+            <column name="green_threshold_min" type="INT"/>
+            <column name="yellow_threshold_min" type="INT"/>
+            <column name="red_threshold_max" type="INT"/>
+            <column name="critical_threshold" type="INT"/>
+            <column name="ideal_value" type="INT"/>
+            <column name="warning_message" type="VARCHAR(500)"/>
+            <column name="critical_message" type="VARCHAR(500)"/>
+            <column name="account_health_deduction" type="INT"/>
+            <column name="suspension_trigger" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="appeal_allowed" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- seller_benchmarks -->
+    <changeSet id="seller-analytics-006-create-seller-benchmarks" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="seller_benchmarks" schemaName="hm_seller_analytics"/></not>
+        </preConditions>
+        <createTable tableName="seller_benchmarks" schemaName="hm_seller_analytics">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="benchmark_period" type="DATE"/>
+            <column name="category" type="VARCHAR(100)"/>
+            <column name="seller_tier" type="VARCHAR(50)"/>
+            <column name="geographic_region" type="VARCHAR(100)"/>
+            <column name="metric_type" type="VARCHAR(50)"/>
+            <column name="percentile_50th" type="INT"/>
+            <column name="percentile_75th" type="INT"/>
+            <column name="percentile_90th" type="INT"/>
+            <column name="average_value" type="INT"/>
+            <column name="best_in_class_value" type="INT"/>
+            <column name="sample_size" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Indexes -->
+    <changeSet id="seller-analytics-007-create-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists indexName="idx_metrics_seller" schemaName="hm_seller_analytics"/></not>
+        </preConditions>
+        <createIndex indexName="idx_metrics_seller" tableName="seller_metrics" schemaName="hm_seller_analytics">
+            <column name="seller_id"/>
+        </createIndex>
+        <createIndex indexName="idx_metrics_date" tableName="seller_metrics" schemaName="hm_seller_analytics">
+            <column name="metric_date"/>
+        </createIndex>
+        <createIndex indexName="idx_scorecards_seller" tableName="seller_scorecards" schemaName="hm_seller_analytics">
+            <column name="seller_id"/>
+        </createIndex>
+        <createIndex indexName="idx_violations_seller" tableName="seller_violations" schemaName="hm_seller_analytics">
+            <column name="seller_id"/>
+        </createIndex>
+        <createIndex indexName="idx_violations_type" tableName="seller_violations" schemaName="hm_seller_analytics">
+            <column name="violation_type"/>
+        </createIndex>
+        <createIndex indexName="idx_reports_seller" tableName="seller_reports" schemaName="hm_seller_analytics">
+            <column name="seller_id"/>
+        </createIndex>
+        <createIndex indexName="idx_reports_type" tableName="seller_reports" schemaName="hm_seller_analytics">
+            <column name="report_type"/>
+        </createIndex>
+        <createIndex indexName="idx_benchmarks_period" tableName="seller_benchmarks" schemaName="hm_seller_analytics">
+            <column name="benchmark_period"/>
+        </createIndex>
+        <createIndex indexName="idx_benchmarks_category" tableName="seller_benchmarks" schemaName="hm_seller_analytics">
+            <column name="category"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

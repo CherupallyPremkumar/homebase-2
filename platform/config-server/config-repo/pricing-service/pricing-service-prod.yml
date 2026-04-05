@@ -1,0 +1,3 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://prod-pricing-db.homebase.internal:5432/homebase_pricing

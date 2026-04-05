@@ -1,0 +1,88 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="OmsSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query OLAP tables for OMS dashboard reads      -->
+<!-- Called by OmsSyncService (Spring scheduler)                            -->
+<!-- Strategy: TRUNCATE + INSERT (full refresh)                            -->
+<!--                                                                        -->
+<!-- Note: order_details_flat and order_items_flat are synced by            -->
+<!-- OrderSyncService. This service syncs OMS-specific supplementary       -->
+<!-- tables: fulfillment_flat, settlement_flat, order_activity_flat.        -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateFulfillmentFlat">TRUNCATE TABLE hm_query.fulfillment_flat</update>
+<update id="truncateSettlementFlat">TRUNCATE TABLE hm_query.settlement_flat</update>
+<update id="truncateOrderActivityFlat">TRUNCATE TABLE hm_query.order_activity_flat</update>
+
+<!-- ====== SYNC: fulfillment_flat ====== -->
+<insert id="syncFulfillmentFlat">
+    INSERT INTO hm_query.fulfillment_flat (
+        id, tenant, last_synced_at,
+        fulfillment_id, order_id, fulfillment_status,
+        priority, fulfillment_type, total_items,
+        assigned_picker_id, assigned_packer_id,
+        pick_started_at, pick_completed_at,
+        pack_started_at, pack_completed_at,
+        shipped_at, carrier, tracking_number,
+        estimated_ship_date, estimated_delivery_date,
+        warehouse_id, warehouse_name, warehouse_code, warehouse_city,
+        created_time
+    )
+    SELECT
+        fo.id, fo.tenant, NOW(),
+        fo.id, fo.order_id, fo.state_id,
+        fo.priority, fo.fulfillment_type, fo.total_items,
+        fo.assigned_picker_id, fo.assigned_packer_id,
+        fo.pick_started_at, fo.pick_completed_at,
+        fo.pack_started_at, fo.pack_completed_at,
+        fo.shipped_at, fo.carrier, fo.tracking_number,
+        fo.estimated_ship_date, fo.estimated_delivery_date,
+        fo.warehouse_id,
+        w.warehouse_name, w.warehouse_code, w.city,
+        fo.created_time
+    FROM hm_fulfillment.fulfillment_orders fo
+    LEFT JOIN hm_warehouse.warehouses w ON fo.warehouse_id = w.id
+</insert>
+
+<!-- ====== SYNC: settlement_flat ====== -->
+<insert id="syncSettlementFlat">
+    INSERT INTO hm_query.settlement_flat (
+        id, tenant, last_synced_at,
+        settlement_id, order_id, supplier_id, supplier_name,
+        settlement_status, order_amount,
+        commission_amount, commission_rate, platform_fee,
+        tds_amount, gst_on_commission, net_payout,
+        currency, period_start, period_end, created_time
+    )
+    SELECT
+        st.id, st.tenant, NOW(),
+        st.id, st.order_id, st.supplier_id,
+        s.business_name,
+        st.state_id, st.order_amount,
+        st.commission_amount, st.commission_rate, st.platform_fee,
+        st.tds_amount, st.gst_on_commission, st.net_amount,
+        st.currency,
+        st.settlement_period_start, st.settlement_period_end,
+        st.created_time
+    FROM hm_settlement.settlements st
+    LEFT JOIN hm_supplier.supplier s ON st.supplier_id = s.id
+</insert>
+
+<!-- ====== SYNC: order_activity_flat ====== -->
+<insert id="syncOrderActivityFlat">
+    INSERT INTO hm_query.order_activity_flat (
+        id, tenant, last_synced_at,
+        activity_id, order_id, activity_name,
+        activity_comment, activity_success,
+        created_by, created_time
+    )
+    SELECT
+        oa.id, oa.tenant, NOW(),
+        oa.id, oa.order_id, oa.activity_name,
+        oa.activity_comment, oa.activity_success,
+        oa.created_by, oa.created_time
+    FROM hm_order.order_activity oa
+</insert>
+
+</mapper>

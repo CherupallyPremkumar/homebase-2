@@ -6,14 +6,21 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
     <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="cconfig-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_cconfig</sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
     <!-- cconfig — Chenile configuration store                              -->
     <!-- ================================================================== -->
     <changeSet id="config-001-create-cconfig" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="cconfig"/></not>
+            <not><tableExists tableName="cconfig" schemaName="hm_cconfig"/></not>
         </preConditions>
 
-        <createTable tableName="cconfig">
+        <createTable tableName="cconfig" schemaName="hm_cconfig">
             <!-- BaseJpaEntity fields -->
             <column name="id" type="VARCHAR(255)">
                 <constraints primaryKey="true" nullable="false"/>
@@ -42,14 +49,15 @@
 
     <changeSet id="config-002-indexes" author="homebase">
         <createIndex tableName="cconfig" indexName="idx_cconfig_module_key_custom"
-                     unique="true">
+                     schemaName="hm_cconfig" unique="true">
             <column name="module_name"/>
             <column name="key_name"/>
             <column name="custom_attribute"/>
             <column name="tenant"/>
         </createIndex>
 
-        <createIndex tableName="cconfig" indexName="idx_cconfig_module_custom_attr">
+        <createIndex tableName="cconfig" indexName="idx_cconfig_module_custom_attr"
+                     schemaName="hm_cconfig">
             <column name="module_name"/>
             <column name="custom_attribute"/>
         </createIndex>
@@ -57,13 +65,14 @@
 
     <!-- Widen avalue to TEXT for form validation schemas (JSON payloads > 2000 chars) -->
     <changeSet id="config-003-widen-avalue" author="homebase">
-        <modifyDataType tableName="cconfig" columnName="avalue" newDataType="TEXT"/>
+        <modifyDataType tableName="cconfig" columnName="avalue" newDataType="TEXT"
+                        schemaName="hm_cconfig"/>
     </changeSet>
 
     <!-- Production seed data: 60 config keys across 14 modules -->
-    <include file="db/changelog/config/db.changelog-cconfig-seed-data.xml"/>
+    <include file="liquibase/config/db.changelog-cconfig-seed-data.xml"/>
 
     <!-- Production form validation schemas: 12 forms for frontend-driven validation -->
-    <include file="db/changelog/config/db.changelog-cconfig-form-schemas.xml"/>
+    <include file="liquibase/config/db.changelog-cconfig-form-schemas.xml"/>
 
 </databaseChangeLog>

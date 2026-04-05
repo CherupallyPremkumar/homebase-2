@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Create dedicated schema for recommendation bounded context -->
+    <changeSet id="recommendation-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_recommendation</sql>
+    </changeSet>
+
+    <changeSet id="recommendation-001-create-product-recommendations" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_recommendations" schemaName="hm_recommendation"/></not>
+        </preConditions>
+        <createTable tableName="product_recommendations" schemaName="hm_recommendation">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="user_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="recommendation_type" type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <column name="score" type="DECIMAL(5,3)"/>
+            <column name="reason" type="VARCHAR(500)"/>
+        </createTable>
+        <createIndex indexName="idx_recommendations_user" tableName="product_recommendations" schemaName="hm_recommendation">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_recommendations_type" tableName="product_recommendations" schemaName="hm_recommendation">
+            <column name="recommendation_type"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="recommendation-002-create-trending-products" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="trending_products" schemaName="hm_recommendation"/></not>
+        </preConditions>
+        <createTable tableName="trending_products" schemaName="hm_recommendation">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="category" type="VARCHAR(100)"/>
+            <column name="trending_score" type="DECIMAL(5,3)"/>
+            <column name="time_window" type="VARCHAR(20)"/>
+            <column name="view_count" type="INT"/>
+            <column name="order_count" type="INT"/>
+        </createTable>
+        <createIndex indexName="idx_trending_category" tableName="trending_products" schemaName="hm_recommendation">
+            <column name="category"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

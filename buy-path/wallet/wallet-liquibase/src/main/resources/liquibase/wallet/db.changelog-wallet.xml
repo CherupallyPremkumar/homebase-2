@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="wallet-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_wallet</sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- wallets (STM entity)                                               -->
+    <!-- ================================================================== -->
+    <changeSet id="wallet-001-create-wallets" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wallets" schemaName="hm_wallet"/></not></preConditions>
+        <createTable tableName="wallets" schemaName="hm_wallet">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="wallet_type" type="VARCHAR(50)"/>
+            <column name="currency_code" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="current_balance" type="BIGINT"/>
+            <column name="available_balance" type="BIGINT"/>
+            <column name="kyc_status" type="VARCHAR(50)"/>
+            <column name="daily_limit" type="BIGINT"/>
+            <column name="monthly_limit" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- wallet_transactions                                                -->
+    <!-- ================================================================== -->
+    <changeSet id="wallet-002-create-wallet-transactions" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wallet_transactions" schemaName="hm_wallet"/></not></preConditions>
+        <createTable tableName="wallet_transactions" schemaName="hm_wallet">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="wallet_id" type="VARCHAR(255)"/>
+            <column name="transaction_type" type="VARCHAR(50)"/>
+            <column name="amount" type="BIGINT"/>
+            <column name="currency_code" type="VARCHAR(3)"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="transaction_code" type="VARCHAR(100)"/>
+            <column name="related_transaction_id" type="VARCHAR(255)"/>
+            <column name="reference_id" type="VARCHAR(255)"/>
+            <column name="payment_gateway_id" type="VARCHAR(100)"/>
+            <column name="fee_amount" type="BIGINT"/>
+            <column name="description" type="VARCHAR(500)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- stored_payment_methods                                             -->
+    <!-- ================================================================== -->
+    <changeSet id="wallet-003-create-stored-payment-methods" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="stored_payment_methods" schemaName="hm_wallet"/></not></preConditions>
+        <createTable tableName="stored_payment_methods" schemaName="hm_wallet">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="wallet_id" type="VARCHAR(255)"/>
+            <column name="method_type" type="VARCHAR(50)"/>
+            <column name="payment_token" type="VARCHAR(255)"/>
+            <column name="display_name" type="VARCHAR(100)"/>
+            <column name="is_primary" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="verification_status" type="VARCHAR(50)"/>
+            <column name="last_used_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- payment_method_details                                             -->
+    <!-- ================================================================== -->
+    <changeSet id="wallet-004-create-payment-method-details" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="payment_method_details" schemaName="hm_wallet"/></not></preConditions>
+        <createTable tableName="payment_method_details" schemaName="hm_wallet">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="payment_method_id" type="VARCHAR(255)"/>
+            <column name="masked_card_number" type="VARCHAR(20)"/>
+            <column name="card_type" type="VARCHAR(50)"/>
+            <column name="expiry_month" type="INT"/>
+            <column name="expiry_year" type="INT"/>
+            <column name="card_brand" type="VARCHAR(50)"/>
+            <column name="card_issuer" type="VARCHAR(100)"/>
+            <column name="bank_name" type="VARCHAR(100)"/>
+            <column name="masked_account_number" type="VARCHAR(30)"/>
+            <column name="billing_address_id" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- installment_plans                                                  -->
+    <!-- ================================================================== -->
+    <changeSet id="wallet-005-create-installment-plans" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="installment_plans" schemaName="hm_wallet"/></not></preConditions>
+        <createTable tableName="installment_plans" schemaName="hm_wallet">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="plan_name" type="VARCHAR(100)"/>
+            <column name="installment_count" type="INT"/>
+            <column name="duration_days" type="INT"/>
+            <column name="payment_interval_days" type="INT"/>
+            <column name="interest_rate_percent" type="INT"/>
+            <column name="min_amount" type="BIGINT"/>
+            <column name="max_amount" type="BIGINT"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- pay_later_agreements (STM entity)                                  -->
+    <!-- ================================================================== -->
+    <changeSet id="wallet-006-create-pay-later-agreements" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="pay_later_agreements" schemaName="hm_wallet"/></not></preConditions>
+        <createTable tableName="pay_later_agreements" schemaName="hm_wallet">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="wallet_id" type="VARCHAR(255)"/>
+            <column name="transaction_id" type="VARCHAR(255)"/>
+            <column name="plan_id" type="VARCHAR(255)"/>
+            <column name="payment_method_id" type="VARCHAR(255)"/>
+            <column name="total_amount" type="BIGINT"/>
+            <column name="remaining_balance" type="BIGINT"/>
+            <column name="total_interest" type="BIGINT"/>
+            <column name="first_payment_date" type="TIMESTAMP"/>
+            <column name="next_due_date" type="TIMESTAMP"/>
+            <column name="final_due_date" type="TIMESTAMP"/>
+            <column name="completed_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- installment_schedules                                              -->
+    <!-- ================================================================== -->
+    <changeSet id="wallet-007-create-installment-schedules" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="installment_schedules" schemaName="hm_wallet"/></not></preConditions>
+        <createTable tableName="installment_schedules" schemaName="hm_wallet">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="agreement_id" type="VARCHAR(255)"/>
+            <column name="installment_number" type="INT"/>
+            <column name="due_date" type="TIMESTAMP"/>
+            <column name="scheduled_amount" type="BIGINT"/>
+            <column name="interest_amount" type="BIGINT"/>
+            <column name="paid_amount" type="BIGINT"/>
+            <column name="payment_status" type="VARCHAR(50)"/>
+            <column name="paid_date" type="TIMESTAMP"/>
+            <column name="payment_transaction_id" type="VARCHAR(255)"/>
+            <column name="late_fee_charged" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Indexes                                                            -->
+    <!-- ================================================================== -->
+    <changeSet id="wallet-008-add-wallets-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="wallets" schemaName="hm_wallet"/>
+            <not><indexExists indexName="idx_wallets_user" schemaName="hm_wallet"/></not>
+        </preConditions>
+        <createIndex indexName="idx_wallets_user" tableName="wallets" schemaName="hm_wallet">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_wallets_state" tableName="wallets" schemaName="hm_wallet">
+            <column name="state_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="wallet-009-add-wallet-transactions-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="wallet_transactions" schemaName="hm_wallet"/>
+            <not><indexExists indexName="idx_wallet_txn_wallet" schemaName="hm_wallet"/></not>
+        </preConditions>
+        <createIndex indexName="idx_wallet_txn_wallet" tableName="wallet_transactions" schemaName="hm_wallet">
+            <column name="wallet_id"/>
+        </createIndex>
+        <createIndex indexName="idx_wallet_txn_code" tableName="wallet_transactions" schemaName="hm_wallet" unique="true">
+            <column name="transaction_code"/>
+        </createIndex>
+        <createIndex indexName="idx_wallet_txn_status" tableName="wallet_transactions" schemaName="hm_wallet">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="wallet-010-add-stored-payment-methods-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="stored_payment_methods" schemaName="hm_wallet"/>
+            <not><indexExists indexName="idx_stored_pm_user" schemaName="hm_wallet"/></not>
+        </preConditions>
+        <createIndex indexName="idx_stored_pm_user" tableName="stored_payment_methods" schemaName="hm_wallet">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_stored_pm_wallet" tableName="stored_payment_methods" schemaName="hm_wallet">
+            <column name="wallet_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="wallet-011-add-payment-method-details-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="payment_method_details" schemaName="hm_wallet"/>
+            <not><indexExists indexName="idx_pm_details_method" schemaName="hm_wallet"/></not>
+        </preConditions>
+        <createIndex indexName="idx_pm_details_method" tableName="payment_method_details" schemaName="hm_wallet" unique="true">
+            <column name="payment_method_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="wallet-012-add-pay-later-agreements-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="pay_later_agreements" schemaName="hm_wallet"/>
+            <not><indexExists indexName="idx_pla_user" schemaName="hm_wallet"/></not>
+        </preConditions>
+        <createIndex indexName="idx_pla_user" tableName="pay_later_agreements" schemaName="hm_wallet">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_pla_wallet" tableName="pay_later_agreements" schemaName="hm_wallet">
+            <column name="wallet_id"/>
+        </createIndex>
+        <createIndex indexName="idx_pla_state" tableName="pay_later_agreements" schemaName="hm_wallet">
+            <column name="state_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="wallet-013-add-installment-schedules-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="installment_schedules" schemaName="hm_wallet"/>
+            <not><indexExists indexName="idx_installment_sched_agreement" schemaName="hm_wallet"/></not>
+        </preConditions>
+        <createIndex indexName="idx_installment_sched_agreement" tableName="installment_schedules" schemaName="hm_wallet">
+            <column name="agreement_id"/>
+        </createIndex>
+        <createIndex indexName="idx_installment_sched_due_date" tableName="installment_schedules" schemaName="hm_wallet">
+            <column name="due_date"/>
+        </createIndex>
+        <createIndex indexName="idx_installment_sched_status" tableName="installment_schedules" schemaName="hm_wallet">
+            <column name="payment_status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Foreign keys                                                       -->
+    <!-- ================================================================== -->
+    <changeSet id="wallet-014-add-foreign-keys" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><foreignKeyConstraintExists foreignKeyName="fk_wallet_txn_wallet" schemaName="hm_wallet"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="wallet_transactions" baseTableSchemaName="hm_wallet" baseColumnNames="wallet_id"
+            referencedTableName="wallets" referencedTableSchemaName="hm_wallet" referencedColumnNames="id"
+            constraintName="fk_wallet_txn_wallet"/>
+        <addForeignKeyConstraint baseTableName="stored_payment_methods" baseTableSchemaName="hm_wallet" baseColumnNames="wallet_id"
+            referencedTableName="wallets" referencedTableSchemaName="hm_wallet" referencedColumnNames="id"
+            constraintName="fk_stored_pm_wallet"/>
+        <addForeignKeyConstraint baseTableName="payment_method_details" baseTableSchemaName="hm_wallet" baseColumnNames="payment_method_id"
+            referencedTableName="stored_payment_methods" referencedTableSchemaName="hm_wallet" referencedColumnNames="id"
+            constraintName="fk_pm_details_method"/>
+        <addForeignKeyConstraint baseTableName="pay_later_agreements" baseTableSchemaName="hm_wallet" baseColumnNames="wallet_id"
+            referencedTableName="wallets" referencedTableSchemaName="hm_wallet" referencedColumnNames="id"
+            constraintName="fk_pla_wallet"/>
+        <addForeignKeyConstraint baseTableName="pay_later_agreements" baseTableSchemaName="hm_wallet" baseColumnNames="plan_id"
+            referencedTableName="installment_plans" referencedTableSchemaName="hm_wallet" referencedColumnNames="id"
+            constraintName="fk_pla_plan"/>
+        <addForeignKeyConstraint baseTableName="installment_schedules" baseTableSchemaName="hm_wallet" baseColumnNames="agreement_id"
+            referencedTableName="pay_later_agreements" referencedTableSchemaName="hm_wallet" referencedColumnNames="id"
+            constraintName="fk_installment_sched_agreement"/>
+    </changeSet>
+
+</databaseChangeLog>

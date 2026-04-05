@@ -1,0 +1,120 @@
+[
+	{
+		"id": "Oms.ordersWithCustomer",
+		"name": "orders-with-customer",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
+			"orderNumber": { "name": "orderNumber", "filterable": true, "columnType": "Text" },
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" },
+			"customerEmail": { "name": "customerEmail", "filterable": true, "columnType": "Text", "likeQuery": true },
+			"customerPhone": { "name": "customerPhone", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"paymentStatus": { "name": "paymentStatus", "filterable": true, "columnType": "Text" },
+			"shippingStatus": { "name": "shippingStatus", "filterable": true, "columnType": "Text" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Oms.orderFullDetail",
+		"name": "order-full-detail",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	},
+	{
+		"id": "Oms.orderItemsWithProduct",
+		"name": "order-items-with-product",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" },
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" },
+			"fulfillmentStatus": { "name": "fulfillmentStatus", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Oms.returnsWithOrderDetail",
+		"name": "returns-with-order",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" },
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"returnType": { "name": "returnType", "filterable": true, "columnType": "Text" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Oms.ticketsWithOrderContext",
+		"name": "tickets-with-order",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {
+			"customerId": { "name": "customerId", "filterable": true, "columnType": "Text" },
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"priority": { "name": "priority", "filterable": true, "columnType": "Text" },
+			"assignedAgentId": { "name": "assignedAgentId", "filterable": true, "columnType": "Text" },
+			"category": { "name": "category", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Oms.settlementWithBreakdown",
+		"name": "settlement-with-breakdown",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" },
+			"supplierId": { "name": "supplierId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"startDate": { "name": "startDate", "filterable": true, "columnType": "Date" },
+			"endDate": { "name": "endDate", "filterable": true, "columnType": "Date" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Oms.orderFulfillmentStatus",
+		"name": "order-fulfillment-status",
+		"acls": ["ADMIN", "AGENT", "WAREHOUSE"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" },
+			"stateId": { "name": "stateId", "filterable": true, "columnType": "Text" },
+			"warehouseId": { "name": "warehouseId", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Oms.omsOverviewStats",
+		"name": "oms-overview-stats",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "Oms.orderStatusTimeline",
+		"name": "order-status-timeline",
+		"acls": ["ADMIN", "AGENT"],
+		"columnMetadata": {
+			"orderId": { "name": "orderId", "filterable": true, "columnType": "Text" }
+		},
+		"paginated": false
+	}
+]

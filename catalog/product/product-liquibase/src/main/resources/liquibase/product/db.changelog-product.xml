@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Create dedicated schema for product bounded context -->
+    <changeSet id="product-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_product</sql>
+    </changeSet>
+
+    <!-- products (ProductEntity extends AbstractJpaStateEntity) -->
+    <changeSet id="product-001-create-products" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="products" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="products" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(1000)"/>
+            <column name="brand" type="VARCHAR(255)"/>
+            <column name="category_id" type="VARCHAR(255)"/>
+            <column name="short_description" type="VARCHAR(500)"/>
+            <column name="slug" type="VARCHAR(300)"/>
+            <column name="meta_title" type="VARCHAR(200)"/>
+            <column name="meta_description" type="VARCHAR(500)"/>
+        </createTable>
+        <addUniqueConstraint tableName="products" schemaName="hm_product" columnNames="slug" constraintName="uk_products_slug"/>
+    </changeSet>
+
+    <!-- product_tags (@ElementCollection) -->
+    <changeSet id="product-002-create-product-tags" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_tags" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="product_tags" schemaName="hm_product">
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="tag" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- categories (product domain) -->
+    <changeSet id="product-003-create-categories" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="categories" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="categories" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="slug" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="parent_id" type="VARCHAR(255)"/>
+            <column name="path" type="VARCHAR(255)"/>
+            <column name="depth" type="INT"/>
+            <column name="display_order" type="INT"/>
+            <column name="active" type="BOOLEAN"/>
+        </createTable>
+        <addUniqueConstraint tableName="categories" schemaName="hm_product" columnNames="slug" constraintName="uk_categories_slug"/>
+    </changeSet>
+
+    <!-- category_attributes (@ElementCollection) -->
+    <changeSet id="product-004-create-category-attributes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="category_attributes" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="category_attributes" schemaName="hm_product">
+            <column name="category_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="attribute_id" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- attribute_definitions -->
+    <changeSet id="product-005-create-attribute-definitions" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="attribute_definitions" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="attribute_definitions" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="code" type="VARCHAR(255)"><constraints nullable="false" unique="true" uniqueConstraintName="uk_attr_def_code"/></column>
+            <column name="label" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="input_type" type="VARCHAR(50)"/>
+            <column name="filterable" type="BOOLEAN"/>
+            <column name="searchable" type="BOOLEAN"/>
+            <column name="required" type="BOOLEAN"/>
+            <column name="display_order" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- attribute_options -->
+    <changeSet id="product-006-create-attribute-options" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="attribute_options" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="attribute_options" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="attribute_id" type="VARCHAR(255)"/>
+            <column name="value" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="label" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="color_swatch" type="VARCHAR(255)"/>
+            <column name="sort_order" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- product_variants -->
+    <changeSet id="product-007-create-product-variants" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_variants" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="product_variants" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"><constraints nullable="false"/></column>
+        </createTable>
+    </changeSet>
+
+    <!-- variant_attributes (@ElementCollection Map) -->
+    <changeSet id="product-008-create-variant-attributes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="variant_attributes" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="variant_attributes" schemaName="hm_product">
+            <column name="variant_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="attribute_key" type="VARCHAR(255)"/>
+            <column name="attribute_value" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- product_attribute_values -->
+    <changeSet id="product-009-create-product-attribute-values" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_attribute_values" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="product_attribute_values" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="attribute_id" type="VARCHAR(255)"/>
+            <column name="option_id" type="VARCHAR(255)"/>
+            <column name="raw_value" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- media_assets -->
+    <changeSet id="product-010-create-media-assets" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="media_assets" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="media_assets" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="original_url" type="VARCHAR(1000)"/>
+            <column name="cdn_url" type="VARCHAR(1000)"/>
+            <column name="thumbnail_url" type="VARCHAR(1000)"/>
+            <column name="medium_url" type="VARCHAR(1000)"/>
+            <column name="zoom_url" type="VARCHAR(1000)"/>
+            <column name="type" type="VARCHAR(50)"/>
+            <column name="mime_type" type="VARCHAR(255)"/>
+            <column name="file_size_bytes" type="BIGINT"/>
+            <column name="width" type="INT"/>
+            <column name="height" type="INT"/>
+            <column name="alt_text" type="VARCHAR(255)"/>
+            <column name="processing_status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- product_media -->
+    <changeSet id="product-011-create-product-media" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_media" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="product_media" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="asset_id" type="VARCHAR(255)"/>
+            <column name="is_primary" type="BOOLEAN"/>
+            <column name="sort_order" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- variant_media (composite PK) -->
+    <changeSet id="product-012-create-variant-media" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="variant_media" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="variant_media" schemaName="hm_product">
+            <column name="variant_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="asset_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="is_primary" type="BOOLEAN"/>
+            <column name="sort_order" type="INT"/>
+        </createTable>
+        <addPrimaryKey tableName="variant_media" schemaName="hm_product" columnNames="variant_id, asset_id" constraintName="pk_variant_media"/>
+    </changeSet>
+
+    <!-- product_activity_log (BaseJpaEntity) -->
+    <changeSet id="product-013-create-product-activity-log" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_activity_log" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="product_activity_log" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_comment" type="VARCHAR(2000)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Add Amazon-standard columns to products -->
+    <changeSet id="product-014-add-product-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="products" schemaName="hm_product"/>
+            <not><columnExists tableName="products" schemaName="hm_product" columnName="weight_grams"/></not>
+        </preConditions>
+        <addColumn tableName="products" schemaName="hm_product">
+            <column name="weight_grams" type="INT"/>
+            <column name="dimensions_json" type="TEXT"/>
+            <column name="hsn_code" type="VARCHAR(20)"/>
+            <column name="country_of_origin" type="VARCHAR(100)"/>
+            <column name="warranty_months" type="INT"/>
+            <column name="is_returnable" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="return_window_days" type="INT" defaultValueNumeric="7"/>
+            <column name="base_price" type="DECIMAL(12,2)"/>
+            <column name="tax_category" type="VARCHAR(100)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- brands (BaseJpaEntity) -->
+    <changeSet id="product-015-create-brands" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="brands" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="brands" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="name" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="slug" type="VARCHAR(255)"><constraints nullable="false" unique="true" uniqueConstraintName="uk_brands_slug"/></column>
+            <column name="logo_url" type="VARCHAR(500)"/>
+            <column name="description" type="VARCHAR(1000)"/>
+            <column name="website" type="VARCHAR(500)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <createIndex indexName="idx_brands_slug" tableName="brands" schemaName="hm_product">
+            <column name="slug"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- product_specifications (BaseJpaEntity) -->
+    <changeSet id="product-016-create-product-specifications" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_specifications" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="product_specifications" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="spec_group" type="VARCHAR(100)"/>
+            <column name="spec_key" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="spec_value" type="VARCHAR(500)"><constraints nullable="false"/></column>
+            <column name="display_order" type="INT"/>
+        </createTable>
+        <createIndex indexName="idx_product_specs_product" tableName="product_specifications" schemaName="hm_product">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- product_questions (BaseJpaEntity) -->
+    <changeSet id="product-017-create-product-questions" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_questions" schemaName="hm_product"/></not>
+        </preConditions>
+        <createTable tableName="product_questions" schemaName="hm_product">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="customer_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="question" type="VARCHAR(2000)"><constraints nullable="false"/></column>
+            <column name="answer" type="VARCHAR(2000)"/>
+            <column name="answered_by" type="VARCHAR(255)"/>
+            <column name="answered_at" type="TIMESTAMP"/>
+            <column name="helpful_count" type="INT" defaultValueNumeric="0"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <createIndex indexName="idx_product_questions_product" tableName="product_questions" schemaName="hm_product">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Add missing supplier_id column to products table -->
+    <changeSet id="product-022-add-supplier-id" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="products" schemaName="hm_product"/>
+            <not><columnExists tableName="products" schemaName="hm_product" columnName="supplier_id"/></not>
+        </preConditions>
+        <addColumn tableName="products" schemaName="hm_product">
+            <column name="supplier_id" type="VARCHAR(255)"/>
+        </addColumn>
+        <createIndex indexName="idx_products_supplier" tableName="products" schemaName="hm_product">
+            <column name="supplier_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Foreign keys for product_media, product_tags, product_variants -->
+    <changeSet id="product-018-add-foreign-keys" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="product_media" schemaName="hm_product"/>
+            <tableExists tableName="products" schemaName="hm_product"/>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_product_media_product" schemaName="hm_product"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="product_media" baseTableSchemaName="hm_product" baseColumnNames="product_id"
+                                 referencedTableName="products" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_product_media_product"/>
+    </changeSet>
+
+    <changeSet id="product-019-add-product-tags-fk" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="product_tags" schemaName="hm_product"/>
+            <tableExists tableName="products" schemaName="hm_product"/>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_product_tags_product" schemaName="hm_product"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="product_tags" baseTableSchemaName="hm_product" baseColumnNames="product_id"
+                                 referencedTableName="products" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_product_tags_product"/>
+    </changeSet>
+
+    <changeSet id="product-020-add-product-variants-fk" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="product_variants" schemaName="hm_product"/>
+            <tableExists tableName="products" schemaName="hm_product"/>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_product_variants_product" schemaName="hm_product"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="product_variants" baseTableSchemaName="hm_product" baseColumnNames="product_id"
+                                 referencedTableName="products" referencedTableSchemaName="hm_product" referencedColumnNames="id"
+                                 constraintName="fk_product_variants_product"/>
+    </changeSet>
+
+    <!-- Indexes on products table -->
+    <changeSet id="product-021-add-products-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="products" schemaName="hm_product"/>
+            <not><indexExists indexName="idx_products_category" schemaName="hm_product"/></not>
+        </preConditions>
+        <createIndex indexName="idx_products_category" tableName="products" schemaName="hm_product">
+            <column name="category_id"/>
+        </createIndex>
+        <createIndex indexName="idx_products_brand" tableName="products" schemaName="hm_product">
+            <column name="brand"/>
+        </createIndex>
+        <createIndex indexName="idx_products_state" tableName="products" schemaName="hm_product">
+            <column name="state_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

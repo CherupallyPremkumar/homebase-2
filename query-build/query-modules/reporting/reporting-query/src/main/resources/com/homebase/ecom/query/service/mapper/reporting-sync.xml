@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ReportingSync">
+
+<!-- ====== Report Definitions ====== -->
+<update id="truncateReportDefinitionsFlat">TRUNCATE TABLE hm_query.report_definitions_flat</update>
+<insert id="syncReportDefinitionsFlat">
+    INSERT INTO hm_query.report_definitions_flat (
+        id, tenant, last_synced_at, name, description, category,
+        available_formats, is_active, created_time
+    )
+    SELECT rd.id, rd.tenant, NOW(), rd.name, rd.description, rd.category,
+           rd.available_formats, rd.is_active, rd.created_time
+    FROM hm_reporting.report_definition rd
+</insert>
+
+<!-- ====== Scheduled Reports ====== -->
+<update id="truncateScheduledReportsFlat">TRUNCATE TABLE hm_query.scheduled_reports_flat</update>
+<insert id="syncScheduledReportsFlat">
+    INSERT INTO hm_query.scheduled_reports_flat (
+        id, tenant, last_synced_at, report_definition_id, report_name,
+        format, frequency, cron_expression,
+        next_run_at, last_run_at, recipient_email,
+        status, created_time
+    )
+    SELECT sr.id, sr.tenant, NOW(), sr.report_definition_id,
+           COALESCE(rd.name, ''),
+           sr.format, sr.frequency, sr.cron_expression,
+           sr.next_run_at, sr.last_run_at, sr.recipient_email,
+           sr.status, sr.created_time
+    FROM hm_reporting.scheduled_report sr
+    LEFT JOIN hm_reporting.report_definition rd ON sr.report_definition_id = rd.id
+</insert>
+
+<!-- ====== Report History ====== -->
+<update id="truncateReportHistoryFlat">TRUNCATE TABLE hm_query.report_history_flat</update>
+<insert id="syncReportHistoryFlat">
+    INSERT INTO hm_query.report_history_flat (
+        id, tenant, last_synced_at, report_definition_id, report_definition_name,
+        name, format, generated_by, file_url, file_size_bytes,
+        record_count, status, completed_at, error_message, created_time
+    )
+    SELECT rh.id, rh.tenant, NOW(), rh.report_definition_id,
+           COALESCE(rd.name, ''),
+           rh.name, rh.format, rh.generated_by, rh.file_url, rh.file_size_bytes,
+           rh.record_count, rh.status, rh.completed_at, rh.error_message, rh.created_time
+    FROM hm_reporting.report_history rh
+    LEFT JOIN hm_reporting.report_definition rd ON rh.report_definition_id = rd.id
+</insert>
+
+</mapper>

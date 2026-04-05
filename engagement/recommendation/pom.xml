@@ -7,7 +7,7 @@
     <description>Recommendation — collaborative filtering, frequently bought together, personalized</description>
     <modules>
         <module>recommendation-api</module><module>recommendation-domain</module><module>recommendation-infrastructure</module>
-        <module>recommendation-service</module><module>recommendation-liquibase</module><module>recommendation-query-api</module>
-        <module>recommendation-query</module><module>recommendation-app</module><module>recommendation-client</module>
+        <module>recommendation-service</module><module>recommendation-liquibase</module>
+<module>recommendation-app</module><module>recommendation-client</module>
     </modules>
 </project>

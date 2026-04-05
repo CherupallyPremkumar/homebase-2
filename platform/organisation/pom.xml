@@ -23,8 +23,6 @@
         <module>organisation-infrastructure</module>
         <module>organisation-service</module>
         <module>organisation-liquibase</module>
-        <module>organisation-query-api</module>
-        <module>organisation-query</module>
         <module>organisation-app</module>
         <module>organisation-client</module>
     </modules>

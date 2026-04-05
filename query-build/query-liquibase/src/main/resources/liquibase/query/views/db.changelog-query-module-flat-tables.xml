@@ -1,0 +1,925 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Module-specific flat tables for query modules                       -->
+    <!-- Base structure: id + tenant + last_synced_at                       -->
+    <!-- Columns will be added page-by-page as we map UI data requirements  -->
+    <!-- ================================================================== -->
+
+    <!-- ═══ BUY-PATH ═══ -->
+
+    <changeSet id="qmod-001-cart-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cart_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="cart_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="cart_id" type="VARCHAR(255)"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="session_id" type="VARCHAR(255)"/>
+            <column name="cart_status" type="VARCHAR(50)"/>
+            <column name="subtotal" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="total" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="discount_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="item_count" type="INT" defaultValueNumeric="0"/>
+            <column name="coupon_codes" type="VARCHAR(500)"/>
+            <column name="currency" type="VARCHAR(10)"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-002-cart-items-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cart_items_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="cart_items_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="cart_id" type="VARCHAR(255)"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT"/>
+            <column name="unit_price" type="BIGINT"/>
+            <column name="total_price" type="BIGINT"/>
+        </createTable>
+        <createIndex indexName="idx_qmod_cartitems_cart" tableName="cart_items_flat" schemaName="hm_query"><column name="cart_id"/></createIndex>
+    </changeSet>
+
+    <changeSet id="qmod-003-cart-activity-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cart_activity_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="cart_activity_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="cart_id" type="VARCHAR(255)"/>
+            <column name="action" type="VARCHAR(100)"/>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-004-cart-detail-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cart_detail_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="cart_detail_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="cart_id" type="VARCHAR(255)"/>
+            <column name="customer_name" type="VARCHAR(255)"/>
+            <column name="customer_email" type="VARCHAR(255)"/>
+            <column name="total" type="BIGINT"/>
+            <column name="item_count" type="INT"/>
+            <column name="cart_status" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-005-checkout-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="checkout_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="checkout_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="checkout_id" type="VARCHAR(255)"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="cart_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="checkout_status" type="VARCHAR(50)"/>
+            <column name="subtotal" type="BIGINT"/>
+            <column name="total" type="BIGINT"/>
+            <column name="tax_amount" type="BIGINT"/>
+            <column name="shipping_cost" type="BIGINT"/>
+            <column name="payment_method" type="VARCHAR(50)"/>
+            <column name="last_completed_step" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-006-coupon-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="coupon_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="coupon_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="coupon_id" type="VARCHAR(255)"/>
+            <column name="code" type="VARCHAR(100)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="coupon_status" type="VARCHAR(50)"/>
+            <column name="discount_type" type="VARCHAR(50)"/>
+            <column name="discount_value" type="BIGINT"/>
+            <column name="min_order_value" type="BIGINT"/>
+            <column name="max_discount_amount" type="BIGINT"/>
+            <column name="usage_limit" type="INT"/>
+            <column name="usage_count" type="INT"/>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="end_date" type="TIMESTAMP"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-007-campaign-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="campaign_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="campaign_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="campaign_id" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="campaign_status" type="VARCHAR(50)"/>
+            <column name="campaign_type" type="VARCHAR(50)"/>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="end_date" type="TIMESTAMP"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-008-wishlist-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wishlist_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="wishlist_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="product_key" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="base_price" type="BIGINT"/>
+            <column name="stock_status" type="VARCHAR(30)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══ IDENTITY ═══ -->
+
+    <changeSet id="qmod-009-onboarding-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="onboarding_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="onboarding_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="onboarding_id" type="VARCHAR(255)"/>
+            <column name="business_name" type="VARCHAR(255)"/>
+            <column name="onboarding_status" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-010-address-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="address_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="address_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="label" type="VARCHAR(50)"/>
+            <column name="line1" type="VARCHAR(255)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="state" type="VARCHAR(100)"/>
+            <column name="pincode" type="VARCHAR(10)"/>
+            <column name="is_default" type="BOOLEAN"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══ ORDER MANAGEMENT ═══ -->
+
+    <changeSet id="qmod-011-return-processing-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="return_processing_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="return_processing_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="return_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="processing_status" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-012-return-detail-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="return_detail_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="return_detail_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="return_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="return_status" type="VARCHAR(50)"/>
+            <column name="refund_amount" type="BIGINT"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-013-settlement-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="settlement_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="settlement_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="settlement_id" type="VARCHAR(255)"/>
+            <column name="seller_key" type="VARCHAR(255)"/>
+            <column name="settlement_status" type="VARCHAR(50)"/>
+            <column name="net_amount" type="BIGINT"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-014-invoice-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="invoice_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="invoice_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="invoice_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="invoice_status" type="VARCHAR(50)"/>
+            <column name="total_amount" type="BIGINT"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-015-disputes-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="disputes_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="disputes_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="dispute_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="dispute_status" type="VARCHAR(50)"/>
+            <column name="dispute_type" type="VARCHAR(50)"/>
+            <column name="amount" type="BIGINT"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-016-payment-refunds-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="payment_refunds_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="payment_refunds_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="payment_id" type="VARCHAR(255)"/>
+            <column name="refund_amount" type="BIGINT"/>
+            <column name="refund_status" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-017-payment-webhook-log-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="payment_webhook_log_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="payment_webhook_log_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="payment_id" type="VARCHAR(255)"/>
+            <column name="event_type" type="VARCHAR(100)"/>
+            <column name="payload" type="TEXT"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-018-order-tax-lines-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="order_tax_lines_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="order_tax_lines_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="tax_type" type="VARCHAR(50)"/>
+            <column name="tax_rate" type="INT"/>
+            <column name="tax_amount" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══ SUPPLY CHAIN ═══ -->
+
+    <changeSet id="qmod-019-fulfillment-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="fulfillment_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="fulfillment_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="fulfillment_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="warehouse_key" type="VARCHAR(255)"/>
+            <column name="fulfillment_status" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-020-fulfillment-line-items-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="fulfillment_line_items_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="fulfillment_line_items_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="fulfillment_id" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-021-warehouse-locations-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="warehouse_locations_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="warehouse_locations_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="warehouse_key" type="VARCHAR(255)"/>
+            <column name="location_code" type="VARCHAR(30)"/>
+            <column name="zone" type="VARCHAR(10)"/>
+            <column name="capacity_units" type="INT"/>
+            <column name="current_units" type="INT"/>
+            <column name="is_active" type="BOOLEAN"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-022-warehouse-inventory-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="warehouse_inventory_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="warehouse_inventory_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="warehouse_key" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="quantity_on_hand" type="INT"/>
+            <column name="quantity_available" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══ ENGAGEMENT ═══ -->
+
+    <changeSet id="qmod-023-review-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="review_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="review_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="review_id" type="VARCHAR(255)"/>
+            <column name="product_key" type="VARCHAR(255)"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="rating" type="INT"/>
+            <column name="review_status" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-024-notification-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="notification_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="notification_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="notification_id" type="VARCHAR(255)"/>
+            <column name="notification_type" type="VARCHAR(50)"/>
+            <column name="notification_status" type="VARCHAR(50)"/>
+            <column name="recipient_id" type="VARCHAR(255)"/>
+            <column name="channel" type="VARCHAR(20)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-025-support-ticket-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="support_ticket_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="support_ticket_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="ticket_id" type="VARCHAR(255)"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="ticket_status" type="VARCHAR(50)"/>
+            <column name="priority" type="VARCHAR(20)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-026-recommendations-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="recommendations_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="recommendations_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="product_key" type="VARCHAR(255)"/>
+            <column name="recommendation_type" type="VARCHAR(50)"/>
+            <column name="score" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-027-trending-products-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="trending_products_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="trending_products_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="product_key" type="VARCHAR(255)"/>
+            <column name="trend_score" type="INT"/>
+            <column name="rank" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══ PLATFORM ═══ -->
+
+    <changeSet id="qmod-028-cms-pages-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cms_pages_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="cms_pages_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="page_id" type="VARCHAR(255)"/>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="slug" type="VARCHAR(255)"/>
+            <column name="page_type" type="VARCHAR(50)"/>
+            <column name="page_status" type="VARCHAR(50)"/>
+            <column name="published" type="BOOLEAN"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-029-cms-banners-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cms_banners_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="cms_banners_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="banner_id" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="active" type="BOOLEAN"/>
+            <column name="position" type="VARCHAR(50)"/>
+            <column name="click_count" type="INT" defaultValueNumeric="0"/>
+            <column name="impressions" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-030-cms-blocks-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cms_blocks_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="cms_blocks_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="block_id" type="VARCHAR(255)"/>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="block_type" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-031-cms-media-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cms_media_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="cms_media_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="media_id" type="VARCHAR(255)"/>
+            <column name="file_name" type="VARCHAR(255)"/>
+            <column name="mime_type" type="VARCHAR(100)"/>
+            <column name="file_size" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-032-cms-page-versions-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cms_page_versions_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="cms_page_versions_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="page_id" type="VARCHAR(255)"/>
+            <column name="version_number" type="INT"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-033-cms-announcements-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cms_announcements_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="cms_announcements_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="active" type="BOOLEAN"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-034-cms-schedules-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cms_schedules_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="cms_schedules_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="page_id" type="VARCHAR(255)"/>
+            <column name="publish_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-035-cms-seo-meta-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cms_seo_meta_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="cms_seo_meta_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="page_id" type="VARCHAR(255)"/>
+            <column name="meta_title" type="VARCHAR(255)"/>
+            <column name="meta_description" type="VARCHAR(500)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-036-platform-policies-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="platform_policies_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="platform_policies_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="policy_id" type="VARCHAR(255)"/>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="policy_status" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-037-agreements-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="agreements_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="agreements_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="agreement_id" type="VARCHAR(255)"/>
+            <column name="agreement_type" type="VARCHAR(50)"/>
+            <column name="agreement_status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-038-acceptances-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="acceptances_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="acceptances_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="policy_id" type="VARCHAR(255)"/>
+            <column name="accepted_by" type="VARCHAR(255)"/>
+            <column name="accepted_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-039-regulations-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="regulations_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="regulations_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="regulation_name" type="VARCHAR(255)"/>
+            <column name="regulation_status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-040-rules-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="rules_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="rules_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="policy_id" type="VARCHAR(255)"/>
+            <column name="rule_name" type="VARCHAR(255)"/>
+            <column name="rule_status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-041-rule-sets-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="rule_sets_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="rule_sets_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="set_name" type="VARCHAR(255)"/>
+            <column name="rule_count" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-042-decisions-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="decisions_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="decisions_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="decision_id" type="VARCHAR(255)"/>
+            <column name="policy_id" type="VARCHAR(255)"/>
+            <column name="result" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-043-fact-definitions-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="fact_definitions_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="fact_definitions_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="fact_name" type="VARCHAR(255)"/>
+            <column name="data_type" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══ ANALYTICS ═══ -->
+
+    <changeSet id="qmod-044-clickstream-page-views" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="page_views_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="page_views_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="session_id" type="VARCHAR(255)"/>
+            <column name="page_url" type="VARCHAR(500)"/>
+            <column name="device_type" type="VARCHAR(20)"/>
+            <column name="view_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-045-clickstream-click-events" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="click_events_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="click_events_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="session_id" type="VARCHAR(255)"/>
+            <column name="element_id" type="VARCHAR(100)"/>
+            <column name="click_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-046-reconciliation-batches-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="reconciliation_batches_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="reconciliation_batches_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="batch_id" type="VARCHAR(255)"/>
+            <column name="batch_status" type="VARCHAR(50)"/>
+            <column name="match_rate" type="INT"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-047-report-definitions-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="report_definitions_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="report_definitions_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="report_name" type="VARCHAR(255)"/>
+            <column name="report_type" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-048-report-history-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="report_history_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="report_history_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="report_id" type="VARCHAR(255)"/>
+            <column name="run_status" type="VARCHAR(50)"/>
+            <column name="run_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-049-scheduled-reports-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="scheduled_reports_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="scheduled_reports_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="report_id" type="VARCHAR(255)"/>
+            <column name="frequency" type="VARCHAR(50)"/>
+            <column name="next_run" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-050-product-performance-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="product_performance_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="product_performance_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="product_key" type="VARCHAR(255)"/>
+            <column name="units_sold" type="INT"/>
+            <column name="revenue" type="BIGINT"/>
+            <column name="views" type="INT"/>
+            <column name="summary_date" type="DATE"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══ MISC ═══ -->
+
+    <changeSet id="qmod-051-tax-rates-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="tax_rates_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="tax_rates_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="hsn_code" type="VARCHAR(8)"/>
+            <column name="gst_rate" type="INT"/>
+            <column name="cess_rate" type="INT"/>
+            <column name="description" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-052-tax-category-mappings-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="tax_category_mappings_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="tax_category_mappings_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="category_name" type="VARCHAR(100)"/>
+            <column name="hsn_code" type="VARCHAR(8)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-053-tax-regions-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="tax_regions_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="tax_regions_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="state_code" type="VARCHAR(5)"/>
+            <column name="state_name" type="VARCHAR(100)"/>
+            <column name="is_ut" type="BOOLEAN"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-054-tax-exemptions-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="tax_exemptions_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="tax_exemptions_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="entity_id" type="VARCHAR(255)"/>
+            <column name="exemption_type" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-055-cconfig-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="cconfig_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="cconfig_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="key_name" type="VARCHAR(255)"/>
+            <column name="module_name" type="VARCHAR(100)"/>
+            <column name="avalue" type="TEXT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-056-organisation-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="organisation_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="organisation_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="org_name" type="VARCHAR(255)"/>
+            <column name="org_type" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-057-media-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="media_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="media_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="file_name" type="VARCHAR(255)"/>
+            <column name="mime_type" type="VARCHAR(100)"/>
+            <column name="url" type="VARCHAR(500)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-058-offer-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="offer_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="offer_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="offer_id" type="VARCHAR(255)"/>
+            <column name="product_key" type="VARCHAR(255)"/>
+            <column name="seller_key" type="VARCHAR(255)"/>
+            <column name="offer_status" type="VARCHAR(50)"/>
+            <column name="price" type="BIGINT"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-059-collection-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="collection_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="collection_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="collection_name" type="VARCHAR(255)"/>
+            <column name="collection_type" type="VARCHAR(50)"/>
+            <column name="product_count" type="INT"/>
+            <column name="active" type="BOOLEAN"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-060-search-popularity-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="search_popularity_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="search_popularity_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="query_text" type="VARCHAR(255)"/>
+            <column name="search_count" type="INT"/>
+            <column name="result_count" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-061-audit-log-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="audit_log_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="audit_log_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="entity_type" type="VARCHAR(100)"/>
+            <column name="entity_id" type="VARCHAR(255)"/>
+            <column name="action" type="VARCHAR(100)"/>
+            <column name="changed_by" type="VARCHAR(100)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-062-product-tag-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="product_tag_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="product_tag_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="product_key" type="VARCHAR(255)"/>
+            <column name="tag" type="VARCHAR(100)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-063-dim-banner" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="dim_banner" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="dim_banner" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="banner_name" type="VARCHAR(255)"/>
+            <column name="position" type="VARCHAR(50)"/>
+            <column name="active" type="BOOLEAN"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-064-fact-reviews-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="fact_reviews_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="fact_reviews_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="review_id" type="VARCHAR(255)"/>
+            <column name="product_key" type="VARCHAR(255)"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="rating" type="INT"/>
+            <column name="review_status" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-065-fact-support-tickets-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="fact_support_tickets_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="fact_support_tickets_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="ticket_id" type="VARCHAR(255)"/>
+            <column name="customer_key" type="VARCHAR(255)"/>
+            <column name="ticket_status" type="VARCHAR(50)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ═══ WMS (Warehouse Management) ═══ -->
+
+    <changeSet id="qmod-066-wms-inventory-with-product-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wms_inventory_with_product_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="wms_inventory_with_product_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="warehouse_key" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-067-wms-fulfillment-with-order-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wms_fulfillment_with_order_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="wms_fulfillment_with_order_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="fulfillment_id" type="VARCHAR(255)"/>
+            <column name="order_number" type="VARCHAR(50)"/>
+            <column name="fulfillment_status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-068-wms-fulfillment-line-items-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wms_fulfillment_line_items_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="wms_fulfillment_line_items_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="fulfillment_id" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="quantity_picked" type="INT"/>
+            <column name="quantity_packed" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-069-wms-pick-list-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wms_pick_list_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="wms_pick_list_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="pick_list_id" type="VARCHAR(255)"/>
+            <column name="warehouse_key" type="VARCHAR(255)"/>
+            <column name="pick_status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-070-wms-overview-stats-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wms_overview_stats_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="wms_overview_stats_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="stat_name" type="VARCHAR(100)"/>
+            <column name="stat_value" type="BIGINT"/>
+            <column name="snapshot_date" type="DATE"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-071-wms-inventory-by-location-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wms_inventory_by_location_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="wms_inventory_by_location_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="warehouse_key" type="VARCHAR(255)"/>
+            <column name="zone" type="VARCHAR(10)"/>
+            <column name="location_code" type="VARCHAR(30)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="qmod-072-wms-inbound-shipments-flat" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="wms_inbound_shipments_flat" schemaName="hm_query"/></not></preConditions>
+        <createTable tableName="wms_inbound_shipments_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/><column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="shipment_id" type="VARCHAR(255)"/>
+            <column name="warehouse_key" type="VARCHAR(255)"/>
+            <column name="shipment_status" type="VARCHAR(50)"/>
+            <column name="expected_date" type="DATE"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

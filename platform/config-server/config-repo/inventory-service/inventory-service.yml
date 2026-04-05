@@ -1,0 +1,5 @@
+server:
+  port: 8085
+inventory:
+  low-stock-threshold: 5
+  reservation-timeout-minutes: 15

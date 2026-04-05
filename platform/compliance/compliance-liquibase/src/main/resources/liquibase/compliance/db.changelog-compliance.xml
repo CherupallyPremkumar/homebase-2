@@ -6,6 +6,13 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
     <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_compliance</sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
     <!-- COMPLIANCE MODULE — Legal agreements, regulations, platform policies -->
     <!-- 7 tables, 2 STM entities (agreements, platform_policies)            -->
     <!-- ================================================================== -->
@@ -15,10 +22,10 @@
     <!-- ================================================================== -->
     <changeSet id="compliance-001-regulations" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="regulations"/></not>
+            <not><tableExists tableName="regulations" schemaName="hm_compliance"/></not>
         </preConditions>
 
-        <createTable tableName="regulations">
+        <createTable tableName="regulations" schemaName="hm_compliance">
             <!-- BaseJpaEntity fields -->
             <column name="id" type="VARCHAR(255)">
                 <constraints primaryKey="true" nullable="false"/>
@@ -52,10 +59,10 @@
             <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
         </createTable>
 
-        <createIndex tableName="regulations" indexName="idx_regulations_category">
+        <createIndex tableName="regulations" indexName="idx_regulations_category" schemaName="hm_compliance">
             <column name="category"/>
         </createIndex>
-        <createIndex tableName="regulations" indexName="idx_regulations_jurisdiction">
+        <createIndex tableName="regulations" indexName="idx_regulations_jurisdiction" schemaName="hm_compliance">
             <column name="jurisdiction"/>
         </createIndex>
     </changeSet>
@@ -65,10 +72,10 @@
     <!-- ================================================================== -->
     <changeSet id="compliance-002-agreements" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="agreements"/></not>
+            <not><tableExists tableName="agreements" schemaName="hm_compliance"/></not>
         </preConditions>
 
-        <createTable tableName="agreements">
+        <createTable tableName="agreements" schemaName="hm_compliance">
             <!-- BaseJpaEntity fields -->
             <column name="id" type="VARCHAR(255)">
                 <constraints primaryKey="true" nullable="false"/>
@@ -114,16 +121,16 @@
             <column name="legal_review_notes" type="TEXT"/>
         </createTable>
 
-        <createIndex tableName="agreements" indexName="idx_agreements_type">
+        <createIndex tableName="agreements" indexName="idx_agreements_type" schemaName="hm_compliance">
             <column name="agreement_type"/>
         </createIndex>
-        <createIndex tableName="agreements" indexName="idx_agreements_state">
+        <createIndex tableName="agreements" indexName="idx_agreements_state" schemaName="hm_compliance">
             <column name="state_id"/>
         </createIndex>
-        <createIndex tableName="agreements" indexName="idx_agreements_applicable">
+        <createIndex tableName="agreements" indexName="idx_agreements_applicable" schemaName="hm_compliance">
             <column name="applicable_to"/>
         </createIndex>
-        <createIndex tableName="agreements" indexName="idx_agreements_type_state" unique="false">
+        <createIndex tableName="agreements" indexName="idx_agreements_type_state" unique="false" schemaName="hm_compliance">
             <column name="agreement_type"/>
             <column name="state_id"/>
             <column name="tenant"/>
@@ -135,10 +142,10 @@
     <!-- ================================================================== -->
     <changeSet id="compliance-003-agreement-activity" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="agreement_activity"/></not>
+            <not><tableExists tableName="agreement_activity" schemaName="hm_compliance"/></not>
         </preConditions>
 
-        <createTable tableName="agreement_activity">
+        <createTable tableName="agreement_activity" schemaName="hm_compliance">
             <column name="id" type="VARCHAR(255)">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -155,10 +162,10 @@
     <!-- ================================================================== -->
     <changeSet id="compliance-004-agreement-acceptances" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="agreement_acceptances"/></not>
+            <not><tableExists tableName="agreement_acceptances" schemaName="hm_compliance"/></not>
         </preConditions>
 
-        <createTable tableName="agreement_acceptances">
+        <createTable tableName="agreement_acceptances" schemaName="hm_compliance">
             <!-- BaseJpaEntity fields -->
             <column name="id" type="VARCHAR(255)">
                 <constraints primaryKey="true" nullable="false"/>
@@ -189,22 +196,24 @@
             <column name="is_current" type="BOOLEAN" defaultValueBoolean="true"/>
         </createTable>
 
-        <createIndex tableName="agreement_acceptances" indexName="idx_acceptance_user">
+        <createIndex tableName="agreement_acceptances" indexName="idx_acceptance_user" schemaName="hm_compliance">
             <column name="user_id"/>
             <column name="user_type"/>
         </createIndex>
-        <createIndex tableName="agreement_acceptances" indexName="idx_acceptance_agreement">
+        <createIndex tableName="agreement_acceptances" indexName="idx_acceptance_agreement" schemaName="hm_compliance">
             <column name="agreement_id"/>
         </createIndex>
         <createIndex tableName="agreement_acceptances" indexName="idx_acceptance_current"
-                     unique="false">
+                     unique="false" schemaName="hm_compliance">
             <column name="user_id"/>
             <column name="agreement_id"/>
             <column name="is_current"/>
         </createIndex>
         <addForeignKeyConstraint constraintName="fk_acceptance_agreement"
-                                 baseTableName="agreement_acceptances" baseColumnNames="agreement_id"
-                                 referencedTableName="agreements" referencedColumnNames="id"/>
+                                 baseTableName="agreement_acceptances" baseTableSchemaName="hm_compliance"
+                                 baseColumnNames="agreement_id"
+                                 referencedTableName="agreements" referencedTableSchemaName="hm_compliance"
+                                 referencedColumnNames="id"/>
     </changeSet>
 
     <!-- ================================================================== -->
@@ -212,10 +221,10 @@
     <!-- ================================================================== -->
     <changeSet id="compliance-005-platform-policies" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="platform_policies"/></not>
+            <not><tableExists tableName="platform_policies" schemaName="hm_compliance"/></not>
         </preConditions>
 
-        <createTable tableName="platform_policies">
+        <createTable tableName="platform_policies" schemaName="hm_compliance">
             <!-- BaseJpaEntity fields -->
             <column name="id" type="VARCHAR(255)">
                 <constraints primaryKey="true" nullable="false"/>
@@ -259,13 +268,13 @@
             <column name="is_footer_link" type="BOOLEAN" defaultValueBoolean="true"/>
         </createTable>
 
-        <createIndex tableName="platform_policies" indexName="idx_pp_type">
+        <createIndex tableName="platform_policies" indexName="idx_pp_type" schemaName="hm_compliance">
             <column name="policy_type"/>
         </createIndex>
-        <createIndex tableName="platform_policies" indexName="idx_pp_state">
+        <createIndex tableName="platform_policies" indexName="idx_pp_state" schemaName="hm_compliance">
             <column name="state_id"/>
         </createIndex>
-        <createIndex tableName="platform_policies" indexName="idx_pp_category">
+        <createIndex tableName="platform_policies" indexName="idx_pp_category" schemaName="hm_compliance">
             <column name="category"/>
         </createIndex>
     </changeSet>
@@ -275,10 +284,10 @@
     <!-- ================================================================== -->
     <changeSet id="compliance-006-platform-policy-activity" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="platform_policy_activity"/></not>
+            <not><tableExists tableName="platform_policy_activity" schemaName="hm_compliance"/></not>
         </preConditions>
 
-        <createTable tableName="platform_policy_activity">
+        <createTable tableName="platform_policy_activity" schemaName="hm_compliance">
             <column name="id" type="VARCHAR(255)">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -295,10 +304,10 @@
     <!-- ================================================================== -->
     <changeSet id="compliance-007-compliance-mappings" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="compliance_mappings"/></not>
+            <not><tableExists tableName="compliance_mappings" schemaName="hm_compliance"/></not>
         </preConditions>
 
-        <createTable tableName="compliance_mappings">
+        <createTable tableName="compliance_mappings" schemaName="hm_compliance">
             <!-- BaseJpaEntity fields -->
             <column name="id" type="VARCHAR(255)">
                 <constraints primaryKey="true" nullable="false"/>
@@ -322,12 +331,14 @@
             <column name="verified_at" type="DATE"/>
         </createTable>
 
-        <createIndex tableName="compliance_mappings" indexName="idx_cmap_regulation">
+        <createIndex tableName="compliance_mappings" indexName="idx_cmap_regulation" schemaName="hm_compliance">
             <column name="regulation_id"/>
         </createIndex>
         <addForeignKeyConstraint constraintName="fk_cmap_regulation"
-                                 baseTableName="compliance_mappings" baseColumnNames="regulation_id"
-                                 referencedTableName="regulations" referencedColumnNames="id"/>
+                                 baseTableName="compliance_mappings" baseTableSchemaName="hm_compliance"
+                                 baseColumnNames="regulation_id"
+                                 referencedTableName="regulations" referencedTableSchemaName="hm_compliance"
+                                 referencedColumnNames="id"/>
     </changeSet>
 
     <!-- ================================================================== -->
@@ -335,10 +346,10 @@
     <!-- ================================================================== -->
     <changeSet id="compliance-008-compliance-audits" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="compliance_audits"/></not>
+            <not><tableExists tableName="compliance_audits" schemaName="hm_compliance"/></not>
         </preConditions>
 
-        <createTable tableName="compliance_audits">
+        <createTable tableName="compliance_audits" schemaName="hm_compliance">
             <!-- BaseJpaEntity fields -->
             <column name="id" type="VARCHAR(255)">
                 <constraints primaryKey="true" nullable="false"/>
@@ -369,22 +380,24 @@
             <column name="next_audit_date" type="DATE"/>
         </createTable>
 
-        <createIndex tableName="compliance_audits" indexName="idx_caudit_regulation">
+        <createIndex tableName="compliance_audits" indexName="idx_caudit_regulation" schemaName="hm_compliance">
             <column name="regulation_id"/>
         </createIndex>
-        <createIndex tableName="compliance_audits" indexName="idx_caudit_result">
+        <createIndex tableName="compliance_audits" indexName="idx_caudit_result" schemaName="hm_compliance">
             <column name="result"/>
         </createIndex>
         <addForeignKeyConstraint constraintName="fk_caudit_regulation"
-                                 baseTableName="compliance_audits" baseColumnNames="regulation_id"
-                                 referencedTableName="regulations" referencedColumnNames="id"/>
+                                 baseTableName="compliance_audits" baseTableSchemaName="hm_compliance"
+                                 baseColumnNames="regulation_id"
+                                 referencedTableName="regulations" referencedTableSchemaName="hm_compliance"
+                                 referencedColumnNames="id"/>
     </changeSet>
 
     <!-- ================================================================== -->
     <!-- 9. Align agreements table with JPA entity columns                  -->
     <!-- ================================================================== -->
     <changeSet id="compliance-009-align-agreements-columns" author="homebase">
-        <addColumn tableName="agreements">
+        <addColumn tableName="agreements" schemaName="hm_compliance">
             <column name="title" type="VARCHAR(500)"/>
             <column name="version_label" type="VARCHAR(50)"/>
             <column name="content_url" type="VARCHAR(1024)"/>
@@ -395,17 +408,17 @@
             <column name="mandatory_acceptance" type="BOOLEAN" defaultValueBoolean="true"/>
         </addColumn>
         <!-- Drop NOT NULL on old columns no longer mapped by JPA entity -->
-        <dropNotNullConstraint tableName="agreements" columnName="name" columnDataType="VARCHAR(500)"/>
-        <dropNotNullConstraint tableName="agreements" columnName="version_number" columnDataType="VARCHAR(50)"/>
-        <dropNotNullConstraint tableName="agreements" columnName="agreement_type" columnDataType="VARCHAR(100)"/>
-        <dropNotNullConstraint tableName="agreements" columnName="applicable_to" columnDataType="VARCHAR(100)"/>
+        <dropNotNullConstraint tableName="agreements" columnName="name" columnDataType="VARCHAR(500)" schemaName="hm_compliance"/>
+        <dropNotNullConstraint tableName="agreements" columnName="version_number" columnDataType="VARCHAR(50)" schemaName="hm_compliance"/>
+        <dropNotNullConstraint tableName="agreements" columnName="agreement_type" columnDataType="VARCHAR(100)" schemaName="hm_compliance"/>
+        <dropNotNullConstraint tableName="agreements" columnName="applicable_to" columnDataType="VARCHAR(100)" schemaName="hm_compliance"/>
     </changeSet>
 
     <!-- ================================================================== -->
     <!-- 10. Align platform_policies table with JPA entity columns          -->
     <!-- ================================================================== -->
     <changeSet id="compliance-010-align-platform-policies-columns" author="homebase">
-        <addColumn tableName="platform_policies">
+        <addColumn tableName="platform_policies" schemaName="hm_compliance">
             <column name="title" type="VARCHAR(500)"/>
             <column name="policy_category" type="VARCHAR(100)"/>
             <column name="version_label" type="VARCHAR(50)"/>
@@ -415,10 +428,10 @@
             <column name="effective_date" type="DATE"/>
         </addColumn>
         <!-- Drop NOT NULL on slug since entity doesn't set it -->
-        <dropNotNullConstraint tableName="platform_policies" columnName="slug" columnDataType="VARCHAR(255)"/>
-        <dropNotNullConstraint tableName="platform_policies" columnName="name" columnDataType="VARCHAR(500)"/>
-        <dropNotNullConstraint tableName="platform_policies" columnName="policy_type" columnDataType="VARCHAR(100)"/>
-        <dropNotNullConstraint tableName="platform_policies" columnName="category" columnDataType="VARCHAR(100)"/>
+        <dropNotNullConstraint tableName="platform_policies" columnName="slug" columnDataType="VARCHAR(255)" schemaName="hm_compliance"/>
+        <dropNotNullConstraint tableName="platform_policies" columnName="name" columnDataType="VARCHAR(500)" schemaName="hm_compliance"/>
+        <dropNotNullConstraint tableName="platform_policies" columnName="policy_type" columnDataType="VARCHAR(100)" schemaName="hm_compliance"/>
+        <dropNotNullConstraint tableName="platform_policies" columnName="category" columnDataType="VARCHAR(100)" schemaName="hm_compliance"/>
     </changeSet>
 
     <!-- ================================================================== -->
@@ -426,7 +439,7 @@
     <!-- ================================================================== -->
     <changeSet id="compliance-011-align-activity-tables" author="homebase">
         <!-- agreement_activity: add BaseJpaEntity columns + FK -->
-        <addColumn tableName="agreement_activity">
+        <addColumn tableName="agreement_activity" schemaName="hm_compliance">
             <column name="agreement_id" type="VARCHAR(255)"/>
             <column name="created_by" type="VARCHAR(100)"/>
             <column name="last_modified_by" type="VARCHAR(100)"/>
@@ -434,7 +447,7 @@
             <column name="version" type="BIGINT" defaultValueNumeric="0"/>
         </addColumn>
         <!-- platform_policy_activity: add BaseJpaEntity columns + FK -->
-        <addColumn tableName="platform_policy_activity">
+        <addColumn tableName="platform_policy_activity" schemaName="hm_compliance">
             <column name="policy_id" type="VARCHAR(255)"/>
             <column name="created_by" type="VARCHAR(100)"/>
             <column name="last_modified_by" type="VARCHAR(100)"/>
@@ -445,13 +458,14 @@
 
     <!-- ================================================================== -->
     <!-- 12. CConfig keys for compliance module (frontend + backend)       -->
+    <!-- NOTE: Inserts into hm_cconfig schema (cross-schema)               -->
     <!-- ================================================================== -->
     <changeSet id="compliance-012-cconfig-keys" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <tableExists tableName="cconfig"/>
+            <tableExists tableName="cconfig" schemaName="hm_cconfig"/>
         </preConditions>
 
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cc-compliance-001"/>
             <column name="module_name" value="compliance"/>
             <column name="key_name" value="agreement.effective.date.min.lead.days"/>
@@ -459,7 +473,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cc-compliance-002"/>
             <column name="module_name" value="compliance"/>
             <column name="key_name" value="policy.effective.date.min.lead.days"/>
@@ -467,7 +481,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cc-compliance-003"/>
             <column name="module_name" value="compliance"/>
             <column name="key_name" value="agreement.acceptance.grace.days"/>
@@ -475,7 +489,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cc-compliance-004"/>
             <column name="module_name" value="compliance"/>
             <column name="key_name" value="agreement.title.max.length"/>
@@ -483,7 +497,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cc-compliance-005"/>
             <column name="module_name" value="compliance"/>
             <column name="key_name" value="policy.title.max.length"/>
@@ -491,7 +505,7 @@
             <column name="custom_attribute" value="__GLOBAL__"/>
             <column name="tenant" value="homebase"/>
         </insert>
-        <insert tableName="cconfig">
+        <insert tableName="cconfig" schemaName="hm_cconfig">
             <column name="id" value="cc-compliance-006"/>
             <column name="module_name" value="compliance"/>
             <column name="key_name" value="policy.summary.max.length"/>
@@ -507,10 +521,10 @@
     <!-- ================================================================== -->
     <changeSet id="compliance-013-seller-document" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="seller_document"/></not>
+            <not><tableExists tableName="seller_document" schemaName="hm_compliance"/></not>
         </preConditions>
 
-        <createTable tableName="seller_document">
+        <createTable tableName="seller_document" schemaName="hm_compliance">
             <!-- BaseJpaEntity fields -->
             <column name="id" type="VARCHAR(255)">
                 <constraints primaryKey="true" nullable="false"/>
@@ -546,18 +560,66 @@
             <column name="priority" type="VARCHAR(20)" defaultValue="NORMAL"/>
         </createTable>
 
-        <createIndex tableName="seller_document" indexName="idx_seller_doc_supplier">
+        <createIndex tableName="seller_document" indexName="idx_seller_doc_supplier" schemaName="hm_compliance">
             <column name="supplier_id"/>
         </createIndex>
-        <createIndex tableName="seller_document" indexName="idx_seller_doc_type">
+        <createIndex tableName="seller_document" indexName="idx_seller_doc_type" schemaName="hm_compliance">
             <column name="document_type"/>
         </createIndex>
-        <createIndex tableName="seller_document" indexName="idx_seller_doc_status">
+        <createIndex tableName="seller_document" indexName="idx_seller_doc_status" schemaName="hm_compliance">
             <column name="verification_status"/>
         </createIndex>
         <!-- FK to supplier removed — microservice pattern, no cross-module FKs -->
     </changeSet>
 
-    <!-- Seed data removed — microservice pattern, no cross-module FK dependencies in tests -->
+    <!-- ================================================================== -->
+    <!-- 14. Align regulations table with JPA entity columns               -->
+    <!-- Entity uses: name, regulation_type, jurisdiction, description,    -->
+    <!--   reference_url, active. Liquibase originally had different cols.  -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-014-align-regulations-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="regulations" schemaName="hm_compliance"/>
+            <not><columnExists tableName="regulations" columnName="name" schemaName="hm_compliance"/></not>
+        </preConditions>
+        <addColumn tableName="regulations" schemaName="hm_compliance">
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="regulation_type" type="VARCHAR(100)"/>
+            <column name="description" type="VARCHAR(2000)"/>
+            <column name="reference_url" type="VARCHAR(1024)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 15. Align compliance_audits with JPA entity (add status column)    -->
+    <!-- Entity has: status (VARCHAR), liquibase originally had: result     -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-015-align-compliance-audits-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="compliance_audits" schemaName="hm_compliance"/>
+            <not><columnExists tableName="compliance_audits" columnName="status" schemaName="hm_compliance"/></not>
+        </preConditions>
+        <addColumn tableName="compliance_audits" schemaName="hm_compliance">
+            <column name="status" type="VARCHAR(50)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- 16. Align compliance_mappings with JPA entity                      -->
+    <!-- Entity: mapping_type, target_id, description                       -->
+    <!-- Liquibase: policy_rule_id, platform_policy_id, cconfig_key, etc.   -->
+    <!-- ================================================================== -->
+    <changeSet id="compliance-016-align-compliance-mappings-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="compliance_mappings" schemaName="hm_compliance"/>
+            <not><columnExists tableName="compliance_mappings" columnName="mapping_type" schemaName="hm_compliance"/></not>
+        </preConditions>
+        <addColumn tableName="compliance_mappings" schemaName="hm_compliance">
+            <column name="mapping_type" type="VARCHAR(100)"/>
+            <column name="target_id" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(1000)"/>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

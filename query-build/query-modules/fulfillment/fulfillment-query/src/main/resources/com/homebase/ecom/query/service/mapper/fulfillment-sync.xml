@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="FulfillmentSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — populate hm_query fulfillment OLAP tables from OLTP         -->
+<!-- Source: fulfillment_orders + warehouses + fulfillment_line_items +      -->
+<!--         products + order_items                                          -->
+<!-- Called by FulfillmentSyncService                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ====== fulfillment_flat ====== -->
+<update id="truncateFulfillmentFlat">
+    TRUNCATE TABLE hm_query.fulfillment_flat
+</update>
+
+<insert id="syncFulfillmentFlat">
+    INSERT INTO hm_query.fulfillment_flat (
+        id, tenant, last_synced_at,
+        order_id, warehouse_id, warehouse_name,
+        user_id, saga_id, priority, fulfillment_type,
+        assigned_picker_id, assigned_packer_id,
+        pick_started_at, pick_completed_at,
+        pack_started_at, pack_completed_at,
+        shipped_at, delivered_at,
+        cancelled_at, cancellation_reason,
+        total_items, total_weight_grams,
+        shipping_method, carrier, tracking_number,
+        estimated_ship_date, estimated_delivery_date,
+        notes, state_id, flow_id,
+        created_time, last_modified_time
+    )
+    SELECT
+        fo.id,
+        fo.tenant,
+        NOW(),
+        fo.order_id,
+        fo.warehouse_id,
+        COALESCE(w.warehouse_name, ''),
+        fo.user_id,
+        fo.saga_id,
+        fo.priority,
+        fo.fulfillment_type,
+        fo.assigned_picker_id,
+        fo.assigned_packer_id,
+        fo.pick_started_at,
+        fo.pick_completed_at,
+        fo.pack_started_at,
+        fo.pack_completed_at,
+        fo.shipped_at,
+        fo.delivered_at,
+        fo.cancelled_at,
+        fo.cancellation_reason,
+        COALESCE(fo.total_items, 0),
+        COALESCE(fo.total_weight_grams, 0),
+        fo.shipping_method,
+        fo.carrier,
+        fo.tracking_number,
+        fo.estimated_ship_date,
+        fo.estimated_delivery_date,
+        fo.notes,
+        fo.state_id,
+        fo.flow_id,
+        fo.created_time,
+        fo.last_modified_time
+    FROM hm_fulfillment.fulfillment_orders fo
+    LEFT JOIN hm_warehouse.warehouses w ON fo.warehouse_id = w.id
+</insert>
+
+<!-- ====== fulfillment_line_items_flat ====== -->
+<update id="truncateFulfillmentLineItemsFlat">
+    TRUNCATE TABLE hm_query.fulfillment_line_items_flat
+</update>
+
+<insert id="syncFulfillmentLineItemsFlat">
+    INSERT INTO hm_query.fulfillment_line_items_flat (
+        line_item_id, tenant, last_synced_at,
+        fulfillment_order_id, order_item_id,
+        product_id, variant_id, sku,
+        quantity_ordered, quantity_allocated,
+        quantity_picked, quantity_packed,
+        quantity_shipped, quantity_short,
+        bin_location, item_status,
+        product_name, brand, weight_grams,
+        unit_price, total_price
+    )
+    SELECT
+        fli.id,
+        fo.tenant,
+        NOW(),
+        fli.fulfillment_order_id,
+        fli.order_item_id,
+        fli.product_id,
+        fli.variant_id,
+        fli.sku,
+        COALESCE(fli.quantity_ordered, 0),
+        COALESCE(fli.quantity_allocated, 0),
+        COALESCE(fli.quantity_picked, 0),
+        COALESCE(fli.quantity_packed, 0),
+        COALESCE(fli.quantity_shipped, 0),
+        COALESCE(fli.quantity_short, 0),
+        fli.bin_location,
+        fli.status,
+        COALESCE(p.name, ''),
+        COALESCE(p.brand, ''),
+        COALESCE(p.weight_grams, 0),
+        COALESCE(oi.unit_price, 0),
+        COALESCE(oi.total_price, 0)
+    FROM hm_fulfillment.fulfillment_line_items fli
+    JOIN hm_fulfillment.fulfillment_orders fo ON fli.fulfillment_order_id = fo.id
+    LEFT JOIN hm_product.products p ON fli.product_id = p.id
+    LEFT JOIN hm_order.order_items oi ON fli.order_item_id = oi.id
+</insert>
+
+</mapper>

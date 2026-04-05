@@ -1,0 +1,5 @@
+server:
+  port: 8084
+user:
+  default-currency: INR
+  session-timeout-minutes: 60

@@ -1,0 +1,15 @@
+# Native filesystem profile — for local development.
+# Activate with: --spring.profiles.active=native
+
+spring:
+  cloud:
+    config:
+      server:
+        native:
+          search-locations:
+            - file:${CONFIG_REPO_LOCAL_PATH:/Users/premkumar/HomeBase/platform/config-server/config-repo}
+            - file:${CONFIG_REPO_LOCAL_PATH:/Users/premkumar/HomeBase/platform/config-server/config-repo}/{application}
+
+logging:
+  level:
+    org.springframework.cloud.config: DEBUG

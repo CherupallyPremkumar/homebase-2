@@ -1,0 +1,39 @@
+[
+	{
+		"id": "Search.searchProducts",
+		"name": "productSearch",
+		"acls": ["CUSTOMER", "ADMIN"],
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text", "sortable": true },
+			"productId": { "name": "productId", "filterable": true, "columnType": "Text" },
+			"name": { "name": "name", "filterable": true, "columnType": "Text", "sortable": true },
+			"brand": { "name": "brand", "filterable": true, "columnType": "Text" },
+			"category": { "name": "category", "filterable": true, "columnType": "Text" },
+			"price": { "name": "price", "filterable": true, "columnType": "Number", "sortable": true },
+			"imageUrl": { "name": "imageUrl", "columnType": "Text" },
+			"averageRating": { "name": "averageRating", "columnType": "Number", "sortable": true },
+			"totalReviews": { "name": "totalReviews", "columnType": "Number", "sortable": true },
+			"inStock": { "name": "inStock", "filterable": true, "columnType": "CheckBox" },
+			"keyword": { "name": "keyword", "filterable": true, "columnType": "Text" },
+			"minPrice": { "name": "minPrice", "filterable": true, "columnType": "Number" },
+			"maxPrice": { "name": "maxPrice", "filterable": true, "columnType": "Number" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "Search.searchSuggestions",
+		"name": "searchSuggestions",
+		"acls": ["CUSTOMER", "ADMIN"],
+		"columnMetadata": {
+			"id": { "name": "id", "filterable": true, "columnType": "Text" },
+			"name": { "name": "name", "filterable": true, "columnType": "Text", "sortable": true },
+			"category": { "name": "category", "columnType": "Text" },
+			"keyword": { "name": "keyword", "filterable": true, "columnType": "Text" },
+			"q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+		},
+		"paginated": true,
+		"sortable": true
+	}
+]

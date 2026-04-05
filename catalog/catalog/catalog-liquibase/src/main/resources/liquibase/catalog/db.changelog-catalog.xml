@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Create dedicated schema for catalog bounded context -->
+    <changeSet id="catalog-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_catalog</sql>
+    </changeSet>
+
+    <!-- catalog_items (CatalogItemEntity extends BaseJpaEntity) -->
+    <changeSet id="catalog-001-create-catalog-items" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="catalog_items" schemaName="hm_catalog"/></not>
+        </preConditions>
+        <createTable tableName="catalog_items" schemaName="hm_catalog">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="product_id" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="featured" type="BOOLEAN"/>
+            <column name="display_order" type="INT"/>
+            <column name="active" type="BOOLEAN"/>
+            <column name="visibility_start_date" type="TIMESTAMP"/>
+            <column name="visibility_end_date" type="TIMESTAMP"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="price" type="DECIMAL(19,2)"/>
+            <column name="description" type="VARCHAR(2000)"/>
+            <column name="brand" type="VARCHAR(255)"/>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <column name="in_stock" type="BOOLEAN"/>
+            <column name="available_qty" type="INT"/>
+            <column name="average_rating" type="DECIMAL(3,2)"/>
+            <column name="review_count" type="INT"/>
+        </createTable>
+        <createIndex indexName="idx_catalog_items_product" tableName="catalog_items" schemaName="hm_catalog">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- catalog_item_tags (@ElementCollection on CatalogItemEntity) -->
+    <changeSet id="catalog-002-create-catalog-item-tags" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="catalog_item_tags" schemaName="hm_catalog"/></not>
+        </preConditions>
+        <createTable tableName="catalog_item_tags" schemaName="hm_catalog">
+            <column name="catalog_item_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="tag" type="VARCHAR(255)"/>
+        </createTable>
+        <createIndex indexName="idx_catalog_item_tags_item" tableName="catalog_item_tags" schemaName="hm_catalog">
+            <column name="catalog_item_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- catalog_categories (CategoryEntity extends BaseJpaEntity, @Embedded CategoryMetadataEntity) -->
+    <changeSet id="catalog-003-create-catalog-categories" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="catalog_categories" schemaName="hm_catalog"/></not>
+        </preConditions>
+        <createTable tableName="catalog_categories" schemaName="hm_catalog">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="name" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="slug" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="parent_id" type="VARCHAR(50)"/>
+            <column name="level" type="INT"/>
+            <column name="display_order" type="INT"/>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <column name="icon" type="VARCHAR(100)"/>
+            <column name="active" type="BOOLEAN"/>
+            <column name="featured" type="BOOLEAN"/>
+            <column name="product_count" type="BIGINT"/>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP"/>
+            <!-- Embedded CategoryMetadataEntity -->
+            <column name="meta_title" type="VARCHAR(100)"/>
+            <column name="meta_description" type="VARCHAR(200)"/>
+            <column name="meta_keywords" type="VARCHAR(200)"/>
+            <column name="banner_image_url" type="VARCHAR(500)"/>
+            <column name="show_in_menu" type="BOOLEAN"/>
+            <column name="show_in_footer" type="BOOLEAN"/>
+        </createTable>
+        <addUniqueConstraint tableName="catalog_categories" schemaName="hm_catalog" columnNames="slug" constraintName="uk_catalog_categories_slug"/>
+    </changeSet>
+
+    <!-- category_product_mapping (CategoryProductMappingEntity extends BaseJpaEntity) -->
+    <changeSet id="catalog-004-create-category-product-mapping" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="category_product_mapping" schemaName="hm_catalog"/></not>
+        </preConditions>
+        <createTable tableName="category_product_mapping" schemaName="hm_catalog">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="category_id" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="display_order" type="INT"/>
+            <column name="added_by" type="VARCHAR(50)"/>
+        </createTable>
+        <createIndex indexName="idx_cat_prod_mapping_cat" tableName="category_product_mapping" schemaName="hm_catalog">
+            <column name="category_id"/>
+        </createIndex>
+        <createIndex indexName="idx_cat_prod_mapping_prod" tableName="category_product_mapping" schemaName="hm_catalog">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- collections (CollectionEntity extends BaseJpaEntity) -->
+    <changeSet id="catalog-005-create-collections" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="collections" schemaName="hm_catalog"/></not>
+        </preConditions>
+        <createTable tableName="collections" schemaName="hm_catalog">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="name" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="slug" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="type" type="VARCHAR(20)"><constraints nullable="false"/></column>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="end_date" type="TIMESTAMP"/>
+            <column name="active" type="BOOLEAN"/>
+            <column name="featured" type="BOOLEAN"/>
+            <column name="display_order" type="INT"/>
+            <column name="auto_update" type="BOOLEAN"/>
+            <column name="rule_expression" type="VARCHAR(1000)"/>
+            <column name="product_count" type="BIGINT"/>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="collections" schemaName="hm_catalog" columnNames="slug" constraintName="uk_collections_slug"/>
+    </changeSet>
+
+    <!-- collection_product_mapping (CollectionProductMappingEntity extends BaseJpaEntity) -->
+    <changeSet id="catalog-006-create-collection-product-mapping" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="collection_product_mapping" schemaName="hm_catalog"/></not>
+        </preConditions>
+        <createTable tableName="collection_product_mapping" schemaName="hm_catalog">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="collection_id" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(50)"><constraints nullable="false"/></column>
+            <column name="display_order" type="INT"/>
+            <column name="added_by" type="VARCHAR(50)"/>
+        </createTable>
+        <createIndex indexName="idx_coll_prod_mapping_coll" tableName="collection_product_mapping" schemaName="hm_catalog">
+            <column name="collection_id"/>
+        </createIndex>
+        <createIndex indexName="idx_coll_prod_mapping_prod" tableName="collection_product_mapping" schemaName="hm_catalog">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Add Amazon-standard columns to catalog_items -->
+    <changeSet id="catalog-007-add-catalog-item-columns" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="catalog_items" schemaName="hm_catalog"/>
+            <not><columnExists tableName="catalog_items" schemaName="hm_catalog" columnName="variant_id"/></not>
+        </preConditions>
+        <addColumn tableName="catalog_items" schemaName="hm_catalog">
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="supplier_id" type="VARCHAR(255)"/>
+            <column name="offer_price" type="DECIMAL(12,2)"/>
+            <column name="mrp" type="DECIMAL(12,2)"/>
+            <column name="discount_percent" type="DECIMAL(5,2)"/>
+            <column name="category_id" type="VARCHAR(255)"/>
+            <column name="hsn_code" type="VARCHAR(20)"/>
+            <column name="weight_grams" type="INT"/>
+            <column name="country_of_origin" type="VARCHAR(100)"/>
+            <column name="is_returnable" type="BOOLEAN" defaultValueBoolean="true"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Indexes on catalog_items -->
+    <changeSet id="catalog-008-add-catalog-item-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="catalog_items" schemaName="hm_catalog"/>
+            <not><indexExists indexName="idx_catalog_items_category" schemaName="hm_catalog"/></not>
+        </preConditions>
+        <createIndex indexName="idx_catalog_items_category" tableName="catalog_items" schemaName="hm_catalog">
+            <column name="category_id"/>
+        </createIndex>
+        <createIndex indexName="idx_catalog_items_brand" tableName="catalog_items" schemaName="hm_catalog">
+            <column name="brand"/>
+        </createIndex>
+        <createIndex indexName="idx_catalog_items_active" tableName="catalog_items" schemaName="hm_catalog">
+            <column name="active"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- =================================================================== -->
+    <!-- category_rules — commission, tax, returns, shipping per category    -->
+    <!-- Only set on root/branch categories. Children inherit via query.     -->
+    <!-- =================================================================== -->
+
+    <changeSet id="catalog-009-create-category-rules" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="category_rules" schemaName="hm_catalog"/></not>
+        </preConditions>
+        <createTable tableName="category_rules" schemaName="hm_catalog">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="category_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="commission_rate" type="DECIMAL(5,2)"><constraints nullable="false"/></column>
+            <column name="gst_rate" type="DECIMAL(5,2)"><constraints nullable="false"/></column>
+            <column name="hsn_code" type="VARCHAR(8)"/>
+            <column name="return_days" type="INT" defaultValueNumeric="10"/>
+            <column name="return_type" type="VARCHAR(20)" defaultValue="REPLACEMENT"/>
+            <column name="max_weight_kg" type="DECIMAL(6,2)" defaultValueNumeric="25.00"/>
+            <column name="shipping_type" type="VARCHAR(20)" defaultValue="STANDARD"/>
+            <column name="restriction_type" type="VARCHAR(20)" defaultValue="OPEN"/>
+            <column name="required_license" type="VARCHAR(100)"/>
+            <column name="min_images" type="INT" defaultValueNumeric="3"/>
+            <column name="min_description_length" type="INT" defaultValueNumeric="100"/>
+            <column name="ean_required" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+        <addUniqueConstraint tableName="category_rules" schemaName="hm_catalog"
+            columnNames="category_id" constraintName="uk_category_rules_category"/>
+        <createIndex tableName="category_rules" schemaName="hm_catalog" indexName="idx_category_rules_cat">
+            <column name="category_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- =================================================================== -->
+    <!-- category_attributes — required/optional fields per category          -->
+    <!-- Sellers must fill these when listing a product in this category.     -->
+    <!-- Children inherit parent attributes + can add their own.             -->
+    <!-- =================================================================== -->
+
+    <changeSet id="catalog-010-create-category-attributes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="category_attributes" schemaName="hm_catalog"/></not>
+        </preConditions>
+        <createTable tableName="category_attributes" schemaName="hm_catalog">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="category_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="attribute_name" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="attribute_type" type="VARCHAR(20)" defaultValue="TEXT"><constraints nullable="false"/></column>
+            <column name="is_required" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="allowed_values" type="TEXT"/>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex tableName="category_attributes" schemaName="hm_catalog" indexName="idx_category_attrs_cat">
+            <column name="category_id"/>
+        </createIndex>
+        <addUniqueConstraint tableName="category_attributes" schemaName="hm_catalog"
+            columnNames="category_id, attribute_name" constraintName="uk_cat_attr_name"/>
+    </changeSet>
+
+    <!-- =================================================================== -->
+    <!-- hsn_gst_mapping — HSN chapter to GST rate (CBIC India, 96 rows)     -->
+    <!-- =================================================================== -->
+
+    <changeSet id="catalog-011-create-hsn-gst-mapping" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="hsn_gst_mapping" schemaName="hm_catalog"/></not>
+        </preConditions>
+        <createTable tableName="hsn_gst_mapping" schemaName="hm_catalog">
+            <column name="hsn_chapter" type="VARCHAR(8)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="gst_rate" type="DECIMAL(5,2)"><constraints nullable="false"/></column>
+            <column name="cgst_rate" type="DECIMAL(5,2)"/>
+            <column name="sgst_rate" type="DECIMAL(5,2)"/>
+            <column name="igst_rate" type="DECIMAL(5,2)"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

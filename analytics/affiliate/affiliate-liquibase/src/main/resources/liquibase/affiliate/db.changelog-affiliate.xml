@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Schema creation -->
+    <changeSet id="affiliate-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_affiliate</sql>
+    </changeSet>
+
+    <!-- affiliates (STM entity: extends AbstractJpaStateEntity) -->
+    <changeSet id="affiliate-001-create-affiliates" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="affiliates" schemaName="hm_affiliate"/></not>
+        </preConditions>
+        <createTable tableName="affiliates" schemaName="hm_affiliate">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="first_name" type="VARCHAR(100)"/>
+            <column name="last_name" type="VARCHAR(100)"/>
+            <column name="company_name" type="VARCHAR(255)"/>
+            <column name="commission_tier" type="INT" defaultValueNumeric="1"/>
+            <column name="payment_method" type="VARCHAR(50)"/>
+            <column name="payment_email" type="VARCHAR(255)"/>
+            <column name="website_url" type="VARCHAR(500)"/>
+            <column name="phone" type="VARCHAR(20)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- affiliate_links -->
+    <changeSet id="affiliate-002-create-affiliate-links" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="affiliate_links" schemaName="hm_affiliate"/></not>
+        </preConditions>
+        <createTable tableName="affiliate_links" schemaName="hm_affiliate">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="affiliate_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="tracking_id" type="VARCHAR(100)"><constraints unique="true"/></column>
+            <column name="referral_code" type="VARCHAR(50)"><constraints unique="true"/></column>
+            <column name="link_name" type="VARCHAR(255)"/>
+            <column name="destination_url" type="VARCHAR(500)"/>
+            <column name="link_type" type="VARCHAR(50)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="affiliate_links" baseTableSchemaName="hm_affiliate" baseColumnNames="affiliate_id"
+                                 referencedTableName="affiliates" referencedTableSchemaName="hm_affiliate" referencedColumnNames="id"
+                                 constraintName="fk_affiliate_links_affiliate"/>
+    </changeSet>
+
+    <!-- affiliate_clicks (log table: no version/last_modified) -->
+    <changeSet id="affiliate-003-create-affiliate-clicks" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="affiliate_clicks" schemaName="hm_affiliate"/></not>
+        </preConditions>
+        <createTable tableName="affiliate_clicks" schemaName="hm_affiliate">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="link_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="affiliate_id" type="VARCHAR(255)"/>
+            <column name="visitor_ip" type="VARCHAR(50)"/>
+            <column name="referrer_url" type="VARCHAR(500)"/>
+            <column name="session_id" type="VARCHAR(255)"/>
+            <column name="device_type" type="VARCHAR(50)"/>
+            <column name="country" type="VARCHAR(2)"/>
+            <column name="clicked_at" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="affiliate_clicks" baseTableSchemaName="hm_affiliate" baseColumnNames="link_id"
+                                 referencedTableName="affiliate_links" referencedTableSchemaName="hm_affiliate" referencedColumnNames="id"
+                                 constraintName="fk_affiliate_clicks_link"/>
+    </changeSet>
+
+    <!-- affiliate_conversions -->
+    <changeSet id="affiliate-004-create-affiliate-conversions" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="affiliate_conversions" schemaName="hm_affiliate"/></not>
+        </preConditions>
+        <createTable tableName="affiliate_conversions" schemaName="hm_affiliate">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="click_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="link_id" type="VARCHAR(255)"/>
+            <column name="affiliate_id" type="VARCHAR(255)"/>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="invoice_amount" type="BIGINT"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="conversion_type" type="VARCHAR(50)"/>
+            <column name="attribution_window_days" type="INT"/>
+            <column name="is_valid" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="affiliate_conversions" baseTableSchemaName="hm_affiliate" baseColumnNames="click_id"
+                                 referencedTableName="affiliate_clicks" referencedTableSchemaName="hm_affiliate" referencedColumnNames="id"
+                                 constraintName="fk_affiliate_conversions_click"/>
+    </changeSet>
+
+    <!-- commission_rules -->
+    <changeSet id="affiliate-005-create-commission-rules" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="commission_rules" schemaName="hm_affiliate"/></not>
+        </preConditions>
+        <createTable tableName="commission_rules" schemaName="hm_affiliate">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="rule_name" type="VARCHAR(255)"/>
+            <column name="commission_type" type="VARCHAR(50)"/>
+            <column name="commission_value" type="INT"/>
+            <column name="applicable_tier" type="INT"/>
+            <column name="product_category_id" type="VARCHAR(255)"/>
+            <column name="conversion_type" type="VARCHAR(50)"/>
+            <column name="minimum_order_amount" type="BIGINT"/>
+            <column name="maximum_commission_per_order" type="BIGINT"/>
+            <column name="payout_delay_days" type="INT" defaultValueNumeric="30"/>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="end_date" type="TIMESTAMP"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- commission_payouts (STM entity: extends AbstractJpaStateEntity) -->
+    <changeSet id="affiliate-006-create-commission-payouts" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="commission_payouts" schemaName="hm_affiliate"/></not>
+        </preConditions>
+        <createTable tableName="commission_payouts" schemaName="hm_affiliate">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="affiliate_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="payout_period_start" type="TIMESTAMP"/>
+            <column name="payout_period_end" type="TIMESTAMP"/>
+            <column name="total_clicks" type="INT"/>
+            <column name="total_conversions" type="INT"/>
+            <column name="total_commission_amount" type="BIGINT"/>
+            <column name="amount_to_payout" type="BIGINT"/>
+            <column name="payment_method" type="VARCHAR(50)"/>
+            <column name="transaction_id" type="VARCHAR(255)"/>
+            <column name="notes" type="VARCHAR(500)"/>
+            <column name="available_at" type="TIMESTAMP"/>
+            <column name="paid_at" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="commission_payouts" baseTableSchemaName="hm_affiliate" baseColumnNames="affiliate_id"
+                                 referencedTableName="affiliates" referencedTableSchemaName="hm_affiliate" referencedColumnNames="id"
+                                 constraintName="fk_commission_payouts_affiliate"/>
+    </changeSet>
+
+    <!-- affiliate_performance -->
+    <changeSet id="affiliate-007-create-affiliate-performance" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="affiliate_performance" schemaName="hm_affiliate"/></not>
+        </preConditions>
+        <createTable tableName="affiliate_performance" schemaName="hm_affiliate">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="affiliate_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="referral_code" type="VARCHAR(50)"/>
+            <column name="report_date" type="DATE"/>
+            <column name="clicks" type="INT" defaultValueNumeric="0"/>
+            <column name="conversions" type="INT" defaultValueNumeric="0"/>
+            <column name="earnings" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="conversion_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="average_order_value" type="BIGINT" defaultValueNumeric="0"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="affiliate_performance" baseTableSchemaName="hm_affiliate" baseColumnNames="affiliate_id"
+                                 referencedTableName="affiliates" referencedTableSchemaName="hm_affiliate" referencedColumnNames="id"
+                                 constraintName="fk_affiliate_performance_affiliate"/>
+    </changeSet>
+
+    <!-- Indexes -->
+    <changeSet id="affiliate-008-create-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><indexExists indexName="idx_links_affiliate" schemaName="hm_affiliate"/></not>
+        </preConditions>
+        <createIndex indexName="idx_links_affiliate" tableName="affiliate_links" schemaName="hm_affiliate">
+            <column name="affiliate_id"/>
+        </createIndex>
+        <createIndex indexName="idx_links_tracking" tableName="affiliate_links" schemaName="hm_affiliate">
+            <column name="tracking_id"/>
+        </createIndex>
+        <createIndex indexName="idx_clicks_link" tableName="affiliate_clicks" schemaName="hm_affiliate">
+            <column name="link_id"/>
+        </createIndex>
+        <createIndex indexName="idx_clicks_affiliate" tableName="affiliate_clicks" schemaName="hm_affiliate">
+            <column name="affiliate_id"/>
+        </createIndex>
+        <createIndex indexName="idx_conversions_affiliate" tableName="affiliate_conversions" schemaName="hm_affiliate">
+            <column name="affiliate_id"/>
+        </createIndex>
+        <createIndex indexName="idx_conversions_order" tableName="affiliate_conversions" schemaName="hm_affiliate">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex indexName="idx_payouts_affiliate" tableName="commission_payouts" schemaName="hm_affiliate">
+            <column name="affiliate_id"/>
+        </createIndex>
+        <createIndex indexName="idx_performance_affiliate" tableName="affiliate_performance" schemaName="hm_affiliate">
+            <column name="affiliate_id"/>
+        </createIndex>
+        <createIndex indexName="idx_performance_date" tableName="affiliate_performance" schemaName="hm_affiliate">
+            <column name="report_date"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

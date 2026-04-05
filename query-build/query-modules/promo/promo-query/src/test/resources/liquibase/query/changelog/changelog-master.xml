@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- Promo schema from promo-liquibase -->
+    <include file="liquibase/promo/db.changelog-promo.xml"/>
+
+    <!-- Promo test data (from db-migrations) -->
+    <include file="db/changelog/promo/test/db.changelog-promo-testdata.xml"/>
+
+</databaseChangeLog>

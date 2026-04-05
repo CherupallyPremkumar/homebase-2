@@ -6,7 +6,5 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
     <include file="liquibase/config/db.changelog-config.xml"/>
-    <include file="liquibase/config/db.changelog-cconfig-seed-data.xml"/>
-    <include file="liquibase/config/db.changelog-cconfig-form-schemas.xml"/>
 
 </databaseChangeLog>

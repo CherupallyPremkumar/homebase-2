@@ -5,12 +5,17 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
+    <!-- Create dedicated schema for support bounded context -->
+    <changeSet id="support-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_support</sql>
+    </changeSet>
+
     <!-- support_tickets (SupportTicketEntity extends AbstractJpaStateEntity) -->
     <changeSet id="support-001-create-support-tickets" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="support_tickets"/></not>
+            <not><tableExists tableName="support_tickets" schemaName="hm_support"/></not>
         </preConditions>
-        <createTable tableName="support_tickets">
+        <createTable tableName="support_tickets" schemaName="hm_support">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -37,10 +42,10 @@
             <column name="sla_breached" type="BOOLEAN" defaultValueBoolean="false"/>
             <column name="auto_close_ready" type="BOOLEAN" defaultValueBoolean="false"/>
         </createTable>
-        <createIndex indexName="idx_support_tickets_customer" tableName="support_tickets">
+        <createIndex indexName="idx_support_tickets_customer" tableName="support_tickets" schemaName="hm_support">
             <column name="customer_id"/>
         </createIndex>
-        <createIndex indexName="idx_support_tickets_state" tableName="support_tickets">
+        <createIndex indexName="idx_support_tickets_state" tableName="support_tickets" schemaName="hm_support">
             <column name="state_id"/>
         </createIndex>
     </changeSet>
@@ -48,9 +53,9 @@
     <!-- ticket_messages (TicketMessageEntity extends BaseJpaEntity, FK to support_tickets) -->
     <changeSet id="support-002-create-ticket-messages" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="ticket_messages"/></not>
+            <not><tableExists tableName="ticket_messages" schemaName="hm_support"/></not>
         </preConditions>
-        <createTable tableName="ticket_messages">
+        <createTable tableName="ticket_messages" schemaName="hm_support">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -65,9 +70,9 @@
             <column name="message_timestamp" type="TIMESTAMP"/>
             <column name="attachments" type="TEXT"/>
         </createTable>
-        <addForeignKeyConstraint baseTableName="ticket_messages" baseColumnNames="ticket_id"
-            referencedTableName="support_tickets" referencedColumnNames="id" constraintName="fk_ticket_messages_ticket"/>
-        <createIndex indexName="idx_ticket_messages_ticket" tableName="ticket_messages">
+        <addForeignKeyConstraint baseTableName="ticket_messages" baseTableSchemaName="hm_support" baseColumnNames="ticket_id"
+            referencedTableName="support_tickets" referencedTableSchemaName="hm_support" referencedColumnNames="id" constraintName="fk_ticket_messages_ticket"/>
+        <createIndex indexName="idx_ticket_messages_ticket" tableName="ticket_messages" schemaName="hm_support">
             <column name="ticket_id"/>
         </createIndex>
     </changeSet>
@@ -75,9 +80,9 @@
     <!-- ticket_activity (SupportTicketActivityLogEntity extends BaseJpaEntity) -->
     <changeSet id="support-003-create-ticket-activity" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="ticket_activity"/></not>
+            <not><tableExists tableName="ticket_activity" schemaName="hm_support"/></not>
         </preConditions>
-        <createTable tableName="ticket_activity">
+        <createTable tableName="ticket_activity" schemaName="hm_support">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -91,13 +96,27 @@
         </createTable>
     </changeSet>
 
+    <!-- Add missing ticket_id FK column to ticket_activity -->
+    <changeSet id="support-008-add-ticket-activity-ticket-id" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="ticket_activity" schemaName="hm_support"/>
+            <not><columnExists tableName="ticket_activity" schemaName="hm_support" columnName="ticket_id"/></not>
+        </preConditions>
+        <addColumn tableName="ticket_activity" schemaName="hm_support">
+            <column name="ticket_id" type="VARCHAR(255)"/>
+        </addColumn>
+        <createIndex indexName="idx_ticket_activity_ticket" tableName="ticket_activity" schemaName="hm_support">
+            <column name="ticket_id"/>
+        </createIndex>
+    </changeSet>
+
     <!-- Add channel, related entity, satisfaction, escalation columns to support_tickets -->
     <changeSet id="support-004-add-support-ticket-columns" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <tableExists tableName="support_tickets"/>
-            <not><columnExists tableName="support_tickets" columnName="channel"/></not>
+            <tableExists tableName="support_tickets" schemaName="hm_support"/>
+            <not><columnExists tableName="support_tickets" schemaName="hm_support" columnName="channel"/></not>
         </preConditions>
-        <addColumn tableName="support_tickets">
+        <addColumn tableName="support_tickets" schemaName="hm_support">
             <column name="channel" type="VARCHAR(50)" defaultValue="WEB"/>
             <column name="related_entity_type" type="VARCHAR(50)"/>
             <column name="related_entity_id" type="VARCHAR(255)"/>
@@ -111,16 +130,16 @@
     <!-- Indexes on support_tickets -->
     <changeSet id="support-005-add-support-indexes" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <tableExists tableName="support_tickets"/>
-            <not><indexExists indexName="idx_support_order"/></not>
+            <tableExists tableName="support_tickets" schemaName="hm_support"/>
+            <not><indexExists indexName="idx_support_order" schemaName="hm_support"/></not>
         </preConditions>
-        <createIndex indexName="idx_support_order" tableName="support_tickets">
+        <createIndex indexName="idx_support_order" tableName="support_tickets" schemaName="hm_support">
             <column name="order_id"/>
         </createIndex>
-        <createIndex indexName="idx_support_priority" tableName="support_tickets">
+        <createIndex indexName="idx_support_priority" tableName="support_tickets" schemaName="hm_support">
             <column name="priority"/>
         </createIndex>
-        <createIndex indexName="idx_support_agent" tableName="support_tickets">
+        <createIndex indexName="idx_support_agent" tableName="support_tickets" schemaName="hm_support">
             <column name="assigned_agent_id"/>
         </createIndex>
     </changeSet>
@@ -130,9 +149,9 @@
     <!-- ================================================================== -->
     <changeSet id="support-006-create-knowledge-base-article" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <not><tableExists tableName="knowledge_base_article"/></not>
+            <not><tableExists tableName="knowledge_base_article" schemaName="hm_support"/></not>
         </preConditions>
-        <createTable tableName="knowledge_base_article">
+        <createTable tableName="knowledge_base_article" schemaName="hm_support">
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
             <column name="last_modified_time" type="TIMESTAMP"/>
@@ -151,13 +170,13 @@
             <column name="published" type="BOOLEAN" defaultValueBoolean="false"/>
             <column name="tags" type="TEXT"/>
         </createTable>
-        <createIndex indexName="idx_kb_category" tableName="knowledge_base_article">
+        <createIndex indexName="idx_kb_category" tableName="knowledge_base_article" schemaName="hm_support">
             <column name="category"/>
         </createIndex>
-        <createIndex indexName="idx_kb_slug" tableName="knowledge_base_article" unique="true">
+        <createIndex indexName="idx_kb_slug" tableName="knowledge_base_article" schemaName="hm_support" unique="true">
             <column name="slug"/>
         </createIndex>
-        <createIndex indexName="idx_kb_published" tableName="knowledge_base_article">
+        <createIndex indexName="idx_kb_published" tableName="knowledge_base_article" schemaName="hm_support">
             <column name="published"/>
         </createIndex>
     </changeSet>
@@ -167,11 +186,11 @@
     <!-- ================================================================== -->
     <changeSet id="support-007-seed-knowledge-base" author="homebase">
         <preConditions onFail="MARK_RAN">
-            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM knowledge_base_article WHERE id = 'kb-001'</sqlCheck>
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM hm_support.knowledge_base_article WHERE id = 'kb-001'</sqlCheck>
         </preConditions>
 
         <!-- Getting Started -->
-        <insert tableName="knowledge_base_article">
+        <insert tableName="knowledge_base_article" schemaName="hm_support">
             <column name="id" value="kb-001"/>
             <column name="tenant" value="homebase"/>
             <column name="created_by" value="support-team"/>
@@ -191,7 +210,7 @@
         </insert>
 
         <!-- Orders -->
-        <insert tableName="knowledge_base_article">
+        <insert tableName="knowledge_base_article" schemaName="hm_support">
             <column name="id" value="kb-002"/>
             <column name="tenant" value="homebase"/>
             <column name="created_by" value="support-team"/>
@@ -211,7 +230,7 @@
         </insert>
 
         <!-- Payments -->
-        <insert tableName="knowledge_base_article">
+        <insert tableName="knowledge_base_article" schemaName="hm_support">
             <column name="id" value="kb-003"/>
             <column name="tenant" value="homebase"/>
             <column name="created_by" value="support-team"/>
@@ -231,7 +250,7 @@
         </insert>
 
         <!-- Returns -->
-        <insert tableName="knowledge_base_article">
+        <insert tableName="knowledge_base_article" schemaName="hm_support">
             <column name="id" value="kb-004"/>
             <column name="tenant" value="homebase"/>
             <column name="created_by" value="support-team"/>
@@ -251,7 +270,7 @@
         </insert>
 
         <!-- Account -->
-        <insert tableName="knowledge_base_article">
+        <insert tableName="knowledge_base_article" schemaName="hm_support">
             <column name="id" value="kb-005"/>
             <column name="tenant" value="homebase"/>
             <column name="created_by" value="support-team"/>
@@ -271,7 +290,7 @@
         </insert>
 
         <!-- Seller Guide -->
-        <insert tableName="knowledge_base_article">
+        <insert tableName="knowledge_base_article" schemaName="hm_support">
             <column name="id" value="kb-006"/>
             <column name="tenant" value="homebase"/>
             <column name="created_by" value="support-team"/>

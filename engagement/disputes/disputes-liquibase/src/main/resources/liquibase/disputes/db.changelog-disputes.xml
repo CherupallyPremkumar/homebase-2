@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
+    <!-- Create dedicated schema for dispute bounded context -->
+    <changeSet id="disputes-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_dispute</sql>
+    </changeSet>
+
     <changeSet id="disputes-001-create-dispute" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="dispute"/></not></preConditions>
-        <createTable tableName="dispute">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="dispute" schemaName="hm_dispute"/></not></preConditions>
+        <createTable tableName="dispute" schemaName="hm_dispute">
             <!-- BaseJpaEntity columns -->
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
@@ -43,8 +48,8 @@
     </changeSet>
 
     <changeSet id="disputes-002-create-dispute-activity" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><tableExists tableName="dispute_activity"/></not></preConditions>
-        <createTable tableName="dispute_activity">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="dispute_activity" schemaName="hm_dispute"/></not></preConditions>
+        <createTable tableName="dispute_activity" schemaName="hm_dispute">
             <!-- BaseJpaEntity columns -->
             <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
             <column name="created_time" type="TIMESTAMP"/>
@@ -62,29 +67,67 @@
     </changeSet>
 
     <changeSet id="disputes-003-indexes" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><indexExists indexName="idx_dispute_order"/></not></preConditions>
-        <createIndex indexName="idx_dispute_order" tableName="dispute">
+        <preConditions onFail="MARK_RAN"><not><indexExists indexName="idx_dispute_order" schemaName="hm_dispute"/></not></preConditions>
+        <createIndex indexName="idx_dispute_order" tableName="dispute" schemaName="hm_dispute">
             <column name="order_id"/>
         </createIndex>
-        <createIndex indexName="idx_dispute_customer" tableName="dispute">
+        <createIndex indexName="idx_dispute_customer" tableName="dispute" schemaName="hm_dispute">
             <column name="customer_id"/>
         </createIndex>
-        <createIndex indexName="idx_dispute_seller" tableName="dispute">
+        <createIndex indexName="idx_dispute_seller" tableName="dispute" schemaName="hm_dispute">
             <column name="seller_id"/>
         </createIndex>
-        <createIndex indexName="idx_dispute_state" tableName="dispute">
+        <createIndex indexName="idx_dispute_state" tableName="dispute" schemaName="hm_dispute">
             <column name="state_id"/>
         </createIndex>
     </changeSet>
 
     <changeSet id="disputes-004-fk-dispute-activity" author="homebase">
-        <preConditions onFail="MARK_RAN"><not><foreignKeyConstraintExists foreignKeyName="fk_dispute_activity_dispute"/></not></preConditions>
+        <preConditions onFail="MARK_RAN"><not><foreignKeyConstraintExists foreignKeyName="fk_dispute_activity_dispute" schemaName="hm_dispute"/></not></preConditions>
         <addForeignKeyConstraint
             baseTableName="dispute_activity"
+            baseTableSchemaName="hm_dispute"
             baseColumnNames="dispute_id"
             referencedTableName="dispute"
+            referencedTableSchemaName="hm_dispute"
             referencedColumnNames="id"
             constraintName="fk_dispute_activity_dispute"/>
+    </changeSet>
+
+    <!-- Fix dispute_type column size to match entity (100 vs 50) -->
+    <changeSet id="disputes-005-fix-dispute-type-length" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="dispute" schemaName="hm_dispute"/>
+            <columnExists tableName="dispute" schemaName="hm_dispute" columnName="dispute_type"/>
+        </preConditions>
+        <modifyDataType tableName="dispute" schemaName="hm_dispute" columnName="dispute_type" newDataType="VARCHAR(100)"/>
+    </changeSet>
+
+    <!-- Fix resolution_outcome column size to match entity (100 vs 50) -->
+    <changeSet id="disputes-006-fix-resolution-outcome-length" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="dispute" schemaName="hm_dispute"/>
+            <columnExists tableName="dispute" schemaName="hm_dispute" columnName="resolution_outcome"/>
+        </preConditions>
+        <modifyDataType tableName="dispute" schemaName="hm_dispute" columnName="resolution_outcome" newDataType="VARCHAR(100)"/>
+    </changeSet>
+
+    <!-- Fix reason column size to match entity (1000 vs 2000) -->
+    <changeSet id="disputes-007-fix-reason-length" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="dispute" schemaName="hm_dispute"/>
+            <columnExists tableName="dispute" schemaName="hm_dispute" columnName="reason"/>
+        </preConditions>
+        <modifyDataType tableName="dispute" schemaName="hm_dispute" columnName="reason" newDataType="VARCHAR(1000)"/>
+    </changeSet>
+
+    <!-- Fix priority column size to match entity (20 vs 50) -->
+    <changeSet id="disputes-008-fix-priority-length" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="dispute" schemaName="hm_dispute"/>
+            <columnExists tableName="dispute" schemaName="hm_dispute" columnName="priority"/>
+        </preConditions>
+        <modifyDataType tableName="dispute" schemaName="hm_dispute" columnName="priority" newDataType="VARCHAR(20)"/>
     </changeSet>
 
 </databaseChangeLog>

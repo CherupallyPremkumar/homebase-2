@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="NotificationSync">
+
+<update id="truncateNotificationFlat">
+    TRUNCATE TABLE hm_query.notification_flat
+</update>
+
+<!-- SYNC: notification_flat -->
+<!-- Source: notifications + user_profiles (for customer_name) -->
+<insert id="syncNotificationFlat">
+    INSERT INTO hm_query.notification_flat (
+        id, tenant, last_synced_at,
+        customer_id, customer_name, channel, template_id,
+        subject, body, recipient_address,
+        sent_at, delivered_at, failure_reason,
+        retry_count, state_id
+    )
+    SELECT
+        n.id, n.tenant, NOW(),
+        n.customer_id,
+        COALESCE(u.first_name || ' ' || COALESCE(u.last_name, ''), ''),
+        n.channel, n.template_id,
+        n.subject, n.body, n.recipient_address,
+        n.sent_at, n.delivered_at, n.failure_reason,
+        COALESCE(n.retry_count, 0), n.state_id
+    FROM hm_notification.notifications n
+    LEFT JOIN hm_user.user_profiles u ON n.customer_id = u.id
+</insert>
+
+</mapper>

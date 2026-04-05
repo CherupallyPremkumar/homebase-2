@@ -32,6 +32,16 @@ spring:
     hikari:
       poolName: Hikari
       auto-commit: false
+      connection-init-sql: >
+        SET search_path TO
+        public, hm_order, hm_user, hm_product, hm_cart, hm_checkout, hm_payment,
+        hm_inventory, hm_shipping, hm_supplier, hm_settlement, hm_promo,
+        hm_fulfillment, hm_warehouse, hm_notification, hm_support, hm_review,
+        hm_return_request, hm_return_processing, hm_offer, hm_pricing, hm_catalog,
+        hm_cms, hm_compliance, hm_tax, hm_cconfig, hm_organisation, hm_media,
+        hm_rules_engine, hm_onboarding, hm_seller, hm_dispute, hm_recommendation,
+        hm_analytics, hm_reconciliation, hm_reporting, hm_clickstream, hm_invoice,
+        hm_supplier_lifecycle, hm_seller_lifecycle, hm_wishlist, hm_infrastructure
   jpa:
     hibernate:
       ddl-auto: none
@@ -43,6 +53,7 @@ spring:
     console:
       enabled: true
   liquibase:
+    change-log: classpath:liquibase/query/changelog-master.xml
     contexts: dev, faker
 
   messages:

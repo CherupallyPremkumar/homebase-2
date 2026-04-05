@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Compliance">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ALL queries read from hm_query OLAP schema.                            -->
+<!-- Source: platform_policies_flat, agreements_flat, acceptances_flat,      -->
+<!--         regulations_flat                                                -->
+<!-- Populated by ComplianceSyncService ETL.                                -->
+<!-- ═══════════════════════════════════════════════════════════════���═══════ -->
+
+    <resultMap id="platformPolicyResult" type="com.homebase.ecom.compliance.query.dto.PlatformPolicyQueryDto">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="policyCategory" column="policy_category"/>
+        <result property="versionLabel" column="version_label"/>
+        <result property="stateId" column="state_id"/>
+        <result property="flowId" column="flow_id"/>
+        <result property="effectiveDate" column="effective_date"/>
+        <result property="summaryText" column="summary_text"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="lastModifiedTime" column="last_modified_time"/>
+        <result property="tenant" column="tenant"/>
+    </resultMap>
+
+    <resultMap id="agreementResult" type="com.homebase.ecom.compliance.query.dto.AgreementQueryDto">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="agreementType" column="agreement_type"/>
+        <result property="versionLabel" column="version_label"/>
+        <result property="stateId" column="state_id"/>
+        <result property="flowId" column="flow_id"/>
+        <result property="effectiveDate" column="effective_date"/>
+        <result property="expiryDate" column="expiry_date"/>
+        <result property="mandatoryAcceptance" column="mandatory_acceptance"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="lastModifiedTime" column="last_modified_time"/>
+        <result property="tenant" column="tenant"/>
+    </resultMap>
+
+    <resultMap id="acceptanceResult" type="com.homebase.ecom.compliance.query.dto.AcceptanceQueryDto">
+        <result property="id" column="id"/>
+        <result property="agreementTitle" column="agreement_title"/>
+        <result property="userId" column="user_id"/>
+        <result property="userType" column="user_type"/>
+        <result property="acceptedAt" column="accepted_at"/>
+        <result property="acceptanceMethod" column="acceptance_method"/>
+        <result property="current" column="is_current"/>
+        <result property="agreementId" column="agreement_id"/>
+    </resultMap>
+
+    <resultMap id="regulationResult" type="com.homebase.ecom.compliance.query.dto.RegulationQueryDto">
+        <result property="id" column="id"/>
+        <result property="actName" column="act_name"/>
+        <result property="section" column="section"/>
+        <result property="requirementSummary" column="requirement_summary"/>
+        <result property="jurisdiction" column="jurisdiction"/>
+        <result property="applicableTo" column="applicable_to"/>
+        <result property="enforcementDate" column="enforcement_date"/>
+        <result property="category" column="category"/>
+        <result property="active" column="is_active"/>
+    </resultMap>
+
+    <!-- PLATFORM POLICIES -->
+
+    <select id="getPlatformPolicies-count" resultType="int">
+        SELECT count(*) FROM hm_query.platform_policies_flat
+        <where>
+            <if test="title != null">AND title LIKE CONCAT('%', #{title}, '%')</if>
+            <if test="policyCategory != null">AND policy_category = #{policyCategory}</if>
+            <if test="stateId != null">AND state_id IN <foreach item="item" collection="stateId" open="(" separator="," close=")">#{item}</foreach></if>
+            <if test="q != null">AND (title LIKE CONCAT('%', #{q}, '%') OR summary_text LIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+    </select>
+
+    <select id="getPlatformPolicies" resultMap="platformPolicyResult">
+        SELECT id, title, policy_category, version_label,
+               state_id, flow_id, effective_date,
+               summary_text, created_time, last_modified_time, tenant
+        FROM hm_query.platform_policies_flat
+        <where>
+            <if test="title != null">AND title LIKE CONCAT('%', #{title}, '%')</if>
+            <if test="policyCategory != null">AND policy_category = #{policyCategory}</if>
+            <if test="stateId != null">AND state_id IN <foreach item="item" collection="stateId" open="(" separator="," close=")">#{item}</foreach></if>
+            <if test="q != null">AND (title LIKE CONCAT('%', #{q}, '%') OR summary_text LIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- AGREEMENTS -->
+
+    <select id="getAgreements-count" resultType="int">
+        SELECT count(*) FROM hm_query.agreements_flat
+        <where>
+            <if test="title != null">AND title LIKE CONCAT('%', #{title}, '%')</if>
+            <if test="agreementType != null">AND agreement_type = #{agreementType}</if>
+            <if test="stateId != null">AND state_id IN <foreach item="item" collection="stateId" open="(" separator="," close=")">#{item}</foreach></if>
+            <if test="mandatoryAcceptance != null">AND mandatory_acceptance = #{mandatoryAcceptance}</if>
+            <if test="q != null">AND title LIKE CONCAT('%', #{q}, '%')</if>
+        </where>
+    </select>
+
+    <select id="getAgreements" resultMap="agreementResult">
+        SELECT id, title, agreement_type, version_label,
+               state_id, flow_id, effective_date, expiry_date,
+               mandatory_acceptance, created_time, last_modified_time, tenant
+        FROM hm_query.agreements_flat
+        <where>
+            <if test="title != null">AND title LIKE CONCAT('%', #{title}, '%')</if>
+            <if test="agreementType != null">AND agreement_type = #{agreementType}</if>
+            <if test="stateId != null">AND state_id IN <foreach item="item" collection="stateId" open="(" separator="," close=")">#{item}</foreach></if>
+            <if test="mandatoryAcceptance != null">AND mandatory_acceptance = #{mandatoryAcceptance}</if>
+            <if test="q != null">AND title LIKE CONCAT('%', #{q}, '%')</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- AGREEMENT ACCEPTANCES -->
+
+    <select id="getAcceptances-count" resultType="int">
+        SELECT count(*) FROM hm_query.acceptances_flat
+        <where>
+            <if test="agreementId != null">AND agreement_id = #{agreementId}</if>
+            <if test="userId != null">AND user_id = #{userId}</if>
+            <if test="userType != null">AND user_type = #{userType}</if>
+            <if test="isCurrent != null">AND is_current = #{isCurrent}</if>
+        </where>
+    </select>
+
+    <select id="getAcceptances" resultMap="acceptanceResult">
+        SELECT id, agreement_title, user_id, user_type,
+               accepted_at, acceptance_method, is_current, agreement_id
+        FROM hm_query.acceptances_flat
+        <where>
+            <if test="agreementId != null">AND agreement_id = #{agreementId}</if>
+            <if test="userId != null">AND user_id = #{userId}</if>
+            <if test="userType != null">AND user_type = #{userType}</if>
+            <if test="isCurrent != null">AND is_current = #{isCurrent}</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+    <!-- REGULATIONS -->
+
+    <select id="getRegulations-count" resultType="int">
+        SELECT count(*) FROM hm_query.regulations_flat
+        <where>
+            <if test="actName != null">AND act_name LIKE CONCAT('%', #{actName}, '%')</if>
+            <if test="jurisdiction != null">AND jurisdiction = #{jurisdiction}</if>
+            <if test="category != null">AND category = #{category}</if>
+            <if test="applicableTo != null">AND applicable_to = #{applicableTo}</if>
+            <if test="isActive != null">AND is_active = #{isActive}</if>
+            <if test="q != null">AND (act_name LIKE CONCAT('%', #{q}, '%') OR requirement_summary LIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+    </select>
+
+    <select id="getRegulations" resultMap="regulationResult">
+        SELECT id, act_name, section, requirement_summary,
+               jurisdiction, applicable_to, enforcement_date,
+               category, is_active
+        FROM hm_query.regulations_flat
+        <where>
+            <if test="actName != null">AND act_name LIKE CONCAT('%', #{actName}, '%')</if>
+            <if test="jurisdiction != null">AND jurisdiction = #{jurisdiction}</if>
+            <if test="category != null">AND category = #{category}</if>
+            <if test="applicableTo != null">AND applicable_to = #{applicableTo}</if>
+            <if test="isActive != null">AND is_active = #{isActive}</if>
+            <if test="q != null">AND (act_name LIKE CONCAT('%', #{q}, '%') OR requirement_summary LIKE CONCAT('%', #{q}, '%'))</if>
+        </where>
+        ${orderby} ${pagination}
+    </select>
+
+</mapper>

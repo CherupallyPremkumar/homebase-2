@@ -1,0 +1,52 @@
+[
+  {
+    "id": "Reporting.getDefinitions",
+    "name": "reportDefinitions",
+    "description": "Report definitions from OLAP",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "name": { "name": "name", "filterable": true, "columnType": "Text", "likeQuery": true, "sortable": true },
+      "category": { "name": "category", "filterable": true, "columnType": "Text" },
+      "isActive": { "name": "isActive", "filterable": true, "columnType": "CheckBox" },
+      "q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+      "createdTime": { "name": "createdTime", "filterable": true, "columnType": "Date", "sortable": true }
+    },
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "Reporting.getScheduled",
+    "name": "scheduledReports",
+    "description": "Scheduled reports from OLAP",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "reportDefinitionId": { "name": "reportDefinitionId", "filterable": true, "columnType": "Text" },
+      "format": { "name": "format", "filterable": true, "columnType": "Text" },
+      "frequency": { "name": "frequency", "filterable": true, "columnType": "Text" },
+      "status": { "name": "status", "filterable": true, "columnType": "Text" },
+      "recipientEmail": { "name": "recipientEmail", "filterable": true, "columnType": "Text" },
+      "q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+      "nextRunAt": { "name": "nextRunAt", "filterable": true, "columnType": "Date", "sortable": true }
+    },
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "Reporting.getHistory",
+    "name": "reportHistory",
+    "description": "Report execution history from OLAP",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "reportDefinitionId": { "name": "reportDefinitionId", "filterable": true, "columnType": "Text" },
+      "name": { "name": "name", "filterable": true, "columnType": "Text", "likeQuery": true },
+      "format": { "name": "format", "filterable": true, "columnType": "Text" },
+      "status": { "name": "status", "filterable": true, "columnType": "Text" },
+      "generatedBy": { "name": "generatedBy", "filterable": true, "columnType": "Text" },
+      "q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" },
+      "completedAt": { "name": "completedAt", "filterable": true, "columnType": "Date", "sortable": true },
+      "recordCount": { "name": "recordCount", "columnType": "Number", "sortable": true }
+    },
+    "paginated": true,
+    "sortable": true
+  }
+]

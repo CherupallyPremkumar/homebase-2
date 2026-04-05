@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!--
+        Clickstream test data: page_views and click_events
+        3 page views across 2 sessions, 4 click events
+    -->
+    <changeSet id="clickstream-test-data" author="homebase-test">
+
+        <!-- ============================================================ -->
+        <!-- PAGE VIEWS                                                    -->
+        <!-- ============================================================ -->
+
+        <insert tableName="page_views">
+            <column name="id" value="pv-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="session_id" value="sess-abc-001"/>
+            <column name="user_id" value="user-1"/>
+            <column name="page_url" value="/products/electronics/headphones"/>
+            <column name="page_type" value="PDP"/>
+            <column name="referrer_url" value="https://www.google.com/search?q=headphones"/>
+            <column name="device_type" value="MOBILE"/>
+            <column name="browser" value="Chrome"/>
+            <column name="ip_address" value="103.21.58.42"/>
+            <column name="country" value="IN"/>
+            <column name="duration_ms" valueNumeric="45200"/>
+            <column name="created_time" valueDate="2026-03-30T10:15:00"/>
+        </insert>
+
+        <insert tableName="page_views">
+            <column name="id" value="pv-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="session_id" value="sess-abc-001"/>
+            <column name="user_id" value="user-1"/>
+            <column name="page_url" value="/cart"/>
+            <column name="page_type" value="CART"/>
+            <column name="referrer_url" value="/products/electronics/headphones"/>
+            <column name="device_type" value="MOBILE"/>
+            <column name="browser" value="Chrome"/>
+            <column name="ip_address" value="103.21.58.42"/>
+            <column name="country" value="IN"/>
+            <column name="duration_ms" valueNumeric="12800"/>
+            <column name="created_time" valueDate="2026-03-30T10:16:00"/>
+        </insert>
+
+        <insert tableName="page_views">
+            <column name="id" value="pv-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="session_id" value="sess-def-002"/>
+            <column name="user_id" value="user-2"/>
+            <column name="page_url" value="/categories/home-decor"/>
+            <column name="page_type" value="CATEGORY"/>
+            <column name="device_type" value="DESKTOP"/>
+            <column name="browser" value="Firefox"/>
+            <column name="ip_address" value="182.73.12.100"/>
+            <column name="country" value="IN"/>
+            <column name="duration_ms" valueNumeric="78500"/>
+            <column name="created_time" valueDate="2026-03-30T11:30:00"/>
+        </insert>
+
+        <!-- ============================================================ -->
+        <!-- CLICK EVENTS                                                  -->
+        <!-- ============================================================ -->
+
+        <insert tableName="click_events">
+            <column name="id" value="ce-001"/>
+            <column name="tenant" value="homebase"/>
+            <column name="session_id" value="sess-abc-001"/>
+            <column name="user_id" value="user-1"/>
+            <column name="element_type" value="BUTTON"/>
+            <column name="element_id" value="add-to-cart-btn"/>
+            <column name="page_url" value="/products/electronics/headphones"/>
+            <column name="event_data_json" value="{&quot;productId&quot;:&quot;prod-2&quot;,&quot;variantId&quot;:&quot;var-2a&quot;}"/>
+            <column name="created_time" valueDate="2026-03-30T10:15:30"/>
+        </insert>
+
+        <insert tableName="click_events">
+            <column name="id" value="ce-002"/>
+            <column name="tenant" value="homebase"/>
+            <column name="session_id" value="sess-abc-001"/>
+            <column name="user_id" value="user-1"/>
+            <column name="element_type" value="LINK"/>
+            <column name="element_id" value="view-cart-link"/>
+            <column name="page_url" value="/products/electronics/headphones"/>
+            <column name="event_data_json" value="{&quot;destination&quot;:&quot;/cart&quot;}"/>
+            <column name="created_time" valueDate="2026-03-30T10:15:45"/>
+        </insert>
+
+        <insert tableName="click_events">
+            <column name="id" value="ce-003"/>
+            <column name="tenant" value="homebase"/>
+            <column name="session_id" value="sess-def-002"/>
+            <column name="user_id" value="user-2"/>
+            <column name="element_type" value="CARD"/>
+            <column name="element_id" value="product-card-prod-10"/>
+            <column name="page_url" value="/categories/home-decor"/>
+            <column name="event_data_json" value="{&quot;productId&quot;:&quot;prod-10&quot;,&quot;position&quot;:3}"/>
+            <column name="created_time" valueDate="2026-03-30T11:31:00"/>
+        </insert>
+
+        <insert tableName="click_events">
+            <column name="id" value="ce-004"/>
+            <column name="tenant" value="homebase"/>
+            <column name="session_id" value="sess-def-002"/>
+            <column name="user_id" value="user-2"/>
+            <column name="element_type" value="BUTTON"/>
+            <column name="element_id" value="add-to-wishlist-btn"/>
+            <column name="page_url" value="/categories/home-decor"/>
+            <column name="event_data_json" value="{&quot;productId&quot;:&quot;prod-10&quot;}"/>
+            <column name="created_time" valueDate="2026-03-30T11:31:15"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

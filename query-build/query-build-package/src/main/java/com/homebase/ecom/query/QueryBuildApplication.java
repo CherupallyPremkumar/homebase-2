@@ -14,14 +14,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * Standalone query build application.
- * Serves ALL query APIs via MyBatis — no JPA for BC entities.
- * Liquibase creates tables + seeds mock data.
- * STM metadata from query-stm for allowed actions.
- * Keycloak JWT security enabled (resource server mode).
- *
- * Note: org.chenile.configuration.security is NOT scanned — it requires
- * OAuth2 login flow which is unnecessary for a resource server.
- * Security is handled by QueryResourceServerSecurityConfig instead.
+ * Security: QueryResourceServerSecurityConfig permits all at Spring level,
+ * Chenile ACL interceptor enforces per-query auth using JWT when present.
  */
 @SpringBootApplication(
     exclude = {
@@ -51,7 +45,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 public class QueryBuildApplication extends SpringBootServletInitializer {
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
         SpringApplication.run(QueryBuildApplication.class, args);
     }
 

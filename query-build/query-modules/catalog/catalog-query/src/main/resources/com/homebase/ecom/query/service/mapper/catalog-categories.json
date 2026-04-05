@@ -1,0 +1,124 @@
+
+[
+  {
+    "id": "CatalogCategories.getBanners",
+    "name": "categoryBanners",
+    "acls": [],
+    "columnMetadata": {
+      "id": { "name": "id", "filterable": true, "columnType": "Text" },
+      "name": { "name": "name", "columnType": "Text", "filterable": true, "likeQuery": true },
+      "slug": { "name": "slug", "columnType": "Text" },
+      "imageUrl": { "name": "imageUrl", "columnType": "Text" },
+      "bannerImageUrl": { "name": "bannerImageUrl", "columnType": "Text" },
+      "active": { "name": "active", "filterable": true, "columnType": "CheckBox" },
+      "q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "CatalogCategories.getMenu",
+    "name": "categoryMenu",
+    "acls": [],
+    "columnMetadata": {
+      "id": { "name": "id", "filterable": true, "columnType": "Text" },
+      "name": { "name": "name", "columnType": "Text", "filterable": true, "likeQuery": true },
+      "slug": { "name": "slug", "columnType": "Text" },
+      "parentId": { "name": "parentId", "filterable": true, "columnType": "Text" },
+      "level": { "name": "level", "filterable": true, "columnType": "Number" },
+      "imageUrl": { "name": "imageUrl", "columnType": "Text" },
+      "icon": { "name": "icon", "columnType": "Text" },
+      "displayOrder": { "name": "display_order", "columnType": "Number", "sortable": true },
+      "q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "CatalogCategories.getCatalogCategories",
+    "name": "catalogCategories",
+    "acls": [],
+    "columnMetadata": {
+      "id": { "name": "id", "filterable": true, "columnType": "Text" },
+      "name": { "name": "name", "columnType": "Text", "filterable": true, "likeQuery": true },
+      "slug": { "name": "slug", "columnType": "Text" },
+      "parentId": { "name": "parentId", "filterable": true, "columnType": "Text" },
+      "level": { "name": "level", "filterable": true, "columnType": "Number" },
+      "imageUrl": { "name": "imageUrl", "columnType": "Text" },
+      "icon": { "name": "icon", "columnType": "Text" },
+      "displayOrder": { "name": "display_order", "columnType": "Number", "sortable": true },
+      "q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+    },
+    "flexiblePropnames": false,
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "CatalogCategories.getCategoryTree",
+    "name": "categoryTree",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "active": { "name": "active", "filterable": true, "columnType": "CheckBox" },
+      "parentId": { "name": "parentId", "filterable": true, "columnType": "Text" },
+      "level": { "name": "level", "filterable": true, "columnType": "Number" },
+      "name": { "name": "name", "filterable": true, "columnType": "Text", "likeQuery": true },
+      "q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+    },
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "CatalogCategories.getCategoryRules",
+    "name": "categoryRules",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" },
+      "restrictionType": { "name": "restrictionType", "filterable": true, "columnType": "DropDown", "dropDownValues": ["OPEN", "GATED", "RESTRICTED"] },
+      "q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+    },
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "CatalogCategories.getCategoryStats",
+    "name": "categoryStats",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "level": { "name": "level", "filterable": true, "columnType": "Number" },
+      "active": { "name": "active", "filterable": true, "columnType": "CheckBox" },
+      "q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+    },
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "CatalogCategories.getCategoryAttributes",
+    "name": "categoryAttributes",
+    "acls": ["ADMIN"],
+    "columnMetadata": {
+      "categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" },
+      "isRequired": { "name": "isRequired", "filterable": true, "columnType": "CheckBox" },
+      "q": { "name": "q", "filterable": true, "columnType": "Text", "likeQuery": true }
+    },
+    "paginated": true,
+    "sortable": true
+  },
+  {
+    "id": "CatalogCategories.getEffectiveRules",
+    "name": "effectiveRules",
+    "acls": ["ADMIN", "SUPPLIER"],
+    "columnMetadata": {
+      "categoryId": { "name": "categoryId", "filterable": true, "columnType": "Text" }
+    },
+    "paginated": false
+  },
+  {
+    "id": "CatalogCategories.getCategorySummary",
+    "name": "categorySummary",
+    "acls": ["ADMIN"],
+    "columnMetadata": {},
+    "paginated": false
+  }
+]

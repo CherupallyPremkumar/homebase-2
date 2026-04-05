@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Schema creation — MUST be first                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="gift-card-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_gift_card</sql>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- gift_cards (STM entity)                                            -->
+    <!-- ================================================================== -->
+    <changeSet id="gift-card-001-create-gift-cards" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="gift_cards" schemaName="hm_gift_card"/></not></preConditions>
+        <createTable tableName="gift_cards" schemaName="hm_gift_card">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="state_entry_time" type="TIMESTAMP"/>
+            <column name="sla_yellow_date" type="TIMESTAMP"/>
+            <column name="sla_red_date" type="TIMESTAMP"/>
+            <column name="sla_tending_late" type="INT" defaultValueNumeric="0"/>
+            <column name="sla_late" type="INT" defaultValueNumeric="0"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="state_id" type="VARCHAR(100)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="original_value" type="BIGINT"/>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="card_type" type="VARCHAR(50)"/>
+            <column name="is_active" type="BOOLEAN"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- gift_card_codes                                                    -->
+    <!-- ================================================================== -->
+    <changeSet id="gift-card-002-create-gift-card-codes" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="gift_card_codes" schemaName="hm_gift_card"/></not></preConditions>
+        <createTable tableName="gift_card_codes" schemaName="hm_gift_card">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="gift_card_id" type="VARCHAR(255)"/>
+            <column name="code" type="VARCHAR(50)"/>
+            <column name="current_balance" type="BIGINT"/>
+            <column name="original_balance" type="BIGINT"/>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="issued_at" type="TIMESTAMP"/>
+            <column name="purchased_at" type="TIMESTAMP"/>
+            <column name="activated_at" type="TIMESTAMP"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+            <column name="last_used_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- gift_card_transactions                                             -->
+    <!-- ================================================================== -->
+    <changeSet id="gift-card-003-create-gift-card-transactions" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="gift_card_transactions" schemaName="hm_gift_card"/></not></preConditions>
+        <createTable tableName="gift_card_transactions" schemaName="hm_gift_card">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="gift_card_code_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="transaction_type" type="VARCHAR(50)"/>
+            <column name="amount" type="BIGINT"/>
+            <column name="remaining_balance_after" type="BIGINT"/>
+            <column name="reason" type="VARCHAR(255)"/>
+            <column name="note" type="VARCHAR(500)"/>
+            <column name="is_reversed" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- gift_card_redemptions                                              -->
+    <!-- ================================================================== -->
+    <changeSet id="gift-card-004-create-gift-card-redemptions" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="gift_card_redemptions" schemaName="hm_gift_card"/></not></preConditions>
+        <createTable tableName="gift_card_redemptions" schemaName="hm_gift_card">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="gift_card_code_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="amount_redeemed" type="BIGINT"/>
+            <column name="redeemed_at" type="TIMESTAMP"/>
+            <column name="customer_ip" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- store_credits                                                      -->
+    <!-- ================================================================== -->
+    <changeSet id="gift-card-005-create-store-credits" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="store_credits" schemaName="hm_gift_card"/></not></preConditions>
+        <createTable tableName="store_credits" schemaName="hm_gift_card">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="available_balance" type="BIGINT"/>
+            <column name="total_earned" type="BIGINT"/>
+            <column name="total_used" type="BIGINT"/>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR"/>
+            <column name="last_transaction_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- store_credit_transactions                                          -->
+    <!-- ================================================================== -->
+    <changeSet id="gift-card-006-create-store-credit-transactions" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="store_credit_transactions" schemaName="hm_gift_card"/></not></preConditions>
+        <createTable tableName="store_credit_transactions" schemaName="hm_gift_card">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="last_modified_time" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(100)"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="order_id" type="VARCHAR(255)"/>
+            <column name="transaction_type" type="VARCHAR(50)"/>
+            <column name="amount" type="BIGINT"/>
+            <column name="balance_before" type="BIGINT"/>
+            <column name="balance_after" type="BIGINT"/>
+            <column name="source" type="VARCHAR(100)"/>
+            <column name="reference_id" type="VARCHAR(255)"/>
+            <column name="notes" type="VARCHAR(500)"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- gift_card_activity_log (no version/last_modified)                  -->
+    <!-- ================================================================== -->
+    <changeSet id="gift-card-007-create-gift-card-activity-log" author="homebase">
+        <preConditions onFail="MARK_RAN"><not><tableExists tableName="gift_card_activity_log" schemaName="hm_gift_card"/></not></preConditions>
+        <createTable tableName="gift_card_activity_log" schemaName="hm_gift_card">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="gift_card_id" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="activity_success" type="BOOLEAN"/>
+            <column name="activity_comment" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Indexes                                                            -->
+    <!-- ================================================================== -->
+    <changeSet id="gift-card-008-add-gift-cards-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gift_cards" schemaName="hm_gift_card"/>
+            <not><indexExists indexName="idx_gift_cards_state" schemaName="hm_gift_card"/></not>
+        </preConditions>
+        <createIndex indexName="idx_gift_cards_state" tableName="gift_cards" schemaName="hm_gift_card">
+            <column name="state_id"/>
+        </createIndex>
+        <createIndex indexName="idx_gift_cards_card_type" tableName="gift_cards" schemaName="hm_gift_card">
+            <column name="card_type"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="gift-card-009-add-gift-card-codes-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gift_card_codes" schemaName="hm_gift_card"/>
+            <not><indexExists indexName="idx_gift_card_codes_code" schemaName="hm_gift_card"/></not>
+        </preConditions>
+        <createIndex indexName="idx_gift_card_codes_code" tableName="gift_card_codes" schemaName="hm_gift_card" unique="true">
+            <column name="code"/>
+        </createIndex>
+        <createIndex indexName="idx_gift_card_codes_gift_card" tableName="gift_card_codes" schemaName="hm_gift_card">
+            <column name="gift_card_id"/>
+        </createIndex>
+        <createIndex indexName="idx_gift_card_codes_customer" tableName="gift_card_codes" schemaName="hm_gift_card">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex indexName="idx_gift_card_codes_status" tableName="gift_card_codes" schemaName="hm_gift_card">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="gift-card-010-add-gift-card-transactions-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gift_card_transactions" schemaName="hm_gift_card"/>
+            <not><indexExists indexName="idx_gift_card_txn_code" schemaName="hm_gift_card"/></not>
+        </preConditions>
+        <createIndex indexName="idx_gift_card_txn_code" tableName="gift_card_transactions" schemaName="hm_gift_card">
+            <column name="gift_card_code_id"/>
+        </createIndex>
+        <createIndex indexName="idx_gift_card_txn_order" tableName="gift_card_transactions" schemaName="hm_gift_card">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="gift-card-011-add-redemption-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gift_card_redemptions" schemaName="hm_gift_card"/>
+            <not><indexExists indexName="idx_gift_card_redemption_code" schemaName="hm_gift_card"/></not>
+        </preConditions>
+        <createIndex indexName="idx_gift_card_redemption_code" tableName="gift_card_redemptions" schemaName="hm_gift_card">
+            <column name="gift_card_code_id"/>
+        </createIndex>
+        <createIndex indexName="idx_gift_card_redemption_order" tableName="gift_card_redemptions" schemaName="hm_gift_card">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="gift-card-012-add-store-credits-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="store_credits" schemaName="hm_gift_card"/>
+            <not><indexExists indexName="idx_store_credits_customer" schemaName="hm_gift_card"/></not>
+        </preConditions>
+        <createIndex indexName="idx_store_credits_customer" tableName="store_credits" schemaName="hm_gift_card" unique="true">
+            <column name="customer_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="gift-card-013-add-store-credit-txn-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="store_credit_transactions" schemaName="hm_gift_card"/>
+            <not><indexExists indexName="idx_store_credit_txn_customer" schemaName="hm_gift_card"/></not>
+        </preConditions>
+        <createIndex indexName="idx_store_credit_txn_customer" tableName="store_credit_transactions" schemaName="hm_gift_card">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex indexName="idx_store_credit_txn_order" tableName="store_credit_transactions" schemaName="hm_gift_card">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="gift-card-014-add-activity-log-indexes" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gift_card_activity_log" schemaName="hm_gift_card"/>
+            <not><indexExists indexName="idx_gift_card_activity_gift_card" schemaName="hm_gift_card"/></not>
+        </preConditions>
+        <createIndex indexName="idx_gift_card_activity_gift_card" tableName="gift_card_activity_log" schemaName="hm_gift_card">
+            <column name="gift_card_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================== -->
+    <!-- Foreign keys                                                       -->
+    <!-- ================================================================== -->
+    <changeSet id="gift-card-015-add-foreign-keys" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><foreignKeyConstraintExists foreignKeyName="fk_gift_card_codes_gift_card" schemaName="hm_gift_card"/></not>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="gift_card_codes" baseTableSchemaName="hm_gift_card" baseColumnNames="gift_card_id"
+            referencedTableName="gift_cards" referencedTableSchemaName="hm_gift_card" referencedColumnNames="id"
+            constraintName="fk_gift_card_codes_gift_card"/>
+        <addForeignKeyConstraint baseTableName="gift_card_transactions" baseTableSchemaName="hm_gift_card" baseColumnNames="gift_card_code_id"
+            referencedTableName="gift_card_codes" referencedTableSchemaName="hm_gift_card" referencedColumnNames="id"
+            constraintName="fk_gift_card_txn_code"/>
+        <addForeignKeyConstraint baseTableName="gift_card_redemptions" baseTableSchemaName="hm_gift_card" baseColumnNames="gift_card_code_id"
+            referencedTableName="gift_card_codes" referencedTableSchemaName="hm_gift_card" referencedColumnNames="id"
+            constraintName="fk_gift_card_redemption_code"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -20,9 +20,7 @@
         <module>rules-engine-api</module>
         <module>rules-engine-domain</module>
         <module>rules-engine-infrastructure</module>
-        <module>rules-engine-query-api</module>
         <module>rules-engine-service</module>
-        <module>rules-engine-query</module>
         <module>rules-engine-app</module>
         <module>rules-engine-client</module>
         <module>rules-engine-k8s</module>

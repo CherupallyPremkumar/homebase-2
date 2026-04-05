@@ -435,10 +435,18 @@
         <sql>ALTER TABLE catalog_items ADD CONSTRAINT ck_catalog_items_tenant CHECK (tenant IS NOT NULL);</sql>
         <sql>ALTER TABLE catalog_categories ADD CONSTRAINT ck_catalog_categories_tenant CHECK (tenant IS NOT NULL);</sql>
         <sql>ALTER TABLE collections ADD CONSTRAINT ck_collections_tenant CHECK (tenant IS NOT NULL);</sql>
-        <sql>ALTER TABLE banners ADD CONSTRAINT ck_banners_tenant CHECK (tenant IS NOT NULL);</sql>
-        <sql>ALTER TABLE cms_pages ADD CONSTRAINT ck_cms_pages_tenant CHECK (tenant IS NOT NULL);</sql>
         <sql>ALTER TABLE daily_sales_summary ADD CONSTRAINT ck_daily_sales_tenant CHECK (tenant IS NOT NULL);</sql>
         <sql>ALTER TABLE product_performance ADD CONSTRAINT ck_product_performance_tenant CHECK (tenant IS NOT NULL);</sql>
+    </changeSet>
+
+    <!-- CMS tables may not exist if cms changelog is excluded -->
+    <changeSet id="harden-082b-tenant-check-cms" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="banners"/>
+            <tableExists tableName="cms_pages"/>
+        </preConditions>
+        <sql>ALTER TABLE banners ADD CONSTRAINT ck_banners_tenant CHECK (tenant IS NOT NULL);</sql>
+        <sql>ALTER TABLE cms_pages ADD CONSTRAINT ck_cms_pages_tenant CHECK (tenant IS NOT NULL);</sql>
     </changeSet>
 
     <changeSet id="harden-083-tenant-check-fulfillment-warehouse-recon" author="homebase">

@@ -1,0 +1,736 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- Denormalized Flat Tables (OLAP)                                    -->
+    <!-- These replace cross-schema JOINs at query time.                    -->
+    <!-- Populated by CDC consumers (Kafka/Debezium) or batch ETL.          -->
+    <!-- Each row is a denormalized snapshot — zero JOINs needed to serve UI.-->
+    <!-- All money in paisa (BIGINT), rates in basis points (INT).          -->
+    <!-- ================================================================== -->
+
+    <!-- ====== ORDER DETAILS FLAT ====== -->
+    <!-- Source: orders + order_items + payment + shipments + user_profiles + supplier + order_addresses -->
+    <!-- Used by: orders/index.html, orders/detail.html, finance pages -->
+    <changeSet id="query-flat-001-order-details-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="order_details_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="order_details_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP" remarks="When this row was last updated by ETL/CDC"/>
+            <!-- Order core -->
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="order_number" type="VARCHAR(50)"/>
+            <column name="order_date" type="TIMESTAMP"/>
+            <column name="order_status" type="VARCHAR(50)" remarks="Resolved from state_id"/>
+            <column name="flow_id" type="VARCHAR(100)"/>
+            <column name="total_amount" type="BIGINT"/>
+            <column name="subtotal" type="BIGINT"/>
+            <column name="tax_amount" type="BIGINT"/>
+            <column name="shipping_amount" type="BIGINT"/>
+            <column name="discount_amount" type="BIGINT"/>
+            <column name="item_count" type="INT"/>
+            <column name="currency" type="VARCHAR(10)"/>
+            <column name="coupon_codes" type="VARCHAR(500)"/>
+            <!-- Customer (from user_profiles) -->
+            <column name="customer_id" type="VARCHAR(255)"/>
+            <column name="customer_name" type="VARCHAR(255)"/>
+            <column name="customer_email" type="VARCHAR(255)"/>
+            <column name="customer_phone" type="VARCHAR(20)"/>
+            <column name="customer_tier" type="VARCHAR(50)"/>
+            <!-- Seller (from order_items.supplier_id → supplier) -->
+            <column name="seller_id" type="VARCHAR(255)" remarks="Primary seller (first item supplier)"/>
+            <column name="seller_name" type="VARCHAR(255)"/>
+            <column name="seller_tier" type="VARCHAR(50)"/>
+            <!-- Product summary (from order_items — first item) -->
+            <column name="first_product_name" type="VARCHAR(255)" remarks="Name of first order item"/>
+            <column name="first_product_sku" type="VARCHAR(255)"/>
+            <column name="total_items" type="INT" defaultValueNumeric="0" remarks="Total line items in order"/>
+            <!-- Payment (from payment) -->
+            <column name="payment_id" type="VARCHAR(255)"/>
+            <column name="payment_method" type="VARCHAR(50)" remarks="UPI, CARD, COD, WALLET, NETBANKING"/>
+            <column name="payment_status" type="VARCHAR(50)"/>
+            <column name="gateway_name" type="VARCHAR(100)"/>
+            <column name="gateway_fee" type="BIGINT"/>
+            <!-- Shipping (from shipments) -->
+            <column name="shipment_id" type="VARCHAR(255)"/>
+            <column name="carrier" type="VARCHAR(100)"/>
+            <column name="tracking_number" type="VARCHAR(100)"/>
+            <column name="shipped_at" type="TIMESTAMP"/>
+            <column name="estimated_delivery_date" type="TIMESTAMP"/>
+            <column name="actual_delivery_date" type="TIMESTAMP"/>
+            <!-- Address (from order_addresses) -->
+            <column name="shipping_address_line" type="VARCHAR(500)" remarks="Full address line for detail page"/>
+            <column name="shipping_city" type="VARCHAR(100)"/>
+            <column name="shipping_state" type="VARCHAR(100)"/>
+            <column name="shipping_pincode" type="VARCHAR(10)"/>
+            <!-- SLA -->
+            <column name="sla_status" type="VARCHAR(20)" remarks="ON_TRACK, AT_RISK, BREACHED"/>
+            <column name="sla_breach_hours" type="INT" defaultValueNumeric="0"/>
+            <!-- Commission -->
+            <column name="commission_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="commission_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="seller_payout" type="BIGINT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_order_date" tableName="order_details_flat" schemaName="hm_query">
+            <column name="order_date"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_order_status" tableName="order_details_flat" schemaName="hm_query">
+            <column name="order_status"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_order_seller" tableName="order_details_flat" schemaName="hm_query">
+            <column name="seller_id"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_order_customer" tableName="order_details_flat" schemaName="hm_query">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_order_state" tableName="order_details_flat" schemaName="hm_query">
+            <column name="shipping_state"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_order_payment" tableName="order_details_flat" schemaName="hm_query">
+            <column name="payment_method"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== PRODUCT CATALOG FLAT ====== -->
+    <!-- Source: products + product_variants + inventory_item + supplier + categories + product_reviews (agg) -->
+    <!-- Used by: products/index.html, products/detail.html, search, catalog -->
+    <changeSet id="query-flat-002-product-catalog-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_catalog_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="product_catalog_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <!-- Product -->
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="slug" type="VARCHAR(300)"/>
+            <column name="brand" type="VARCHAR(255)"/>
+            <column name="product_status" type="VARCHAR(50)" remarks="DRAFT, UNDER_REVIEW, PUBLISHED, SUSPENDED"/>
+            <column name="category_id" type="VARCHAR(255)"/>
+            <column name="category_name" type="VARCHAR(255)"/>
+            <column name="hsn_code" type="VARCHAR(20)"/>
+            <column name="base_price" type="BIGINT"/>
+            <column name="weight_grams" type="INT"/>
+            <column name="is_returnable" type="BOOLEAN"/>
+            <column name="return_window_days" type="INT"/>
+            <column name="created_date" type="TIMESTAMP"/>
+            <!-- Primary variant -->
+            <column name="primary_sku" type="VARCHAR(255)"/>
+            <column name="variant_count" type="INT" defaultValueNumeric="0"/>
+            <!-- Inventory (from inventory_item — aggregated across FCs) -->
+            <column name="total_available_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="total_reserved_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="stock_status" type="VARCHAR(30)" remarks="IN_STOCK, LOW_STOCK, OUT_OF_STOCK"/>
+            <column name="primary_fc" type="VARCHAR(255)"/>
+            <!-- Seller (from supplier) -->
+            <column name="seller_id" type="VARCHAR(255)"/>
+            <column name="seller_name" type="VARCHAR(255)"/>
+            <column name="seller_tier" type="VARCHAR(50)"/>
+            <column name="seller_rating" type="INT" defaultValueNumeric="0" remarks="Basis points: 4800 = 4.8"/>
+            <!-- Reviews (aggregated from product_reviews) -->
+            <column name="avg_rating" type="INT" defaultValueNumeric="0" remarks="Basis points"/>
+            <column name="review_count" type="INT" defaultValueNumeric="0"/>
+            <!-- Performance (computed from order_items) -->
+            <column name="units_sold_30d" type="INT" defaultValueNumeric="0"/>
+            <column name="revenue_30d" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="conversion_rate" type="INT" defaultValueNumeric="0" remarks="Basis points"/>
+            <column name="return_rate" type="INT" defaultValueNumeric="0" remarks="Basis points"/>
+            <column name="views_30d" type="INT" defaultValueNumeric="0"/>
+            <!-- Detail page fields (not needed for listing, but avoids OLTP read on detail page) -->
+            <column name="description" type="TEXT" remarks="Full product description"/>
+            <column name="short_description" type="VARCHAR(500)"/>
+            <column name="country_of_origin" type="VARCHAR(100)"/>
+            <column name="warranty_months" type="INT"/>
+            <!-- Review analytics (pre-computed) -->
+            <column name="rating_5_pct" type="INT" defaultValueNumeric="0" remarks="Basis points: 6800 = 68%"/>
+            <column name="rating_4_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="rating_3_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="rating_2_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="rating_1_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="sentiment_positive_pct" type="INT" defaultValueNumeric="0" remarks="Basis points"/>
+            <column name="sentiment_neutral_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="sentiment_negative_pct" type="INT" defaultValueNumeric="0"/>
+            <!-- Compliance (from product_activity_log / moderation events) -->
+            <column name="violations_count" type="INT" defaultValueNumeric="0" remarks="Active policy violations on this listing"/>
+            <column name="report_count" type="INT" defaultValueNumeric="0" remarks="Buyer reports/complaints"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_product_status" tableName="product_catalog_flat" schemaName="hm_query">
+            <column name="product_status"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_product_category" tableName="product_catalog_flat" schemaName="hm_query">
+            <column name="category_id"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_product_seller" tableName="product_catalog_flat" schemaName="hm_query">
+            <column name="seller_id"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_product_stock" tableName="product_catalog_flat" schemaName="hm_query">
+            <column name="stock_status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== SELLER DASHBOARD FLAT ====== -->
+    <!-- Source: supplier + seller_metrics + seller_scorecards + settlements + order_items (agg) -->
+    <!-- Used by: sellers/index.html, sellers/detail.html, sellers/sla.html -->
+    <changeSet id="query-flat-003-seller-dashboard-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="seller_dashboard_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="seller_dashboard_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <!-- Seller core (from supplier) -->
+            <column name="seller_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="business_name" type="VARCHAR(255)"/>
+            <column name="store_name" type="VARCHAR(255)"/>
+            <column name="seller_status" type="VARCHAR(50)"/>
+            <column name="tier" type="VARCHAR(50)"/>
+            <column name="business_type" type="VARCHAR(50)"/>
+            <column name="contact_email" type="VARCHAR(255)"/>
+            <column name="contact_phone" type="VARCHAR(20)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="state" type="VARCHAR(100)"/>
+            <column name="gstin" type="VARCHAR(20)"/>
+            <column name="gst_verified" type="BOOLEAN"/>
+            <column name="pan_verified" type="BOOLEAN"/>
+            <column name="bank_account_verified" type="BOOLEAN"/>
+            <column name="active_date" type="TIMESTAMP"/>
+            <column name="commission_rate" type="INT"/>
+            <!-- Performance (from seller_metrics/scorecards) -->
+            <column name="health_score" type="INT" defaultValueNumeric="0" remarks="0-1000 scale"/>
+            <column name="rating" type="INT" defaultValueNumeric="0"/>
+            <column name="fulfillment_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="dispatch_sla_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="delivery_sla_pct" type="INT" defaultValueNumeric="0"/>
+            <column name="return_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="response_time_hours" type="INT" defaultValueNumeric="0"/>
+            <column name="cancellation_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="violations_count" type="INT" defaultValueNumeric="0"/>
+            <!-- Sales (computed from order_items) -->
+            <column name="total_products" type="INT" defaultValueNumeric="0"/>
+            <column name="active_listings" type="INT" defaultValueNumeric="0"/>
+            <column name="gmv_30d" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="orders_30d" type="INT" defaultValueNumeric="0"/>
+            <column name="revenue_30d" type="BIGINT" defaultValueNumeric="0"/>
+            <!-- Payouts (from settlements) -->
+            <column name="pending_payout" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="last_payout_date" type="TIMESTAMP"/>
+            <column name="last_payout_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="payout_frequency" type="VARCHAR(20)"/>
+            <!-- Supplier operations -->
+            <column name="avg_lead_time_days" type="INT" defaultValueNumeric="0" remarks="Avg days from order to dispatch"/>
+            <column name="last_restock_date" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_seller_status" tableName="seller_dashboard_flat" schemaName="hm_query">
+            <column name="seller_status"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_seller_health" tableName="seller_dashboard_flat" schemaName="hm_query">
+            <column name="health_score"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_seller_tier" tableName="seller_dashboard_flat" schemaName="hm_query">
+            <column name="tier"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== CUSTOMER 360 FLAT ====== -->
+    <!-- Source: user_profiles + user_address + orders (agg) + reviews (agg) + cart + support_tickets -->
+    <!-- Used by: users/customers.html, users/customer-detail.html -->
+    <changeSet id="query-flat-004-customer-360-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="customer_360_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="customer_360_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <!-- Customer core (from user_profiles) -->
+            <column name="customer_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="first_name" type="VARCHAR(100)"/>
+            <column name="last_name" type="VARCHAR(100)"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="phone" type="VARCHAR(20)"/>
+            <column name="customer_status" type="VARCHAR(50)"/>
+            <column name="customer_tier" type="VARCHAR(50)"/>
+            <column name="registered_date" type="TIMESTAMP"/>
+            <column name="last_login_at" type="TIMESTAMP"/>
+            <column name="last_active_at" type="TIMESTAMP"/>
+            <column name="email_verified" type="BOOLEAN"/>
+            <column name="phone_verified" type="BOOLEAN"/>
+            <!-- Address (from user_address — default) -->
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="state" type="VARCHAR(100)"/>
+            <column name="pincode" type="VARCHAR(10)"/>
+            <!-- Segment (from customer_segment_members) -->
+            <column name="segment" type="VARCHAR(50)" remarks="VIP, HIGH_VALUE, REGULAR, NEW, AT_RISK, CHURNED"/>
+            <!-- Lifetime metrics (computed from orders) -->
+            <column name="total_orders" type="INT" defaultValueNumeric="0"/>
+            <column name="total_spent" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="avg_order_value" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="first_order_date" type="TIMESTAMP"/>
+            <column name="last_purchase_date" type="TIMESTAMP"/>
+            <column name="repeat_purchase_rate" type="INT" defaultValueNumeric="0" remarks="Basis points"/>
+            <column name="ltv" type="BIGINT" defaultValueNumeric="0" remarks="Lifetime value in paisa"/>
+            <!-- Returns & reviews -->
+            <column name="total_returns" type="INT" defaultValueNumeric="0"/>
+            <column name="return_rate" type="INT" defaultValueNumeric="0"/>
+            <column name="reviews_given" type="INT" defaultValueNumeric="0"/>
+            <column name="avg_rating_given" type="INT" defaultValueNumeric="0"/>
+            <!-- Risk -->
+            <column name="churn_risk" type="VARCHAR(20)" remarks="LOW, MEDIUM, HIGH"/>
+            <column name="days_since_last_purchase" type="INT" defaultValueNumeric="0"/>
+            <column name="fraud_score" type="INT" defaultValueNumeric="0" remarks="0-100, higher = riskier"/>
+            <!-- Support -->
+            <column name="open_tickets" type="INT" defaultValueNumeric="0"/>
+            <column name="total_tickets" type="INT" defaultValueNumeric="0"/>
+            <!-- Wishlist & cart -->
+            <column name="wishlist_count" type="INT" defaultValueNumeric="0"/>
+            <column name="active_cart_value" type="BIGINT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_cust_status" tableName="customer_360_flat" schemaName="hm_query">
+            <column name="customer_status"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_cust_segment" tableName="customer_360_flat" schemaName="hm_query">
+            <column name="segment"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_cust_churn" tableName="customer_360_flat" schemaName="hm_query">
+            <column name="churn_risk"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_cust_state" tableName="customer_360_flat" schemaName="hm_query">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== CATEGORY CONFIG FLAT ====== -->
+    <!-- Source: categories + tax_category_mapping + tax_rates + category_attribute_mapping + product counts -->
+    <!-- Used by: products/categories.html (the ONLY table this page reads from) -->
+    <!-- Populated by: CDC on categories/tax changes + batch for product/seller counts -->
+    <changeSet id="query-flat-007-category-config-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="category_config_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="category_config_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <!-- Category core (from categories) -->
+            <column name="category_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="slug" type="VARCHAR(255)"/>
+            <column name="parent_id" type="VARCHAR(255)"/>
+            <column name="path" type="VARCHAR(255)" remarks="Full path: Electronics > Power Tools > Drills"/>
+            <column name="depth" type="INT"/>
+            <column name="display_order" type="INT"/>
+            <column name="active" type="BOOLEAN"/>
+            <!-- Governance (from categories — columns we added) -->
+            <column name="commission_rate_bps" type="INT" defaultValueNumeric="0"/>
+            <column name="is_gated" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="return_policy_days" type="INT"/>
+            <column name="max_shipping_weight_grams" type="INT"/>
+            <column name="listing_min_images" type="INT"/>
+            <column name="listing_min_desc_length" type="INT"/>
+            <!-- Tax (from tax_category_mapping + tax_rates) -->
+            <column name="hsn_code" type="VARCHAR(8)"/>
+            <column name="gst_rate_pct" type="INT" defaultValueNumeric="0" remarks="Basis points: 1800 = 18%"/>
+            <column name="cess_rate_pct" type="INT" defaultValueNumeric="0"/>
+            <!-- Required attributes (flattened from category_attribute_mapping) -->
+            <column name="required_attributes_json" type="TEXT" remarks="JSON array of required attribute names"/>
+            <column name="required_attributes_count" type="INT" defaultValueNumeric="0"/>
+            <!-- Counts (computed from products/suppliers) -->
+            <column name="product_count" type="INT" defaultValueNumeric="0"/>
+            <column name="active_product_count" type="INT" defaultValueNumeric="0"/>
+            <column name="seller_count" type="INT" defaultValueNumeric="0"/>
+            <!-- Performance (from category_performance_daily — latest) -->
+            <column name="gmv_30d" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="orders_30d" type="INT" defaultValueNumeric="0"/>
+            <column name="return_rate_30d" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_cat_parent" tableName="category_config_flat" schemaName="hm_query">
+            <column name="parent_id"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_cat_active" tableName="category_config_flat" schemaName="hm_query">
+            <column name="active"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== BRAND REGISTRY FLAT ====== -->
+    <!-- Source: brands + authorized_sellers + brand_analytics + products (cross-schema count) -->
+    <!-- Used by: products/brands.html -->
+    <changeSet id="query-flat-010-brand-registry-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="brand_registry_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="brand_registry_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="brand_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="brand_name" type="VARCHAR(255)"/>
+            <column name="brand_slug" type="VARCHAR(100)"/>
+            <column name="company_name" type="VARCHAR(255)"/>
+            <column name="country_of_origin" type="VARCHAR(2)"/>
+            <column name="industry_category" type="VARCHAR(100)"/>
+            <column name="brand_website" type="VARCHAR(500)"/>
+            <column name="contact_email" type="VARCHAR(255)"/>
+            <column name="brand_status" type="VARCHAR(50)" remarks="Resolved from state_id"/>
+            <column name="verified_at" type="TIMESTAMP"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <!-- Computed counts -->
+            <column name="product_count" type="INT" defaultValueNumeric="0" remarks="Products with this brand name"/>
+            <column name="authorized_seller_count" type="INT" defaultValueNumeric="0"/>
+            <column name="trademark_count" type="INT" defaultValueNumeric="0"/>
+            <column name="violation_count" type="INT" defaultValueNumeric="0"/>
+            <column name="active_violation_count" type="INT" defaultValueNumeric="0"/>
+            <!-- Analytics (from brand_analytics — latest period) -->
+            <column name="brand_health_score" type="INT" defaultValueNumeric="0"/>
+            <column name="counterfeit_removed" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_brand_status" tableName="brand_registry_flat" schemaName="hm_query">
+            <column name="brand_status"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_brand_category" tableName="brand_registry_flat" schemaName="hm_query">
+            <column name="industry_category"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== ATTRIBUTE DEFINITION FLAT ====== -->
+    <!-- Source: attribute_definitions + variant_attributes + product_attribute_values + category_attribute_mapping -->
+    <!-- Used by: products/attributes.html -->
+    <changeSet id="query-flat-008-attribute-definition-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="attribute_definition_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="attribute_definition_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="attribute_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="code" type="VARCHAR(255)"/>
+            <column name="label" type="VARCHAR(255)"/>
+            <column name="input_type" type="VARCHAR(50)"/>
+            <column name="filterable" type="BOOLEAN"/>
+            <column name="searchable" type="BOOLEAN"/>
+            <column name="required" type="BOOLEAN"/>
+            <column name="display_order" type="INT"/>
+            <!-- Computed counts -->
+            <column name="variation_count" type="INT" defaultValueNumeric="0" remarks="Variants using this attribute"/>
+            <column name="product_count" type="INT" defaultValueNumeric="0" remarks="Products with this attribute"/>
+            <column name="category_count" type="INT" defaultValueNumeric="0" remarks="Categories requiring this attribute"/>
+            <!-- Options (flattened) -->
+            <column name="options_json" type="TEXT" remarks="JSON array of attribute option values"/>
+            <column name="options_count" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_attr_code" tableName="attribute_definition_flat" schemaName="hm_query">
+            <column name="code"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== ATTRIBUTE SET FLAT ====== -->
+    <!-- Source: attribute_sets + attribute_set_groups + attribute_set_attributes + categories -->
+    <!-- Used by: products/attributes.html (Attribute Sets tab) -->
+    <changeSet id="query-flat-009-attribute-set-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="attribute_set_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="attribute_set_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="set_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="attribute_count" type="INT" defaultValueNumeric="0"/>
+            <column name="group_count" type="INT" defaultValueNumeric="0"/>
+            <column name="product_count" type="INT" defaultValueNumeric="0"/>
+            <column name="categories_json" type="TEXT" remarks="JSON array of category names using this set"/>
+            <column name="attributes_json" type="TEXT" remarks="JSON array of attribute labels in this set"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ====== PRODUCT VARIANT FLAT ====== -->
+    <!-- Source: product_variants + variant_attributes + inventory_item + pricing -->
+    <!-- Used by: products/detail.html variants tab (one-to-many: 1 product → N variants) -->
+    <changeSet id="query-flat-006-product-variant-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="product_variant_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="product_variant_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="product_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="variant_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="variant_name" type="VARCHAR(255)" remarks="e.g. 500W Standard, 650W Pro"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="ean" type="VARCHAR(20)"/>
+            <column name="mrp" type="BIGINT" remarks="Max retail price in paisa"/>
+            <column name="selling_price" type="BIGINT"/>
+            <column name="available_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="reserved_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="inbound_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="variant_status" type="VARCHAR(30)"/>
+            <column name="attributes_json" type="TEXT" remarks="Flattened variant attributes"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_variant_product" tableName="product_variant_flat" schemaName="hm_query">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== INVENTORY HEALTH FLAT ====== -->
+    <!-- Source: inventory_item + products + supplier + warehouse_inventory -->
+    <!-- Used by: products/inventory.html, products/inventory-alerts.html, warehouse dashboard -->
+    <changeSet id="query-flat-005-inventory-health-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="inventory_health_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="inventory_health_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="sku" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="category_name" type="VARCHAR(255)"/>
+            <column name="seller_id" type="VARCHAR(255)"/>
+            <column name="seller_name" type="VARCHAR(255)"/>
+            <column name="warehouse_name" type="VARCHAR(255)"/>
+            <column name="warehouse_code" type="VARCHAR(20)"/>
+            <column name="available_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="reserved_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="damaged_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="inbound_qty" type="INT" defaultValueNumeric="0"/>
+            <column name="stock_status" type="VARCHAR(30)"/>
+            <column name="low_stock_threshold" type="INT"/>
+            <column name="days_of_supply" type="INT" remarks="Computed: available_qty / avg_daily_sales"/>
+            <column name="avg_daily_sales" type="INT" defaultValueNumeric="0"/>
+            <column name="last_sale_at" type="TIMESTAMP"/>
+            <column name="last_restock_at" type="TIMESTAMP"/>
+            <column name="cost_price" type="BIGINT"/>
+            <column name="locked_capital" type="BIGINT" remarks="available_qty * cost_price"/>
+            <column name="days_without_sale" type="INT" defaultValueNumeric="0" remarks="Dead stock detection"/>
+            <column name="stm_state" type="VARCHAR(50)" remarks="STM state from inventory_item.state_id"/>
+            <column name="variant_id" type="VARCHAR(255)"/>
+            <column name="primary_fc" type="VARCHAR(255)"/>
+            <column name="batch_number" type="VARCHAR(100)"/>
+            <column name="expiry_date" type="DATE"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_inv_stock" tableName="inventory_health_flat" schemaName="hm_query">
+            <column name="stock_status"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_inv_dead" tableName="inventory_health_flat" schemaName="hm_query">
+            <column name="days_without_sale"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_inv_warehouse" tableName="inventory_health_flat" schemaName="hm_query">
+            <column name="warehouse_name"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_inv_seller" tableName="inventory_health_flat" schemaName="hm_query">
+            <column name="seller_id"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_inv_sku" tableName="inventory_health_flat" schemaName="hm_query">
+            <column name="sku"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== PRICING RULE FLAT ====== -->
+    <!-- Source: pricing_rules + order_items (for conversion/revenue impact) + price_history -->
+    <!-- Used by: products/pricing-rules.html -->
+    <changeSet id="query-flat-012-pricing-rule-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="pricing_rule_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="pricing_rule_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="rule_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="rule_type" type="VARCHAR(50)" remarks="MARKUP, DISCOUNT, FLOOR, CEILING"/>
+            <column name="priority" type="INT"/>
+            <column name="discount_type" type="VARCHAR(50)" remarks="PERCENTAGE, FLAT"/>
+            <column name="discount_value" type="INT" remarks="Basis points or paisa"/>
+            <column name="active" type="BOOLEAN"/>
+            <column name="active_from" type="TIMESTAMP"/>
+            <column name="active_to" type="TIMESTAMP"/>
+            <column name="conditions_json" type="TEXT"/>
+            <column name="applicable_categories_json" type="TEXT"/>
+            <column name="applicable_products_json" type="TEXT"/>
+            <column name="created_time" type="TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <!-- Computed metrics (from order_items) -->
+            <column name="products_affected" type="INT" defaultValueNumeric="0"/>
+            <column name="conversions_30d" type="INT" defaultValueNumeric="0" remarks="Orders using this rule in last 30d"/>
+            <column name="conversion_rate" type="INT" defaultValueNumeric="0" remarks="Basis points"/>
+            <column name="revenue_impact" type="BIGINT" defaultValueNumeric="0" remarks="Total discount given in paisa"/>
+            <!-- Conflict detection -->
+            <column name="has_conflict" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="conflict_details" type="VARCHAR(500)"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_pricing_active" tableName="pricing_rule_flat" schemaName="hm_query">
+            <column name="active"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_pricing_type" tableName="pricing_rule_flat" schemaName="hm_query">
+            <column name="rule_type"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== PRICE CHANGE LOG FLAT ====== -->
+    <!-- Source: price_history + products -->
+    <!-- Used by: products/pricing-rules.html (Recent Bulk Price Changes section) -->
+    <changeSet id="query-flat-013-price-change-log-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="price_change_log_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="price_change_log_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="change_time" type="TIMESTAMP"/>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="old_price" type="BIGINT"/>
+            <column name="new_price" type="BIGINT"/>
+            <column name="change_pct" type="INT" remarks="Basis points change"/>
+            <column name="change_reason" type="VARCHAR(255)"/>
+            <column name="changed_by" type="VARCHAR(100)"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_pricechange_time" tableName="price_change_log_flat" schemaName="hm_query">
+            <column name="change_time"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== ORDER ITEMS FLAT ====== -->
+    <!-- Source: order_items (one-to-many per order) -->
+    <!-- Used by: orders/detail.html order items table -->
+    <changeSet id="query-flat-014-order-items-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="order_items_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="order_items_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="last_synced_at" type="TIMESTAMP"/>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="product_id" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT"/>
+            <column name="unit_price" type="BIGINT"/>
+            <column name="total_price" type="BIGINT"/>
+            <column name="tax_amount" type="BIGINT"/>
+            <column name="discount_amount" type="BIGINT"/>
+            <column name="supplier_id" type="VARCHAR(255)"/>
+            <column name="supplier_name" type="VARCHAR(255)"/>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <column name="hsn_code" type="VARCHAR(20)"/>
+            <column name="return_eligible" type="BOOLEAN"/>
+            <column name="fulfillment_status" type="VARCHAR(50)"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_oitems_order" tableName="order_items_flat" schemaName="hm_query">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== ORDER ACTIVITY FLAT ====== -->
+    <!-- Source: order_activity (audit trail per order) -->
+    <!-- Used by: orders/detail.html audit trail section -->
+    <changeSet id="query-flat-015-order-activity-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="order_activity_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="order_activity_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="action" type="VARCHAR(100)"/>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="performed_by" type="VARCHAR(100)"/>
+            <column name="created_time" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_oactivity_order" tableName="order_activity_flat" schemaName="hm_query">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== SHIPMENT TRACKING FLAT ====== -->
+    <!-- Source: shipping_tracking_events + shipments -->
+    <!-- Used by: orders/detail.html shipment tracking timeline -->
+    <changeSet id="query-flat-016-shipment-tracking-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="shipment_tracking_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="shipment_tracking_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="shipment_id" type="VARCHAR(255)"/>
+            <column name="event_type" type="VARCHAR(50)"/>
+            <column name="location" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="event_time" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_tracking_order" tableName="shipment_tracking_flat" schemaName="hm_query">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== ORDER RISK ASSESSMENT FLAT ====== -->
+    <!-- Source: fraud_assessments -->
+    <!-- Used by: orders/detail.html risk assessment card -->
+    <changeSet id="query-flat-017-order-risk-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="order_risk_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="order_risk_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="order_id" type="VARCHAR(255)"><constraints nullable="false"/></column>
+            <column name="risk_score" type="INT" defaultValueNumeric="0"/>
+            <column name="risk_level" type="VARCHAR(20)" remarks="LOW, MEDIUM, HIGH"/>
+            <column name="payment_risk" type="VARCHAR(20)"/>
+            <column name="address_verified" type="BOOLEAN"/>
+            <column name="assessment_status" type="VARCHAR(50)"/>
+            <column name="assessed_at" type="TIMESTAMP"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_risk_order" tableName="order_risk_flat" schemaName="hm_query">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ====== STOCK MOVEMENT LOG FLAT ====== -->
+    <!-- Source: inventory_movements + inventory_item + products -->
+    <!-- Used by: products/inventory.html (Recent Stock Movements table) -->
+    <changeSet id="query-flat-011-stock-movement-flat" author="homebase">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="stock_movement_flat" schemaName="hm_query"/></not>
+        </preConditions>
+        <createTable tableName="stock_movement_flat" schemaName="hm_query">
+            <column name="id" type="VARCHAR(255)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="tenant" type="VARCHAR(50)"/>
+            <column name="movement_time" type="TIMESTAMP"/>
+            <column name="movement_type" type="VARCHAR(30)" remarks="INBOUND, SALE, ADJUSTMENT, TRANSFER, RETURN, DAMAGE"/>
+            <column name="sku" type="VARCHAR(255)"/>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="quantity" type="INT"/>
+            <column name="warehouse_name" type="VARCHAR(255)"/>
+            <column name="warehouse_code" type="VARCHAR(20)"/>
+            <column name="reason" type="VARCHAR(255)"/>
+            <column name="reference_id" type="VARCHAR(255)" remarks="Order ID or PO number"/>
+            <column name="performed_by" type="VARCHAR(100)"/>
+        </createTable>
+        <createIndex indexName="idx_qflat_movement_time" tableName="stock_movement_flat" schemaName="hm_query">
+            <column name="movement_time"/>
+        </createIndex>
+        <createIndex indexName="idx_qflat_movement_type" tableName="stock_movement_flat" schemaName="hm_query">
+            <column name="movement_type"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

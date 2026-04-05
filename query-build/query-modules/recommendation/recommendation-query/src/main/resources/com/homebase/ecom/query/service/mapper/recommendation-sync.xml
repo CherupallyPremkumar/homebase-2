@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="RecommendationSync">
+
+<!-- ====== Recommendations ====== -->
+<update id="truncateRecommendationsFlat">TRUNCATE TABLE hm_query.recommendations_flat</update>
+<insert id="syncRecommendationsFlat">
+    INSERT INTO hm_query.recommendations_flat (
+        id, tenant, last_synced_at,
+        user_id, product_id, product_name,
+        recommendation_type, score, reason, created_time
+    )
+    SELECT pr.id, pr.tenant, NOW(),
+           pr.user_id, pr.product_id,
+           COALESCE(p.name, ''),
+           pr.recommendation_type, pr.score, pr.reason, pr.created_time
+    FROM hm_recommendation.product_recommendations pr
+    LEFT JOIN hm_product.products p ON pr.product_id = p.id
+</insert>
+
+<!-- ====== Trending Products ====== -->
+<update id="truncateTrendingProductsFlat">TRUNCATE TABLE hm_query.trending_products_flat</update>
+<insert id="syncTrendingProductsFlat">
+    INSERT INTO hm_query.trending_products_flat (
+        id, tenant, last_synced_at,
+        product_id, product_name, category,
+        trending_score, time_window, view_count, order_count, created_time
+    )
+    SELECT tp.id, tp.tenant, NOW(),
+           tp.product_id,
+           COALESCE(p.name, ''),
+           tp.category,
+           tp.trending_score, tp.time_window,
+           COALESCE(tp.view_count, 0), COALESCE(tp.order_count, 0), tp.created_time
+    FROM hm_recommendation.trending_products tp
+    LEFT JOIN hm_product.products p ON tp.product_id = p.id
+</insert>
+
+</mapper>

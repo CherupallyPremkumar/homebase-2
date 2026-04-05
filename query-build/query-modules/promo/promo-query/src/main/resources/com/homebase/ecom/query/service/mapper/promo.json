@@ -1,0 +1,157 @@
+[
+	{
+		"id": "PromoCode.getAll",
+		"name": "promos",
+		"acls": ["ADMIN"],
+		"workflowName": "promo",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"code": {
+				"name": "code",
+				"filterable": true,
+				"columnType": "Text",
+				"sortable": true,
+				"likeQuery": true
+			},
+			"name": {
+				"name": "name",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"description": {
+				"name": "description",
+				"columnType": "Text",
+				"likeQuery": true,
+				"filterable": true
+			},
+			"discountType": {
+				"name": "discount_type",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"discountValue": {
+				"name": "discount_value",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"startDate": {
+				"name": "start_date",
+				"columnType": "Date",
+				"sortable": true
+			},
+			"endDate": {
+				"name": "end_date",
+				"columnType": "Date",
+				"sortable": true
+			},
+			"usageCount": {
+				"name": "usage_count",
+				"columnType": "Number",
+				"sortable": true
+			},
+			"usageLimit": {
+				"name": "usage_limit",
+				"columnType": "Number"
+			},
+			"stateId": {
+				"name": "state_id",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"q": { "name": "q", "likeQuery": true, "filterable": true, "columnType": "Text" }
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "PromoCode.getById",
+		"name": "promo",
+		"acls": ["ADMIN"],
+		"workflowName": "promo",
+		"stateColumn": "stateId",
+		"flowColumn": "flowId",
+		"columnMetadata": {
+			"code": {
+				"name": "code",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": false
+	},
+	{
+		"id": "PromoCode.getStateCounts",
+		"name": "promoStateCounts",
+		"acls": ["ADMIN"],
+		"columnMetadata": {},
+		"paginated": false
+	},
+	{
+		"id": "PromoCode.getActivePromos",
+		"name": "activePromos",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"code": {
+				"name": "code",
+				"filterable": true,
+				"columnType": "Text",
+				"likeQuery": true
+			},
+			"discountType": {
+				"name": "discount_type",
+				"filterable": true,
+				"columnType": "Text"
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "PromoCode.getExpiringPromos",
+		"name": "expiringPromos",
+		"acls": ["ADMIN"],
+		"columnMetadata": {
+			"endDate": {
+				"name": "end_date",
+				"columnType": "Date",
+				"sortable": true
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "PromoCode.getAvailableForCart",
+		"name": "availableForCart",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"cartTotal": {
+				"name": "cart_total",
+				"filterable": true,
+				"columnType": "Number"
+			}
+		},
+		"paginated": true,
+		"sortable": true
+	},
+	{
+		"id": "PromoCode.validatePromoCode",
+		"name": "validatePromoCode",
+		"acls": ["CUSTOMER"],
+		"columnMetadata": {
+			"code": {
+				"name": "code",
+				"filterable": true,
+				"columnType": "Text"
+			},
+			"cartTotal": {
+				"name": "cart_total",
+				"filterable": true,
+				"columnType": "Number"
+			}
+		},
+		"paginated": false
+	}
+]

@@ -1,0 +1,39 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SearchSync">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ETL SYNC — Search module relies on shared dim_product + dim_category  -->
+<!-- synced by UiQuerySyncService and ProductCatalogSyncService.           -->
+<!--                                                                        -->
+<!-- This sync service refreshes search-specific OLAP artifacts:           -->
+<!--   - hm_query.search_popularity_flat  (search term frequency + clicks) -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+<update id="truncateSearchPopularityFlat">TRUNCATE TABLE hm_query.search_popularity_flat</update>
+
+<!-- ====== SYNC: search_popularity_flat ====== -->
+<!-- Tracks popular search terms for autocomplete ranking -->
+<insert id="syncSearchPopularityFlat">
+    INSERT INTO hm_query.search_popularity_flat (
+        id, tenant, last_synced_at,
+        search_term, search_count, click_count, conversion_count,
+        avg_results_returned, last_searched_at
+    )
+    SELECT
+        'search-' || ROW_NUMBER() OVER (ORDER BY COUNT(*) DESC),
+        'homebase',
+        NOW(),
+        sl.search_term,
+        COUNT(*),
+        COALESCE(SUM(sl.click_count), 0),
+        COALESCE(SUM(sl.conversion_count), 0),
+        COALESCE(AVG(sl.results_count), 0),
+        MAX(sl.created_time)
+    FROM hm_analytics.search_log sl
+    WHERE sl.created_time &gt;= NOW() - INTERVAL '30 days'
+    GROUP BY sl.search_term
+    ORDER BY COUNT(*) DESC
+    LIMIT 10000
+</insert>
+
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TaxSync">
+
+<!-- ====== Tax Rates ====== -->
+<update id="truncateTaxRatesFlat">TRUNCATE TABLE hm_query.tax_rates_flat</update>
+<insert id="syncTaxRatesFlat">
+    INSERT INTO hm_query.tax_rates_flat (
+        id, tenant, last_synced_at, hsn_code, description, gst_rate,
+        cess_rate, tcs_rate, effective_from, effective_to, active
+    )
+    SELECT tr.id, tr.tenant, NOW(), tr.hsn_code, tr.description, tr.gst_rate,
+           tr.cess_rate, tr.tcs_rate, tr.effective_from, tr.effective_to, tr.active
+    FROM hm_tax.tax_rates tr
+</insert>
+
+<!-- ====== Tax Category Mappings ====== -->
+<update id="truncateTaxCategoryMappingsFlat">TRUNCATE TABLE hm_query.tax_category_mappings_flat</update>
+<insert id="syncTaxCategoryMappingsFlat">
+    INSERT INTO hm_query.tax_category_mappings_flat (
+        id, tenant, last_synced_at, product_category, sub_category, hsn_code, description
+    )
+    SELECT tcm.id, tcm.tenant, NOW(), tcm.product_category, tcm.sub_category, tcm.hsn_code, tcm.description
+    FROM hm_tax.tax_category_mapping tcm
+</insert>
+
+<!-- ====== Tax Regions ====== -->
+<update id="truncateTaxRegionsFlat">TRUNCATE TABLE hm_query.tax_regions_flat</update>
+<insert id="syncTaxRegionsFlat">
+    INSERT INTO hm_query.tax_regions_flat (
+        id, tenant, last_synced_at, state_code, state_name, state_alpha, union_territory, active
+    )
+    SELECT tr.id, tr.tenant, NOW(), tr.state_code, tr.state_name, tr.state_alpha, tr.union_territory, tr.active
+    FROM hm_tax.tax_regions tr
+</insert>
+
+<!-- ====== Tax Exemptions ====== -->
+<update id="truncateTaxExemptionsFlat">TRUNCATE TABLE hm_query.tax_exemptions_flat</update>
+<insert id="syncTaxExemptionsFlat">
+    INSERT INTO hm_query.tax_exemptions_flat (
+        id, tenant, last_synced_at, exemption_type, exemption_value, description, full_exemption, active
+    )
+    SELECT te.id, te.tenant, NOW(), te.exemption_type, te.exemption_value, te.description, te.full_exemption, te.active
+    FROM hm_tax.tax_exemptions te
+</insert>
+
+<!-- ====== Order Tax Lines ====== -->
+<update id="truncateOrderTaxLinesFlat">TRUNCATE TABLE hm_query.order_tax_lines_flat</update>
+<insert id="syncOrderTaxLinesFlat">
+    INSERT INTO hm_query.order_tax_lines_flat (
+        id, tenant, last_synced_at, order_id, variant_id, hsn_code,
+        tax_type, taxable_amount, gst_rate,
+        cgst_amount, sgst_amount, igst_amount,
+        cess_amount, tcs_amount, total_tax
+    )
+    SELECT otl.id, otl.tenant, NOW(), otl.order_id, otl.variant_id, otl.hsn_code,
+           otl.tax_type, otl.taxable_amount, otl.gst_rate,
+           otl.cgst_amount, otl.sgst_amount, otl.igst_amount,
+           otl.cess_amount, otl.tcs_amount, otl.total_tax
+    FROM hm_tax.order_tax_lines otl
+</insert>
+
+</mapper>

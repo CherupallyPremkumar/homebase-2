@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ================================================================== -->
+    <!-- hm_query — OLAP read schema for platform UI                        -->
+    <!-- Separate from OLTP microservice schemas.                           -->
+    <!-- Populated via CDC (Kafka/Debezium) or batch ETL (Spring Batch).    -->
+    <!-- ================================================================== -->
+
+    <changeSet id="query-000-create-schema" author="homebase">
+        <sql>CREATE SCHEMA IF NOT EXISTS hm_query</sql>
+    </changeSet>
+
+</databaseChangeLog>
